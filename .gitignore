@@ -2,6 +2,3 @@
 /dist/
 /node_modules/
 /webroot/index.js*
-
-# audacity temporary files.
-/resources/audio/*.aup3-wal
