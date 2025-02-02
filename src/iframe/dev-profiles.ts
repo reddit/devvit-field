@@ -1,4 +1,3 @@
-import {devMode} from '../shared/dev-mode.ts'
 import type {Profile} from '../shared/save.ts'
 
 export const devProfiles: readonly Readonly<Profile>[] = devMode

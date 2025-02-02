@@ -1,7 +1,7 @@
 /devvit.dev.yaml
 /dist/
 /node_modules/
-/webroot/index.js
+/webroot/index.js*
 
 # audacity temporary files.
 /resources/audio/*.aup3-wal

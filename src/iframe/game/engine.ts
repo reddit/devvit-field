@@ -1,4 +1,3 @@
-import {devMode} from '../../shared/dev-mode.ts'
 import {minCanvasWH} from '../../shared/theme.ts'
 import type {
   DevvitMessage,

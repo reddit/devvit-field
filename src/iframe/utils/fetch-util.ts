@@ -1,5 +1,3 @@
-import {devMode} from '../../shared/dev-mode.ts'
-
 export async function fetchAudio(url: string): Promise<ArrayBuffer> {
   const rsp = await fetch(url, {headers: {accept: 'audio/mpeg'}})
   if (!rsp.ok)

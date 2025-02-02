@@ -1,10 +1,9 @@
 import './utils/dispose.ts'
+import './utils/crypto.ts'
 
-// to-do: this is yoinking in the whole package.json. trim to just a version with env.
-import pkg from '../../package.json' with {type: 'json'}
 import {Engine} from './game/engine.ts'
 
-console.log(`${pkg.name} v${pkg.version}`)
+console.log(`Banfield v${version}`)
 
 const game = new Engine()
 await game.start()
