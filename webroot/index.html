@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no' />
+    <title>Banfield</title>
+    <!-- to-do: update me. -->
+    <!-- <link rel="preload" href="index.js" as="script" /> -->
+    <link rel='preload' href='assets/loading.webp' as='image' type='image/webp' />
+    <link rel='preload' href='assets/mem-prop-5x6.ttf' as='font' type='font/ttf' crossorigin />
+    <link rel='preload' href='assets/atlas.webp' as='image' type='image/webp' />
+    <!-- <link rel='preload' href='assets/audio.cat' as='fetch' /> -->
+    <style>
+      :root {
+        --palette-white: #f2f2f2;
+        /* to-do: verify Android sizing. */
+      }
+
+      *,
+      ::before,
+      ::after {
+        box-sizing: border-box; /* Dimensions include any border and padding. */
+        -webkit-tap-highlight-color: transparent;
+        outline: none; /* Disable focus outline. */
+        user-select: none;
+        -webkit-touch-callout: none; /* to-do: Disable context menu on iOS? */
+      }
+
+      body {
+        background-color: var(--palette-white);
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      canvas {
+        cursor: none;
+        display: block; /* No line height spacing. */
+        image-rendering: pixelated;
+        /* Update on each pointermove *touch* Event like *mouse* Events. */
+        touch-action: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas tabIndex='0'></canvas> <!-- Set tabIndex to propagate key events. -->
+    <script src='index.js' type='module' async></script>
+  </body>
+</html>

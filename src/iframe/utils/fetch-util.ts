@@ -1,0 +1,20 @@
+import {devMode} from '../../shared/dev-mode.ts'
+
+export async function fetchAudio(url: string): Promise<ArrayBuffer> {
+  const rsp = await fetch(url, {headers: {accept: 'audio/mpeg'}})
+  if (!rsp.ok)
+    throw Error(`HTTP error ${rsp.status}: ${rsp.statusText} for ${url}`)
+  const type = rsp.headers.get('Content-Type')
+  if (!type?.startsWith(devMode ? 'application/octet' : 'audio/mpeg'))
+    throw Error(`bad response type ${type} for ${url}`)
+  return await rsp.arrayBuffer()
+}
+
+export function fetchImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((fulfil, reject) => {
+    const img = new Image()
+    img.onload = () => fulfil(img)
+    img.onerror = () => reject(Error(`image load error for ${url}`))
+    img.src = url
+  })
+}

@@ -1,0 +1,18 @@
+// TypeScript config for all Devvit code.
+{
+  "extends": "../../tools/tsconfig-base.json",
+  "compilerOptions": {
+    // to-do: bump ES version in @devvit/public-api.
+    "lib": ["ES2023", "WebWorker"],
+
+    "rootDir": "..",
+
+    "outDir": "../../dist",
+
+    "tsBuildInfoFile": "../../dist/tsconfig.tsbuildinfo"
+  },
+  // https://github.com/Microsoft/TypeScript/issues/25636
+  "include": ["**/*", "**/*.json", "../main.ts", "../../package.json"],
+  "exclude": ["**/*.test.ts", "server"],
+  "references": [{ "path": "../shared" }]
+}

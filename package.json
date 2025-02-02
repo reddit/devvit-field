@@ -1,13 +1,38 @@
 {
-  "private": true,
-  "name": "banfield",
-  "version": "0.0.0",
-  "license": "BSD-3-Clause",
-  "type": "module",
-  "dependencies": {
-    "@devvit/public-api": "0.11.7-dev"
-  },
+  "author": "Developer Platform",
+  "description": "",
   "devDependencies": {
-    "typescript": "5.3.2"
-  }
+    "@biomejs/biome": "1.9.4",
+    "@devvit/public-api": "0.11.7-next-2025-01-30-e81d75d04.0",
+    "@types/node": "22.13.0",
+    "devvit": "0.11.7-next-2025-01-30-e81d75d04.0",
+    "esbuild": "0.24.2",
+    "phaser": "3.87.0",
+    "typescript": "5.8.0-beta",
+    "vitest": "3.0.4"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "license": "BSD-3-Clause",
+  "name": "banfield",
+  "private": true,
+  "scripts": {
+    "build": "esbuild --bundle --format=esm --log-level=info --outfile=webroot/index.js --target=ES2022 src/iframe/index.ts",
+    "clean": "rm -rf webroot/index.js",
+    "devvit:dev:upload": "devvit upload --config=devvit.dev.yaml",
+    "devvit:install": "to-do: npm run clean && npm run build && devvit upload && devvit install r/",
+    "devvit:logs": "devvit logs --log-runtime",
+    "devvit:playtest": "sh -c 'devvit playtest --config=devvit.dev.yaml --log-runtime \"$@\"|grep --invert --line-buffered \"\\[api\\]\"' --",
+    "format": "npm run formatter -- --fix",
+    "formatter": "biome check --error-on-warnings",
+    "playtest": "sh -c 'trap \"kill 0\" exit; npm start& npm run build -- --watch=forever& npm run devvit:playtest -- \"$@\"& wait' --",
+    "start": "npm run build -- --banner:js='new EventSource(\"/esbuild\").addEventListener(\"change\", () => location.reload());' --serve=1234 --servedir=webroot --watch=forever",
+    "test": "npm run test:format && npm run test:types && npm run test:unit",
+    "test:format": "npm run formatter",
+    "test:types": "tsc --build",
+    "test:unit": "NODE_OPTIONS=\"--no-warnings=ExperimentalWarning ${NODE_OPTIONS}\" vitest run"
+  },
+  "type": "module",
+  "version": "0.0.0"
 }

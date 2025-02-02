@@ -1,7 +1,11 @@
 {
-  "extends": "@devvit/public-api/devvit.tsconfig.json",
-  "compilerOptions": {
-    "noEmit": true
-  },
-  "include": ["./src/**/*"]
+  // Only build references.
+  "files": [],
+  "references": [
+    { "path": "src/devvit" },
+    { "path": "src/iframe" },
+    { "path": "src/shared" },
+    { "path": "src/test" },
+    { "path": "tools" }
+  ]
 }

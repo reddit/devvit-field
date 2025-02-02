@@ -1,0 +1,80 @@
+// biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
+import {Devvit} from '@devvit/public-api'
+import type {JSONValue} from '@devvit/public-api'
+import {ChannelStatus} from '@devvit/public-api/types/realtime'
+import {
+  type DevvitMessage,
+  type IframeMessage,
+  type RealtimeMessage,
+  realtimeVersion,
+} from '../../shared/types/message.ts'
+import {useChannel2} from '../hooks/use-channel2.js'
+import {useSession} from '../hooks/use-session.ts'
+import {useState2} from '../hooks/use-state2.ts'
+import {redisQueryPostSave, redisQueryProfile} from '../redis.ts'
+import {Title} from './title.tsx'
+
+export function App(ctx: Devvit.Context): JSX.Element {
+  const session = useSession(ctx)
+  const [profile] = useState2(() => redisQueryProfile(ctx, session.t2))
+  const p1 = {profile, sid: session.sid}
+  const [postSave] = useState2(async () => {
+    const postSave = await redisQueryPostSave(ctx.redis, session.t3)
+    if (!postSave) throw Error(`no post save for ${session.t3}`)
+    return postSave
+  })
+
+  // to-do: change reference to mounted iframe using useWebView() when user
+  //        clicks pop-out.
+  const iframe = {
+    postMessage: (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg),
+  }
+
+  function onMsg(msg: IframeMessage): void {
+    if (session.debug)
+      console.log(
+        `${profile.username} Devvit ← iframe msg=${JSON.stringify(msg)}`,
+      )
+
+    switch (msg.type) {
+      case 'Registered':
+        iframe.postMessage({
+          connected: chan.status === ChannelStatus.Connected,
+          debug: session.debug,
+          p1,
+          seed: postSave.seed,
+          type: 'Init',
+        })
+        break
+      default:
+        msg.type satisfies never
+    }
+  }
+
+  const chan = useChannel2<RealtimeMessage>({
+    chan: session.t3,
+    onPeerMessage(msg) {
+      if (session.debug)
+        console.log(
+          `${profile.username} Devvit ← realtime msg=${JSON.stringify(msg)}`,
+        )
+      iframe.postMessage(msg)
+    },
+    p1,
+    version: realtimeVersion,
+    onConnected: () => iframe.postMessage({type: 'Connected'}),
+    onDisconnected: () => iframe.postMessage({type: 'Disconnected'}),
+    // to-do: onOutdated alert.
+  })
+  chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
+
+  return (
+    <Title>
+      <webview
+        grow
+        onMessage={onMsg as (message: JSONValue) => Promise<void>}
+        url='index.html'
+      />
+    </Title>
+  )
+}
