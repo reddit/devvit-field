@@ -26,11 +26,11 @@ const buildOpts: BuildOptions = {
   entryPoints: ['src/iframe/index.ts'],
   format: 'esm',
   logLevel: 'info', // Print the port and build demarcations.
-  minify: minify,
+  minify,
   outfile: 'webroot/index.js',
   sourcemap: 'linked',
   target: 'es2022', // https://esbuild.github.io/content-types/#tsconfig-json
-  write: !devMode,
+  write: !devMode, // Never record dev mode which is incompatible with prod.
 }
 
 if (devMode || watch) {
