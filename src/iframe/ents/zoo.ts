@@ -1,6 +1,7 @@
 import {c2dClear} from '../canvas/c2d.ts'
 import type {Game, PreloadGame} from '../game/game.ts'
 import {type Layer, layerDrawOrder} from '../types/layer.ts'
+import {CursorEnt} from './cursor-ent.ts'
 import type {EID} from './eid.ts'
 import type {Ent} from './ent.ts'
 
@@ -10,17 +11,21 @@ type EntsByLayer = {[layer in Layer]: EntByID}
 // doesn't handle composed ents. those are handled by the owning ent.
 export class Zoo {
   #entsByLayer: Readonly<EntsByLayer> = EntsByLayer()
-  // #lvl: LevelEnt | undefined
 
   add(...ents: readonly Readonly<Ent>[]): void {
     for (const ent of ents) {
-      // if (isLevelEnt(ent)) this.#lvl = ent
       this.#entsByLayer[ent.layer][ent.eid] = ent
     }
   }
 
   clear(): void {
     this.#entsByLayer = EntsByLayer()
+  }
+
+  cursor(): CursorEnt | undefined {
+    // Assume only the cursor is on the cursor layer.
+    const cursor = Object.values(this.#entsByLayer.Cursor)[0]
+    return cursor instanceof CursorEnt ? cursor : undefined
   }
 
   draw(game: PreloadGame): void {
@@ -43,10 +48,6 @@ export class Zoo {
       if (this.#entsByLayer[layer as Layer][eid])
         return this.#entsByLayer[layer as Layer][eid]
   }
-
-  // get lvl(): LevelEnt | undefined {
-  //   return this.#lvl
-  // }
 
   update(game: PreloadGame): void {
     for (const ent of this.ents('Reverse')) ent.update?.(game as Game)

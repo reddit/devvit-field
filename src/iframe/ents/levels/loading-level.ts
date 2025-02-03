@@ -56,8 +56,8 @@ export class LoadingLevel implements LevelEnt {
     loaded.img = assets.img
     loaded.looper.initTextures(assets)
 
-    await game.init
+    await loaded.init
 
-    this.#field.init(game)
+    this.#field.init(loaded)
   }
 }

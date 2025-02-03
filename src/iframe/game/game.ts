@@ -17,7 +17,6 @@ export type Game = LoadedGame & {c2d: C2D; textures: TextureMap}
 export type LoadedGame = InitGame &
   PreloadGame & {
     audio: AudioBufferByName
-    // cursor: CursorEnt
     img: AssetMap['img']
   }
 

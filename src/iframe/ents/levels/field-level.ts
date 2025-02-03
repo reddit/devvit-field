@@ -1,5 +1,6 @@
-import type {Game, PreloadGame} from '../../game/game.ts'
+import type {Game, LoadedGame, PreloadGame} from '../../game/game.ts'
 import type {Layer} from '../../types/layer.ts'
+import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import type {LevelEnt} from './level-ent.ts'
 
@@ -23,9 +24,9 @@ export class FieldLevel implements LevelEnt {
     game.c2d.fillRect(0, 0, game.cam.w, game.cam.h)
   }
 
-  init(game: PreloadGame): void {
+  init(game: LoadedGame): void {
     game.zoo.clear()
-    game.zoo.add(this)
+    game.zoo.add(this, new CursorEnt(game))
   }
 
   update(_game: Game): void {}
