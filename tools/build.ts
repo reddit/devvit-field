@@ -30,6 +30,7 @@ const buildOpts: BuildOptions = {
   outfile: 'webroot/index.js',
   sourcemap: 'linked',
   target: 'es2022', // https://esbuild.github.io/content-types/#tsconfig-json
+  write: !devMode,
 }
 
 if (devMode || watch) {
