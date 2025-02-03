@@ -46,8 +46,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
           type: 'Init',
         })
         break
+      case 'PopOut':
+        // to-do: change reference to mounted iframe using useWebView() when user
+        //        clicks pop-out.
+        break
       default:
-        msg.type satisfies never
+        msg satisfies never
     }
   }
 

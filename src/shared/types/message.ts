@@ -36,7 +36,9 @@ export type DevvitSystemMessage = {
 /** A message from the iframe to devvit. */
 export type IframeMessage =
   /** Iframe has registered a message listener. */
-  {type: 'Registered'}
+  | {type: 'Registered'}
+  /** Expand the iframe beyond the post boundaries. */
+  | {type: 'PopOut'}
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage = CellRealtimeMessage | FieldBroadcast
