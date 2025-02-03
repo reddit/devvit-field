@@ -72,8 +72,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
     <Title>
       <webview
         grow
+        height='100%'
         onMessage={onMsg as (message: JSONValue) => Promise<void>}
         url='index.html'
+        width='100%'
       />
     </Title>
   )
