@@ -32,10 +32,10 @@ const buildOpts: BuildOptions = {
   target: 'es2022', // https://esbuild.github.io/content-types/#tsconfig-json
 }
 
-if (watch) {
+if (devMode || watch) {
   const ctx = await esbuild.context(buildOpts)
-  await Promise.race([
+  await Promise.all([
     ctx.watch(),
-    ctx.serve({port: 1234, servedir: 'webroot'}),
+    devMode ? ctx.serve({port: 1234, servedir: 'webroot'}) : undefined,
   ])
 } else await esbuild.build(buildOpts)
