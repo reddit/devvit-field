@@ -11,15 +11,22 @@ export type DefaultButton =
   'S' // start.
 
 export class Input<T extends string> {
+  /** Whether the user has ever interacted. */
   gestured: boolean = false
   /** User hint as to whether to consider pointer input or not. */
   handled: boolean = false
+  /** The maximum duration in milliseconds permitted between combo inputs. */
+  maxInterval: number = 300
   /** The minimum duration in milliseconds for an input to be considered held. */
   minHeld: number = 300
 
   /** Logical button to bit. */
   readonly #bitByButton = <{[button in T]: number}>{}
-
+  /**
+   * A sequence of nonzero buttons ordered from oldest (first) to latest (last).
+   * Combos are terminated only by expiration.
+   */
+  readonly #combo: number[] = []
   /** The time in milliseconds since the input changed. */
   #duration: number = 0
   readonly #gamepad: PadPoller = new PadPoller()
@@ -31,6 +38,31 @@ export class Input<T extends string> {
 
   constructor(cam: Readonly<Cam>, canvas: HTMLCanvasElement) {
     this.#pointer = new PointerPoller(cam, canvas)
+  }
+
+  /**
+   * Combos are interpreted exactly both in buttons pressed per tick (eg, up
+   * will not match up and down the way `isOn('Up')` will) and sequence (order
+   * and length). combos only test button on state.
+   */
+  isCombo(...combo: readonly (readonly T[])[]): boolean {
+    if (combo.length !== this.#combo.length) return false
+    for (const [i, buttons] of combo.entries()) {
+      const bits = this.#buttonsToBits(buttons)
+      if (this.#combo[i] !== bits) return false
+    }
+    // #combo is a historical record of buttons. Whenever buttons changes, a new
+    // entry is pushed. make sure the current entry is the current state and
+    // that the last entry's buttons haven't been released.
+    return this.#combo[combo.length - 1] === this.#bits
+  }
+
+  /** Like isOnCombo() but test if the last button set is triggered. */
+  isComboStart(...combo: readonly (readonly T[])[]): boolean {
+    return (
+      this.isCombo(...combo) &&
+      !!combo.at(-1)?.every(button => this.isOnStart(button))
+    )
   }
 
   set allowContextMenu(allow: boolean) {
@@ -124,7 +156,7 @@ export class Input<T extends string> {
     return this.#pointer.xy
   }
 
-  // to-do: make this name fit better. seems like on start as well.
+  // to-do: make this name fit better. seems like on start as well. Overlap with gesture?
   get pointOn(): boolean {
     return this.#pointer.on
   }
@@ -144,9 +176,21 @@ export class Input<T extends string> {
 
     this.#gamepad.poll()
     this.#pointer.poll()
-    if (this.#bits === 0 || this.#bits !== this.#prevBits[1]) {
-      // Expired or some button has changed but at least one button is pressed.
+    if (
+      this.#duration > this.maxInterval &&
+      (this.#bits === 0 || this.#bits !== this.#prevBits[1])
+    ) {
+      // Expired.
       this.#duration = 0
+      this.#combo.length = 0
+    } else if (this.#bits !== this.#prevBits[1]) {
+      // Some button state has changed and at least one button is still pressed.
+      this.#duration = 0
+      if (this.#bits !== 0) this.#combo.push(this.#bits)
+    } else if (this.#bits !== 0 && this.#bits === this.#prevBits[1]) {
+      // Held. Update combo with the latest buttons.
+      this.#combo.pop()
+      this.#combo.push(this.#bits)
     }
   }
 
@@ -162,6 +206,11 @@ export class Input<T extends string> {
     this.#pointer.reset()
   }
 
+  /**
+   * The current state and prospective combo member. A zero value can never be a
+   * combo member but is necessary to persist in previous to distinguish the off
+   * state between repeated button presses like up, up.
+   */
   get #bits(): number {
     return this.#gamepad.bits | this.#keyboard.bits | this.#pointer.bits
   }
