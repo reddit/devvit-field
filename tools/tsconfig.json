@@ -13,5 +13,5 @@
     "types": ["node"]
   },
   "include": ["**/*"],
-  "references": [{ "path": "../src/shared" }]
+  "references": [{ "path": "../src/iframe" }, { "path": "../src/shared" }]
 }
