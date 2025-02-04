@@ -12,7 +12,7 @@ import {parseAtlas} from './atlas-parser.ts'
 const configFilename = process.argv
   .slice(2)
   .filter(arg => !arg.startsWith('--'))[0]
-if (!configFilename) throw Error('missing config')
+if (!configFilename) throw Error('no config')
 // Validation is by `satisfies Config`.
 const config: Config = JSON.parse(fs.readFileSync(configFilename, 'utf8'))
 const configDir = path.dirname(configFilename)
@@ -28,14 +28,12 @@ const json = await ase(
   '--batch',
   // '--color-mode=indexed',
   '--filename-format={title}--{tag}--{frame}',
-  '--ignore-empty',
   '--list-slices',
   '--list-tags',
   '--merge-duplicates',
   `--sheet=${atlasImageFilename}`,
   '--sheet-pack',
   '--tagname-format={title}--{tag}',
-  '--trim',
   ...aseFilenames,
 )
 
