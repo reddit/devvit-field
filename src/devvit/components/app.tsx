@@ -71,8 +71,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
     // only set the state if this message (by timestamp) is newer than
     // the current state.
     onMessage: msg => {
-      console.log('on message', msg)
-
       setMessages([...messages, msg.now].reverse().slice(0, 10).reverse())
     },
   }).subscribe()
