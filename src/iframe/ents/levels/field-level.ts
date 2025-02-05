@@ -1,30 +1,26 @@
-import type {Game, LoadedGame, PreloadGame} from '../../game/game.ts'
+import type {Tag} from '../../game/config.ts'
+import type {Game} from '../../game/game.ts'
+import {Sprite} from '../../graphics/sprite.ts'
 import type {Layer} from '../../types/layer.ts'
 import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import type {LevelEnt} from './level-ent.ts'
 
-declare global {
-  // hack: fix type.
-  interface FontFaceSet {
-    add(font: FontFace): FontFaceSet
-  }
-}
-
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
   readonly layer: Layer = 'Level'
+  #sprite!: Sprite<Tag>
 
-  constructor(game: PreloadGame) {
+  constructor(game: Game) {
     this.eid = game.eid.new()
   }
 
   draw(game: Readonly<Game>): void {
-    game.c2d.fillStyle = game.textures.bg
-    game.c2d.fillRect(0, 0, game.cam.w, game.cam.h)
+    game.bmps.push(this.#sprite)
   }
 
-  init(game: LoadedGame): void {
+  init(game: Game): void {
+    this.#sprite = new Sprite(game.atlas, 'background--Red')
     game.zoo.clear()
     game.zoo.add(this, new CursorEnt(game))
   }

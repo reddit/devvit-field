@@ -1,12 +1,13 @@
 import type {AssetMap} from './asset-map.ts'
 
 export type Audio = AudioBufferByName & {ctx: AudioContext}
-export type AudioBufferByName = {hit: AudioBuffer}
+// biome-ignore lint/complexity/noBannedTypes: fill out with sounds needed.
+export type AudioBufferByName = {}
 
-export async function Audio(assets: Readonly<AssetMap>): Promise<Audio> {
+export async function Audio(_assets: Readonly<AssetMap>): Promise<Audio> {
   const ctx = new AudioContext()
-  const [hit] = await Promise.all([ctx.decodeAudioData(assets.audio.hit)])
-  return {ctx, hit}
+  // const [hit] = await Promise.all([ctx.decodeAudioData(assets.audio.hit)])
+  return {ctx}
 }
 
 export function audioPlay(

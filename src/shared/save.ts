@@ -28,7 +28,7 @@ export function PostSave(
   post: {readonly authorId: T2 | undefined; readonly createdAt: Date; id: T3},
   seed: Readonly<PostSeed>,
 ): PostSave {
-  if (!post.authorId) throw Error('no T2')
+  if (!post.authorId) throw Error('no T2 in post')
   return {
     author: post.authorId,
     created: post.createdAt.getUTCMilliseconds() as UTCMillis,

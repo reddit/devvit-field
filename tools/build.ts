@@ -7,6 +7,7 @@
 // --minify    Minify output.
 // --watch     Automatically rebuild whenever an input changes.
 
+import fs from 'node:fs'
 import esbuild from 'esbuild'
 import type {BuildOptions} from 'esbuild'
 import pkg from '../package.json' with {type: 'json'}
@@ -26,6 +27,7 @@ const buildOpts: BuildOptions = {
   entryPoints: ['src/iframe/index.ts'],
   format: 'esm',
   logLevel: 'info', // Print the port and build demarcations.
+  metafile: true,
   minify,
   outfile: 'webroot/index.js',
   sourcemap: 'linked',
@@ -39,4 +41,8 @@ if (devMode || watch) {
     ctx.watch(),
     devMode ? ctx.serve({port: 1234, servedir: 'webroot'}) : undefined,
   ])
-} else await esbuild.build(buildOpts)
+} else {
+  const {metafile} = await esbuild.build(buildOpts)
+  fs.mkdirSync('dist/iframe', {recursive: true})
+  fs.writeFileSync('dist/iframe/index.meta.json', JSON.stringify(metafile))
+}

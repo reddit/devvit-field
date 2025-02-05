@@ -35,10 +35,8 @@ cp tools/devvit.template.yaml devvit.dev.yaml
 # Edit the name field to be uniquely associated to you such as banfieldfoo; it
 # must be 16 characters or less.
 
-npm run devvit:dev:upload
+npx devvit upload --config=devvit.dev.yaml
 ```
-
-⚠️ Execute `npm run devvit:dev:upload` verbatim; it references the dev config.
 
 Now playtest whenever wanted.
 
@@ -65,8 +63,8 @@ launches [local iframe development](#local-iframe-development).
   snapshots.
 - `run format`: apply lint fixes automatically where available.
 - `run build`: compile source inputs to artifacts under `dist/` and `webroot/`.
+- `run build:atlas`: compile Aseprite assets into atlas (requires `aseprite`).
 - `run devvit:install`: build, upload, and install a new version to to-do: r/.
-- `run devvit:dev:upload`: upload a new development version for new dev setup.
 
 💡 Add `--` to pass arguments to the script command. For example,
 `npm run test:unit -- --update` to update snapshots.

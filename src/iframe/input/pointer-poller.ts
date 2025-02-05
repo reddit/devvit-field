@@ -1,5 +1,5 @@
 import type {XY} from '../../shared/types/2d.ts'
-import type {Cam} from '../cam.ts'
+import type {Cam} from '../renderer/cam.ts'
 
 export class PointerPoller {
   bits: number = 0
@@ -53,10 +53,13 @@ export class PointerPoller {
   }
 
   #onContextMenuEvent = (ev: Event): void => {
+    if (!ev.isTrusted) return
     if (!this.allowContextMenu) ev.preventDefault()
   }
 
   #onPointEvent = (ev: PointerEvent): void => {
+    if (!ev.isTrusted) return
+
     // Ignore non-primary inputs to avoid flickering between distant points.
     if (!ev.isPrimary) return
 

@@ -1,4 +1,4 @@
-import {type Box, type WH, type XY, boxHits} from '../shared/types/2d.ts'
+import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.ts'
 
 /** Position relative the camera's bounding box. */
 export type FollowCamOrientation =
@@ -13,16 +13,16 @@ export type FollowCamOrientation =
   | 'Center'
 
 export class Cam {
-  minWH: WH = {w: 256, h: 256} // Ints when intScale.
-  minScale: number = 1 // Int when intScale.
+  valid: boolean = false
+  mode: 'Int' | 'Fraction' = 'Fraction' // to-do: invalidate?
+  minWH: WH = {w: 256, h: 256} // Ints when intScale. to-do: invalidate?
+  minScale: number = 1 // Int when intScale. to-do: invalidate?
 
-  readonly #clientWH: WH = {w: 1, h: 1} // Fraction.
   #h: number = this.minWH.h // Int when intScale.
   #scale: number = 1 // Int when intScale.
   #w: number = this.minWH.w // Int when intScale.
-  x: number = 0 // Fraction.
-  y: number = 0 // Fraction.
-  intScale: boolean = false
+  #x: number = 0 // Fraction.
+  #y: number = 0 // Fraction.
 
   /** Integral height. */
   get h(): number {
@@ -98,28 +98,29 @@ export class Cam {
 
   /** Fill or just barely exceed the viewport in scaled pixels. */
   resize(zoomOut?: number): void {
-    // WH of body in CSS px; document.body.getBoundingClientRect() returns
-    // incorrectly large sizing on mobile that includes the address bar.
-    this.#clientWH.w = innerWidth
-    this.#clientWH.h = innerHeight
+    this.#scale = camScale(this.minWH, this.minScale, zoomOut, this.mode)
 
-    this.#scale = camScale(this.minWH, this.minScale, zoomOut, this.intScale)
-    if (this.intScale) this.#scale = Math.trunc(this.#scale)
     const native = camNativeWH()
-    this.#w = Math.ceil(native.w / this.#scale)
-    this.#h = Math.ceil(native.h / this.#scale)
+    const w = Math.ceil(native.w / this.#scale)
+    const h = Math.ceil(native.h / this.#scale)
+    if (w === this.#w && h === this.#h) return
+    this.#w = w
+    this.#h = h
+    this.valid = false
   }
 
-  /** Integral scale. */
+  /** Integral scale when mode is int. */
   get scale(): number {
     return this.#scale
   }
 
   /** Returns position in fractional level coordinates. */
   toLevelXY(clientXY: Readonly<XY>): XY {
+    // WH of body in CSS px; document.body.getBoundingClientRect() returns
+    // incorrectly large sizing on mobile that includes the address bar.
     return {
-      x: this.x + (clientXY.x / this.#clientWH.w) * this.#w,
-      y: this.y + (clientXY.y / this.#clientWH.h) * this.#h,
+      x: this.x + (clientXY.x / innerWidth) * this.#w,
+      y: this.y + (clientXY.y / innerHeight) * this.#h,
     }
   }
 
@@ -127,27 +128,47 @@ export class Cam {
   get w(): number {
     return this.#w
   }
+
+  get x(): number {
+    return this.#x
+  }
+
+  set x(x: number) {
+    if (this.#x === x) return
+    this.#x = x
+    this.valid = false
+  }
+
+  get y(): number {
+    return this.#y
+  }
+
+  set y(y: number) {
+    if (this.#y === y) return
+    this.#y = y
+    this.valid = false
+  }
 }
 
 export function camScale(
   minWH: Readonly<WH>,
   minScale: number,
   zoomOut: number | undefined,
-  int: boolean,
+  mode: 'Int' | 'Fraction',
 ): number {
   const native = camNativeWH()
-  let scale = Math.max(
+  const scale = Math.max(
     minScale,
     // Default is to zoom in as much as possible.
     Math.min(native.w / minWH.w, native.h / minWH.h) - (zoomOut ?? 0),
   )
-  if (int) scale = Math.trunc(scale)
-  return scale
+  return mode === 'Int' ? Math.trunc(scale) : scale
 }
 
+/** Returns dimensions in physical pixels. */
 export function camNativeWH(): WH {
   return {
-    w: Math.ceil(innerWidth * devicePixelRatio), // physical.
+    w: Math.ceil(innerWidth * devicePixelRatio),
     h: Math.ceil(innerHeight * devicePixelRatio),
   }
 }
