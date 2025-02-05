@@ -8,6 +8,8 @@ import {Devvit} from '@devvit/public-api'
 import {App} from './devvit/components/app.js'
 import {challengeMakeNew} from './devvit/server/core/challenge.js'
 
+Devvit.configure({redditAPI: true, redis: true})
+
 Devvit.addCustomPostType({name: '', height: 'regular', render: App})
 
 Devvit.addMenuItem({
