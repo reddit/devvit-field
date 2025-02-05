@@ -1,5 +1,5 @@
 import type {Player, PostSeed} from '../../shared/save.ts'
-import {minCanvasWH, paletteDark} from '../../shared/theme.ts'
+import {cssHex, minCanvasWH, paletteDark} from '../../shared/theme.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
@@ -8,8 +8,8 @@ import type {
 import {Random, type Seed} from '../../shared/types/random.ts'
 import {SID} from '../../shared/types/sid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
-import type {AssetMap} from '../asset-map.ts'
-import type {AudioBufferByName} from '../audio.ts'
+import {AssetMap} from '../asset-map.ts'
+import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
 import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
@@ -33,6 +33,16 @@ export type InitGame = {
 }
 
 // to-do: SavableGame for LocalStorage savable state.
+
+/**
+ * Loading sequence is:
+ * - Devvit <Preview>.
+ * - Devvit <webview> (initially transparent).
+ * - index.html is loaded; JavaScript and asset fetches are queued. HTML and CSS
+ *   can show whatever is wanted.
+ * - JavaScript is loaded; Game.start() started. Still showing HTML and CSS.
+ * - Game.start() finished including InitDevvitMessage. Game is ready.
+ */
 
 export class Game {
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
@@ -97,7 +107,23 @@ export class Game {
     this.looper.render(this.cam, this.bmps, this.#onLoop)
 
     const lvl = new FieldLevel(this)
-    await lvl.init(this)
+
+    const assets = await AssetMap()
+
+    this.audio = await Audio(assets)
+    this.img = assets.img
+
+    this.renderer.setAtlas(this.atlas, assets.img.atlas)
+
+    await this.init
+
+    lvl.init(this)
+
+    document.body.style.background = cssHex(paletteDark)
+    // Transition from invisible. No line height spacing.
+    this.canvas.style.display = 'block'
+
+    console.log('loaded')
   }
 
   stop(): void {
@@ -157,7 +183,8 @@ export class Game {
 
   #onLoop = (): void => {
     this.bmps.size = 0
-    if (this.ctrl.gestured && this.ac.state !== 'running') void this.ac.resume() // Don't await; this can hang.
+    // Don't await; this can hang.
+    if (this.ctrl.gestured && this.ac.state !== 'running') void this.ac.resume()
 
     this.now = utcMillisNow()
 
@@ -195,14 +222,18 @@ export class Game {
       }
       case 'Cell':
         // to-do: implement.
+        if (!this.p1) return
         break
       case 'Connected':
         if (this.debug) console.log('connected')
+        if (!this.p1) return
         break
       case 'Disconnected':
         if (this.debug) console.log('disconnected')
+        if (!this.p1) return
         break
       case 'Field':
+        if (!this.p1) return
         // to-do: implement.
         break
       default:
