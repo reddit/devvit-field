@@ -10,7 +10,7 @@ import {
 import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
-import {getChallengeNumberForPost} from '../server/core/challengeToPost.ts'
+import {challengeGetCurrentChallengeNumber} from '../server/core/challenge.tsx'
 import {minefieldGet} from '../server/core/minefield.ts'
 import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
@@ -20,7 +20,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   // TODO: Should we get the current challenge number or the
   // challenge number for the post?
   const [currentChallengeNumber] = useState2(() =>
-    getChallengeNumberForPost({redis: ctx.redis, postId: ctx.postId!}),
+    challengeGetCurrentChallengeNumber({redis: ctx.redis}),
   )
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
