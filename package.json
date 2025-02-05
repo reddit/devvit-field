@@ -8,7 +8,9 @@
     "devvit": "0.11.6",
     "esbuild": "0.24.2",
     "typescript": "5.8.0-beta",
-    "vitest": "3.0.4"
+    "vitest": "3.0.4",
+    "redis-memory-server": "0.12.1",
+    "ioredis": "5.4.2"
   },
   "engines": {
     "node": ">=22.6"
