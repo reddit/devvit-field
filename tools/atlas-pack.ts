@@ -6,7 +6,7 @@
 import {type ExecFileException, execFile} from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import type {Config} from '../src/shared/types/config.js'
+import type {Config} from '../src/iframe/types/config.js'
 import {parseAtlas} from './atlas-parser.ts'
 
 const configFilename = process.argv

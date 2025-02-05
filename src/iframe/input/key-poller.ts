@@ -22,6 +22,7 @@ export class KeyPoller {
   }
 
   #onKey = (ev: KeyboardEvent): void => {
+    if (!ev.isTrusted) return
     const on = ev.type === 'keydown'
     const bit = this.#bitByKey[ev.key]
     if (bit == null) return

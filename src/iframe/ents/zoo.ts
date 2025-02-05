@@ -1,5 +1,4 @@
-import {c2dClear} from '../canvas/c2d.ts'
-import type {Game, PreloadGame} from '../game/game.ts'
+import type {Game} from '../game/game.ts'
 import {type Layer, layerDrawOrder} from '../types/layer.ts'
 import {CursorEnt} from './cursor-ent.ts'
 import type {EID} from './eid.ts'
@@ -28,18 +27,10 @@ export class Zoo {
     return cursor instanceof CursorEnt ? cursor : undefined
   }
 
-  draw(game: PreloadGame): void {
-    if (!game.c2d) return
-    c2dClear(game.c2d, game.cam)
+  draw(game: Game): void {
     for (const layer of layerDrawOrder) {
-      game.c2d.save()
-      if (layer !== 'Cursor' && layer !== 'Level' && !layer.startsWith('UI'))
-        game.c2d.translate(-game.cam.x, -game.cam.y)
-
       for (const ent of Object.values(this.#entsByLayer[layer]))
         ent.draw?.(game as Game)
-
-      game.c2d.restore()
     }
   }
 
@@ -49,7 +40,7 @@ export class Zoo {
         return this.#entsByLayer[layer as Layer][eid]
   }
 
-  update(game: PreloadGame): void {
+  update(game: Game): void {
     for (const ent of this.ents('Reverse')) ent.update?.(game as Game)
   }
 

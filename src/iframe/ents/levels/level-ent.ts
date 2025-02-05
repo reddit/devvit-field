@@ -8,9 +8,3 @@ export type LevelEnt = Ent & {
    */
   init?(game: Game): void | Promise<void>
 }
-
-export function isLevelEnt(ent: Ent): ent is LevelEnt {
-  return !!(ent as {constructor?: {name: string}}).constructor?.name.endsWith(
-    'Level',
-  )
-}

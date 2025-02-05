@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest'
-import {Cam} from '../cam.js'
-import {type DefaultButton, Input} from './input.js'
+import {Cam} from '../renderer/cam.js'
+import {Input} from './input.js'
+import type {DefaultButton} from './input.js'
 
 const cam: Cam = new Cam()
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>(<unknown>{
@@ -11,7 +12,22 @@ const canvas: HTMLCanvasElement = <HTMLCanvasElement>(<unknown>{
 globalThis.isSecureContext = true
 Object.defineProperty(globalThis, 'navigator', {value: {getGamepads: () => []}})
 const target: EventTarget = new EventTarget()
-globalThis.addEventListener = target.addEventListener.bind(target)
+globalThis.addEventListener = (
+  type: string,
+  callback: EventListenerOrEventListenerObject | null,
+  opts?: AddEventListenerOptions | boolean,
+) =>
+  target.addEventListener(
+    type,
+    ev =>
+      (callback as (ev: object) => void)({
+        type: ev.type,
+        isTrusted: true,
+        key: (ev as KeyboardEvent).key,
+      }),
+    opts,
+  )
+
 globalThis.removeEventListener = target.removeEventListener.bind(target)
 globalThis.dispatchEvent = target.dispatchEvent.bind(target)
 

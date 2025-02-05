@@ -1,6 +1,6 @@
 import type {Anim, Atlas, TagFormat} from '../src/iframe/graphics/atlas.js'
+import type {AnimOffsetConfig} from '../src/iframe/types/config.js'
 import type {Box, XY} from '../src/shared/types/2d.js'
-import type {AnimOffsetConfig} from '../src/shared/types/config.js'
 import type {
   Aseprite,
   AsepriteFrame,

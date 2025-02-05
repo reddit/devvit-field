@@ -1,5 +1,5 @@
 import type {XY} from '../../shared/types/2d.js'
-import type {Cam} from '../cam.js'
+import type {Cam} from '../renderer/cam.js'
 import {KeyPoller} from './key-poller.js'
 import {PadPoller} from './pad-poller.js'
 import {PointerPoller} from './pointer-poller.js'

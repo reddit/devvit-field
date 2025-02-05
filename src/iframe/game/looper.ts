@@ -1,16 +1,12 @@
-import type {AssetMap} from '../asset-map.ts'
-import type {Cam} from '../cam.ts'
-import {C2D} from '../canvas/c2d.ts'
-import {TextureMap} from '../canvas/texture-map.ts'
 import type {Input} from '../input/input.ts'
+import type {AttribBuffer} from '../renderer/attrib-buffer.ts'
+import type {Cam} from '../renderer/cam.ts'
+import type {Renderer} from '../renderer/renderer.ts'
 
 /** Manages window lifecycle for input and rendering. */
 export class Looper {
   /** The run lifetime in millis. */
   age: number = 0
-  c2d: C2D | undefined
-  textures: TextureMap | undefined
-  readonly canvas: HTMLCanvasElement
   /** The exact duration in millis to apply on a given update step. */
   millis: number = 0
   onPause: () => void = () => {}
@@ -19,17 +15,23 @@ export class Looper {
   /** The relative timestamp in millis. */
   time?: number | undefined
 
-  #assets: AssetMap | undefined
+  readonly #canvas: HTMLCanvasElement
   readonly #cam: Cam
   readonly #ctrl: Input<string>
   #frame?: number | undefined // to-do: expose this in GameState.
   #loop?: (() => void) | undefined
+  readonly #renderer: Renderer
 
-  constructor(canvas: HTMLCanvasElement, cam: Cam, ctrl: Input<string>) {
-    this.c2d = C2D(canvas)
-    this.canvas = canvas
+  constructor(
+    canvas: HTMLCanvasElement,
+    cam: Cam,
+    ctrl: Input<string>,
+    renderer: Renderer,
+  ) {
+    this.#canvas = canvas
     this.#cam = cam
     this.#ctrl = ctrl
+    this.#renderer = renderer
   }
 
   cancel(): void {
@@ -42,46 +44,37 @@ export class Looper {
     return Math.trunc(this.age / (1000 / 60))
   }
 
-  initTextures(assets: AssetMap | undefined): void {
-    this.#assets = assets
-    this.textures =
-      this.c2d && this.#assets
-        ? (this.textures ?? TextureMap(this.c2d, this.#assets.img))
-        : undefined
-  }
-
-  set loop(loop: (() => void) | undefined) {
-    this.#loop = loop
-    if (document.hidden || !this.c2d) return
-    if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
-  }
-
   register(op: 'add' | 'remove'): void {
     const fn = <const>`${op}EventListener`
-    for (const type of ['contextlost', 'contextrestored']) {
-      this.canvas[fn](type, this.#onEvent, true)
-    }
+    for (const type of ['webglcontextlost', 'webglcontextrestored'])
+      this.#canvas[fn](type, this.#onEvent, true)
     globalThis[fn]('visibilitychange', this.#onEvent, true)
-    this.c2d = op === 'add' ? C2D(this.canvas) : undefined
-    this.initTextures(this.#assets)
-    this.#ctrl.register(op)
+    if (op === 'add') this.#renderer.initGL()
   }
 
-  #onEvent = (event: Event): void => {
-    event.preventDefault()
-    if (event.type === 'contextrestored') {
-      this.c2d = C2D(this.canvas)
-      this.initTextures(this.#assets)
-    }
+  render(
+    cam: Readonly<Cam>,
+    bmps: Readonly<AttribBuffer>,
+    tiles: Readonly<AttribBuffer>,
+    loop: (() => void) | undefined,
+  ): void {
+    this.#loop = loop
+    if (document.hidden || !this.#renderer.hasContext()) return
+    if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
+    this.#renderer.render(cam, this.frame, bmps, tiles)
+  }
 
-    if (this.textures && !document.hidden) {
+  #onEvent = (ev: Event): void => {
+    if (!ev.isTrusted) return
+    ev.preventDefault()
+    if (ev.type === 'webglcontextrestored') this.#renderer.initGL()
+
+    if (this.#renderer.hasContext() && !document.hidden) {
       if (this.#loop) {
         if (!this.time) this.onResume()
         this.#frame ??= requestAnimationFrame(this.#onFrame)
       }
-    }
-    // to-do: disconnect the socket when not in use.
-    else this.#pause()
+    } else this.#pause()
   }
 
   #onFrame = (time: number): void => {
@@ -94,32 +87,6 @@ export class Looper {
 
     this.onResize()
     this.#cam.resize()
-
-    if (
-      this.canvas.width !== this.#cam.w ||
-      this.canvas.height !== this.#cam.h
-    ) {
-      this.canvas.width = this.#cam.w
-      this.canvas.height = this.#cam.h
-      this.canvas.focus() // hack: propagate key events.
-    }
-
-    // These pixels may be greater than, less than, or equal to cam. Ratio
-    // may change independent of canvas size.
-    const clientW = (this.#cam.w * this.#cam.scale) / devicePixelRatio
-    const clientH = (this.#cam.h * this.#cam.scale) / devicePixelRatio
-    const dw = Number.parseFloat(this.canvas.style.width.slice(0, -2)) - clientW
-    const dh =
-      Number.parseFloat(this.canvas.style.height.slice(0, -2)) - clientH
-    if (
-      !Number.isFinite(dw) ||
-      Math.abs(dw) > 0.1 ||
-      !Number.isFinite(dh) ||
-      Math.abs(dh) > 0.1
-    ) {
-      this.canvas.style.width = `${clientW}px`
-      this.canvas.style.height = `${clientH}px`
-    }
 
     this.#ctrl.poll(this.millis)
     loop?.()
