@@ -45,7 +45,7 @@ export class FieldLevel implements LevelEnt {
     game.zoo.clear()
     game.zoo.add(this, new CursorEnt(game))
 
-    game.renderer.setAtlas(game.atlas, assets.img.atlas, undefined)
+    game.renderer.setAtlas(game.atlas, assets.img.atlas)
 
     document.body.style.background = cssHex(paletteDark)
     // Transition from invisible. No line height spacing.

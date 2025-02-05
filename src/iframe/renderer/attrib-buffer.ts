@@ -20,18 +20,3 @@ export class BitmapAttribBuffer implements AttribBuffer {
     }
   }
 }
-
-export class TileAttribBuffer implements AttribBuffer {
-  readonly buffer: Uint16Array
-  size: number = 0
-
-  constructor(capacity: number) {
-    this.buffer = new Uint16Array(capacity)
-  }
-
-  push(id: number): void {
-    if (devMode && this.size >= this.buffer.length) throw Error('overflow')
-    this.buffer[this.size] = id
-    this.size++
-  }
-}

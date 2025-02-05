@@ -4,7 +4,6 @@ import type {Cam} from './cam.js'
 import {fragGLSL} from './frag.glsl.js'
 import {type GL, Shader} from './shader.js'
 import {spriteVertGLSL} from './sprite-vert.glsl.js'
-import {tileVertGLSL} from './tile-vert.glsl.js'
 
 const uv: Readonly<Int8Array> = new Int8Array([1, 1, 0, 1, 1, 0, 0, 0]) // texcoords
 
@@ -16,8 +15,6 @@ export class Renderer {
   #gl?: GL
   #loseContext: WEBGL_lose_context | null = null
   #spriteShader: Shader | undefined
-  #tileShader: Shader | undefined
-  #tilesetImage: HTMLImageElement | undefined
 
   constructor(canvas: HTMLCanvasElement) {
     this.#canvas = canvas
@@ -61,9 +58,6 @@ export class Renderer {
     this.#spriteShader = this.#atlasImage
       ? SpriteShader(gl, this.#atlasImage, this.#cels)
       : undefined
-    this.#tileShader = this.#tilesetImage
-      ? TileShader(gl, this.#tilesetImage)
-      : undefined
   }
 
   get loseContext(): WEBGL_lose_context | null {
@@ -78,7 +72,6 @@ export class Renderer {
     cam: Readonly<Cam>,
     frame: number,
     bmps: Readonly<AttribBuffer>,
-    tiles: Readonly<AttribBuffer>,
   ): void {
     if (!this.#atlasImage || !this.#gl || !this.#spriteShader) return
     this.#resize(cam)
@@ -125,59 +118,11 @@ export class Renderer {
     )
 
     this.#gl.bindVertexArray(null)
-
-    if (!this.#tileShader) return
-
-    this.#gl.useProgram(this.#tileShader.pgm)
-
-    for (const [i, tex] of this.#tileShader.tex.entries()) {
-      this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
-      this.#gl.bindTexture(this.#gl.TEXTURE_2D, tex)
-    }
-
-    this.#gl.uniform1i(this.#tileShader.uniforms.uTex!, 0)
-    this.#gl.uniform2ui(
-      this.#tileShader.uniforms.uTexWH!,
-      this.#tilesetImage!.naturalWidth,
-      this.#tilesetImage!.naturalHeight,
-    )
-    this.#gl.uniform4i(
-      this.#tileShader.uniforms.uCam!,
-      cam.x,
-      cam.y,
-      cam.w,
-      cam.h,
-    )
-    this.#gl.uniform1ui(this.#tileShader.uniforms.uTileSide!, 8) // to-do: fix me. pass size.
-
-    this.#gl.bindVertexArray(this.#tileShader.vao)
-
-    this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, this.#tileShader.buf)
-    this.#gl.bufferData(
-      this.#gl.ARRAY_BUFFER,
-      tiles.buffer,
-      this.#gl.DYNAMIC_DRAW,
-    )
-    this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, null)
-
-    this.#gl.drawArraysInstanced(
-      this.#gl.TRIANGLE_STRIP,
-      0,
-      uv.length / 2, // d
-      tiles.size,
-    )
-
-    this.#gl.bindVertexArray(null)
   }
 
-  setAtlas(
-    atlas: Atlas<unknown>,
-    atlasImage: HTMLImageElement,
-    tileset: HTMLImageElement | undefined, // to-do: fix me.
-  ): void {
+  setAtlas(atlas: Atlas<unknown>, atlasImage: HTMLImageElement): void {
     this.#atlasImage = atlasImage
     this.#cels = new Uint16Array(atlas.cels)
-    this.#tilesetImage = tileset
     this.initGL()
   }
 
@@ -270,43 +215,6 @@ function SpriteShader(
     gl.RGBA_INTEGER,
     gl.UNSIGNED_SHORT,
     cels,
-  )
-  gl.bindTexture(gl.TEXTURE_2D, null)
-
-  return shader
-}
-
-function TileShader(gl: GL, tilesetImage: HTMLImageElement): Shader {
-  const tex = [gl.createTexture()]
-  const shader = Shader(gl, tileVertGLSL, fragGLSL, tex)
-
-  gl.bindVertexArray(shader.vao)
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-  gl.enableVertexAttribArray(0)
-  gl.vertexAttribIPointer(0, 2, gl.BYTE, 0, 0)
-  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW)
-  gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, shader.buf)
-  gl.enableVertexAttribArray(1)
-  gl.vertexAttribIPointer(1, 1, gl.UNSIGNED_SHORT, 2, 0)
-  gl.vertexAttribDivisor(1, 1)
-  gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-  gl.bindVertexArray(null)
-
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, shader.tex[0]!)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA,
-    gl.RGBA,
-    gl.UNSIGNED_BYTE,
-    tilesetImage,
   )
   gl.bindTexture(gl.TEXTURE_2D, null)
 

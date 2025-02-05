@@ -55,13 +55,12 @@ export class Looper {
   render(
     cam: Readonly<Cam>,
     bmps: Readonly<AttribBuffer>,
-    tiles: Readonly<AttribBuffer>,
     loop: (() => void) | undefined,
   ): void {
     this.#loop = loop
     if (document.hidden || !this.#renderer.hasContext()) return
     if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
-    this.#renderer.render(cam, this.frame, bmps, tiles)
+    this.#renderer.render(cam, this.frame, bmps)
   }
 
   #onEvent = (ev: Event): void => {

@@ -16,10 +16,7 @@ import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
-import {
-  BitmapAttribBuffer,
-  TileAttribBuffer,
-} from '../renderer/attrib-buffer.ts'
+import {BitmapAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
 import {Renderer} from '../renderer/renderer.ts'
 import atlas from './atlas.json' with {type: 'json'}
@@ -97,12 +94,7 @@ export class Game {
     this.looper.onPause = this.#onPause
     this.looper.onResize = this.#onResize
     this.looper.onResume = this.#onResume
-    this.looper.render(
-      this.cam,
-      this.bmps,
-      new TileAttribBuffer(0),
-      this.#onLoop,
-    )
+    this.looper.render(this.cam, this.bmps, this.#onLoop)
 
     const lvl = new FieldLevel(this)
     await lvl.init(this)
@@ -172,12 +164,7 @@ export class Game {
     this.zoo.update(this)
     this.zoo.draw(this)
 
-    this.looper.render(
-      this.cam,
-      this.bmps,
-      new TileAttribBuffer(0),
-      this.#onLoop,
-    ) // to-do: fix me.
+    this.looper.render(this.cam, this.bmps, this.#onLoop)
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
