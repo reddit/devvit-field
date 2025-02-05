@@ -2,20 +2,18 @@
  * Very much a WIP and carrying along in this project to hopefully get an artifact we
  * can open source in the future!
  */
-import {
-  type Devvit,
-  type JSONValue,
-  type JobContext,
-  type KVStore,
-  type MediaPlugin,
-  RedditAPIClient,
-  type TriggerContext,
+import type {
+  Devvit,
+  JSONValue,
+  JobContext,
+  KVStore,
+  MediaPlugin,
+  TriggerContext,
 } from '@devvit/public-api'
 import type {CacheOptions} from '@devvit/public-api/devvit/internals/promise_cache'
 import Redis from 'ioredis'
 import {RedisMemoryServer} from 'redis-memory-server'
 import {type TestContext, it as itCore} from 'vitest'
-import {type MockedClass, mockClass} from './mockClass'
 
 const redisServer = new RedisMemoryServer()
 const host = await redisServer.getHost()
@@ -363,7 +361,7 @@ export namespace DevvitTest {
       redis: mockRedisClient({prefix: redisPrefix}),
       // @ts-expect-error todo
       reddit: {
-        getUserById(id) {
+        getUserById(_id) {
           throw new Error('Not implemented in test')
         },
       },
