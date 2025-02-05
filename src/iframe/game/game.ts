@@ -160,25 +160,23 @@ export class Game {
     // this sequence but it doesn't matter.
     const rnd = new Random(seed as Seed)
 
-    const connected = rnd.num() < 0.1
-
     setTimeout(
       () => {
         this.#onDevMsg({
-          connected,
+          connected: true,
           debug: true,
           p1,
           seed: {seed: seed as Seed},
           type: 'Init',
         })
-        if (!connected)
-          setTimeout(
-            () => this.#onDevMsg({type: 'Connected'}),
-            Math.trunc(rnd.num() * 1000),
-          )
       },
       Math.trunc(rnd.num() * 1000),
     )
+    if (rnd.num() < 0.1)
+      setTimeout(
+        () => this.#onDevMsg({type: 'Connected'}),
+        Math.trunc(rnd.num() * 1000),
+      )
   }
 
   #onLoop = (): void => {
@@ -192,6 +190,16 @@ export class Game {
     this.zoo.draw(this)
 
     this.looper.render(this.cam, this.bmps, this.#onLoop)
+  }
+
+  #onConnect(): void {
+    if (this.debug) console.log('connected')
+    this.connected = true
+  }
+
+  #onDisconnect(): void {
+    if (this.debug) console.log('disconnected')
+    this.connected = false
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
@@ -211,13 +219,16 @@ export class Game {
           rnd: new Random(msg.seed.seed),
           seed: msg.seed,
         }
-        this.connected = init.connected
         this.debug = init.debug
         this.p1 = init.p1
         this.rnd = init.rnd
         this.seed = init.seed
         if (this.debug) console.log('init')
         this.#fulfil()
+        if (this.connected !== init.connected) {
+          if (init.connected) this.#onConnect()
+          else this.#onDisconnect()
+        }
         break
       }
       case 'Cell':
@@ -225,12 +236,12 @@ export class Game {
         if (!this.p1) return
         break
       case 'Connected':
-        if (this.debug) console.log('connected')
         if (!this.p1) return
+        this.#onConnect()
         break
       case 'Disconnected':
-        if (this.debug) console.log('disconnected')
         if (!this.p1) return
+        this.#onDisconnect()
         break
       case 'Field':
         if (!this.p1) return
