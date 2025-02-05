@@ -32,7 +32,7 @@ export class Renderer {
 
   initGL(): void {
     const gl = this.#canvas.getContext('webgl2', {
-      // antialias: false,
+      antialias: false,
       // desynchonized: true, breaks framerate
       // powerPreference: 'high-performance',
     })
