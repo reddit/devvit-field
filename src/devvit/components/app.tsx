@@ -17,8 +17,6 @@ import {Title} from './title.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const session = useSession(ctx)
-  // TODO: Should we get the current challenge number or the
-  // challenge number for the post?
   const [currentChallengeNumber] = useState2(() =>
     challengeGetCurrentChallengeNumber({redis: ctx.redis}),
   )
