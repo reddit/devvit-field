@@ -13,6 +13,6 @@
   },
   // https://github.com/Microsoft/TypeScript/issues/25636
   "include": ["**/*", "**/*.json", "../main.ts", "../../package.json"],
-  "exclude": ["**/*.test.ts", "server"],
+  "exclude": ["**/*.test.ts"],
   "references": [{ "path": "../shared" }]
 }

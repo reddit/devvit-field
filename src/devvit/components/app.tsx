@@ -1,6 +1,5 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit} from '@devvit/public-api'
-import type {JSONValue} from '@devvit/public-api'
+import {Devvit, type JSONValue, useChannel} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {
   type DevvitMessage,
@@ -11,15 +10,23 @@ import {
 import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
-import {redisQueryPostSave, redisQueryProfile} from '../redis.ts'
+import {challengeGetCurrentChallengeNumber} from '../server/core/challenge.tsx'
+import {minefieldGet} from '../server/core/minefield.ts'
+import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const session = useSession(ctx)
-  const [profile] = useState2(() => redisQueryProfile(ctx, session.t2))
+  const [currentChallengeNumber] = useState2(() =>
+    challengeGetCurrentChallengeNumber({redis: ctx.redis}),
+  )
+  const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
   const [postSave] = useState2(async () => {
-    const postSave = await redisQueryPostSave(ctx.redis, session.t3)
+    const postSave = await minefieldGet({
+      redis: ctx.redis,
+      challengeNumber: currentChallengeNumber,
+    })
     if (!postSave) throw Error(`no post save for ${session.t3}`)
     return postSave
   })
@@ -42,7 +49,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
           p1,
-          seed: postSave.seed,
+          seed: postSave,
           type: 'Init',
         })
         break
@@ -54,6 +61,19 @@ export function App(ctx: Devvit.Context): JSX.Element {
         msg satisfies never
     }
   }
+
+  const [messages, setMessages] = useState2<string[]>([])
+
+  useChannel<{now: string}>({
+    name: `challenge_${currentChallengeNumber}`,
+    // TODO: There's no guarantee that the latest message will always
+    // be the most current representation of the challenge. We should
+    // only set the state if this message (by timestamp) is newer than
+    // the current state.
+    onMessage: msg => {
+      setMessages([...messages, msg.now].reverse().slice(0, 10).reverse())
+    },
+  }).subscribe()
 
   const chan = useChannel2<RealtimeMessage>({
     chan: session.t3,
