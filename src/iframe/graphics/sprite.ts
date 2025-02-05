@@ -1,5 +1,5 @@
 import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
-import type {Bitmap} from '../renderer/bitmap.js'
+import type {Bmp} from '../renderer/bmp.js'
 import type {Anim, AnimOffset, Atlas, TagFormat} from './atlas.js'
 
 export type SpriteJSON = {
@@ -14,9 +14,9 @@ export type SpriteJSON = {
   zend?: boolean
 }
 
-export class Sprite<T> implements Bitmap, Box {
+export class Sprite<T> implements Bmp, Box {
   static parse<T>(atlas: Atlas<T>, json: Readonly<SpriteJSON>): Sprite<T> {
-    if (!(json.tag in atlas.anim)) throw Error(`no tag "${json.tag}"`)
+    if (!(json.tag in atlas.anim)) throw Error(`no sprite tag "${json.tag}"`)
     // to-do: add validation logic.
     // if (
     //   json.flip != null &&
@@ -24,7 +24,7 @@ export class Sprite<T> implements Bitmap, Box {
     //   json.flip !== 'Y' &&
     //   json.flip !== 'XY'
     // )
-    //   throw Error(`invalid flip "${json.flip}"`)
+    //   throw Error(`invalid sprite flip "${json.flip}"`)
     const sprite = new Sprite(atlas, <T & TagFormat>json.tag)
     sprite.cel = json.cel ?? 0
     sprite.flipX = json.flip === 'X' || json.flip === 'XY'
@@ -166,7 +166,7 @@ export class Sprite<T> implements Bitmap, Box {
     const key = `${Number(this.flipX)}${Number(this.flipY)}` as keyof AnimOffset
     const old = this.#anim.offset[key]
     this.#anim = this.#atlasAnim[tag]
-    // if (devMode && !this.#anim) throw Error(`no tag "${tag}"`)
+    // if (devMode && !this.#anim) throw Error(`no sprite tag "${tag}"`)
     const offset = this.#anim.offset[key]
     this.x += -old.x + offset.x
     this.y += -old.y + offset.y

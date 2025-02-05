@@ -16,7 +16,7 @@ import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
-import {BitmapAttribBuffer} from '../renderer/attrib-buffer.ts'
+import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
 import {Renderer} from '../renderer/renderer.ts'
 import atlas from './atlas.json' with {type: 'json'}
@@ -49,7 +49,7 @@ export class Game {
   ac: AudioContext
   atlas: Atlas<Tag>
   audio?: AudioBufferByName
-  bmps: BitmapAttribBuffer
+  bmps: BmpAttribBuffer
   cam: Cam
   canvas: HTMLCanvasElement
   connected: boolean
@@ -80,7 +80,7 @@ export class Game {
     this.ctrl.mapDefault()
     this.ac = new AudioContext()
     this.atlas = atlas as Atlas<Tag>
-    this.bmps = new BitmapAttribBuffer(100)
+    this.bmps = new BmpAttribBuffer(100)
     this.connected = false
     this.debug = devMode
     this.devPeerChan = devMode ? new BroadcastChannel('dev') : undefined

@@ -16,7 +16,7 @@ export async function AssetMap(): Promise<AssetMap> {
 
   const scratch = document.createElement('canvas')
   const ctx = scratch.getContext('2d')
-  if (!ctx) throw Error('no context')
+  if (!ctx) throw Error('no canvas context')
 
   // const hit = audioCat.slice(321525, 329946)
 

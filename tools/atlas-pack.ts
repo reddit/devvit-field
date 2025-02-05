@@ -12,7 +12,7 @@ import {parseAtlas} from './atlas-parser.ts'
 const configFilename = process.argv
   .slice(2)
   .filter(arg => !arg.startsWith('--'))[0]
-if (!configFilename) throw Error('no config')
+if (!configFilename) throw Error('no game config')
 // Validation is by `satisfies Config`.
 const config: Config = JSON.parse(fs.readFileSync(configFilename, 'utf8'))
 const configDir = path.dirname(configFilename)

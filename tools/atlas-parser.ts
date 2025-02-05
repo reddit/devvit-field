@@ -21,8 +21,8 @@ export function parseAtlas<T>(
   for (const span of ase.meta.frameTags) {
     const tag = parseTag(span.name)
     const offset = tags[tag]
-    if (offset == null) throw Error(`unknown tag "${tag}"`)
-    if (anims.has(tag)) throw Error(`duplicate tag "${tag}"`)
+    if (!offset) throw Error(`unknown atlas tag "${tag}"`)
+    if (anims.has(tag)) throw Error(`duplicate atlas tag "${tag}"`)
     const id = anims.size * maxAnimCels
     const anim = parseAnim(id, span, ase.frames, ase.meta.slices, offset)
     anims.set(tag, anim)
@@ -30,10 +30,10 @@ export function parseAtlas<T>(
       cels.push(cel.x, cel.y, anim.w, anim.h)
   }
   for (const tag in tags)
-    if (!anims.has(tag)) throw Error(`no animation with tag "${tag}"`)
+    if (!anims.has(tag)) throw Error(`no atlas animation with tag "${tag}"`)
   for (const slice of ase.meta.slices)
     if (!anims.has(parseTag(slice.name)))
-      throw Error(`hitbox "${slice.name}" has no animation`)
+      throw Error(`hitbox "${slice.name}" has no atlas animation`)
   return {anim: Object.fromEntries(anims), cels}
 }
 
@@ -46,7 +46,7 @@ export function parseAnim(
   offset: AnimOffsetConfig,
 ): Anim<TagFormat> {
   const frame = parseAnimFrames(span, map).next().value
-  if (!frame) throw Error('animation missing frames')
+  if (!frame) throw Error('no atlas animation frame')
   const {hitbox, hurtbox} = parseHitboxes(span, slices)
   return {
     h: frame.sourceSize.h,
@@ -71,7 +71,7 @@ function* parseAnimFrames(
   for (let i = span.from; i <= span.to && i - span.from < maxAnimCels; i++) {
     const frameTag = `${span.name}--${i}` as AsepriteFrameTag
     const frame = map[frameTag]
-    if (!frame) throw Error(`no frame "${frameTag}"`)
+    if (!frame) throw Error(`no atlas frame "${frameTag}"`)
     yield frame
   }
   // Pad remaining.
@@ -79,7 +79,7 @@ function* parseAnimFrames(
     const frameTag =
       `${span.name}--${span.from + (i % (span.to + 1 - span.from))}` as AsepriteFrameTag
     const frame = map[frameTag]
-    if (!frame) throw Error(`no frame "${frameTag}"`)
+    if (!frame) throw Error(`no atlas frame "${frameTag}"`)
     yield frame
   }
 }
@@ -114,19 +114,23 @@ export function parseHitboxes(
         key.bounds.w !== slice.keys[0].bounds.w ||
         key.bounds.h !== slice.keys[0].bounds.h
       )
-        throw Error(`tag "${span.name}" hitbox bounds varies across frames`)
+        throw Error(
+          `atlas tag "${span.name}" hitbox bounds varies across frames`,
+        )
 
     const red = slice.color === '#ff0000ff'
     const green = slice.color === '#00ff00ff'
     const blue = slice.color === '#0000ffff'
     if (!red && !green && !blue)
-      throw Error(`tag "${span.name}" hitbox color ${slice.color} unsupported`)
+      throw Error(
+        `atlas tag "${span.name}" hitbox color ${slice.color} unsupported`,
+      )
 
     if (hitbox && (red || blue))
-      throw Error(`tag "${span.name}" has multiple hitboxes`)
+      throw Error(`atlas tag "${span.name}" has multiple hitboxes`)
 
     if (hurtbox && (green || blue))
-      throw Error(`tag "${span.name}" has multiple hurtboxes`)
+      throw Error(`atlas tag "${span.name}" has multiple hurtboxes`)
 
     if (red || blue) hitbox = slice.keys[0].bounds
     if (green || blue) hurtbox = slice.keys[0].bounds
@@ -136,6 +140,6 @@ export function parseHitboxes(
 
 function parseTag(tag: string): TagFormat {
   if (!tag.includes('--'))
-    throw Error(`tag "${tag}" not in <filestem>--<animation> format`)
+    throw Error(`atlas tag "${tag}" not in <filestem>--<animation> format`)
   return tag as TagFormat
 }

@@ -17,7 +17,7 @@ export async function r2CreatePost(
   _seed: Readonly<PostSeed>, // to-do: fix me.
   username: string,
 ): Promise<Post> {
-  if (!ctx.subredditName) throw Error('no sub name')
+  if (!ctx.subredditName) throw Error('no sub name in context')
 
   // to-do: fix me.
   const field = 3

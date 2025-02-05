@@ -6,6 +6,7 @@ import type {Layer} from '../types/layer.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
+// to-do: move to Aseprite slice.
 const hitbox: Readonly<Box> = {x: 0, y: 0, w: 1, h: 1}
 
 export class CursorEnt implements Ent {
@@ -52,6 +53,7 @@ export class CursorEnt implements Ent {
     box: Readonly<XY & Partial<WH>>,
     coords: 'Level' | 'Client',
   ): boolean {
+    // to-do: use this.#sprite.hits()?
     return boxHits(this.hitbox(game, coords), box)
   }
 
