@@ -5,7 +5,7 @@ import {fragGLSL} from './frag.glsl.js'
 import {type GL, Shader} from './shader.js'
 import {spriteVertGLSL} from './sprite-vert.glsl.js'
 
-const uv: Readonly<Int8Array> = new Int8Array([1, 1, 0, 1, 1, 0, 0, 0]) // texcoords
+const quad: Readonly<Int8Array> = new Int8Array([1, 1, 0, 1, 1, 0, 0, 0])
 
 export class Renderer {
   #atlasImage: HTMLImageElement | undefined
@@ -113,7 +113,7 @@ export class Renderer {
     this.#gl.drawArraysInstanced(
       this.#gl.TRIANGLE_STRIP,
       0,
-      uv.length / 2, // d
+      quad.length / 2, // d
       bmps.size,
     )
 
@@ -170,7 +170,7 @@ function SpriteShader(
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
   gl.enableVertexAttribArray(0)
   gl.vertexAttribIPointer(0, 2, gl.BYTE, 0, 0)
-  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW)
+  gl.bufferData(gl.ARRAY_BUFFER, quad, gl.STATIC_DRAW)
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
   gl.bindBuffer(gl.ARRAY_BUFFER, shader.buf)
