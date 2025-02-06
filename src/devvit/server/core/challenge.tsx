@@ -1,10 +1,59 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import {Devvit} from '@devvit/public-api'
+import {makeSeed} from '../../../shared/save'
+import type {Seed} from '../../../shared/types/random'
 import {Preview} from '../../components/preview'
+import type {NewDevvitContext} from './_utils/NewDevvitContext'
 import {setChallengeNumberForPost} from './challengeToPost'
-import {minefieldCreate} from './minefield'
 
 const currentChallengeNumberKey = 'current_challenge_number'
+
+type ChallengeMeta = {
+  cols: number
+  rows: number
+  seed: Seed
+  /** Number between 0 and 1 */
+  density: number
+}
+
+const createChallengeMetaKey = (challengeNumber: number) =>
+  `${challengeNumber}:field:meta` as const
+
+export const challengeMetaGet = async ({
+  redis,
+  challengeNumber,
+}: {
+  redis: NewDevvitContext['redis']
+  challengeNumber: number
+}): Promise<ChallengeMeta> => {
+  const meta = await redis.get(createChallengeMetaKey(challengeNumber))
+  if (!meta) {
+    throw new Error('No field found')
+  }
+  // TODO: Is this expensive and would a hash be better?
+  return JSON.parse(meta)
+}
+
+export const challengeMetaSet = async ({
+  redis,
+  challengeNumber,
+  meta,
+}: {
+  redis: NewDevvitContext['redis']
+  challengeNumber: number
+  meta?: Partial<ChallengeMeta> | undefined
+}): Promise<void> => {
+  await redis.set(
+    createChallengeMetaKey(challengeNumber),
+    JSON.stringify({
+      cols: 10,
+      rows: 10,
+      seed: makeSeed(),
+      density: 0.02,
+      ...meta,
+    }),
+  )
+}
 
 export const challengeMaybeGetCurrentChallengeNumber = async ({
   redis,
@@ -54,8 +103,10 @@ export const challengeSetCurrentChallengeNumber = async ({
 
 export const challengeMakeNew = async ({
   ctx,
+  meta,
 }: {
-  ctx: Devvit.Context
+  ctx: NewDevvitContext
+  meta?: Partial<ChallengeMeta>
 }): Promise<{postID: string; url: string}> => {
   if (!ctx.subredditName) {
     throw new Error('No subreddit name')
@@ -65,9 +116,10 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  await minefieldCreate({
-    challengeNumber: newChallengeNumber,
+  await challengeMetaSet({
     redis: ctx.redis,
+    challengeNumber: newChallengeNumber,
+    meta,
   })
 
   const post = await ctx.reddit.submitPost({

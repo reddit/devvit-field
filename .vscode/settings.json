@@ -7,5 +7,13 @@
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "cSpell.words": ["Banfield", "Devvit", "snoovatar"]
+  "cSpell.words": [
+    "Banfield",
+    "Bitfield",
+    "Devvit",
+    "incrby",
+    "playtest",
+    "snoovatar",
+    "webroot"
+  ]
 }

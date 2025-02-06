@@ -22,7 +22,7 @@
     "build": "tools/build.ts --minify",
     "build:atlas": "tools/atlas-pack.ts src/iframe/game/config.json",
     "clean": "rm -rf dist webroot/index.js*",
-    "devvit:install": "to-do: npm run clean && npm run build && devvit upload --config=devvit.prod.yaml && devvitdevvit upload --config=devvit.prod.yaml install r/",
+    "devvit:install": "to-do: npm run clean && npm run build && devvit upload --config=devvit.prod.yaml && devvit upload --config=devvit.prod.yaml install r/",
     "devvit:playtest": "sh -c 'devvit playtest --config=devvit.dev.yaml --log-runtime \"$@\"|grep --invert --line-buffered \"\\[api\\]\"' --",
     "format": "npm run formatter -- --fix",
     "formatter": "biome check --error-on-warnings",

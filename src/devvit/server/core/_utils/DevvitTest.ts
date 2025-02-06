@@ -14,6 +14,7 @@ import type {CacheOptions} from '@devvit/public-api/devvit/internals/promise_cac
 import Redis from 'ioredis'
 import {RedisMemoryServer} from 'redis-memory-server'
 import {type TestContext, it as itCore} from 'vitest'
+import type {BitfieldCommand, NewDevvitContext} from './NewDevvitContext'
 
 const redisServer = new RedisMemoryServer()
 const host = await redisServer.getHost()
@@ -78,7 +79,7 @@ export namespace DevvitTest {
   const mockRedisClientMethods = ({
     prefix,
   }: {prefix?: string | undefined} = {}): Omit<
-    Devvit.Context['redis'],
+    NewDevvitContext['redis'],
     'global'
   > => {
     const makeKey = (key: string) => (prefix ? `${prefix}:${key}` : key)
@@ -304,12 +305,17 @@ export namespace DevvitTest {
         const val = await con.zscore(makeKey(key), member)
         return val === null ? undefined : Number(val)
       },
+      // @ts-expect-error - too lazy to type it with all the overloads
+      async bitfield(key, ...cmds: BitfieldCommand) {
+        // @ts-expect-error
+        return (await con.bitfield(makeKey(key), ...cmds)) as number[]
+      },
     }
   }
 
   const mockRedisClient = ({
     prefix,
-  }: {prefix?: string} = {}): Devvit.Context['redis'] => {
+  }: {prefix?: string} = {}): NewDevvitContext['redis'] => {
     const appLevel = mockRedisClientMethods({prefix})
     // No prefix since they're global!
     const globalLevel = mockRedisClientMethods()
@@ -326,7 +332,7 @@ export namespace DevvitTest {
   // }
 
   interface ContextMap {
-    ui: Devvit.Context
+    ui: NewDevvitContext
     job: JobContext
     trigger: TriggerContext
   }
@@ -362,6 +368,9 @@ export namespace DevvitTest {
       // @ts-expect-error todo
       reddit: {
         getUserById(_id) {
+          throw new Error('Not implemented in test')
+        },
+        submitPost(_options) {
           throw new Error('Not implemented in test')
         },
       },

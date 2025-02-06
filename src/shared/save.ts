@@ -41,9 +41,9 @@ export function PostSave(
  * Don't use the original seed to generate the next since play is probably too
  * deterministic and may generate duplicate rocks.
  */
-export function PostSeedFromNothing(): PostSeed {
+export function makeSeed() {
   // Assume positive 32b numbers are ok; ints in [1, 0x7fff_ffff].
-  return {seed: (1 + Math.trunc(Math.random() * 0x7fff_ffff)) as Seed}
+  return (1 + Math.trunc(Math.random() * 0x7fff_ffff)) as Seed
 }
 
 export function NoProfile(): Profile {

@@ -10,8 +10,10 @@ import {
 import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
-import {challengeGetCurrentChallengeNumber} from '../server/core/challenge.tsx'
-import {minefieldGet} from '../server/core/minefield.ts'
+import {
+  challengeGetCurrentChallengeNumber,
+  challengeMetaGet,
+} from '../server/core/challenge.tsx'
 import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
 
@@ -23,7 +25,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
   const [postSave] = useState2(async () => {
-    const postSave = await minefieldGet({
+    const postSave = await challengeMetaGet({
       redis: ctx.redis,
       challengeNumber: currentChallengeNumber,
     })
@@ -49,7 +51,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
           p1,
-          seed: postSave,
+          seed: {
+            seed: postSave.seed,
+          },
           type: 'Init',
         })
         break
