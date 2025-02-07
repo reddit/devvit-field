@@ -56,7 +56,12 @@ export const fieldClaimCells = async ({
         enforceBounds({coord, cols: fieldMeta.cols, rows: fieldMeta.rows}),
         fieldMeta.cols,
       ),
-      minefieldIsMine(coord, fieldMeta.seed, {mineDensity: fieldMeta.density})
+      minefieldIsMine({
+        seed: fieldMeta.seed,
+        coord,
+        cols: fieldMeta.cols,
+        config: {mineDensity: fieldMeta.density},
+      })
         ? CELL_STATES.MINE
         : CELL_STATES.CLAIMED,
     ],

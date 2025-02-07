@@ -38,10 +38,9 @@ export function PostSave(
 }
 
 /**
- * Don't use the original seed to generate the next since play is probably too
- * deterministic and may generate duplicate rocks.
+ * Makes a random seed for a new challenge.
  */
-export function makeSeed() {
+export function makeRandomSeed() {
   // Assume positive 32b numbers are ok; ints in [1, 0x7fff_ffff].
   return (1 + Math.trunc(Math.random() * 0x7fff_ffff)) as Seed
 }

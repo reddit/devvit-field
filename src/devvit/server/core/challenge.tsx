@@ -1,6 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import {Devvit} from '@devvit/public-api'
-import {makeSeed} from '../../../shared/save'
+import {makeRandomSeed} from '../../../shared/save'
 import type {Seed} from '../../../shared/types/random'
 import {Preview} from '../../components/preview'
 import type {NewDevvitContext} from './_utils/NewDevvitContext'
@@ -48,7 +48,7 @@ export const challengeMetaSet = async ({
     JSON.stringify({
       cols: 10,
       rows: 10,
-      seed: makeSeed(),
+      seed: makeRandomSeed(),
       density: 0.02,
       ...meta,
     }),

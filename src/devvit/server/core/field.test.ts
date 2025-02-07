@@ -1,5 +1,5 @@
 import {expect} from 'vitest'
-import {makeSeed} from '../../../shared/save'
+import {makeRandomSeed} from '../../../shared/save'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
 import {challengeMetaSet} from './challenge'
@@ -10,7 +10,7 @@ DevvitTest.it('should throw on out of bounds', async ctx => {
   await challengeMetaSet({
     challengeNumber,
     redis: ctx.redis,
-    meta: {cols: 2, rows: 2, seed: makeSeed(), density: 0},
+    meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
   })
 
   await expect(() =>
@@ -43,7 +43,7 @@ DevvitTest.it('should claim a cell and return if it was claimed', async ctx => {
   await challengeMetaSet({
     challengeNumber,
     redis: ctx.redis,
-    meta: {cols: 2, rows: 2, seed: makeSeed(), density: 0},
+    meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
   })
   const result = await fieldClaimCells({
     coords: [{x: 1, y: 1}],
@@ -71,7 +71,7 @@ DevvitTest.it('should claim multiple cells', async ctx => {
   await challengeMetaSet({
     challengeNumber,
     redis: ctx.redis,
-    meta: {cols: 2, rows: 2, seed: makeSeed(), density: 0},
+    meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
   })
 
   const result = await fieldClaimCells({
@@ -108,7 +108,7 @@ DevvitTest.it('should not return if cell already claimed', async ctx => {
   await challengeMetaSet({
     challengeNumber,
     redis: ctx.redis,
-    meta: {cols: 2, rows: 2, seed: makeSeed(), density: 0},
+    meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
   })
 
   await fieldClaimCells({

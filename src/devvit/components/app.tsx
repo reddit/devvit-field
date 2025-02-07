@@ -24,13 +24,21 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
-  const [postSave] = useState2(async () => {
-    const postSave = await challengeMetaGet({
+  const [meta] = useState2(async () => {
+    const meta = await challengeMetaGet({
       redis: ctx.redis,
       challengeNumber: currentChallengeNumber,
     })
-    if (!postSave) throw Error(`no post save for ${session.t3}`)
-    return postSave
+    if (!meta) throw Error(`no meta for ${session.t3}`)
+    // TODO: Make this a function so it's easier for other people to see
+    // Note: Do not return the entire meta since it contains sensitive information about
+    // the challenge!
+
+    // TODO: Do we want to return the seed here? Feels like if we give the seed and don't salt on the backend then
+    // people can easily determine if something is a mine or not.
+    return {
+      seed: meta.seed,
+    }
   })
 
   // to-do: change reference to mounted iframe using useWebView() when user
@@ -52,7 +60,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           debug: session.debug,
           p1,
           seed: {
-            seed: postSave.seed,
+            seed: meta.seed,
           },
           type: 'Init',
         })
