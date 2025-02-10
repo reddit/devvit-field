@@ -2,10 +2,13 @@ import type {WH} from './types/2d.ts'
 
 // to-do: fix me!!!
 
-export const paletteBlack: string = '#000'
-export const paletteDark: number = 0x1c1c1cff
-export const paletteLightGrey: string = '#b0b0b0'
-export const paletteWhite: number = 0xf2f2f2ff // to-do: fix.
+export const paletteBlack: number = 0x000000ff
+export const paletteJuiceBox: number = 0x6b92f2ff
+export const paletteFlamingo: number = 0xcc3a83ff
+export const paletteLasagna: number = 0xea6126ff
+export const paletteSunshine: number = 0xeda635ff
+export const paletteBanBox: number = 0x7dff00ff
+
 export const spacePx: number = 8
 
 export const minCanvasWH: Readonly<WH> = {w: 512, h: 512}
@@ -14,7 +17,6 @@ export const fontMSize: number = 12
 
 export const playButtonWidth: number = 160 // to-do: fix.
 
-export const thickStroke: number = 2 // to-do: fix.
 export const thinStroke: number = 2 // to-do: fix.
 
 export const scoreboardSize: number = 25

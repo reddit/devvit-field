@@ -1,5 +1,5 @@
 import type {Player, PostSeed} from '../../shared/save.ts'
-import {cssHex, minCanvasWH, paletteDark} from '../../shared/theme.ts'
+import {cssHex, minCanvasWH, paletteBlack} from '../../shared/theme.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {
   DevvitMessage,
@@ -87,7 +87,7 @@ export class Game {
     this.renderer = new Renderer(canvas)
     this.zoo = new Zoo()
     this.looper = new Looper(canvas, this.cam, this.ctrl, this.renderer)
-    this.renderer.clearColor(paletteDark)
+    this.renderer.clearColor(paletteBlack)
   }
 
   async start(): Promise<void> {
@@ -120,7 +120,7 @@ export class Game {
 
     lvl.init(this)
 
-    document.body.style.background = cssHex(paletteDark)
+    document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
 

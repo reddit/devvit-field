@@ -1,5 +1,5 @@
 import {Devvit} from '@devvit/public-api'
-import {cssHex, paletteDark} from '../../shared/theme.ts'
+import {cssHex, paletteBlack} from '../../shared/theme.ts'
 
 export type TitleProps = {children?: JSX.Children}
 
@@ -7,7 +7,7 @@ export function Title(props: Readonly<TitleProps>): JSX.Element {
   return (
     <zstack
       alignment='middle center'
-      backgroundColor={cssHex(paletteDark)}
+      backgroundColor={cssHex(paletteBlack)}
       width='100%'
       height='100%'
     >

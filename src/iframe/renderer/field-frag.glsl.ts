@@ -11,14 +11,12 @@ in vec2 vUV;
 out highp vec4 oFrag;
 
 const vec4 palette[] = vec4[](
-  vec4(0, 0, 0, 1),
-  vec4(0, 0, 1, 1),
-  vec4(0, 1, 0, 1),
-  vec4(0, 1, 1, 1),
-  vec4(1, 0, 0, 1),
-  vec4(1, 0, 1, 1),
-  vec4(1, 1, 0, 1),
-  vec4(1, 1, 1, 1)
+  ${rgbaVec4(paletteBlack)},
+  ${rgbaVec4(paletteBanBox)},
+  ${rgbaVec4(paletteJuiceBox)},
+  ${rgbaVec4(paletteFlamingo)},
+  ${rgbaVec4(paletteLasagna)},
+  ${rgbaVec4(paletteSunshine)}
 );
 float borderW = 0.05;
 
@@ -32,11 +30,27 @@ void main() {
   if (uScale > 10. &&
       (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
        fracXY.y < borderW || fracXY.y > 1.0 - borderW)) {
-    oFrag = vec4(.5, .5, .5, 1.0);
+    oFrag = ${rgbaVec4(paletteBlack)};
     return;
   }
 
   lowp uint cell = texelFetch(uTex, ivec2(xy), 0).r;
   oFrag = palette[cell];
+}`
+
+import {
+  paletteBanBox,
+  paletteBlack,
+  paletteFlamingo,
+  paletteJuiceBox,
+  paletteLasagna,
+  paletteSunshine,
+} from '../../shared/theme.ts'
+
+function rgbaVec4(rgba: number): string {
+  const r = ((rgba >>> 24) & 0xff) / 0xff
+  const g = ((rgba >>> 16) & 0xff) / 0xff
+  const b = ((rgba >>> 8) & 0xff) / 0xff
+  const a = ((rgba >>> 0) & 0xff) / 0xff
+  return `vec4(${r}, ${g}, ${b}, ${a})`
 }
-`
