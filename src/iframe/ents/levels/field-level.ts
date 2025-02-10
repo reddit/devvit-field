@@ -20,10 +20,11 @@ export class FieldLevel implements LevelEnt {
   readonly eid: EID
   readonly layer: Layer = 'Level'
   #sprite!: Sprite<Tag>
-  #index: number = zoomLevels.indexOf(1)!
+  #index: number
 
   constructor(game: Game) {
     this.eid = game.eid.new()
+    this.#index = zoomLevels.indexOf(game.fieldScale)!
   }
 
   draw(game: Readonly<Game>): void {

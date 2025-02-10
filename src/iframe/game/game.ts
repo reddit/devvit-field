@@ -53,7 +53,7 @@ export class Game {
   eid: EIDFactory
   field: Uint8Array
   fieldConfig: Readonly<FieldConfig> | undefined
-  fieldScale: number = 1
+  fieldScale: number = 30
   img?: AssetMap['img']
   init: Promise<void>
   looper: Looper
