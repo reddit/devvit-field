@@ -3,9 +3,9 @@
   "description": "",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@devvit/public-api": "0.11.6",
+    "@devvit/public-api": "0.11.7",
     "@types/node": "22.13.1",
-    "devvit": "0.11.6",
+    "devvit": "0.11.7",
     "esbuild": "0.25.0",
     "ioredis": "5.5.0",
     "redis-memory-server": "0.12.1",
