@@ -48,6 +48,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
         iframe.postMessage({
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
+          // to-do: make this configurable.
+          field: {cellW: 3, wh: {w: 3, h: 3}, partWH: {w: 1111, h: 1111}},
           p1,
           seed: postSave,
           type: 'Init',

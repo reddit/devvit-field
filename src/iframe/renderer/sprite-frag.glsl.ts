@@ -1,4 +1,4 @@
-export const fragGLSL: string = `#version 300 es
+export const spriteFragGLSL: string = `#version 300 es
 uniform mediump sampler2D uTex;
 uniform mediump uvec2 uTexWH;
 

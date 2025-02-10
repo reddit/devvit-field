@@ -1,5 +1,7 @@
+import {Bitfield} from '../../shared/bitfield.ts'
 import type {Player, PostSeed} from '../../shared/save.ts'
 import {cssHex, minCanvasWH, paletteDark} from '../../shared/theme.ts'
+import type {GraphicsFieldConfig} from '../../shared/types/graphics-field-config.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
@@ -23,15 +25,6 @@ import atlas from './atlas.json' with {type: 'json'}
 import type {Tag} from './config.ts'
 import {Looper} from './looper.ts'
 
-/** State derived from InitDevvitMessage. */
-export type InitGame = {
-  connected: boolean
-  debug: boolean
-  p1: Player
-  rnd: Random
-  seed: PostSeed
-}
-
 // to-do: SavableGame for LocalStorage savable state.
 
 /**
@@ -44,6 +37,7 @@ export type InitGame = {
  * - Game.start() finished including InitDevvitMessage. Game is ready.
  */
 
+// to-do: make these vars private to prevent cheating.
 export class Game {
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
   ac: AudioContext
@@ -57,6 +51,8 @@ export class Game {
   debug: boolean
   devPeerChan: BroadcastChannel | undefined
   eid: EIDFactory
+  field: Bitfield
+  fieldConfig: GraphicsFieldConfig | undefined
   img?: AssetMap['img']
   init: Promise<void>
   looper: Looper
@@ -85,6 +81,7 @@ export class Game {
     this.debug = devMode
     this.devPeerChan = devMode ? new BroadcastChannel('dev') : undefined
     this.eid = new EIDFactory()
+    this.field = new Bitfield({w: 1, h: 1}, {w: 1, h: 1}, 1)
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
     this.renderer = new Renderer(canvas)
@@ -104,7 +101,7 @@ export class Game {
     this.looper.onPause = this.#onPause
     this.looper.onResize = this.#onResize
     this.looper.onResume = this.#onResume
-    this.looper.render(this.cam, this.bmps, this.#onLoop)
+    this.#onLoop()
 
     const lvl = new FieldLevel(this)
 
@@ -113,9 +110,9 @@ export class Game {
     this.audio = await Audio(assets)
     this.img = assets.img
 
-    this.renderer.setAtlas(this.atlas, assets.img.atlas)
-
     await this.init
+
+    this.renderer.load(this.atlas, assets.img.atlas, this.field)
 
     lvl.init(this)
 
@@ -131,14 +128,6 @@ export class Game {
     this.looper.cancel()
     this.looper.register('remove')
     this.ctrl.register('remove')
-  }
-
-  #onDevMsg(msg: Readonly<DevvitMessage>): void {
-    this.#onMsg(
-      new MessageEvent<DevvitSystemMessage>('message', {
-        data: {type: 'devvit-message', data: {message: msg}},
-      }),
-    )
   }
 
   #initDevMode(): void {
@@ -165,6 +154,10 @@ export class Game {
         this.#onDevMsg({
           connected: true,
           debug: true,
+          // to-do: fix 3b.
+          field: {cellW: 8, wh: {w: 2, h: 2}, partWH: {w: 8, h: 8}},
+          // field: {cellW: 8, wh: {w: 3, h: 3}, partWH: {w: 1111, h: 1111}},
+          // field: {cellW: 3, wh: {w: 3, h: 3}, partWH: {w: 1111, h: 1111}},
           p1,
           seed: {seed: seed as Seed},
           type: 'Init',
@@ -177,6 +170,24 @@ export class Game {
         () => this.#onDevMsg({type: 'Connected'}),
         Math.trunc(rnd.num() * 1000),
       )
+  }
+
+  #onDevMsg(msg: Readonly<DevvitMessage>): void {
+    this.#onMsg(
+      new MessageEvent<DevvitSystemMessage>('message', {
+        data: {type: 'devvit-message', data: {message: msg}},
+      }),
+    )
+  }
+
+  #onConnect(): void {
+    if (this.debug) console.log('connected')
+    this.connected = true
+  }
+
+  #onDisconnect(): void {
+    if (this.debug) console.log('disconnected')
+    this.connected = false
   }
 
   #onLoop = (): void => {
@@ -192,16 +203,6 @@ export class Game {
     this.looper.render(this.cam, this.bmps, this.#onLoop)
   }
 
-  #onConnect(): void {
-    if (this.debug) console.log('connected')
-    this.connected = true
-  }
-
-  #onDisconnect(): void {
-    if (this.debug) console.log('disconnected')
-    this.connected = false
-  }
-
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
     // Filter any unknown messages.
     if (ev.isTrusted === devMode || ev.data.type !== 'devvit-message') return
@@ -212,21 +213,34 @@ export class Game {
 
     switch (msg.type) {
       case 'Init': {
-        const init: InitGame = {
-          connected: msg.connected,
-          debug: msg.debug,
-          p1: msg.p1,
-          rnd: new Random(msg.seed.seed),
-          seed: msg.seed,
+        this.debug = msg.debug
+        this.field = new Bitfield(
+          msg.field.wh,
+          msg.field.partWH,
+          msg.field.cellW,
+        )
+        for (let y = 0; y < msg.field.wh.h * msg.field.partWH.h; y++)
+          for (let x = 0; x < msg.field.wh.w * msg.field.partWH.w; x++)
+            this.field.setCell({x, y}, Math.trunc(Math.random() * 8))
+
+        for (let y = 0; y < msg.field.wh.h * msg.field.partWH.h; y++) {
+          this.field.setCell({x: 0, y}, 2)
+          this.field.setCell({x: msg.field.wh.w * msg.field.partWH.w - 1, y}, 2)
         }
-        this.debug = init.debug
-        this.p1 = init.p1
-        this.rnd = init.rnd
-        this.seed = init.seed
+        for (let x = 0; x < msg.field.wh.w * msg.field.partWH.w; x++) {
+          this.field.setCell({x, y: 0}, 1)
+          this.field.setCell({x, y: msg.field.wh.h * msg.field.partWH.h - 1}, 1)
+        }
+
+        this.fieldConfig = msg.field
+        this.p1 = msg.p1
+        this.rnd = new Random(msg.seed.seed)
+        this.seed = msg.seed
         if (this.debug) console.log('init')
         this.#fulfil()
-        if (this.connected !== init.connected) {
-          if (init.connected) this.#onConnect()
+        // Init this.connected.
+        if (this.connected !== msg.connected) {
+          if (msg.connected) this.#onConnect()
           else this.#onDisconnect()
         }
         break
