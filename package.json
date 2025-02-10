@@ -4,13 +4,13 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@devvit/public-api": "0.11.6",
-    "@types/node": "22.13.0",
+    "@types/node": "22.13.1",
     "devvit": "0.11.6",
-    "esbuild": "0.24.2",
-    "typescript": "5.8.0-beta",
-    "vitest": "3.0.4",
+    "esbuild": "0.25.0",
+    "ioredis": "5.5.0",
     "redis-memory-server": "0.12.1",
-    "ioredis": "5.4.2"
+    "typescript": "5.8.0-beta",
+    "vitest": "3.0.5"
   },
   "engines": {
     "node": ">=22.6"
