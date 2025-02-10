@@ -206,6 +206,10 @@ export class Input<T extends string> {
     this.#pointer.reset()
   }
 
+  get wheel(): {x: number; y: number; z: number} {
+    return this.#pointer.wheel
+  }
+
   /**
    * The current state and prospective combo member. A zero value can never be a
    * combo member but is necessary to persist in previous to distinguish the off

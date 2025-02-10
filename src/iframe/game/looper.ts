@@ -56,11 +56,12 @@ export class Looper {
     cam: Readonly<Cam>,
     bmps: Readonly<AttribBuffer>,
     loop: (() => void) | undefined,
+    fieldScale: number,
   ): void {
     this.#loop = loop
     if (document.hidden || !this.#renderer.hasContext()) return
     if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
-    this.#renderer.render(cam, this.frame, bmps)
+    this.#renderer.render(cam, this.frame, bmps, fieldScale)
   }
 
   #onEvent = (ev: Event): void => {

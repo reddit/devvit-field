@@ -29,8 +29,9 @@ void main() {
     discard;
 
   vec2 fracXY = fract(xy);
-  if (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
-      fracXY.y < borderW || fracXY.y > 1.0 - borderW) {
+  if (uScale > 10. &&
+      (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
+       fracXY.y < borderW || fracXY.y > 1.0 - borderW)) {
     oFrag = vec4(.5, .5, .5, 1.0);
     return;
   }

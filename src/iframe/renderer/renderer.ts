@@ -95,6 +95,7 @@ export class Renderer {
     cam: Readonly<Cam>,
     frame: number,
     bmps: Readonly<AttribBuffer>,
+    fieldScale: number,
   ): void {
     if (!this.#gl) return
     this.#resize(cam)
@@ -104,7 +105,7 @@ export class Renderer {
       this.#gl.useProgram(this.#fieldShader.pgm)
       this.#gl.bindVertexArray(this.#fieldShader.vao)
 
-      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, 12) // to-do: fix me.
+      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, fieldScale)
       this.#gl.uniform4f(
         this.#fieldShader.uniforms.uCam!,
         cam.x,
