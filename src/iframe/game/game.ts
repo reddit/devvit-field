@@ -5,6 +5,7 @@ import type {
   DevvitMessage,
   DevvitSystemMessage,
   IframeMessage,
+  IframeMode,
 } from '../../shared/types/message.ts'
 import {Random, type Seed} from '../../shared/types/random.ts'
 import {SID} from '../../shared/types/sid.ts'
@@ -56,6 +57,7 @@ export class Game {
   img?: AssetMap['img']
   init: Promise<void>
   looper: Looper
+  mode?: IframeMode
   now: UTCMillis
   p1?: Player
   renderer: Renderer
@@ -160,6 +162,7 @@ export class Game {
           connected: true,
           debug: true,
           field: {wh: {w: 3333, h: 3333}},
+          mode: rnd.num() < 0.5 ? 'PopIn' : 'PopOut',
           p1,
           seed: {seed: seed as Seed},
           type: 'Init',
@@ -193,6 +196,9 @@ export class Game {
   }
 
   #onLoop = (): void => {
+    if (this.ctrl.isOnStart('A') && this.mode === 'PopIn')
+      this.#postMessage({type: 'PopOut'})
+
     this.bmps.size = 0
     // Don't await; this can hang.
     if (this.ctrl.gestured && this.ac.state !== 'running') void this.ac.resume()
@@ -222,24 +228,25 @@ export class Game {
 
         for (let y = 0; y < msg.field.wh.h; y++)
           for (let x = 0; x < msg.field.wh.w; x++)
-            this.field[y * msg.field.wh.w + x] = Math.trunc(Math.random() * 8)
+            this.field[y * msg.field.wh.w + x] = Math.trunc(Math.random() * 6)
 
         for (let y = 0; y < msg.field.wh.h; y++) {
-          this.field[y * msg.field.wh.w] = Math.trunc(Math.random() * 8)
+          this.field[y * msg.field.wh.w] = Math.trunc(Math.random() * 6)
           this.field[y * msg.field.wh.w + msg.field.wh.w - 1] = Math.trunc(
-            Math.random() * 8,
+            Math.random() * 6,
           )
         }
         for (let y = 0; y < msg.field.wh.h; y++)
           for (let x = 0; x < msg.field.wh.w; x++) {
-            this.field[x] = Math.trunc(Math.random() * 8)
+            this.field[x] = Math.trunc(Math.random() * 6)
             this.field[(msg.field.wh.h - 1) * msg.field.wh.w + x] = Math.trunc(
-              Math.random() * 8,
+              Math.random() * 6,
             )
           }
 
         this.fieldConfig = msg.field
         this.p1 = msg.p1
+        this.mode = msg.mode
         this.rnd = new Random(msg.seed.seed)
         this.seed = msg.seed
         if (this.debug) console.log('init')

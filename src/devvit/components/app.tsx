@@ -67,6 +67,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           debug: session.debug,
           // to-do: make this configurable.
           field: {wh: {w: 3333, h: 3333}},
+          mode: mounted ? 'PopOut' : 'PopIn',
           p1,
           seed: postSave,
           type: 'Init',

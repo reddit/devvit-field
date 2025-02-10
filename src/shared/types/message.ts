@@ -24,6 +24,7 @@ export type InitDevvitMessage = {
    */
   debug: boolean
   field: FieldConfig
+  mode: IframeMode
   p1: Player
   seed: PostSeed
   type: 'Init'
@@ -63,6 +64,9 @@ export type RealtimeSystemMessage = {
   /** Message schema version. */
   version: number
 }
+
+/** Whether the iframe is hosted in the post (pop-in) or a dialog (pop-out). */
+export type IframeMode = 'PopIn' | 'PopOut'
 
 /** Message schema version supported by this instance. */
 export const realtimeVersion: number = 0
