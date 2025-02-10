@@ -1,4 +1,4 @@
-import type {Bitfield} from '../../shared/bitfield.js'
+import type {FieldConfig} from '../../shared/types/field-config.js'
 import type {Atlas} from '../graphics/atlas.js'
 import type {AttribBuffer} from './attrib-buffer.js'
 import type {Cam} from './cam.js'
@@ -15,7 +15,8 @@ export class Renderer {
   readonly #canvas: HTMLCanvasElement
   #cels: Readonly<Uint16Array> = new Uint16Array()
   #clearRGBA: number = 0x000000ff
-  #field: Bitfield | undefined
+  #field: Readonly<Uint8Array> | undefined
+  #fieldConfig: Readonly<FieldConfig> | undefined
   #fieldShader: Shader | undefined
   #gl?: GL
   #loseContext: WEBGL_lose_context | null = null
@@ -63,7 +64,10 @@ export class Renderer {
     this.#spriteShader = this.#atlasImage
       ? SpriteShader(gl, this.#atlasImage, this.#cels)
       : undefined
-    this.#fieldShader = this.#field ? FieldShader(gl, this.#field) : undefined
+    this.#fieldShader =
+      this.#field && this.#fieldConfig
+        ? FieldShader(gl, this.#field, this.#fieldConfig)
+        : undefined
   }
 
   get loseContext(): WEBGL_lose_context | null {
@@ -77,11 +81,13 @@ export class Renderer {
   load(
     atlas: Atlas<unknown>,
     atlasImage: HTMLImageElement,
-    field: Bitfield | undefined,
+    field: Readonly<Uint8Array> | undefined,
+    fieldConfig: Readonly<FieldConfig> | undefined,
   ): void {
     this.#atlasImage = atlasImage
     this.#cels = new Uint16Array(atlas.cels)
     this.#field = field
+    this.#fieldConfig = fieldConfig
     this.initGL()
   }
 
@@ -94,11 +100,11 @@ export class Renderer {
     this.#resize(cam)
     this.#gl.clear(this.#gl.COLOR_BUFFER_BIT | this.#gl.DEPTH_BUFFER_BIT)
 
-    if (this.#field && this.#fieldShader) {
+    if (this.#field && this.#fieldConfig && this.#fieldShader) {
       this.#gl.useProgram(this.#fieldShader.pgm)
       this.#gl.bindVertexArray(this.#fieldShader.vao)
 
-      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, 12)
+      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, 12) // to-do: fix me.
       this.#gl.uniform4f(
         this.#fieldShader.uniforms.uCam!,
         cam.x,
@@ -107,36 +113,24 @@ export class Renderer {
         cam.h,
       )
       this.#gl.uniform1i(this.#fieldShader.uniforms.uTex!, 0)
-      this.#gl.uniform1ui(this.#fieldShader.uniforms.uCellW!, this.#field.cellW)
 
-      for (let row = 0; row < this.#field.wh.h; row++)
-        for (let col = 0; col < this.#field.wh.w; col++) {
-          const partX = col * this.#field.partWH.w
-          const partY = row * this.#field.partWH.h
+      this.#gl.uniform2ui(
+        this.#fieldShader.uniforms.uFieldWH!,
+        this.#fieldConfig.wh.w,
+        this.#fieldConfig.wh.h,
+      )
 
-          this.#gl.uniform4ui(
-            this.#fieldShader.uniforms.uPartXYWH!,
-            partX,
-            partY,
-            this.#field.partWH.w,
-            this.#field.partWH.h,
-          )
+      this.#gl.activeTexture(this.#gl.TEXTURE0)
+      this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.tex[0]!)
 
-          this.#gl.activeTexture(this.#gl.TEXTURE0)
-          this.#gl.bindTexture(
-            this.#gl.TEXTURE_2D,
-            this.#fieldShader.tex[row * this.#field.wh.w + col]!,
-          )
-
-          this.#gl.drawArrays(
-            this.#gl.TRIANGLE_STRIP,
-            0,
-            uv.length / 2, // d
-          )
-        }
-
-      this.#gl.bindVertexArray(null)
+      this.#gl.drawArrays(
+        this.#gl.TRIANGLE_STRIP,
+        0,
+        uv.length / 2, // d
+      )
     }
+
+    this.#gl.bindVertexArray(null)
 
     if (!this.#atlasImage || !this.#spriteShader) return
 
@@ -275,12 +269,12 @@ function SpriteShader(
   return shader
 }
 
-function FieldShader(gl: GL, field: Bitfield): Shader {
-  const textures = []
-  for (let i = 0; i < field.wh.h * field.wh.w; i++)
-    textures.push(gl.createTexture())
-
-  const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, textures)
+function FieldShader(
+  gl: GL,
+  field: Uint8Array,
+  config: Readonly<FieldConfig>,
+): Shader {
+  const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [gl.createTexture()])
 
   gl.bindVertexArray(shader.vao)
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
@@ -291,26 +285,20 @@ function FieldShader(gl: GL, field: Bitfield): Shader {
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
-  for (let row = 0; row < field.wh.h; row++) {
-    for (let col = 0; col < field.wh.w; col++) {
-      const part = field.getPartByColRow(col, row)
-      if (!part) throw Error(`no partition at ${col}, ${row}`)
-      gl.bindTexture(gl.TEXTURE_2D, textures[row * field.wh.h + col]!)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.R8UI,
-        Math.ceil((field.partWH.w * field.cellW) / 8),
-        Math.ceil((field.partWH.h * field.cellW) / 8),
-        0,
-        gl.RED_INTEGER,
-        gl.UNSIGNED_BYTE,
-        part,
-      )
-    }
-  }
+  gl.bindTexture(gl.TEXTURE_2D, shader.tex[0]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.R8UI,
+    config.wh.w,
+    config.wh.h,
+    0,
+    gl.RED_INTEGER,
+    gl.UNSIGNED_BYTE,
+    field,
+  )
   gl.bindTexture(gl.TEXTURE_2D, null)
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
 

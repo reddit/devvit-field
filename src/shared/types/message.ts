@@ -1,6 +1,6 @@
 import type {Player, PostSeed} from '../save.ts'
 import type {XY} from './2d.ts'
-import type {GraphicsFieldConfig} from './graphics-field-config.ts'
+import type {FieldConfig} from './field-config.ts'
 
 /**
  * A message from Blocks to the iframe. Init doesn't necessarily arrive first.
@@ -23,7 +23,7 @@ export type InitDevvitMessage = {
    * granularity doesn't make sense in the iframe.
    */
   debug: boolean
-  field: GraphicsFieldConfig
+  field: FieldConfig
   p1: Player
   seed: PostSeed
   type: 'Init'

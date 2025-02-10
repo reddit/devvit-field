@@ -4,7 +4,6 @@ export type Seed = number & {readonly [seed]: never}
 export const randomEndSeed: number = 0x7fff_ffff
 
 // to-do: move out of shared if we're using this server side.
-
 /** http://www.firstpr.com.au/dsp/rand31. */
 export class Random {
   /** [1, 0x7fff_fffe]. */

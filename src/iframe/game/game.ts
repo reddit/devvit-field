@@ -1,7 +1,6 @@
-import {Bitfield} from '../../shared/bitfield.ts'
 import type {Player, PostSeed} from '../../shared/save.ts'
 import {cssHex, minCanvasWH, paletteDark} from '../../shared/theme.ts'
-import type {GraphicsFieldConfig} from '../../shared/types/graphics-field-config.ts'
+import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
@@ -51,8 +50,8 @@ export class Game {
   debug: boolean
   devPeerChan: BroadcastChannel | undefined
   eid: EIDFactory
-  field: Bitfield
-  fieldConfig: GraphicsFieldConfig | undefined
+  field: Uint8Array
+  fieldConfig: Readonly<FieldConfig> | undefined
   img?: AssetMap['img']
   init: Promise<void>
   looper: Looper
@@ -81,7 +80,7 @@ export class Game {
     this.debug = devMode
     this.devPeerChan = devMode ? new BroadcastChannel('dev') : undefined
     this.eid = new EIDFactory()
-    this.field = new Bitfield({w: 1, h: 1}, {w: 1, h: 1}, 1)
+    this.field = new Uint8Array()
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
     this.renderer = new Renderer(canvas)
@@ -111,8 +110,12 @@ export class Game {
     this.img = assets.img
 
     await this.init
-
-    this.renderer.load(this.atlas, assets.img.atlas, this.field)
+    this.renderer.load(
+      this.atlas,
+      assets.img.atlas,
+      this.field,
+      this.fieldConfig,
+    )
 
     lvl.init(this)
 
@@ -154,10 +157,7 @@ export class Game {
         this.#onDevMsg({
           connected: true,
           debug: true,
-          // to-do: fix 3b.
-          field: {cellW: 8, wh: {w: 2, h: 2}, partWH: {w: 8, h: 8}},
-          // field: {cellW: 8, wh: {w: 3, h: 3}, partWH: {w: 1111, h: 1111}},
-          // field: {cellW: 3, wh: {w: 3, h: 3}, partWH: {w: 1111, h: 1111}},
+          field: {wh: {w: 3333, h: 3333}},
           p1,
           seed: {seed: seed as Seed},
           type: 'Init',
@@ -214,23 +214,27 @@ export class Game {
     switch (msg.type) {
       case 'Init': {
         this.debug = msg.debug
-        this.field = new Bitfield(
-          msg.field.wh,
-          msg.field.partWH,
-          msg.field.cellW,
-        )
-        for (let y = 0; y < msg.field.wh.h * msg.field.partWH.h; y++)
-          for (let x = 0; x < msg.field.wh.w * msg.field.partWH.w; x++)
-            this.field.setCell({x, y}, Math.trunc(Math.random() * 8))
+        this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
 
-        for (let y = 0; y < msg.field.wh.h * msg.field.partWH.h; y++) {
-          this.field.setCell({x: 0, y}, 2)
-          this.field.setCell({x: msg.field.wh.w * msg.field.partWH.w - 1, y}, 2)
+        // to-do: delete random nonsense.
+
+        for (let y = 0; y < msg.field.wh.h; y++)
+          for (let x = 0; x < msg.field.wh.w; x++)
+            this.field[y * msg.field.wh.w + x] = Math.trunc(Math.random() * 8)
+
+        for (let y = 0; y < msg.field.wh.h; y++) {
+          this.field[y * msg.field.wh.w] = Math.trunc(Math.random() * 8)
+          this.field[y * msg.field.wh.w + msg.field.wh.w - 1] = Math.trunc(
+            Math.random() * 8,
+          )
         }
-        for (let x = 0; x < msg.field.wh.w * msg.field.partWH.w; x++) {
-          this.field.setCell({x, y: 0}, 1)
-          this.field.setCell({x, y: msg.field.wh.h * msg.field.partWH.h - 1}, 1)
-        }
+        for (let y = 0; y < msg.field.wh.h; y++)
+          for (let x = 0; x < msg.field.wh.w; x++) {
+            this.field[x] = Math.trunc(Math.random() * 8)
+            this.field[(msg.field.wh.h - 1) * msg.field.wh.w + x] = Math.trunc(
+              Math.random() * 8,
+            )
+          }
 
         this.fieldConfig = msg.field
         this.p1 = msg.p1

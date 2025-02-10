@@ -49,7 +49,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
           // to-do: make this configurable.
-          field: {cellW: 3, wh: {w: 3, h: 3}, partWH: {w: 1111, h: 1111}},
+          field: {wh: {w: 3333, h: 3333}},
           p1,
           seed: postSave,
           type: 'Init',
