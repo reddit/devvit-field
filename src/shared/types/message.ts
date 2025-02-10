@@ -37,6 +37,8 @@ export type DevvitSystemMessage = {
 
 /** A message from the iframe to devvit. */
 export type IframeMessage =
+  /** Iframe is rendering. */
+  | {type: 'Loaded'}
   /** Iframe has registered a message listener. */
   | {type: 'Registered'}
   /** Expand the iframe beyond the post boundaries. */

@@ -124,6 +124,7 @@ export class Game {
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
 
+    this.#postMessage({type: 'Loaded'})
     console.log('loaded')
   }
 
