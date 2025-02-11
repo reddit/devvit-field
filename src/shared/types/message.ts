@@ -1,6 +1,7 @@
 import type {Player} from '../save.ts'
 import type {XY} from './2d.ts'
 import type {FieldConfig} from './field-config.ts'
+import type {Seed} from './random.ts'
 
 /**
  * A message from Blocks to the iframe. Init doesn't necessarily arrive first.
@@ -26,6 +27,7 @@ export type InitDevvitMessage = {
   field: FieldConfig
   mode: IframeMode
   p1: Player
+  seed?: Seed
   type: 'Init'
 }
 

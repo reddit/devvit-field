@@ -25,7 +25,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
-  const [config] = useState2(async () => {
+  const [_config] = useState2(async () => {
     return await challengeConfigGetClientSafeProps({
       redis: ctx.redis,
       challengeNumber: currentChallengeNumber,

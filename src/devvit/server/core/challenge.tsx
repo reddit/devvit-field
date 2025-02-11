@@ -71,7 +71,7 @@ export const challengeConfigGetClientSafeProps = async ({
 }: {
   redis: NewDevvitContext['redis']
   challengeNumber: number
-}): Promise<ChallengeConfig> => {
+}): Promise<Pick<ChallengeConfig, 'partitionSize' | 'size'>> => {
   const {partitionSize, size} = await challengeConfigGet({
     redis,
     challengeNumber,

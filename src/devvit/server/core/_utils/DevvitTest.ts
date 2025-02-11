@@ -463,7 +463,7 @@ export namespace DevvitTest {
               return `t3_${Math.random().toString()}`
             }
 
-            addRemovalNote(options: {
+            addRemovalNote(_options: {
               reasonId: string
               modNote?: string
             }): Promise<void> {
@@ -519,10 +519,10 @@ export namespace DevvitTest {
             get distinguishedBy(): string | undefined {
               return post.distinguishedBy
             }
-            edit(options: PostTextOptions): Promise<void> {
+            edit(_options: PostTextOptions): Promise<void> {
               throw new Error('Not implemented in test')
             }
-            addComment(options: CommentSubmissionOptions): Promise<Comment> {
+            addComment(_options: CommentSubmissionOptions): Promise<Comment> {
               throw new Error('Not implemented in test')
             }
             get edited(): boolean {
@@ -619,7 +619,7 @@ export namespace DevvitTest {
             get quarantined(): boolean {
               return post.quarantined
             }
-            remove(isSpam?: boolean): Promise<void> {
+            remove(_isSpam?: boolean): Promise<void> {
               throw new Error('Not implemented in test')
             }
             get removed(): boolean {
@@ -637,16 +637,16 @@ export namespace DevvitTest {
             get secureMedia(): SecureMedia | undefined {
               return post.secureMedia
             }
-            setCustomPostPreview(ui: JSX.ComponentFunction): Promise<void> {
+            setCustomPostPreview(_ui: JSX.ComponentFunction): Promise<void> {
               throw new Error('Not implemented in test')
             }
             setSuggestedCommentSort(
-              suggestedSort: PostSuggestedCommentSort,
+              _suggestedSort: PostSuggestedCommentSort,
             ): Promise<void> {
               throw new Error('Not implemented in test')
             }
             setTextFallback(
-              options: CustomPostTextFallbackOptions,
+              _options: CustomPostTextFallbackOptions,
             ): Promise<void> {
               throw new Error('Not implemented in test')
             }
@@ -659,7 +659,7 @@ export namespace DevvitTest {
             get stickied(): boolean {
               return post.stickied
             }
-            sticky(position?: 1 | 2 | 3 | 4): Promise<void> {
+            sticky(_position?: 1 | 2 | 3 | 4): Promise<void> {
               throw new Error('Not implemented in test')
             }
             get subredditId(): `t5_${string}` {
