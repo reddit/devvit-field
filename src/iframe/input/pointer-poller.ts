@@ -1,15 +1,22 @@
-import type {XY, XYZ} from '../../shared/types/2d.ts'
+import {type XY, type XYZ, xyDistance, xySub} from '../../shared/types/2d.ts'
 import type {Cam} from '../renderer/cam.ts'
 
 export class PointerPoller {
   bits: number = 0
   allowContextMenu: boolean = false // Suppress right-click.
   readonly clientXY: XY = {x: 0, y: 0}
+  drag: boolean = false
+  /** The potential start of a drag. */
+  readonly dragClientStart: XY = {x: 0, y: 0}
   type: 'mouse' | 'touch' | 'pen' | undefined
   xy: Readonly<XY> = {x: 0, y: 0}
   readonly #bitByButton: {[btn: number]: number} = {}
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
+  readonly #delta: [XY, XY] = [
+    {x: 0, y: 0},
+    {x: 0, y: 0},
+  ]
   #on: number = 0
   readonly #wheel: [XYZ, XYZ] = [
     {x: 0, y: 0, z: 0},
@@ -19,6 +26,10 @@ export class PointerPoller {
   constructor(cam: Readonly<Cam>, canvas: HTMLCanvasElement) {
     this.#cam = cam
     this.#canvas = canvas
+  }
+
+  get delta(): XY {
+    return this.#delta[0]
   }
 
   map(button: number, bit: number): void {
@@ -32,6 +43,8 @@ export class PointerPoller {
 
   poll(): void {
     this.#on <<= 1
+    this.#delta[0] = this.#delta[1]
+    this.#delta[1] = {x: 0, y: 0}
     this.#wheel[0] = this.#wheel[1]
     this.#wheel[1] = {x: 0, y: 0, z: 0}
   }
@@ -57,6 +70,9 @@ export class PointerPoller {
   }
 
   reset = (): void => {
+    this.drag = false
+    this.#delta[0] = {x: 0, y: 0}
+    this.#delta[1] = {x: 0, y: 0}
     this.#wheel[0] = {x: 0, y: 0, z: 0}
     this.#wheel[1] = {x: 0, y: 0, z: 0}
     this.bits = 0
@@ -84,16 +100,28 @@ export class PointerPoller {
     // Ignore non-primary inputs to avoid flickering between distant points.
     if (!ev.isPrimary) return
 
-    if (ev.type === 'pointerdown') this.#canvas.setPointerCapture(ev.pointerId)
-
     this.bits = this.#evButtonsToBits(ev.buttons)
-    this.type = (<const>['mouse', 'touch', 'pen']).find(
+    this.type = (['mouse', 'touch', 'pen'] as const).find(
       type => type === ev.pointerType,
     )
+    const prevClientXY = {x: this.clientXY.x, y: this.clientXY.y}
     ;({clientX: this.clientXY.x, clientY: this.clientXY.y} = ev)
     this.xy = this.#cam.toLevelXY(this.clientXY)
+
+    const delta = xySub(this.clientXY, prevClientXY)
+    this.#delta[1] = this.#cam.toScreenXY(delta)
+
     this.#on |= 1
-    if (ev.type === 'pointerdown') ev.preventDefault() // Not passive.
+
+    if (ev.type === 'pointerdown') {
+      this.#canvas.setPointerCapture(ev.pointerId)
+      this.dragClientStart.x = this.clientXY.x
+      this.dragClientStart.y = this.clientXY.y
+      ev.preventDefault() // Not passive.
+    }
+    this.drag =
+      !!this.bits &&
+      (this.drag || xyDistance(this.clientXY, this.dragClientStart) > 5)
   }
 
   #onWheel = (ev: WheelEvent): void => {

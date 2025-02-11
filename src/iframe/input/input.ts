@@ -40,6 +40,14 @@ export class Input<T extends string> {
     this.#pointer = new PointerPoller(cam, canvas)
   }
 
+  get delta(): Readonly<XY> {
+    return this.#pointer.delta
+  }
+
+  get drag(): boolean {
+    return this.#pointer.drag
+  }
+
   /**
    * Combos are interpreted exactly both in buttons pressed per tick (eg, up
    * will not match up and down the way `isOn('Up')` will) and sequence (order
