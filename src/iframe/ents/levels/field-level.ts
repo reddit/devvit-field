@@ -1,9 +1,8 @@
-import type {Tag} from '../../game/config.ts'
 import type {Game} from '../../game/game.ts'
-import {Sprite} from '../../graphics/sprite.ts'
-import {Layer} from '../../types/layer.ts'
+import type {Layer} from '../../types/layer.ts'
 import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
+import {ToolbeltEnt} from '../toolbelt.ts'
 import type {LevelEnt} from './level-ent.ts'
 
 // It'd probably be better to use an exponential here but this was easier at the
@@ -19,7 +18,6 @@ const zoomLevels: readonly number[] = [
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
   readonly layer: Layer = 'Level'
-  #sprite!: Sprite<Tag>
   #index: number
 
   constructor(game: Game) {
@@ -27,15 +25,11 @@ export class FieldLevel implements LevelEnt {
     this.#index = zoomLevels.indexOf(game.fieldScale)!
   }
 
-  draw(game: Readonly<Game>): void {
-    game.bmps.push(this.#sprite)
-  }
+  draw(_game: Readonly<Game>): void {}
 
   init(game: Game): void {
-    this.#sprite = new Sprite(game.atlas, 'background--Red')
-    this.#sprite.z = Layer.UIFore
     game.zoo.clear()
-    game.zoo.add(this, new CursorEnt(game))
+    game.zoo.add(this, new CursorEnt(game), new ToolbeltEnt(game))
   }
 
   update(game: Game): void {
