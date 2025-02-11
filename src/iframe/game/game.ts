@@ -1,4 +1,4 @@
-import type {Player, PostSeed} from '../../shared/save.ts'
+import type {Player} from '../../shared/save.ts'
 import {cssHex, minCanvasWH, paletteBlack} from '../../shared/theme.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {
@@ -62,7 +62,7 @@ export class Game {
   p1?: Player
   renderer: Renderer
   rnd?: Random
-  seed?: PostSeed
+  seed?: Seed
   zoo: Zoo
 
   #fulfil!: () => void
@@ -164,7 +164,7 @@ export class Game {
           field: {wh: {w: 3333, h: 3333}},
           mode: rnd.num() < 0.5 ? 'PopIn' : 'PopOut',
           p1,
-          seed: {seed: seed as Seed},
+          seed: seed as Seed,
           type: 'Init',
         })
       },
@@ -247,8 +247,8 @@ export class Game {
         this.fieldConfig = msg.field
         this.p1 = msg.p1
         this.mode = msg.mode
-        this.rnd = new Random(msg.seed.seed)
-        this.seed = msg.seed
+        this.seed = msg.seed ?? (0 as Seed)
+        this.rnd = new Random(this.seed)
         if (this.debug) console.log('init')
         this.#fulfil()
         // Init this.connected.

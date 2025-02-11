@@ -23,7 +23,6 @@ export type Profile = {
 }
 
 export type Player = {profile: Profile; sid: SID}
-
 export function PostSave(
   post: {readonly authorId: T2 | undefined; readonly createdAt: Date; id: T3},
   seed: Readonly<PostSeed>,

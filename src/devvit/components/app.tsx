@@ -12,7 +12,6 @@ import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {challengeGetCurrentChallengeNumber} from '../server/core/challenge.tsx'
-import {minefieldGet} from '../server/core/minefield.ts'
 import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
 
@@ -23,14 +22,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
-  const [postSave] = useState2(async () => {
-    const postSave = await minefieldGet({
-      redis: ctx.redis,
-      challengeNumber: currentChallengeNumber,
-    })
-    if (!postSave) throw Error(`no post save for ${session.t3}`)
-    return postSave
-  })
 
   const [loaded, setLoaded] = useState2(false)
   // to-do: move to UseWebViewResult.mounted.
@@ -69,7 +60,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
           field: {wh: {w: 3333, h: 3333}},
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
-          seed: postSave,
           type: 'Init',
         })
         break
