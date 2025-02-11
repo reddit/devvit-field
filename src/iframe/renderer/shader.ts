@@ -10,14 +10,14 @@ export type Shader = {
   readonly buf: WebGLBuffer | null
   readonly uniforms: GLUniforms
   readonly vao: WebGLVertexArrayObject | null
-  readonly tex: readonly GLTexture[]
+  readonly textures: readonly GLTexture[]
 }
 
 export function Shader(
   gl: GL,
   vertGLSL: string,
   fragGLSL: string,
-  tex: readonly GLTexture[],
+  textures: readonly GLTexture[],
 ): Shader {
   const pgm = loadProgram(gl, vertGLSL, fragGLSL)
   gl.useProgram(pgm)
@@ -25,7 +25,7 @@ export function Shader(
   return {
     buf: gl.createBuffer(),
     pgm,
-    tex,
+    textures,
     uniforms,
     vao: gl.createVertexArray(),
   }

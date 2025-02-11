@@ -12,51 +12,34 @@ export class Zoo {
   #entsByLayer: Readonly<EntsByLayer> = EntsByLayer()
 
   add(...ents: readonly Readonly<Ent>[]): void {
-    for (const ent of ents) {
-      this.#entsByLayer[ent.layer][ent.eid] = ent
-    }
+    for (const ent of ents) this.#entsByLayer[ent.layer][ent.eid] = ent
   }
 
   clear(): void {
     this.#entsByLayer = EntsByLayer()
   }
 
-  cursor(): CursorEnt | undefined {
+  get cursor(): CursorEnt | undefined {
     // Assume only the cursor is on the cursor layer.
     const cursor = Object.values(this.#entsByLayer.Cursor)[0]
     return cursor instanceof CursorEnt ? cursor : undefined
   }
 
   draw(game: Game): void {
-    for (const layer of layerDrawOrder) {
-      for (const ent of Object.values(this.#entsByLayer[layer]))
-        ent.draw?.(game as Game)
-    }
+    for (const ent of this.ents()) ent.draw?.(game as Game)
   }
 
-  find(eid: EID): Ent | undefined {
-    for (const layer in this.#entsByLayer)
-      if (this.#entsByLayer[layer as Layer][eid])
-        return this.#entsByLayer[layer as Layer][eid]
+  remove(...ents: readonly Readonly<Ent>[]): void {
+    for (const ent of ents) delete this.#entsByLayer[ent.layer][ent.eid]
   }
 
   update(game: Game): void {
     for (const ent of this.ents('Reverse')) ent.update?.(game as Game)
   }
 
-  remove(...ents: readonly Readonly<Ent>[]): void {
-    for (const ent of ents) {
-      for (const layer of Object.values(this.#entsByLayer)) {
-        if (!layer[ent.eid]) continue
-        delete layer[ent.eid]
-        break
-      }
-    }
-  }
-
   *ents(dir: 'Forward' | 'Reverse' = 'Forward'): Generator<Ent> {
     const order =
-      dir === 'Reverse' ? toReversed(layerDrawOrder) : layerDrawOrder
+      dir === 'Reverse' ? layerDrawOrder.toReversed() : layerDrawOrder
     for (const layer of order)
       for (const ent of Object.values(this.#entsByLayer[layer])) yield ent
   }
@@ -66,10 +49,4 @@ function EntsByLayer(): EntsByLayer {
   return Object.fromEntries(
     layerDrawOrder.map(layer => [layer, {}]),
   ) as EntsByLayer
-}
-
-function toReversed<T>(arr: readonly T[]): T[] {
-  const reversed = []
-  for (let i = arr.length; i; i--) reversed.push(arr[i - 1]!)
-  return reversed
 }

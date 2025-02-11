@@ -3,8 +3,9 @@
   "atlasImage": "../../../webroot/assets/atlas.webp",
   "atlasJSON": "atlas.json",
   "tags": {
-    "background--Red": {},
-    "checkerboard--Default": {},
+    "background--Black": {},
+    "background--Checkerboard": {},
+    "background--Fade": {},
     "cursor--Hover": {},
     "cursor--Point": {},
     "mem-prop-5x6--00": {},

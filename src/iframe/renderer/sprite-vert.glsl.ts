@@ -38,7 +38,9 @@ void main() {
   highp ivec2 origWH = ivec2(iUV) * ivec2(texXYWH.zw);
 
   highp vec2 end = vec2(x + targetWH.x, y + targetWH.y);
-  highp vec2 clip =  ((-2. * uCam.xy  + 2. * end) / uCam.zw - 1.) * vec2(1, -1);
+  // Cursor and UI layers are always given in screen coordinates.
+  vec2 camXY = z >= 3 ? uCam.xy : vec2(0, 0);
+  highp vec2 clip =  ((-2. * camXY  + 2. * end) / uCam.zw - 1.) * vec2(1, -1);
   gl_Position = vec4(clip, depth, 1);
   vTexXYWH = ivec4(texXYWH);
   vDstWH = vec2(targetWH * ivec2(flipX ? -1 : 1, flipY ? -1 : 1));

@@ -2,7 +2,7 @@ import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
 import {Sprite} from '../graphics/sprite.js'
-import type {Layer} from '../types/layer.js'
+import {Layer} from '../types/layer.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
@@ -18,6 +18,7 @@ export class CursorEnt implements Ent {
   constructor(game: Game) {
     this.eid = game.eid.new()
     this.#sprite = new Sprite(game.atlas, 'cursor--Point')
+    this.#sprite.z = Layer.Cursor
   }
 
   draw(game: Readonly<Game>): void {
@@ -66,9 +67,7 @@ export class CursorEnt implements Ent {
       game.ctrl.pointType !== 'mouse'
     )
       this.#visible = false
-    this.#sprite.x =
-      Math.round(game.ctrl.point.x) - game.cam.x - (hitbox.x + hitbox.w / 2)
-    this.#sprite.y =
-      Math.round(game.ctrl.point.y) - game.cam.y - (hitbox.y + hitbox.h / 2)
+    this.#sprite.x = Math.round(game.ctrl.point.x) - (hitbox.x + hitbox.w / 2)
+    this.#sprite.y = Math.round(game.ctrl.point.y) - (hitbox.y + hitbox.h / 2)
   }
 }

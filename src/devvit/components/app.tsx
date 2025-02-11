@@ -1,5 +1,6 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, type JSONValue, useChannel} from '@devvit/public-api'
+import {Devvit} from '@devvit/public-api'
+import {type JSONValue, useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {
   type DevvitMessage,
@@ -41,11 +42,19 @@ export function App(ctx: Devvit.Context): JSX.Element {
     }
   })
 
-  // to-do: change reference to mounted iframe using useWebView() when user
-  //        clicks pop-out.
-  const iframe = {
-    postMessage: (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg),
-  }
+  const [loaded, setLoaded] = useState2(false)
+  // to-do: move to UseWebViewResult.mounted.
+  const [mounted, setMounted] = useState2(false)
+  const iframe = useWebView<IframeMessage, DevvitMessage>({
+    onMessage: onMsg,
+    onUnmount() {
+      setLoaded(false)
+      setMounted(false)
+    },
+  })
+  // to-do: support three mount states from hook.
+  if (!mounted)
+    iframe.postMessage = (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg)
 
   function onMsg(msg: IframeMessage): void {
     if (session.debug)
@@ -54,22 +63,27 @@ export function App(ctx: Devvit.Context): JSX.Element {
       )
 
     switch (msg.type) {
+      case 'Loaded':
+        setLoaded(true)
+        break
+      case 'PopOut':
+        setLoaded(false)
+        setMounted(true)
+        iframe.mount()
+        break
       case 'Registered':
         iframe.postMessage({
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
           // to-do: make this configurable.
           field: {wh: {w: 3333, h: 3333}},
+          mode: mounted ? 'PopOut' : 'PopIn',
           p1,
           seed: {
             seed: meta.seed,
           },
           type: 'Init',
         })
-        break
-      case 'PopOut':
-        // to-do: change reference to mounted iframe using useWebView() when user
-        //        clicks pop-out.
         break
       default:
         msg satisfies never
@@ -107,14 +121,20 @@ export function App(ctx: Devvit.Context): JSX.Element {
   chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
 
   return (
-    <Title>
-      <webview
-        grow
-        height='100%'
-        onMessage={onMsg as (message: JSONValue) => Promise<void>}
-        url='index.html'
-        width='100%'
-      />
+    // Hack: turning off the loading animation changes the DOM which causes the
+    //       web view to be loaded, discarded, and loaded again. No webview in
+    //       the tree during pop-out mode but just let it forever spin when put
+    //       in.
+    <Title loaded={mounted && loaded}>
+      {!mounted && (
+        <webview
+          grow
+          height='100%'
+          onMessage={onMsg as (message: JSONValue) => Promise<void>}
+          url='index.html'
+          width='100%'
+        />
+      )}
     </Title>
   )
 }

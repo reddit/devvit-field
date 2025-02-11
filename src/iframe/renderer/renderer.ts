@@ -1,3 +1,4 @@
+import type {XY} from '../../shared/types/2d.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
 import type {Atlas} from '../graphics/atlas.js'
 import type {AttribBuffer} from './attrib-buffer.js'
@@ -95,6 +96,7 @@ export class Renderer {
     cam: Readonly<Cam>,
     frame: number,
     bmps: Readonly<AttribBuffer>,
+    fieldScale: number,
   ): void {
     if (!this.#gl) return
     this.#resize(cam)
@@ -104,7 +106,7 @@ export class Renderer {
       this.#gl.useProgram(this.#fieldShader.pgm)
       this.#gl.bindVertexArray(this.#fieldShader.vao)
 
-      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, 12) // to-do: fix me.
+      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, fieldScale)
       this.#gl.uniform4f(
         this.#fieldShader.uniforms.uCam!,
         cam.x,
@@ -121,7 +123,7 @@ export class Renderer {
       )
 
       this.#gl.activeTexture(this.#gl.TEXTURE0)
-      this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.tex[0]!)
+      this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[0]!)
 
       this.#gl.drawArrays(
         this.#gl.TRIANGLE_STRIP,
@@ -136,7 +138,7 @@ export class Renderer {
 
     this.#gl.useProgram(this.#spriteShader.pgm)
 
-    for (const [i, tex] of this.#spriteShader.tex.entries()) {
+    for (const [i, tex] of this.#spriteShader.textures.entries()) {
       this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
       this.#gl.bindTexture(this.#gl.TEXTURE_2D, tex)
     }
@@ -175,6 +177,23 @@ export class Renderer {
     )
 
     this.#gl.bindVertexArray(null)
+  }
+
+  setCell(xy: Readonly<XY>, val: number): void {
+    if (!this.#fieldShader || !this.#gl) return
+    this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[0]!)
+    this.#gl.texSubImage2D(
+      this.#gl.TEXTURE_2D,
+      0,
+      xy.x,
+      xy.y,
+      1,
+      1,
+      this.#gl.RED_INTEGER,
+      this.#gl.UNSIGNED_BYTE,
+      new Uint8Array([val]),
+    )
+    this.#gl.bindTexture(this.#gl.TEXTURE_2D, null)
   }
 
   #resize(cam: Readonly<Cam>): void {
@@ -236,10 +255,9 @@ function SpriteShader(
 
   gl.bindVertexArray(null)
 
-  gl.bindTexture(gl.TEXTURE_2D, shader.tex[0]!)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  // to-do: RED_INTEGER.
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
@@ -250,7 +268,7 @@ function SpriteShader(
   )
   gl.bindTexture(gl.TEXTURE_2D, null)
 
-  gl.bindTexture(gl.TEXTURE_2D, shader.tex[1]!)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[1]!)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
   gl.texImage2D(
@@ -285,7 +303,7 @@ function FieldShader(
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
-  gl.bindTexture(gl.TEXTURE_2D, shader.tex[0]!)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
   gl.texImage2D(

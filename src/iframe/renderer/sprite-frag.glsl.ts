@@ -10,5 +10,5 @@ out highp vec4 oFrag;
 void main() {
   highp vec2 px = vec2(vTexXYWH.xy) + mod(vDstWH, vec2(vTexXYWH.zw));
   oFrag = texture(uTex, px / vec2(uTexWH));
-  if(oFrag.a < 1.) discard;
+  if(oFrag.a < .001) discard;
 }`

@@ -24,6 +24,7 @@ export type InitDevvitMessage = {
    */
   debug: boolean
   field: FieldConfig
+  mode: IframeMode
   p1: Player
   seed: PostSeed
   type: 'Init'
@@ -37,6 +38,8 @@ export type DevvitSystemMessage = {
 
 /** A message from the iframe to devvit. */
 export type IframeMessage =
+  /** Iframe is rendering. */
+  | {type: 'Loaded'}
   /** Iframe has registered a message listener. */
   | {type: 'Registered'}
   /** Expand the iframe beyond the post boundaries. */
@@ -61,6 +64,9 @@ export type RealtimeSystemMessage = {
   /** Message schema version. */
   version: number
 }
+
+/** Whether the iframe is hosted in the post (pop-in) or a dialog (pop-out). */
+export type IframeMode = 'PopIn' | 'PopOut'
 
 /** Message schema version supported by this instance. */
 export const realtimeVersion: number = 0

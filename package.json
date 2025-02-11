@@ -3,9 +3,9 @@
   "description": "",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@devvit/public-api": "0.11.6",
+    "@devvit/public-api": "0.11.7",
     "@types/node": "22.13.1",
-    "devvit": "0.11.6",
+    "devvit": "0.11.7",
     "esbuild": "0.25.0",
     "ioredis": "5.5.0",
     "redis-memory-server": "0.12.1",
@@ -21,7 +21,7 @@
   "scripts": {
     "build": "tools/build.ts --minify",
     "build:atlas": "tools/atlas-pack.ts src/iframe/game/config.json",
-    "clean": "rm -rf dist webroot/index.js*",
+    "clean": "rm -rf dist src/iframe/game/atlas.json webroot/assets/atlas.webp webroot/index.js*",
     "devvit:install": "to-do: npm run clean && npm run build && devvit upload --config=devvit.prod.yaml && devvit upload --config=devvit.prod.yaml install r/",
     "devvit:playtest": "sh -c 'devvit playtest --config=devvit.dev.yaml --log-runtime \"$@\"|grep --invert --line-buffered \"\\[api\\]\"' --",
     "format": "npm run formatter -- --fix",

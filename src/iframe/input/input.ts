@@ -152,6 +152,7 @@ export class Input<T extends string> {
     for (const key of keys) this.#keyboard.map(key, this.#map(button))
   }
 
+  /** Pointer location in level coordinates. */
   get point(): Readonly<XY> {
     return this.#pointer.xy
   }
@@ -204,6 +205,10 @@ export class Input<T extends string> {
     this.#gamepad.reset()
     this.#keyboard.reset()
     this.#pointer.reset()
+  }
+
+  get wheel(): {x: number; y: number; z: number} {
+    return this.#pointer.wheel
   }
 
   /**
