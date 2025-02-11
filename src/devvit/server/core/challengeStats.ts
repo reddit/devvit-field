@@ -13,6 +13,19 @@ export type ChallengeStats = {
 const getChallengeStatsKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:stats` as const
 
+export const challengeStatsInitialState: ChallengeStats = {
+  'team:0:cellsClaimed': 0,
+  'team:0:minesHit': 0,
+  'team:1:cellsClaimed': 0,
+  'team:1:minesHit': 0,
+  'team:2:cellsClaimed': 0,
+  'team:2:minesHit': 0,
+  'team:3:cellsClaimed': 0,
+  'team:3:minesHit': 0,
+  totalMinesHit: 0,
+  totalCellsClaimed: 0,
+}
+
 export const challengeStatsGet = async ({
   redis,
   challengeNumber,
@@ -40,28 +53,16 @@ export const challengeStatsIncrement = async ({
   await redis.hIncrBy(getChallengeStatsKey(challengeNumber), key, incrementBy)
 }
 
-export const initChallengeStats = async ({
+export const challengeStatsInit = async ({
   redis,
   challengeNumber,
 }: {
   redis: Devvit.Context['redis']
   challengeNumber: number
 }): Promise<void> => {
-  const initialStats: ChallengeStats = {
-    'team:0:cellsClaimed': 0,
-    'team:0:minesHit': 0,
-    'team:1:cellsClaimed': 0,
-    'team:1:minesHit': 0,
-    'team:2:cellsClaimed': 0,
-    'team:2:minesHit': 0,
-    'team:3:cellsClaimed': 0,
-    'team:3:minesHit': 0,
-    totalMinesHit: 0,
-    totalCellsClaimed: 0,
-  }
   await redis.hSet(
     getChallengeStatsKey(challengeNumber),
-    serializeStats(initialStats),
+    serializeStats(challengeStatsInitialState),
   )
 }
 
