@@ -4,8 +4,8 @@ const defaultRetries: number = 3
 
 export async function retry<T>(
   fn: () => Promise<T>,
-  retries?: number | undefined,
-  delayMillis?: number | undefined,
+  retries?: number,
+  delayMillis?: number,
 ): Promise<T> {
   delayMillis ??= defaultDelayMillis
   retries ??= defaultRetries

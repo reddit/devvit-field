@@ -69,10 +69,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
           field: {wh: {w: 3333, h: 3333}},
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
-          // TODO: Remove this
-          seed: {
-            seed: meta.seed,
-          },
           type: 'Init',
         })
         break

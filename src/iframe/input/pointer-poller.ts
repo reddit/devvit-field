@@ -5,7 +5,7 @@ export class PointerPoller {
   bits: number = 0
   allowContextMenu: boolean = false // Suppress right-click.
   readonly clientXY: XY = {x: 0, y: 0}
-  type?: 'mouse' | 'touch' | 'pen' | undefined
+  type: 'mouse' | 'touch' | 'pen' | undefined
   xy: Readonly<XY> = {x: 0, y: 0}
   readonly #bitByButton: {[btn: number]: number} = {}
   readonly #cam: Readonly<Cam>
