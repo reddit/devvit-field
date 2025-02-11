@@ -14,6 +14,7 @@ type ChallengeMeta = {
   seed: Seed
   /** Number between 0 and 1 */
   density: number
+  // TODO: Theme variables and other config that we want to change per sub
 }
 
 const createChallengeMetaKey = (challengeNumber: number) =>
