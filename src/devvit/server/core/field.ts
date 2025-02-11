@@ -7,7 +7,7 @@ import {challengeMetaGet} from './challenge'
 import type {Delta} from './delta'
 
 const createFieldKey = (challengeNumber: number) =>
-  `${challengeNumber}:field` as const
+  `challenge:${challengeNumber}:field` as const
 
 export const FIELD_CELL_BITS = 3
 
@@ -131,6 +131,8 @@ export const fieldClaimCells = async ({
   // // 2. increment the team's score (if not a mine?)
   // // increment the user's score (if not a mine?)
   // await txn.exec()
+
+  // Since we're using transactions we need this extra read to get the updated score values
 
   return {
     deltas,

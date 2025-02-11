@@ -18,7 +18,7 @@ type ChallengeMeta = {
 }
 
 const createChallengeMetaKey = (challengeNumber: number) =>
-  `${challengeNumber}:field:meta` as const
+  `challenge:${challengeNumber}:config` as const
 
 export const challengeMetaGet = async ({
   redis,
