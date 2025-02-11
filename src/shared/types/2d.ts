@@ -1,6 +1,7 @@
 export type Box = XY & WH
 export type WH = {w: number; h: number}
 export type XY = {x: number; y: number}
+export type PartitionXY = {partitionX: number; partitionY: number}
 
 export function boxHits(
   lhs: Readonly<Box>,

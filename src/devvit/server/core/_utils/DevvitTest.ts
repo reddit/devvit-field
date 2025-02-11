@@ -408,8 +408,8 @@ export namespace DevvitTest {
       throw new Error('Only UI context is supported at The moment')
     }
 
-    function func(vitestContext: TestContext & object) {
-      fn(context, vitestContext)
+    async function func(vitestContext: TestContext & object) {
+      await fn(context, vitestContext)
     }
 
     if (_only) {
