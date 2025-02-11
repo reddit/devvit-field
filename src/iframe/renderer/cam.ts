@@ -37,7 +37,7 @@ export class Cam {
     wh: Readonly<WH>,
     orientation: FollowCamOrientation,
     opts?: {
-      readonly fill?: 'X' | 'Y' | 'XY'
+      readonly fill?: 'X' | 'Y' | 'XY' | undefined
       readonly modulo?: Partial<Readonly<XY>> | undefined
       readonly pad?: Partial<Readonly<WH>> | undefined
     },

@@ -13,13 +13,13 @@ export class Looper {
   onResize: () => void = () => {}
   onResume: () => void = () => {}
   /** The relative timestamp in millis. */
-  time?: number | undefined
+  time: number | undefined
 
   readonly #canvas: HTMLCanvasElement
   readonly #cam: Cam
   readonly #ctrl: Input<string>
-  #frame?: number | undefined // to-do: expose this in GameState.
-  #loop?: (() => void) | undefined
+  #frame: number | undefined // to-do: expose this in GameState.
+  #loop: (() => void) | undefined
   readonly #renderer: Renderer
 
   constructor(
