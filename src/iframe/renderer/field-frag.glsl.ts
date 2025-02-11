@@ -18,7 +18,6 @@ const vec4 palette[] = vec4[](
   ${rgbaVec4(paletteLasagna)},
   ${rgbaVec4(paletteSunshine)}
 );
-float borderW = 0.05;
 
 void main() {
   vec2 screenXY = vUV * uCam.zw;
@@ -27,7 +26,8 @@ void main() {
     discard;
 
   vec2 fracXY = fract(xy);
-  if (uScale > 10. &&
+  float borderW = 0.001 * uScale;
+  if (uScale >= 10. &&
       (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
        fracXY.y < borderW || fracXY.y > 1.0 - borderW)) {
     oFrag = ${rgbaVec4(paletteBlack)};

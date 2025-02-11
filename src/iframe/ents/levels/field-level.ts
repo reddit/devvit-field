@@ -51,12 +51,18 @@ export class FieldLevel implements LevelEnt {
         x: Math.trunc(game.ctrl.point.x / game.fieldScale),
         y: Math.trunc(game.ctrl.point.y / game.fieldScale),
       }
+      if (
+        xy.x < 0 ||
+        xy.x >= game.fieldConfig!.wh.w ||
+        xy.y < 0 ||
+        xy.y >= game.fieldConfig!.wh.h
+      )
+        return
       game.field[xy.y * game.fieldConfig!.wh.w + xy.x] = 1
       game.renderer.setCell(xy, 1)
       // to-do: post message.
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
-      if (!game.renderer.hasContext()) return
     }
   }
 }
