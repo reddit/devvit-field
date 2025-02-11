@@ -19,16 +19,14 @@ export class Zoo {
     this.#entsByLayer = EntsByLayer()
   }
 
-  cursor(): CursorEnt | undefined {
+  get cursor(): CursorEnt | undefined {
     // Assume only the cursor is on the cursor layer.
     const cursor = Object.values(this.#entsByLayer.Cursor)[0]
     return cursor instanceof CursorEnt ? cursor : undefined
   }
 
   draw(game: Game): void {
-    for (const layer of layerDrawOrder)
-      for (const ent of Object.values(this.#entsByLayer[layer]))
-        ent.draw?.(game as Game)
+    for (const ent of this.ents()) ent.draw?.(game as Game)
   }
 
   remove(...ents: readonly Readonly<Ent>[]): void {

@@ -43,5 +43,20 @@ export class FieldLevel implements LevelEnt {
       )
       game.fieldScale = zoomLevels[this.#index]!
     }
+    if (!game.ctrl.handled && game.ctrl.isOnStart('A')) {
+      game.ctrl.handled = true
+      // to-do: move this mutation to a centralized store or Game so it's easier
+      //        to see how state changes.
+      const xy = {
+        x: Math.trunc(game.ctrl.point.x / game.fieldScale),
+        y: Math.trunc(game.ctrl.point.y / game.fieldScale),
+      }
+      game.field[xy.y * game.fieldConfig!.wh.w + xy.x] = 1
+      game.renderer.setCell(xy, 1)
+      // to-do: post message.
+      // to-do: set state to indeterminate and wait until response to mark
+      //        state. Aggregate clicks while waiting.
+      if (!game.renderer.hasContext()) return
+    }
   }
 }

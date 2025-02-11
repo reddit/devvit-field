@@ -152,6 +152,7 @@ export class Input<T extends string> {
     for (const key of keys) this.#keyboard.map(key, this.#map(button))
   }
 
+  /** Pointer location in level coordinates. */
   get point(): Readonly<XY> {
     return this.#pointer.xy
   }
