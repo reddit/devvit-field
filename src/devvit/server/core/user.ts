@@ -2,6 +2,7 @@
 import type {Devvit} from '@devvit/public-api'
 import {NoProfile} from '../../../shared/save'
 import type {T2} from '../../../shared/types/tid'
+import {globalStatsIncrement} from './globalStats'
 
 type User = {
   /** Player user ID. t2_0 for anons. */
@@ -78,6 +79,12 @@ export const userGetOrSet = async ({
   await userSet({
     redis: ctx.redis,
     user,
+  })
+
+  await globalStatsIncrement({
+    redis: ctx.redis,
+    globalNumber: 0,
+    field: 'totalPlayers',
   })
 
   return user

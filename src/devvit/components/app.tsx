@@ -12,8 +12,8 @@ import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {
+  challengeConfigGet,
   challengeGetCurrentChallengeNumber,
-  challengeMetaGet,
 } from '../server/core/challenge.tsx'
 import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
@@ -26,7 +26,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
   const [meta] = useState2(async () => {
-    const meta = await challengeMetaGet({
+    const meta = await challengeConfigGet({
       redis: ctx.redis,
       challengeNumber: currentChallengeNumber,
     })

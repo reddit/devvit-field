@@ -8,51 +8,74 @@ import {setChallengeNumberForPost} from './challengeToPost'
 
 const currentChallengeNumberKey = 'current_challenge_number'
 
-type ChallengeMeta = {
-  cols: number
-  rows: number
+type ChallengeConfig = {
+  /** The length of a side of the field. We assume it is always a perfect square. */
+  size: number
+  /** A random number that determines key aspects of the game like which cells are mines. */
   seed: Seed
-  /** Number between 0 and 1 */
+  /**
+   * Number between 0 and 100.
+   *
+   * 0: No mines
+   * 100: Only mines
+   *
+   * Why an int over a float? Because things like incrBy are only for ints. At the moment,
+   * I don't think we want to dynamically change the density of the field, but who's to
+   * say it wouldn't be a fun feature if needed.
+   */
   density: number
+  /**
+   * The length of a size of a partition. Must be perfectly divisible into the size of the field.
+   *
+   * Set the partition size to the same number as the size to have no partition.
+   */
+  partitionSize: number
   // TODO: Theme variables and other config that we want to change per sub
 }
 
-const createChallengeMetaKey = (challengeNumber: number) =>
+const createChallengeConfigKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:config` as const
 
-export const challengeMetaGet = async ({
+const makeDefaultChallengeConfig = (): ChallengeConfig => ({
+  size: 10,
+  partitionSize: 5,
+  seed: makeRandomSeed(),
+  density: 2,
+})
+
+export const challengeConfigGet = async ({
   redis,
   challengeNumber,
 }: {
   redis: NewDevvitContext['redis']
   challengeNumber: number
-}): Promise<ChallengeMeta> => {
-  const meta = await redis.get(createChallengeMetaKey(challengeNumber))
-  if (!meta) {
-    throw new Error('No field found')
+}): Promise<ChallengeConfig> => {
+  const config = await redis.hGetAll(createChallengeConfigKey(challengeNumber))
+  if (Object.keys(config).length === 0) {
+    throw new Error(
+      `No challenge config for challengeNumber: ${challengeNumber}`,
+    )
   }
-  // TODO: Is this expensive and would a hash be better?
-  return JSON.parse(meta)
+  return deserializeChallengeConfig(config)
 }
 
-export const challengeMetaSet = async ({
+/**
+ * Only meant to be used internally because you could mess up the game by setting the incorrect
+ * partition size or changing the size in the middle of the game. If you need to allow changing
+ * the config, produce functions specifically for your use case.
+ */
+const _challengeConfigSet = async ({
   redis,
   challengeNumber,
-  meta,
+  config,
 }: {
   redis: NewDevvitContext['redis']
   challengeNumber: number
-  meta?: Partial<ChallengeMeta> | undefined
+  config: Partial<ChallengeConfig>
 }): Promise<void> => {
-  await redis.set(
-    createChallengeMetaKey(challengeNumber),
-    JSON.stringify({
-      cols: 10,
-      rows: 10,
-      seed: makeRandomSeed(),
-      density: 0.02,
-      ...meta,
-    }),
+  await redis.hSet(
+    createChallengeConfigKey(challengeNumber),
+    serializeChallengeConfig(config),
   )
 }
 
@@ -104,11 +127,11 @@ export const challengeSetCurrentChallengeNumber = async ({
 
 export const challengeMakeNew = async ({
   ctx,
-  meta,
+  config: configParams,
 }: {
   ctx: NewDevvitContext
-  meta?: Partial<ChallengeMeta>
-}): Promise<{postID: string; url: string}> => {
+  config?: Partial<ChallengeConfig>
+}): Promise<{postID: string; url: string; challengeNumber: number}> => {
   if (!ctx.subredditName) {
     throw new Error('No subreddit name')
   }
@@ -117,10 +140,21 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  await challengeMetaSet({
+  const config = {
+    ...makeDefaultChallengeConfig(),
+    ...configParams,
+  }
+
+  if (config.size % config.partitionSize !== 0) {
+    throw new Error(
+      `Size ${config.size} must be divisible by partitionSize ${config.partitionSize}`,
+    )
+  }
+
+  await _challengeConfigSet({
     redis: ctx.redis,
     challengeNumber: newChallengeNumber,
-    meta,
+    config,
   })
 
   const post = await ctx.reddit.submitPost({
@@ -135,7 +169,7 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  return {postID: post.id, url: post.url}
+  return {postID: post.id, url: post.url, challengeNumber: newChallengeNumber}
 }
 
 /** Inits keys needed in redis for the rest of the system to work */
@@ -146,4 +180,40 @@ export const challengeOnInstall = async ({
   if (!result) {
     await redis.set(currentChallengeNumberKey, '0')
   }
+}
+
+function serializeChallengeConfig(
+  config: Partial<ChallengeConfig>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(config).map(([key, value]) => {
+      return [key, value.toString()]
+    }),
+  )
+}
+
+function deserializeChallengeConfig(
+  config: Record<string, string>,
+): ChallengeConfig {
+  return Object.fromEntries(
+    Object.entries(config).map(([key, value]) => {
+      let val
+
+      const numberKeys: (keyof ChallengeConfig)[] = [
+        'size',
+        'density',
+        'partitionSize',
+        'seed',
+      ]
+      if (numberKeys.includes(key as keyof ChallengeConfig)) {
+        val = parseFloat(value)
+        if (Number.isNaN(val)) {
+          throw new Error(`Invalid number for key: ${key}`)
+        }
+        return [key, val]
+      }
+
+      return [key, val]
+    }),
+  ) as ChallengeConfig
 }

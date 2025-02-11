@@ -3,15 +3,13 @@ import {makeRandomSeed} from '../../../shared/save'
 import {DevvitTest} from './_utils/DevvitTest'
 import type {BitfieldCommand} from './_utils/NewDevvitContext'
 import {toMatrix} from './_utils/utils'
-import {challengeMetaSet} from './challenge'
+import {challengeMakeNew} from './challenge'
 import {FIELD_CELL_BITS, fieldClaimCells, fieldGet} from './field'
 
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
-  const challengeNumber = 0
-  await challengeMetaSet({
-    challengeNumber,
-    redis: ctx.redis,
-    meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
+  const {challengeNumber} = await challengeMakeNew({
+    ctx,
+    config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
   })
 
   await expect(() =>
@@ -45,12 +43,11 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
 DevvitTest.it(
   'fieldClaimCells - should claim a cell and return if it was claimed',
   async ctx => {
-    const challengeNumber = 0
-    await challengeMetaSet({
-      challengeNumber,
-      redis: ctx.redis,
-      meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
     })
+
     const result = await fieldClaimCells({
       coords: [{x: 1, y: 1}],
       challengeNumber,
@@ -74,11 +71,9 @@ DevvitTest.it(
 )
 
 DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
-  const challengeNumber = 0
-  await challengeMetaSet({
-    challengeNumber,
-    redis: ctx.redis,
-    meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
+  const {challengeNumber} = await challengeMakeNew({
+    ctx,
+    config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
   })
 
   const result = await fieldClaimCells({
@@ -113,11 +108,9 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 DevvitTest.it(
   'fieldClaimCells - should not return if cell already claimed',
   async ctx => {
-    const challengeNumber = 0
-    await challengeMetaSet({
-      challengeNumber,
-      redis: ctx.redis,
-      meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
     })
 
     await fieldClaimCells({
@@ -142,11 +135,9 @@ DevvitTest.it(
 DevvitTest.it(
   'fieldClaimCells - redis should respect order of return of multiple commands',
   async ctx => {
-    const challengeNumber = 0
-    await challengeMetaSet({
-      challengeNumber,
-      redis: ctx.redis,
-      meta: {cols: 2, rows: 2, seed: makeRandomSeed(), density: 0},
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
     })
 
     await fieldClaimCells({

@@ -3,8 +3,9 @@ import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {T2} from '../../../shared/types/tid'
 import type {BitfieldCommand, NewDevvitContext} from './_utils/NewDevvitContext'
-import {challengeMetaGet} from './challenge'
-import type {Delta} from './delta'
+import {challengeConfigGet} from './challenge'
+import type {Delta} from './deltas'
+import {deltasAdd} from './deltas'
 
 const createFieldKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:field` as const
@@ -42,12 +43,14 @@ export const fieldClaimCells = async ({
   challengeNumber: number
   redis: NewDevvitContext['redis']
 }): Promise<{deltas: Delta[]}> => {
+  if (coords.length === 0) return {deltas: []}
+
   // TODO: Make sure to arrange the coords by their offset
   // because redis.bitfield returns the results in the order of the offsets
   // so we can match them up with the coords
 
   const fieldKey = createFieldKey(challengeNumber)
-  const fieldMeta = await challengeMetaGet({redis, challengeNumber})
+  const fieldMeta = await challengeConfigGet({redis, challengeNumber})
 
   // Produce and operation for each coord that we want to claim. The return value
   // will be used to see if we successfully claimed the cell.
@@ -56,8 +59,8 @@ export const fieldClaimCells = async ({
       'set',
       `u${FIELD_CELL_BITS}`,
       coordsToOffset(
-        enforceBounds({coord, cols: fieldMeta.cols, rows: fieldMeta.rows}),
-        fieldMeta.cols,
+        enforceBounds({coord, cols: fieldMeta.size, rows: fieldMeta.size}),
+        fieldMeta.size,
       ),
       encodeVTT(1, 0), // we assume team 0 here since there isn't an extra bit to define an unknown team!
     ],
@@ -92,10 +95,10 @@ export const fieldClaimCells = async ({
         coordsToOffset(
           enforceBounds({
             coord: coordForIndex,
-            cols: fieldMeta.cols,
-            rows: fieldMeta.rows,
+            cols: fieldMeta.size,
+            rows: fieldMeta.size,
           }),
-          fieldMeta.cols,
+          fieldMeta.size,
         ),
         encodeVTT(1, teamNumber),
       ])
@@ -132,6 +135,12 @@ export const fieldClaimCells = async ({
   // // increment the user's score (if not a mine?)
   // await txn.exec()
 
+  await deltasAdd({
+    redis,
+    challengeNumber,
+    deltas,
+  })
+
   // Since we're using transactions we need this extra read to get the updated score values
 
   return {
@@ -157,11 +166,11 @@ export const fieldGet = async ({
   challengeNumber: number
   redis: NewDevvitContext['redis']
 }): Promise<number[]> => {
-  const meta = await challengeMetaGet({redis, challengeNumber})
+  const meta = await challengeConfigGet({redis, challengeNumber})
 
-  const size = meta.cols * meta.rows
+  const area = meta.size * meta.size
 
-  if (size > 5_000) {
+  if (area > 5_000) {
     throw new Error(
       `Challenge size too large! This is only for testing right now until we find a more efficient way to return all items in a bitfield. At a minimum, we need to the partition a required command so we don't risk sending 10 million bits at once.`,
     )
@@ -174,7 +183,7 @@ export const fieldGet = async ({
 
   const commands: BitfieldCommand[] = []
 
-  for (let i = 0; i < meta.cols * meta.rows; i++) {
+  for (let i = 0; i < meta.size * meta.size; i++) {
     commands.push(['get', 'u3', i * FIELD_CELL_BITS])
   }
 

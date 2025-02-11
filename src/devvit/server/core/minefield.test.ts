@@ -13,13 +13,13 @@ it('returns a boolean consistently for a given seed, x, and y', () => {
     seed: seed,
     coord: {x, y},
     cols,
-    config: {mineDensity: 0.8},
+    config: {mineDensity: 80},
   })
   const result2 = minefieldIsMine({
     seed: seed,
     coord: {x, y},
     cols,
-    config: {mineDensity: 0.8},
+    config: {mineDensity: 80},
   })
   expect(result1).toBe(result2)
 })
@@ -28,8 +28,8 @@ it('obeys the mineDensity configuration', () => {
   const seed = 111 as Seed
   const cols = 3
 
-  const lowDensityConfig: MinefieldConfig = {mineDensity: 0.0}
-  const highDensityConfig: MinefieldConfig = {mineDensity: 1.0}
+  const lowDensityConfig: MinefieldConfig = {mineDensity: 0}
+  const highDensityConfig: MinefieldConfig = {mineDensity: 100}
 
   // if mineDensity is 0, isMine should always return false
   expect(
@@ -70,7 +70,7 @@ it('obeys the mineDensity configuration', () => {
 
 it('generates at least some mines under normal conditions', () => {
   const seed = 111 as Seed
-  const config: MinefieldConfig = {mineDensity: 0.15}
+  const config: MinefieldConfig = {mineDensity: 15}
 
   // We can check a small area for at least one mine
   // (this is not guaranteed for every random distribution, but likely).
