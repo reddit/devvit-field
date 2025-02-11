@@ -67,7 +67,9 @@ export class CursorEnt implements Ent {
       game.ctrl.pointType !== 'mouse'
     )
       this.#visible = false
-    this.#sprite.x = Math.round(game.ctrl.point.x) - (hitbox.x + hitbox.w / 2)
-    this.#sprite.y = Math.round(game.ctrl.point.y) - (hitbox.y + hitbox.h / 2)
+    this.#sprite.x =
+      Math.round(game.ctrl.screenPoint.x) - (hitbox.x + hitbox.w / 2)
+    this.#sprite.y =
+      Math.round(game.ctrl.screenPoint.y) - (hitbox.y + hitbox.h / 2)
   }
 }

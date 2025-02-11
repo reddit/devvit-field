@@ -11,7 +11,7 @@ export class PointerPoller {
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
   #on: number = 0
-  #wheel: [XYZ, XYZ] = [
+  readonly #wheel: [XYZ, XYZ] = [
     {x: 0, y: 0, z: 0},
     {x: 0, y: 0, z: 0},
   ]
@@ -37,7 +37,7 @@ export class PointerPoller {
   }
 
   register(op: 'add' | 'remove'): void {
-    const fn = <const>`${op}EventListener`
+    const fn = `${op}EventListener` as const
     this.#canvas[fn]('pointercancel', this.reset, {
       capture: true,
       passive: true,
@@ -57,9 +57,15 @@ export class PointerPoller {
   }
 
   reset = (): void => {
+    this.#wheel[0] = {x: 0, y: 0, z: 0}
+    this.#wheel[1] = {x: 0, y: 0, z: 0}
     this.bits = 0
     this.type = undefined
     this.#on = 0
+  }
+
+  get screenXY(): XY {
+    return this.#cam.toScreenXY(this.clientXY)
   }
 
   /** Wheel delta. */

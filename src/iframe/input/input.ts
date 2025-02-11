@@ -1,4 +1,4 @@
-import type {XY} from '../../shared/types/2d.js'
+import type {XY, XYZ} from '../../shared/types/2d.js'
 import type {Cam} from '../renderer/cam.js'
 import {KeyPoller} from './key-poller.js'
 import {PadPoller} from './pad-poller.js'
@@ -207,7 +207,11 @@ export class Input<T extends string> {
     this.#pointer.reset()
   }
 
-  get wheel(): {x: number; y: number; z: number} {
+  get screenPoint(): Readonly<XY> {
+    return this.#pointer.screenXY
+  }
+
+  get wheel(): Readonly<XYZ> {
     return this.#pointer.wheel
   }
 

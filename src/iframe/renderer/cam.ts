@@ -1,4 +1,10 @@
-import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.ts'
+import {
+  type Box,
+  type WH,
+  type XY,
+  boxHits,
+  xyAdd,
+} from '../../shared/types/2d.ts'
 
 /** Position relative the camera's bounding box. */
 export type FollowCamOrientation =
@@ -116,11 +122,15 @@ export class Cam {
 
   /** Returns position in fractional level coordinates. */
   toLevelXY(clientXY: Readonly<XY>): XY {
+    return xyAdd(this, this.toScreenXY(clientXY))
+  }
+
+  toScreenXY(clientXY: Readonly<XY>): XY {
     // WH of body in CSS px; document.body.getBoundingClientRect() returns
     // incorrectly large sizing on mobile that includes the address bar.
     return {
-      x: this.x + (clientXY.x / innerWidth) * this.#w,
-      y: this.y + (clientXY.y / innerHeight) * this.#h,
+      x: (clientXY.x / innerWidth) * this.#w,
+      y: (clientXY.y / innerHeight) * this.#h,
     }
   }
 

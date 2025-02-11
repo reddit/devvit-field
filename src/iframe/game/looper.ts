@@ -45,7 +45,7 @@ export class Looper {
   }
 
   register(op: 'add' | 'remove'): void {
-    const fn = <const>`${op}EventListener`
+    const fn = `${op}EventListener` as const
     for (const type of ['webglcontextlost', 'webglcontextrestored'])
       this.#canvas[fn](type, this.#onEvent, true)
     globalThis[fn]('visibilitychange', this.#onEvent, true)
