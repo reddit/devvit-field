@@ -5,3 +5,7 @@ export type Delta = {
   coord: XY
   team: Team
 }
+
+// TODO: Data structure to store deltas in redis
+
+// TODO: Produce a partitioned list of deltas to send to the client

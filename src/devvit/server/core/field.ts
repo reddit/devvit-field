@@ -116,6 +116,12 @@ export const fieldClaimCells = async ({
     }
   })
 
+  // TODO: See if any values are mines and if so, end the game for the player
+  // immediately with a realtime events
+
+  // TODO: Check to see if the game is over
+  // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
+
   // TODO: Increment scores, etc.
   // const txn = await redis.watch()
   // await txn.multi()
