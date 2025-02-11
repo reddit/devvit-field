@@ -11,7 +11,7 @@ export const initialize = async (ctx: TriggerContext): Promise<void> => {
 
   await ctx.scheduler.runJob({
     cron: '* * * * * *', // non-standard cron, every second
-    name: 'CHECK_MINEFIELD',
+    name: 'FIELD_UPDATE',
     data: {},
   })
 }

@@ -1,10 +1,9 @@
 import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {DevvitTest} from './_utils/DevvitTest'
-import type {BitfieldCommand} from './_utils/NewDevvitContext'
 import {toMatrix} from './_utils/utils'
 import {challengeMakeNew} from './challenge'
-import {FIELD_CELL_BITS, fieldClaimCells, fieldGet} from './field'
+import {fieldClaimCells, fieldGet} from './field'
 
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
   const {challengeNumber} = await challengeMakeNew({
