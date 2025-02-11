@@ -1,4 +1,4 @@
-import type {Player, PostSeed} from '../save.ts'
+import type {Player} from '../save.ts'
 import type {XY} from './2d.ts'
 import type {FieldConfig} from './field-config.ts'
 
@@ -26,7 +26,6 @@ export type InitDevvitMessage = {
   field: FieldConfig
   mode: IframeMode
   p1: Player
-  seed: PostSeed
   type: 'Init'
 }
 

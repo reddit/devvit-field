@@ -10,6 +10,22 @@ export type Delta = {
 const getChallengeDeltasKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:deltas` as const
 
+export const deltasGet = async ({
+  redis,
+  challengeNumber,
+}: {
+  redis: Devvit.Context['redis']
+  challengeNumber: number
+}): Promise<Delta[]> => {
+  const deltas = await redis.zRange(
+    getChallengeDeltasKey(challengeNumber),
+    0,
+    -1,
+  )
+
+  return deltas.map(x => JSON.parse(x.member))
+}
+
 export const deltasAdd = async ({
   redis,
   challengeNumber,
@@ -32,18 +48,13 @@ export const deltasAdd = async ({
   )
 }
 
-export const deltasGet = async ({
+export const deltasClear = async ({
   redis,
   challengeNumber,
 }: {
   redis: Devvit.Context['redis']
   challengeNumber: number
-}): Promise<Delta[]> => {
-  const deltas = await redis.zRange(
-    getChallengeDeltasKey(challengeNumber),
-    0,
-    -1,
-  )
-
-  return deltas.map(x => JSON.parse(x.member))
+}): Promise<void> => {
+  // TODO: Would deleting the key be faster?
+  await redis.zRemRangeByRank(getChallengeDeltasKey(challengeNumber), 0, -1)
 }

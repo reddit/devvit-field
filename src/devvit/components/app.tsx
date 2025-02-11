@@ -12,7 +12,7 @@ import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {
-  challengeConfigGet,
+  challengeConfigGetClientSafeProps,
   challengeGetCurrentChallengeNumber,
 } from '../server/core/challenge.tsx'
 import {userGetOrSet} from '../server/core/user.ts'
@@ -25,21 +25,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
-  const [meta] = useState2(async () => {
-    const meta = await challengeConfigGet({
+  const [config] = useState2(async () => {
+    return await challengeConfigGetClientSafeProps({
       redis: ctx.redis,
       challengeNumber: currentChallengeNumber,
     })
-    if (!meta) throw Error(`no meta for ${session.t3}`)
-    // TODO: Make this a function so it's easier for other people to see
-    // Note: Do not return the entire meta since it contains sensitive information about
-    // the challenge!
-
-    // TODO: Do we want to return the seed here? Feels like if we give the seed and don't salt on the backend then
-    // people can easily determine if something is a mine or not.
-    return {
-      seed: meta.seed,
-    }
   })
 
   const [loaded, setLoaded] = useState2(false)
@@ -79,6 +69,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           field: {wh: {w: 3333, h: 3333}},
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
+          // TODO: Remove this
           seed: {
             seed: meta.seed,
           },
