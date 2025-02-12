@@ -43,7 +43,6 @@ export class FieldLevel implements LevelEnt {
       )
       game.fieldScale = zoomLevels[this.#index]!
     }
-    // to-do: fix drag check.
     if (!game.ctrl.handled && game.ctrl.isOffStart('A') && !game.ctrl.drag) {
       game.ctrl.handled = true
       // to-do: move this mutation to a centralized store or Game so it's easier
