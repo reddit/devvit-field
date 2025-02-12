@@ -1,4 +1,4 @@
-import './devvit/triggers/checkMinefield.js'
+import './devvit/triggers/checkField.js'
 
 // Keep these imports last
 import './devvit/triggers/install.js'

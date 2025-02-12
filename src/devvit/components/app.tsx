@@ -11,7 +11,10 @@ import {
 import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
-import {challengeGetCurrentChallengeNumber} from '../server/core/challenge.tsx'
+import {
+  challengeConfigGetClientSafeProps,
+  challengeGetCurrentChallengeNumber,
+} from '../server/core/challenge.tsx'
 import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
 
@@ -22,6 +25,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
   const [profile] = useState2(async () => userGetOrSet({ctx}))
   const p1 = {profile, sid: session.sid}
+  const [_config] = useState2(async () => {
+    return await challengeConfigGetClientSafeProps({
+      redis: ctx.redis,
+      challengeNumber: currentChallengeNumber,
+    })
+  })
 
   const [loaded, setLoaded] = useState2(false)
   // to-do: move to UseWebViewResult.mounted.

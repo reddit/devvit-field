@@ -19,6 +19,9 @@ import {useState2} from './use-state2.ts'
 Devvit.configure({realtime: true})
 
 export type UseChannel2Opts<T extends RealtimeSystemMessage & JSONObject> = {
+  // TODO: Add a heartbeat with an arg of milliseconds we'd have a way to look at currently
+  // viewing users.
+
   /**
    * Name of the channel. By default, messages broadcast to all posts. A T3
    * isolates messages to a post, a common name like 'default' broadcasts to all

@@ -1,13 +1,11 @@
 // NOTE: This is all global redis!
 import type {Devvit} from '@devvit/public-api'
-import {NoProfile} from '../../../shared/save'
-import type {T2} from '../../../shared/types/tid'
+import type {Profile} from '../../../shared/save'
+import {noT2, noUsername} from '../../../shared/types/tid'
+import {globalStatsIncrement} from './globalStats'
 
-type User = {
-  /** Player user ID. t2_0 for anons. */
-  t2: T2
-  /** Player username. eg, spez. */
-  username: string
+export function noProfile(): Profile {
+  return {t2: noT2, username: noUsername}
 }
 
 const userKey = 'users'
@@ -18,7 +16,7 @@ export const userMaybeGet = async ({
 }: {
   redis: Devvit.Context['redis']
   userId: string
-}): Promise<User | undefined> => {
+}): Promise<Profile | undefined> => {
   const user = await redis.global.hGet(userKey, userId)
 
   if (!user) {
@@ -31,7 +29,7 @@ export const userMaybeGet = async ({
 export const userGet = async (args: {
   redis: Devvit.Context['redis']
   userId: string
-}): Promise<User | undefined> => {
+}): Promise<Profile | undefined> => {
   const user = await userMaybeGet(args)
 
   if (!user) {
@@ -46,7 +44,7 @@ export const userSet = async ({
   user,
 }: {
   redis: Devvit.Context['redis']
-  user: User
+  user: Profile
 }): Promise<void> => {
   await redis.global.hSet(userKey, {
     [user.t2]: JSON.stringify(user),
@@ -57,8 +55,8 @@ export const userGetOrSet = async ({
   ctx,
 }: {
   ctx: Devvit.Context
-}): Promise<User> => {
-  if (!ctx.userId) return NoProfile()
+}): Promise<Profile> => {
+  if (!ctx.userId) return noProfile()
 
   const maybeProfile = await userMaybeGet({
     redis: ctx.redis,
@@ -68,9 +66,9 @@ export const userGetOrSet = async ({
   if (maybeProfile) return maybeProfile
 
   const userProfile = await ctx.reddit.getUserById(ctx.userId)
-  if (!userProfile) return NoProfile()
+  if (!userProfile) return noProfile()
 
-  const user: User = {
+  const user: Profile = {
     t2: userProfile.id,
     username: userProfile.username,
   }
@@ -78,6 +76,12 @@ export const userGetOrSet = async ({
   await userSet({
     redis: ctx.redis,
     user,
+  })
+
+  await globalStatsIncrement({
+    redis: ctx.redis,
+    globalNumber: 0,
+    field: 'totalPlayers',
   })
 
   return user

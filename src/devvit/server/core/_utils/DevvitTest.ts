@@ -3,17 +3,29 @@
  * can open source in the future!
  */
 import type {
+  Comment,
+  CommentSubmissionOptions,
+  CrosspostOptions,
+  CustomPostTextFallbackOptions,
   Devvit,
+  EnrichedThumbnail,
   JSONValue,
   JobContext,
   KVStore,
+  LinkFlair,
+  Listing,
   MediaPlugin,
+  Post,
+  PostSuggestedCommentSort,
+  PostTextOptions,
+  SecureMedia,
   TriggerContext,
+  User,
 } from '@devvit/public-api'
 import type {CacheOptions} from '@devvit/public-api/devvit/internals/promise_cache'
 import Redis from 'ioredis'
 import {RedisMemoryServer} from 'redis-memory-server'
-import {type TestContext, it as itCore} from 'vitest'
+import {type TestContext, it as itCore, vi} from 'vitest'
 
 const redisServer = new RedisMemoryServer()
 const host = await redisServer.getHost()
@@ -225,33 +237,46 @@ export namespace DevvitTest {
         return Number(val)
       },
       // TODO: No clue what the default options are
-      async zRange(_key, start, stop, options = {by: 'rank', reverse: false}) {
+      async zRange(
+        _key: string,
+        start: number | string,
+        stop: number | string,
+        options = {by: 'rank' as 'rank' | 'score' | 'lex', reverse: false},
+      ) {
         let val: string[] = []
         const key = makeKey(_key)
-        if (options?.by === 'score') {
-          val = options.reverse
-            ? await con.zrevrange(key, start, stop, 'WITHSCORES')
-            : await con.zrange(key, start, stop, 'WITHSCORES')
-        } else if (options?.by === 'rank') {
-          val = options.reverse
-            ? await con.zrevrange(key, start, stop, 'WITHSCORES')
-            : await con.zrange(key, start, stop, 'WITHSCORES')
-          // TODO: Need to implement this part of our API
-          /**
-           * When using by: 'lex', the start and stop inputs will be prepended with [ by default, unless they already
-           * begin with [, ( or are one of the special values + or -.
-           */
-        } else if (options?.by === 'lex') {
-          val = options.reverse
-            ? await con.zrevrangebylex(key, start, stop)
-            : await con.zrangebylex(key, start, stop)
+
+        if (options.by === 'score') {
+          if (options.reverse) {
+            // zrevrangebyscore expects (max, min)
+            val = await con.zrevrangebyscore(key, stop, start, 'WITHSCORES')
+          } else {
+            // zrangebyscore expects (min, max)
+            val = await con.zrangebyscore(key, start, stop, 'WITHSCORES')
+          }
+        } else if (options.by === 'rank') {
+          // For rank-based queries, we use zrange / zrevrange with numeric ranks
+          if (options.reverse) {
+            val = await con.zrevrange(key, start, stop, 'WITHSCORES')
+          } else {
+            val = await con.zrange(key, start, stop, 'WITHSCORES')
+          }
+        } else if (options.by === 'lex') {
+          // For lex-based queries, use zrangebylex / zrevrangebylex
+          // These expect lex ordering, e.g. [ or ( as part of start/stop
+          if (options.reverse) {
+            val = await con.zrevrangebylex(key, start, stop)
+          } else {
+            val = await con.zrangebylex(key, start, stop)
+          }
         }
 
-        // Lex doesn't support with scores
-        if (options?.by === 'lex') {
-          return val.map(v => ({member: v, score: 0}))
+        // Lex queries can't return scores, so just map them to a score of 0
+        if (options.by === 'lex') {
+          return val.map(member => ({member, score: 0}))
         }
 
+        // For rank or score, Redis will return in [value, score, value, score, ...] form
         const results: {member: string; score: number}[] = []
         for (let i = 0; i < val.length; i += 2) {
           results.push({member: val[i]!, score: Number(val[i + 1])})
@@ -303,6 +328,11 @@ export namespace DevvitTest {
       async zScore(key, member) {
         const val = await con.zscore(makeKey(key), member)
         return val === null ? undefined : Number(val)
+      },
+      // @ts-expect-error - too lazy to type it with all the overloads
+      async bitfield(key, ...cmds: BitfieldCommand) {
+        // @ts-expect-error
+        return (await con.bitfield(makeKey(key), ...cmds)) as number[]
       },
     }
   }
@@ -359,10 +389,380 @@ export namespace DevvitTest {
       },
       subredditName: 'testSubreddit',
       redis: mockRedisClient({prefix: redisPrefix}),
-      // @ts-expect-error todo
+      // @ts-expect-error More #private complaints
+      realtime: {
+        send: vi.fn(),
+      },
       reddit: {
         getUserById(_id) {
           throw new Error('Not implemented in test')
+        },
+        // @ts-expect-error complains about #private and ain't got time to fix it
+        async submitPost(_options) {
+          const post = {
+            '#private': '',
+            id: 't3_1in6n7n' as const,
+            authorId: 't2_1i8t1yze9x' as const,
+            authorName: 'banland-msw',
+            subredditId: 't5_dii275' as const,
+            subredditName: 'xBanland0',
+            permalink: '/r/xBanland0/comments/1in6n7n/banfield_9/',
+            title: 'Banfield #9',
+            body:
+              '# DX_Bundle:\n' +
+              '\n' +
+              '    Gk8zZDc0YmM5YS1jMjQ3LTRmMGQtYTU3Mi03OWM1MzA3YTAzOWQuYmFubGFuZC1tc3cubWFpbi5kZXZ2aXQtZ2F0ZXdheS5yZWRkaXQuY29tIrUECixkZXZ2aXQucmVkZGl0LmN1c3RvbV9wb3N0LnYxYWxwaGEuQ3VzdG9tUG9zdBKwAQo3ZGV2dml0LnJlZGRpdC5jdXN0b21fcG9zdC52MWFscGhhLkN1c3RvbVBvc3QuUmVuZGVyUG9zdBIKUmVuZGVyUG9zdCozZGV2dml0LnJlZGRpdC5jdXN0b21fcG9zdC52MWFscGhhLlJlbmRlclBvc3RSZXF1ZXN0MjRkZXZ2aXQucmVkZGl0LmN1c3RvbV9wb3N0LnYxYWxwaGEuUmVuZGVyUG9zdFJlc3BvbnNlEqABCj5kZXZ2aXQucmVkZGl0LmN1c3RvbV9wb3N0LnYxYWxwaGEuQ3VzdG9tUG9zdC5SZW5kZXJQb3N0Q29udGVudBIRUmVuZGVyUG9zdENvbnRlbnQqJGRldnZpdC51aS5ibG9ja19raXQudjFiZXRhLlVJUmVxdWVzdDIlZGV2dml0LnVpLmJsb2NrX2tpdC52MWJldGEuVUlSZXNwb25zZRKiAQo/ZGV2dml0LnJlZGRpdC5jdXN0b21fcG9zdC52MWFscGhhLkN1c3RvbVBvc3QuUmVuZGVyUG9zdENvbXBvc2VyEhJSZW5kZXJQb3N0Q29tcG9zZXIqJGRldnZpdC51aS5ibG9ja19raXQudjFiZXRhLlVJUmVxdWVzdDIlZGV2dml0LnVpLmJsb2NrX2tpdC52MWJldGEuVUlSZXNwb25zZRoKQ3VzdG9tUG9zdCLhAQonZGV2dml0LnVpLmV2ZW50cy52MWFscGhhLlVJRXZlbnRIYW5kbGVyEqUBCjVkZXZ2aXQudWkuZXZlbnRzLnYxYWxwaGEuVUlFdmVudEhhbmRsZXIuSGFuZGxlVUlFdmVudBINSGFuZGxlVUlFdmVudCotZGV2dml0LnVpLmV2ZW50cy52MWFscGhhLkhhbmRsZVVJRXZlbnRSZXF1ZXN0Mi5kZXZ2aXQudWkuZXZlbnRzLnYxYWxwaGEuSGFuZGxlVUlFdmVudFJlc3BvbnNlGg5VSUV2ZW50SGFuZGxlcjJJEg8KBG5vZGUSBzIyLjEzLjASGAoOQGRldnZpdC9wcm90b3MSBjAuMTEuNhIcChJAZGV2dml0L3B1YmxpYy1hcGkSBjAuMTEuNg==\n' +
+              '\n' +
+              '# DX_Config:\n' +
+              '\n' +
+              '    EgA=\n' +
+              '\n' +
+              '# DX_Cached:\n' +
+              '\n' +
+              '    GqcBCqQBCp4BCAEqEhIHCgUNAADIQhoHCgUNAADIQhqFARKCAQgCElUIBCoWEgkKBw0AAGlDEAEaCQoHDQAAa0MQARo5KjcKI2h0dHBzOi8vaS5yZWRkLml0L3BhNnNwZzZwbmRoZTEuZ2lmEOkBGOsBIgpsb2FkaW5n4oCmIgQIARABSgkjMDAwMDAwZmZSFgoJIzAwMDAwMGZmEgkjMDAwMDAwZmYQwAI=',
+            bodyHtml:
+              '<!-- SC_OFF --><div class="md"><h1>DX_Bundle:</h1>\n' +
+              '\n' +
+              '<pre><code>Gk8zZDc0YmM5YS1jMjQ3LTRmMGQtYTU3Mi03OWM1MzA3YTAzOWQuYmFubGFuZC1tc3cubWFpbi5kZXZ2aXQtZ2F0ZXdheS5yZWRkaXQuY29tIrUECixkZXZ2aXQucmVkZGl0LmN1c3RvbV9wb3N0LnYxYWxwaGEuQ3VzdG9tUG9zdBKwAQo3ZGV2dml0LnJlZGRpdC5jdXN0b21fcG9zdC52MWFscGhhLkN1c3RvbVBvc3QuUmVuZGVyUG9zdBIKUmVuZGVyUG9zdCozZGV2dml0LnJlZGRpdC5jdXN0b21fcG9zdC52MWFscGhhLlJlbmRlclBvc3RSZXF1ZXN0MjRkZXZ2aXQucmVkZGl0LmN1c3RvbV9wb3N0LnYxYWxwaGEuUmVuZGVyUG9zdFJlc3BvbnNlEqABCj5kZXZ2aXQucmVkZGl0LmN1c3RvbV9wb3N0LnYxYWxwaGEuQ3VzdG9tUG9zdC5SZW5kZXJQb3N0Q29udGVudBIRUmVuZGVyUG9zdENvbnRlbnQqJGRldnZpdC51aS5ibG9ja19raXQudjFiZXRhLlVJUmVxdWVzdDIlZGV2dml0LnVpLmJsb2NrX2tpdC52MWJldGEuVUlSZXNwb25zZRKiAQo/ZGV2dml0LnJlZGRpdC5jdXN0b21fcG9zdC52MWFscGhhLkN1c3RvbVBvc3QuUmVuZGVyUG9zdENvbXBvc2VyEhJSZW5kZXJQb3N0Q29tcG9zZXIqJGRldnZpdC51aS5ibG9ja19raXQudjFiZXRhLlVJUmVxdWVzdDIlZGV2dml0LnVpLmJsb2NrX2tpdC52MWJldGEuVUlSZXNwb25zZRoKQ3VzdG9tUG9zdCLhAQonZGV2dml0LnVpLmV2ZW50cy52MWFscGhhLlVJRXZlbnRIYW5kbGVyEqUBCjVkZXZ2aXQudWkuZXZlbnRzLnYxYWxwaGEuVUlFdmVudEhhbmRsZXIuSGFuZGxlVUlFdmVudBINSGFuZGxlVUlFdmVudCotZGV2dml0LnVpLmV2ZW50cy52MWFscGhhLkhhbmRsZVVJRXZlbnRSZXF1ZXN0Mi5kZXZ2aXQudWkuZXZlbnRzLnYxYWxwaGEuSGFuZGxlVUlFdmVudFJlc3BvbnNlGg5VSUV2ZW50SGFuZGxlcjJJEg8KBG5vZGUSBzIyLjEzLjASGAoOQGRldnZpdC9wcm90b3MSBjAuMTEuNhIcChJAZGV2dml0L3B1YmxpYy1hcGkSBjAuMTEuNg==\n' +
+              '</code></pre>\n' +
+              '\n' +
+              '<h1>DX_Config:</h1>\n' +
+              '\n' +
+              '<pre><code>EgA=\n' +
+              '</code></pre>\n' +
+              '\n' +
+              '<h1>DX_Cached:</h1>\n' +
+              '\n' +
+              '<pre><code>GqcBCqQBCp4BCAEqEhIHCgUNAADIQhoHCgUNAADIQhqFARKCAQgCElUIBCoWEgkKBw0AAGlDEAEaCQoHDQAAa0MQARo5KjcKI2h0dHBzOi8vaS5yZWRkLml0L3BhNnNwZzZwbmRoZTEuZ2lmEOkBGOsBIgpsb2FkaW5n4oCmIgQIARABSgkjMDAwMDAwZmZSFgoJIzAwMDAwMGZmEgkjMDAwMDAwZmYQwAI=\n' +
+              '</code></pre>\n' +
+              '</div><!-- SC_ON -->',
+            url: 'https://www.reddit.com/r/xBanland0/comments/1in6n7n/banfield_9/',
+            thumbnail: undefined,
+            score: 1,
+            numberOfComments: 0,
+            numberOfReports: 0,
+            createdAt: new Date('2025-02-11T19:12:57.000Z'),
+            approved: false,
+            spam: false,
+            stickied: false,
+            removed: false,
+            removedBy: undefined,
+            removedByCategory: undefined,
+            archived: false,
+            edited: false,
+            locked: false,
+            nsfw: false,
+            quarantined: false,
+            spoiler: false,
+            hidden: false,
+            ignoringReports: false,
+            distinguishedBy: undefined,
+            flair: {
+              backgroundColor: '',
+              cssClass: undefined,
+              text: undefined,
+              type: 'text',
+              templateId: undefined,
+              richtext: [],
+              textColor: 'dark',
+            },
+            secureMedia: undefined,
+            modReportReasons: [],
+            userReportReasons: [],
+            comments: [],
+            approvedAtUtc: Date.now(),
+            bannedAtUtc: Date.now(),
+          }
+
+          // @ts-expect-error not worth it
+          class MockPost implements Post {
+            get id(): `t3_${string}` {
+              return `t3_${Math.random().toString()}`
+            }
+
+            addRemovalNote(_options: {
+              reasonId: string
+              modNote?: string
+            }): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            approve(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get approved(): boolean {
+              return post.approved
+            }
+            get approvedAtUtc(): number {
+              return post.approvedAtUtc
+            }
+            get archived(): boolean {
+              return post.archived
+            }
+            get authorId(): `t2_${string}` | undefined {
+              return `t2_${Math.random().toString()}`
+            }
+            get authorName(): string {
+              return post.authorName
+            }
+            get bannedAtUtc(): number {
+              return post.bannedAtUtc
+            }
+            get body(): string | undefined {
+              return post.body
+            }
+            get bodyHtml(): string | undefined {
+              return post.bodyHtml
+            }
+            get comments(): Listing<Comment> {
+              throw new Error('Not implemented in test')
+            }
+            get createdAt(): Date {
+              return new Date(post.createdAt)
+            }
+            crosspost(
+              _options: Omit<CrosspostOptions, 'postId'>,
+            ): Promise<Post> {
+              throw new Error('Not implemented in test')
+            }
+            delete(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            distinguish(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            distinguishAsAdmin(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get distinguishedBy(): string | undefined {
+              return post.distinguishedBy
+            }
+            edit(_options: PostTextOptions): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            addComment(_options: CommentSubmissionOptions): Promise<Comment> {
+              throw new Error('Not implemented in test')
+            }
+            get edited(): boolean {
+              return post.edited
+            }
+            get flair(): LinkFlair | undefined {
+              // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+              return post.flair as any
+            }
+            getAuthor(): Promise<User | undefined> {
+              throw new Error('Not implemented in test')
+            }
+            getEnrichedThumbnail(): Promise<EnrichedThumbnail | undefined> {
+              throw new Error('Not implemented in test')
+            }
+            get hidden(): boolean {
+              return post.hidden
+            }
+            hide(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            ignoreReports(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get ignoringReports(): boolean {
+              return post.ignoringReports
+            }
+            isApproved(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isArchived(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isDistinguishedBy(): string | undefined {
+              throw new Error('Not implemented in test')
+            }
+            isEdited(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isHidden(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isIgnoringReports(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isLocked(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isNsfw(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isQuarantined(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isRemoved(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isSpam(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isSpoiler(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            isStickied(): boolean {
+              throw new Error('Not implemented in test')
+            }
+            lock(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get locked(): boolean {
+              return post.locked
+            }
+            markAsNsfw(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            markAsSpoiler(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get modReportReasons(): string[] {
+              return []
+            }
+            get nsfw(): boolean {
+              return post.nsfw
+            }
+            get numberOfComments(): number {
+              return post.numberOfComments
+            }
+            get numberOfReports(): number {
+              return post.numberOfReports
+            }
+            get permalink(): string {
+              return post.permalink
+            }
+            get quarantined(): boolean {
+              return post.quarantined
+            }
+            remove(_isSpam?: boolean): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get removed(): boolean {
+              return post.removed
+            }
+            get removedBy(): string | undefined {
+              return post.removedBy
+            }
+            get removedByCategory(): string | undefined {
+              return post.removedByCategory
+            }
+            get score(): number {
+              return post.score
+            }
+            get secureMedia(): SecureMedia | undefined {
+              return post.secureMedia
+            }
+            setCustomPostPreview(_ui: JSX.ComponentFunction): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            setSuggestedCommentSort(
+              _suggestedSort: PostSuggestedCommentSort,
+            ): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            setTextFallback(
+              _options: CustomPostTextFallbackOptions,
+            ): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get spam(): boolean {
+              return post.spam
+            }
+            get spoiler(): boolean {
+              return post.spoiler
+            }
+            get stickied(): boolean {
+              return post.stickied
+            }
+            sticky(_position?: 1 | 2 | 3 | 4): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get subredditId(): `t5_${string}` {
+              return `t5_${Math.random().toString()}`
+            }
+            get subredditName(): string {
+              return post.subredditName
+            }
+            get thumbnail():
+              | {url: string; height: number; width: number}
+              | undefined {
+              return post.thumbnail
+            }
+            get title(): string {
+              return post.title
+            }
+            toJSON(): Pick<
+              Post,
+              | 'id'
+              | 'authorId'
+              | 'authorName'
+              | 'subredditId'
+              | 'subredditName'
+              | 'permalink'
+              | 'title'
+              | 'body'
+              | 'bodyHtml'
+              | 'url'
+              | 'thumbnail'
+              | 'score'
+              | 'numberOfComments'
+              | 'numberOfReports'
+              | 'createdAt'
+              | 'approved'
+              | 'spam'
+              | 'stickied'
+              | 'removed'
+              | 'removedBy'
+              | 'removedByCategory'
+              | 'archived'
+              | 'edited'
+              | 'locked'
+              | 'nsfw'
+              | 'quarantined'
+              | 'spoiler'
+              | 'hidden'
+              | 'ignoringReports'
+              | 'distinguishedBy'
+              | 'flair'
+              | 'secureMedia'
+              | 'userReportReasons'
+              | 'modReportReasons'
+            > {
+              // @ts-expect-error no worth it
+              return post
+            }
+            undistinguish(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            unhide(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            unignoreReports(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            unlock(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            unmarkAsNsfw(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            unmarkAsSpoiler(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            unsticky(): Promise<void> {
+              throw new Error('Not implemented in test')
+            }
+            get url(): string {
+              return post.url
+            }
+            get userReportReasons(): string[] {
+              return []
+            }
+          }
+
+          return new MockPost()
         },
       },
     }
@@ -399,8 +799,8 @@ export namespace DevvitTest {
       throw new Error('Only UI context is supported at The moment')
     }
 
-    function func(vitestContext: TestContext & object) {
-      fn(context, vitestContext)
+    async function func(vitestContext: TestContext & object) {
+      await fn(context, vitestContext)
     }
 
     if (_only) {

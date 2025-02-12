@@ -7,5 +7,14 @@
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
-  "cSpell.words": ["Banfield", "Devvit", "snoovatar"]
+  "typescript.preferences.autoImportSpecifierExcludeRegexes": ["^node:test"],
+  "cSpell.words": [
+    "Banfield",
+    "Bitfield",
+    "Devvit",
+    "incrby",
+    "playtest",
+    "snoovatar",
+    "webroot"
+  ]
 }

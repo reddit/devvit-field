@@ -1,48 +1,46 @@
-import type {Devvit} from '@devvit/public-api'
-import {type PostSeed, PostSeedFromNothing} from '../../../shared/save'
+import type {XY} from '../../../shared/types/2d'
+import {Random, type Seed} from '../../../shared/types/random'
 
-const minefieldKey = 'minefield'
+export interface MinefieldConfig {
+  /**
+   * Integer between 0 and 100.
+   *
+   * 0: No mines
+   * 100: Only mines
+   */
+  mineDensity: number
+}
 
-export const minefieldGet = async ({
-  redis,
-  challengeNumber,
+const DEFAULT_CONFIG: MinefieldConfig = {
+  mineDensity: 2,
+}
+
+export function minefieldIsMine({
+  seed,
+  coord,
+  cols,
+  config = DEFAULT_CONFIG,
 }: {
-  redis: Devvit.Context['redis']
-  challengeNumber: number
-}): Promise<PostSeed> => {
-  const minefield = await redis.hGet(minefieldKey, challengeNumber.toString())
-
-  if (!minefield) {
-    throw new Error('No minefield found')
+  seed: Seed
+  coord: XY
+  cols: number
+  config?: MinefieldConfig
+}): boolean {
+  if (
+    !Number.isInteger(config.mineDensity) ||
+    config.mineDensity < 0 ||
+    config.mineDensity > 100
+  ) {
+    throw new Error(
+      `mineDensity must be an integer between 0-100, got ${config.mineDensity}`,
+    )
   }
 
-  return JSON.parse(minefield)
+  const rnd = new Random(createSeedFromCoords(seed, coord, cols))
+
+  return rnd.num() < config.mineDensity / 100
 }
 
-export const minefieldSet = async ({
-  redis,
-  challengeNumber,
-  minefield,
-}: {
-  redis: Devvit.Context['redis']
-  challengeNumber: number
-  minefield: PostSeed
-}): Promise<void> => {
-  await redis.hSet(minefieldKey, {
-    [challengeNumber.toString()]: JSON.stringify(minefield),
-  })
-}
-
-export const minefieldCreate = async ({
-  redis,
-  challengeNumber,
-}: {
-  redis: Devvit.Context['redis']
-  challengeNumber: number
-}): Promise<void> => {
-  const minefield = PostSeedFromNothing()
-
-  await redis.hSet(minefieldKey, {
-    [challengeNumber.toString()]: JSON.stringify(minefield),
-  })
+function createSeedFromCoords(seed: Seed, coord: XY, cols: number): Seed {
+  return Math.trunc(seed + coord.y * cols + coord.x) as Seed
 }

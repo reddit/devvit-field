@@ -1,8 +1,12 @@
 import {Devvit, type TriggerContext} from '@devvit/public-api'
 import {challengeOnInstall} from '../server/core/challenge'
+import {leaderboardInit} from '../server/core/leaderboards/global/leaderboard'
+import {teamStatsWinsInit} from '../server/core/leaderboards/subreddit/team.wins'
 
 export const initialize = async (ctx: TriggerContext): Promise<void> => {
-  await challengeOnInstall(ctx)
+  await challengeOnInstall({redis: ctx.redis})
+  await leaderboardInit({redis: ctx.redis})
+  await teamStatsWinsInit({redis: ctx.redis})
 
   const jobs = await ctx.scheduler.listJobs()
   for (const job of jobs) {
@@ -11,7 +15,7 @@ export const initialize = async (ctx: TriggerContext): Promise<void> => {
 
   await ctx.scheduler.runJob({
     cron: '* * * * * *', // non-standard cron, every second
-    name: 'CHECK_MINEFIELD',
+    name: 'FIELD_UPDATE',
     data: {},
   })
 }
