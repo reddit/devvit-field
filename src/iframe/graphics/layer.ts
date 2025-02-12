@@ -6,11 +6,3 @@ export const Layer = {
   Level: 4,
 } as const
 export type Layer = keyof typeof Layer
-
-export const layerDrawOrder: readonly Layer[] = [
-  'Level',
-  'Default',
-  'UIBack',
-  'UIFore',
-  'Cursor',
-]

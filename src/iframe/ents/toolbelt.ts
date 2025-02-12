@@ -1,16 +1,15 @@
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
+import {Layer} from '../graphics/layer.js'
 import {Sprite} from '../graphics/sprite.js'
-import {Layer} from '../types/layer.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
 export class ToolbeltEnt implements Ent {
   readonly eid: EID
-  readonly layer: Layer = 'Cursor'
+  hidden: boolean = false
   #black: Sprite<Tag>
   #fade: Sprite<Tag>
-  hidden: boolean = false
 
   constructor(game: Game) {
     this.eid = game.eid.new()

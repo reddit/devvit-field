@@ -1,4 +1,4 @@
-import type {Bmp} from './bmp.js'
+import type {Bmp} from '../graphics/bmp.js'
 
 export type AttribBuffer = {readonly buffer: ArrayBufferView; size: number}
 

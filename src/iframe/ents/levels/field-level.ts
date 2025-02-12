@@ -1,5 +1,4 @@
 import type {Game} from '../../game/game.ts'
-import type {Layer} from '../../types/layer.ts'
 import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import {ToolbeltEnt} from '../toolbelt.ts'
@@ -17,7 +16,6 @@ const zoomLevels: readonly number[] = [
 
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
-  readonly layer: Layer = 'Level'
   #index: number
 
   constructor(game: Game) {

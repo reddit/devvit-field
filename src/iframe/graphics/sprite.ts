@@ -1,6 +1,6 @@
 import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
-import type {Bmp} from '../renderer/bmp.js'
 import type {Anim, AnimOffset, Atlas, TagFormat} from './atlas.js'
+import type {Bmp} from './bmp.js'
 
 export type SpriteJSON = {
   cel?: number

@@ -1,8 +1,8 @@
 import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
+import {Layer} from '../graphics/layer.js'
 import {Sprite} from '../graphics/sprite.js'
-import {Layer} from '../types/layer.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
@@ -11,7 +11,6 @@ const hitbox: Readonly<Box> = {x: 0, y: 0, w: 1, h: 1}
 
 export class CursorEnt implements Ent {
   readonly eid: EID
-  readonly layer: Layer = 'Cursor'
   #sprite: Sprite<Tag>
   #visible: boolean = false
 
