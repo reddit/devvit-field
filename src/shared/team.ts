@@ -2,6 +2,8 @@ import type {T2} from './types/tid'
 
 export type Team = 0 | 1 | 2 | 3
 
+export const teams: Team[] = [0, 1, 2, 3]
+
 /**
  * Produces a deterministic team number from a user ID. Randomness is determined
  * by the assembling a number from the character codes of the user ID and returning

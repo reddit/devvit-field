@@ -237,33 +237,46 @@ export namespace DevvitTest {
         return Number(val)
       },
       // TODO: No clue what the default options are
-      async zRange(_key, start, stop, options = {by: 'rank', reverse: false}) {
+      async zRange(
+        _key: string,
+        start: number | string,
+        stop: number | string,
+        options = {by: 'rank' as 'rank' | 'score' | 'lex', reverse: false},
+      ) {
         let val: string[] = []
         const key = makeKey(_key)
-        if (options?.by === 'score') {
-          val = options.reverse
-            ? await con.zrevrange(key, start, stop, 'WITHSCORES')
-            : await con.zrange(key, start, stop, 'WITHSCORES')
-        } else if (options?.by === 'rank') {
-          val = options.reverse
-            ? await con.zrevrange(key, start, stop, 'WITHSCORES')
-            : await con.zrange(key, start, stop, 'WITHSCORES')
-          // TODO: Need to implement this part of our API
-          /**
-           * When using by: 'lex', the start and stop inputs will be prepended with [ by default, unless they already
-           * begin with [, ( or are one of the special values + or -.
-           */
-        } else if (options?.by === 'lex') {
-          val = options.reverse
-            ? await con.zrevrangebylex(key, start, stop)
-            : await con.zrangebylex(key, start, stop)
+
+        if (options.by === 'score') {
+          if (options.reverse) {
+            // zrevrangebyscore expects (max, min)
+            val = await con.zrevrangebyscore(key, stop, start, 'WITHSCORES')
+          } else {
+            // zrangebyscore expects (min, max)
+            val = await con.zrangebyscore(key, start, stop, 'WITHSCORES')
+          }
+        } else if (options.by === 'rank') {
+          // For rank-based queries, we use zrange / zrevrange with numeric ranks
+          if (options.reverse) {
+            val = await con.zrevrange(key, start, stop, 'WITHSCORES')
+          } else {
+            val = await con.zrange(key, start, stop, 'WITHSCORES')
+          }
+        } else if (options.by === 'lex') {
+          // For lex-based queries, use zrangebylex / zrevrangebylex
+          // These expect lex ordering, e.g. [ or ( as part of start/stop
+          if (options.reverse) {
+            val = await con.zrevrangebylex(key, start, stop)
+          } else {
+            val = await con.zrangebylex(key, start, stop)
+          }
         }
 
-        // Lex doesn't support with scores
-        if (options?.by === 'lex') {
-          return val.map(v => ({member: v, score: 0}))
+        // Lex queries can't return scores, so just map them to a score of 0
+        if (options.by === 'lex') {
+          return val.map(member => ({member, score: 0}))
         }
 
+        // For rank or score, Redis will return in [value, score, value, score, ...] form
         const results: {member: string; score: number}[] = []
         for (let i = 0; i < val.length; i += 2) {
           results.push({member: val[i]!, score: Number(val[i + 1])})
