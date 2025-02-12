@@ -24,7 +24,7 @@ import type {
 import type {CacheOptions} from '@devvit/public-api/devvit/internals/promise_cache'
 import Redis from 'ioredis'
 import {RedisMemoryServer} from 'redis-memory-server'
-import {type TestContext, it as itCore} from 'vitest'
+import {type TestContext, it as itCore, vi} from 'vitest'
 import type {BitfieldCommand, NewDevvitContext} from './NewDevvitContext'
 
 const redisServer = new RedisMemoryServer()
@@ -389,6 +389,10 @@ export namespace DevvitTest {
       },
       subredditName: 'testSubreddit',
       redis: mockRedisClient({prefix: redisPrefix}),
+      // @ts-expect-error More #private complaints
+      realtime: {
+        send: vi.fn(),
+      },
       reddit: {
         getUserById(_id) {
           throw new Error('Not implemented in test')
@@ -516,7 +520,7 @@ export namespace DevvitTest {
               return new Date(post.createdAt)
             }
             crosspost(
-              options: Omit<CrosspostOptions, 'postId'>,
+              _options: Omit<CrosspostOptions, 'postId'>,
             ): Promise<Post> {
               throw new Error('Not implemented in test')
             }

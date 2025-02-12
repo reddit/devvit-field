@@ -47,6 +47,20 @@ export const playerStatsCellsClaimedIncrementForMember = async ({
   )
 }
 
+export const playerStatsCellsClaimedGameOver = async ({
+  redis,
+  challengeNumber,
+  member,
+}: {
+  redis: Devvit.Context['redis']
+  challengeNumber: number
+  member: T2
+}): Promise<void> => {
+  await redis.zRem(getRedisKey(challengeNumber), [member])
+  // Negative one denotes a game over
+  await redis.zAdd(getRedisKey(challengeNumber), {member: member, score: -1})
+}
+
 export const playerStatsCellsClaimedForMember = async ({
   redis,
   challengeNumber,

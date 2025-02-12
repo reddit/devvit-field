@@ -10,7 +10,7 @@ import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
 const currentChallengeNumberKey = 'current_challenge_number'
 
-type ChallengeConfig = {
+export type ChallengeConfig = {
   /** The length of a side of the field. We assume it is always a perfect square. */
   size: number
   /**
@@ -37,7 +37,7 @@ type ChallengeConfig = {
    * I don't think we want to dynamically change the density of the field, but who's to
    * say it wouldn't be a fun feature if needed.
    */
-  density: number
+  mineDensity: number
   // TODO: Theme variables and other config that we want to change per sub
 }
 
@@ -48,7 +48,7 @@ const makeDefaultChallengeConfig = (): ChallengeConfig => ({
   size: 10,
   partitionSize: 5,
   seed: makeRandomSeed(),
-  density: 2,
+  mineDensity: 2,
 })
 
 export const challengeConfigGet = async ({
@@ -236,7 +236,7 @@ function deserializeChallengeConfig(
 
       const numberKeys: (keyof ChallengeConfig)[] = [
         'size',
-        'density',
+        'mineDensity',
         'partitionSize',
         'seed',
       ]

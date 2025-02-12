@@ -34,7 +34,7 @@ export const leaderboardGet = async ({
   })
 }
 
-export const leaderboardIncrementForMember = async ({
+export const leaderboardIncrementForTeam = async ({
   redis,
   member,
   incrementBy = 1,

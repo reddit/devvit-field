@@ -3,9 +3,20 @@ import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {T2} from '../../../shared/types/tid'
 import type {BitfieldCommand, NewDevvitContext} from './_utils/NewDevvitContext'
-import {challengeConfigGet} from './challenge'
+import {type ChallengeConfig, challengeConfigGet} from './challenge'
 import type {Delta} from './deltas'
 import {deltasAdd} from './deltas'
+import {
+  playerStatsCellsClaimedGameOver,
+  playerStatsCellsClaimedIncrementForMember,
+} from './leaderboards/challenge/player.cellsClaimed'
+import {
+  teamStatsCellsClaimedGet,
+  teamStatsCellsClaimedIncrementForMember,
+} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
+import {minefieldIsMine} from './minefield'
+import {computeScore} from './score'
 
 const createFieldKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:field` as const
@@ -32,42 +43,87 @@ const enforceBounds = ({
   return coord
 }
 
+/**
+ * Runs through a batch of coords and breaks AFTER the first mine is hit. This
+ * is used to ensure cell claims and scoring since the client doesn't know where
+ * mine are.
+ */
+const produceValidBatch = ({
+  coords,
+  challengeConfig,
+}: {coords: XY[]; challengeConfig: ChallengeConfig}) => {
+  const validCoords: {coord: XY; isMine: boolean}[] = []
+
+  for (const coord of coords) {
+    const isMine = minefieldIsMine({
+      seed: challengeConfig.seed,
+      coord,
+      cols: challengeConfig.size,
+      config: {mineDensity: challengeConfig.mineDensity},
+    })
+
+    validCoords.push({coord, isMine})
+
+    // Once the user hits a mine, the game is over for them so we
+    // drop the rest of the batch on the floor.
+    if (isMine) {
+      break
+    }
+  }
+
+  return validCoords
+}
+
 export const fieldClaimCells = async ({
   coords,
   userId,
   challengeNumber,
-  redis,
+  ctx,
 }: {
+  /**
+   * NOTE: This has to be in the order that the user clicked from the client since we don't
+   * know if there are mines or not in what they clicked. We use this order to chop off the
+   * batch at the first hit mine.
+   *
+   * Example:
+   * [0,1] not mine
+   * [0,2] mine
+   * [0,3] not mine
+   *
+   * Only [0,1] and [0,2] will be attempted to be claimed for the user and team. The user
+   * will get game over. The team will get one point for [0,1].
+   */
   coords: XY[]
   userId: T2
   challengeNumber: number
-  redis: NewDevvitContext['redis']
+  ctx: NewDevvitContext
 }): Promise<{deltas: Delta[]}> => {
   if (coords.length === 0) return {deltas: []}
 
-  // TODO: Make sure to arrange the coords by their offset
-  // because redis.bitfield returns the results in the order of the offsets
-  // so we can match them up with the coords
-
   const fieldKey = createFieldKey(challengeNumber)
-  const fieldMeta = await challengeConfigGet({redis, challengeNumber})
+  const fieldConfig = await challengeConfigGet({
+    redis: ctx.redis,
+    challengeNumber,
+  })
+
+  const batch = produceValidBatch({coords, challengeConfig: fieldConfig})
 
   // Produce and operation for each coord that we want to claim. The return value
   // will be used to see if we successfully claimed the cell.
-  const claimOps: BitfieldCommand[] = coords.map(
-    (coord): BitfieldCommand => [
+  const claimOps: BitfieldCommand[] = batch.map(
+    ({coord}): BitfieldCommand => [
       'set',
       `u${FIELD_CELL_BITS}`,
       coordsToOffset(
-        enforceBounds({coord, cols: fieldMeta.size, rows: fieldMeta.size}),
-        fieldMeta.size,
+        enforceBounds({coord, cols: fieldConfig.size, rows: fieldConfig.size}),
+        fieldConfig.size,
       ),
       encodeVTT(1, 0), // we assume team 0 here since there isn't an extra bit to define an unknown team!
     ],
   )
 
   // @ts-expect-error - not sure
-  const claimOpsReturn = await redis.bitfield(fieldKey, ...claimOps.flat())
+  const claimOpsReturn = await ctx.redis.bitfield(fieldKey, ...claimOps.flat())
 
   if (claimOpsReturn.length !== coords.length) {
     throw new Error(
@@ -79,69 +135,115 @@ export const fieldClaimCells = async ({
   const teamWriteOps: BitfieldCommand[] = []
   // The index of the coord in the original coords array
   // Used to look up XY after the bitfield operation
-  const teamWriteOpsCoordIndex: number[] = []
+  const teamWriteOpsBatchIndex: number[] = []
 
   // Iterate over the results of the claims operations to filter out the ones that
   // were successfully claimed and create the write operations for the team.
   claimOpsReturn.forEach((value, i) => {
-    const coordForIndex = coords[i]
+    const batchItem = batch[i]
     const {claimed} = decodeVTT(value)
 
-    if (claimed === 0 && coordForIndex) {
-      teamWriteOpsCoordIndex.push(i)
+    if (claimed === 0 && batchItem) {
+      teamWriteOpsBatchIndex.push(i)
       teamWriteOps.push([
         'set',
         `u${FIELD_CELL_BITS}`,
         coordsToOffset(
           enforceBounds({
-            coord: coordForIndex,
-            cols: fieldMeta.size,
-            rows: fieldMeta.size,
+            coord: batchItem.coord,
+            cols: fieldConfig.size,
+            rows: fieldConfig.size,
           }),
-          fieldMeta.size,
+          fieldConfig.size,
         ),
         encodeVTT(1, teamNumber),
       ])
     }
   })
 
-  // @ts-expect-error - not sure
-  const teamOpsReturn = await redis.bitfield(fieldKey, ...teamWriteOps.flat())
+  const teamOpsReturn = await ctx.redis.bitfield(
+    fieldKey,
+    // @ts-expect-error - not sure
+    ...teamWriteOps.flat(),
+  )
 
   // Produce the deltas from the write operation to be stored somewhere
   const deltas: Delta[] = []
   teamOpsReturn.forEach((value, i) => {
-    const coordForIndex = coords[teamWriteOpsCoordIndex[i]!]
+    const batchItem = batch[teamWriteOpsBatchIndex[i]!]
     const {team} = decodeVTT(value)
 
-    if (coordForIndex) {
-      deltas.push({coord: coordForIndex, team})
+    if (batchItem) {
+      deltas.push({
+        coord: batchItem.coord,
+        team,
+        isMine: batchItem.isMine,
+      })
     }
   })
 
-  // TODO: See if any values are mines and if so, end the game for the player
-  // immediately with a realtime events
-
-  // TODO: Check to see if the game is over
-  // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
-
-  // TODO: Increment scores, etc.
-  // const txn = await redis.watch()
-  // await txn.multi()
-  // await txn.
-  // // For the ones that are 0
-  // // 1. Write again with the team values
-  // // 2. increment the team's score (if not a mine?)
-  // // increment the user's score (if not a mine?)
-  // await txn.exec()
-
+  // Save deltas first since we have a job running consuming them and
+  // stuff below could take a little bit of time
   await deltasAdd({
-    redis,
+    redis: ctx.redis,
     challengeNumber,
     deltas,
   })
 
-  // Since we're using transactions we need this extra read to get the updated score values
+  const isGameOverForUser = deltas.some(delta => delta.isMine)
+
+  // TODO: Everything after this point in a transaction?
+
+  // User stats
+  if (isGameOverForUser) {
+    await playerStatsCellsClaimedGameOver({
+      challengeNumber,
+      member: userId,
+      redis: ctx.redis,
+    })
+  } else {
+    await playerStatsCellsClaimedIncrementForMember({
+      challengeNumber,
+      member: userId,
+      redis: ctx.redis,
+      // Since it's not game over, user gets all the deltas produced
+      incrementBy: deltas.length,
+    })
+  }
+
+  // Team stats
+  await teamStatsMinesHitIncrementForMember({
+    challengeNumber,
+    member: teamNumber,
+    redis: ctx.redis,
+    incrementBy: isGameOverForUser ? 1 : 0,
+  })
+  await teamStatsCellsClaimedIncrementForMember({
+    challengeNumber,
+    member: teamNumber,
+    redis: ctx.redis,
+    // Mines count as claims since the scoring algorithm counts all squares
+    incrementBy: deltas.length,
+  })
+
+  const {isOver, winner} = computeScore({
+    size: fieldConfig.size,
+    teams: await teamStatsCellsClaimedGet({
+      challengeNumber,
+      redis: ctx.redis,
+    }),
+  })
+
+  if (isOver) {
+    await ctx.realtime.send('game_over', {
+      challengeNumber,
+      winner: winner ?? null,
+    })
+
+    // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
+
+    // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
+  }
 
   return {
     deltas,

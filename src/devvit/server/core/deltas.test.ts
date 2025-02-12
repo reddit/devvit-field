@@ -12,10 +12,12 @@ DevvitTest.it('should be able to add, get, and remove deltas', async ctx => {
     {
       coord: {x: 0, y: 0},
       team: 0,
+      isMine: false,
     },
     {
       coord: {x: 1, y: 0},
       team: 0,
+      isMine: false,
     },
   ]
 

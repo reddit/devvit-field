@@ -1,6 +1,7 @@
 import {expect} from 'vitest'
 import {DevvitTest} from './_utils/DevvitTest'
 import {
+  type ChallengeConfig,
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
   challengeIncrementCurrentChallengeNumber,
@@ -34,7 +35,7 @@ DevvitTest.it(
 
     const {challengeNumber} = await challengeMakeNew({
       ctx,
-      config: {density: 59},
+      config: {mineDensity: 59},
     })
 
     await expect(
@@ -42,8 +43,8 @@ DevvitTest.it(
     ).resolves.toEqual({
       size: expect.any(Number),
       partitionSize: expect.any(Number),
-      density: 59,
+      mineDensity: 59,
       seed: expect.any(Number),
-    })
+    } satisfies ChallengeConfig)
   },
 )

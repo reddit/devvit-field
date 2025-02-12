@@ -3,7 +3,7 @@ import type {Team} from '../../../../../shared/team'
 import {DevvitTest} from '../../_utils/DevvitTest'
 import {
   leaderboardGet,
-  leaderboardIncrementForMember,
+  leaderboardIncrementForTeam,
   leaderboardInit,
 } from './leaderboard'
 
@@ -21,24 +21,24 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
     {member: 0, score: 0},
   ] satisfies Array<{member: Team; score: number}>)
 
-  await leaderboardIncrementForMember({
+  await leaderboardIncrementForTeam({
     redis: ctx.redis,
     member: 0,
   })
-  await leaderboardIncrementForMember({
+  await leaderboardIncrementForTeam({
     redis: ctx.redis,
     member: 0,
   })
-  await leaderboardIncrementForMember({
+  await leaderboardIncrementForTeam({
     redis: ctx.redis,
     member: 1,
   })
-  await leaderboardIncrementForMember({
+  await leaderboardIncrementForTeam({
     redis: ctx.redis,
     member: 1,
     incrementBy: -1,
   })
-  await leaderboardIncrementForMember({
+  await leaderboardIncrementForTeam({
     redis: ctx.redis,
     member: 2,
   })

@@ -5,6 +5,7 @@ import type {XY} from '../../../shared/types/2d'
 export type Delta = {
   coord: XY
   team: Team
+  isMine: boolean
 }
 
 const getChallengeDeltasKey = (challengeNumber: number) =>

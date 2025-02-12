@@ -8,7 +8,7 @@ import {fieldClaimCells, fieldGet} from './field'
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
   const {challengeNumber} = await challengeMakeNew({
     ctx,
-    config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
+    config: {size: 2, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
   })
 
   await expect(() =>
@@ -16,7 +16,7 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
       coords: [{x: -1, y: 0}],
       challengeNumber,
       userId: 't2_foo',
-      redis: ctx.redis,
+      ctx,
     }),
   ).rejects.toThrow(/Out of bounds/)
 
@@ -25,7 +25,7 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
       coords: [{x: 2, y: 0}],
       challengeNumber,
       userId: 't2_foo',
-      redis: ctx.redis,
+      ctx,
     }),
   ).rejects.toThrow(/Out of bounds/)
 
@@ -34,7 +34,7 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
       coords: [{x: 0, y: 2}],
       challengeNumber,
       userId: 't2_foo',
-      redis: ctx.redis,
+      ctx,
     }),
   ).rejects.toThrow(/Out of bounds/)
 })
@@ -44,17 +44,24 @@ DevvitTest.it(
   async ctx => {
     const {challengeNumber} = await challengeMakeNew({
       ctx,
-      config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
+      config: {
+        size: 2,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 2,
+      },
     })
 
     const result = await fieldClaimCells({
       coords: [{x: 1, y: 1}],
       challengeNumber,
       userId: 't2_foo',
-      redis: ctx.redis,
+      ctx,
     })
 
-    expect(result).toEqual({deltas: [{coord: {x: 1, y: 1}, team: 0}]})
+    expect(result).toEqual({
+      deltas: [{coord: {x: 1, y: 1}, isMine: false, team: 0}],
+    })
 
     expect(
       toMatrix({
@@ -72,7 +79,7 @@ DevvitTest.it(
 DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
   const {challengeNumber} = await challengeMakeNew({
     ctx,
-    config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
+    config: {size: 2, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
   })
 
   const result = await fieldClaimCells({
@@ -82,13 +89,13 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
     ],
     userId: 't2_foo',
     challengeNumber,
-    redis: ctx.redis,
+    ctx,
   })
 
   expect(result).toEqual({
     deltas: [
-      {coord: {x: 0, y: 0}, team: 0},
-      {coord: {x: 1, y: 1}, team: 0},
+      {coord: {x: 0, y: 0}, isMine: false, team: 0},
+      {coord: {x: 1, y: 1}, isMine: false, team: 0},
     ],
   })
 
@@ -109,14 +116,19 @@ DevvitTest.it(
   async ctx => {
     const {challengeNumber} = await challengeMakeNew({
       ctx,
-      config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
+      config: {
+        size: 2,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 2,
+      },
     })
 
     await fieldClaimCells({
       coords: [{x: 1, y: 1}],
       userId: 't2_foo',
       challengeNumber,
-      redis: ctx.redis,
+      ctx,
     })
 
     // Claiming again and deltas should not return anything
@@ -124,7 +136,7 @@ DevvitTest.it(
       coords: [{x: 1, y: 1}],
       userId: 't2_foo',
       challengeNumber,
-      redis: ctx.redis,
+      ctx,
     })
 
     expect(result).toEqual({deltas: []})
@@ -136,14 +148,19 @@ DevvitTest.it(
   async ctx => {
     const {challengeNumber} = await challengeMakeNew({
       ctx,
-      config: {size: 2, seed: makeRandomSeed(), density: 0, partitionSize: 2},
+      config: {
+        size: 2,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 2,
+      },
     })
 
     await fieldClaimCells({
       coords: [{x: 1, y: 1}],
       userId: 't2_foo',
       challengeNumber,
-      redis: ctx.redis,
+      ctx,
     })
 
     // Under the hood we rely on the order that the coords passed in to be respected
@@ -156,17 +173,19 @@ DevvitTest.it(
       ],
       userId: 't2_foo',
       challengeNumber,
-      redis: ctx.redis,
+      ctx,
     })
 
     expect(result).toEqual({
       deltas: [
-        {coord: {x: 0, y: 0}, team: 0},
-        {coord: {x: 0, y: 1}, team: 0},
+        {coord: {x: 0, y: 0}, isMine: false, team: 0},
+        {coord: {x: 0, y: 1}, isMine: false, team: 0},
       ],
     })
   },
 )
+
+// TODO: Tests for all of the deltas logic
 
 // TODO: Need to figure out how to get the entire bitfield in order
 // DevvitTest.it(
