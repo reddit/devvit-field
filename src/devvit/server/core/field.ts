@@ -1,5 +1,6 @@
+import type {Devvit} from '@devvit/public-api'
 import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
-import {getTeamFromUserId} from '../../../shared/team'
+import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {T2} from '../../../shared/types/tid'
 import type {BitfieldCommand, NewDevvitContext} from './_utils/NewDevvitContext'
@@ -72,6 +73,87 @@ const produceValidBatch = ({
   }
 
   return validCoords
+}
+
+/**
+ * Ran after claiming cells to do post processing. Broken out for testing only.
+ */
+export const _fieldClaimCellsSuccess = async ({
+  challengeNumber,
+  userId,
+  deltas,
+  ctx,
+  fieldConfig,
+}: {
+  challengeNumber: number
+  userId: T2
+  deltas: Delta[]
+  ctx: Devvit.Context
+  fieldConfig: ChallengeConfig
+}): Promise<void> => {
+  // TODO: Everything in a transaction?
+
+  // Save deltas first since we have a job running consuming them and
+  // stuff below could take a little bit of time
+  await deltasAdd({
+    redis: ctx.redis,
+    challengeNumber,
+    deltas,
+  })
+
+  const isGameOverForUser = deltas.some(delta => delta.isMine)
+
+  // User stats
+  if (isGameOverForUser) {
+    await playerStatsCellsClaimedGameOver({
+      challengeNumber,
+      member: userId,
+      redis: ctx.redis,
+    })
+  } else {
+    await playerStatsCellsClaimedIncrementForMember({
+      challengeNumber,
+      member: userId,
+      redis: ctx.redis,
+      // Since it's not game over, user gets all the deltas produced
+      incrementBy: deltas.length,
+    })
+  }
+
+  const teamNumber = getTeamFromUserId(userId)
+  // Team stats
+  await teamStatsMinesHitIncrementForMember({
+    challengeNumber,
+    member: teamNumber,
+    redis: ctx.redis,
+    incrementBy: isGameOverForUser ? 1 : 0,
+  })
+  await teamStatsCellsClaimedIncrementForMember({
+    challengeNumber,
+    member: teamNumber,
+    redis: ctx.redis,
+    // Mines count as claims since the scoring algorithm counts all squares
+    incrementBy: deltas.length,
+  })
+
+  const {isOver, winner} = computeScore({
+    size: fieldConfig.size,
+    teams: await teamStatsCellsClaimedGet({
+      challengeNumber,
+      redis: ctx.redis,
+    }),
+  })
+
+  if (isOver) {
+    await ctx.realtime.send('game_over', {
+      challengeNumber,
+      winner: winner ?? null,
+    })
+
+    // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
+
+    // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
+  }
 }
 
 export const fieldClaimCells = async ({
@@ -182,68 +264,13 @@ export const fieldClaimCells = async ({
     }
   })
 
-  // Save deltas first since we have a job running consuming them and
-  // stuff below could take a little bit of time
-  await deltasAdd({
-    redis: ctx.redis,
+  await _fieldClaimCellsSuccess({
     challengeNumber,
+    userId,
     deltas,
+    ctx,
+    fieldConfig,
   })
-
-  const isGameOverForUser = deltas.some(delta => delta.isMine)
-
-  // TODO: Everything after this point in a transaction?
-
-  // User stats
-  if (isGameOverForUser) {
-    await playerStatsCellsClaimedGameOver({
-      challengeNumber,
-      member: userId,
-      redis: ctx.redis,
-    })
-  } else {
-    await playerStatsCellsClaimedIncrementForMember({
-      challengeNumber,
-      member: userId,
-      redis: ctx.redis,
-      // Since it's not game over, user gets all the deltas produced
-      incrementBy: deltas.length,
-    })
-  }
-
-  // Team stats
-  await teamStatsMinesHitIncrementForMember({
-    challengeNumber,
-    member: teamNumber,
-    redis: ctx.redis,
-    incrementBy: isGameOverForUser ? 1 : 0,
-  })
-  await teamStatsCellsClaimedIncrementForMember({
-    challengeNumber,
-    member: teamNumber,
-    redis: ctx.redis,
-    // Mines count as claims since the scoring algorithm counts all squares
-    incrementBy: deltas.length,
-  })
-
-  const {isOver, winner} = computeScore({
-    size: fieldConfig.size,
-    teams: await teamStatsCellsClaimedGet({
-      challengeNumber,
-      redis: ctx.redis,
-    }),
-  })
-
-  if (isOver) {
-    await ctx.realtime.send('game_over', {
-      challengeNumber,
-      winner: winner ?? null,
-    })
-
-    // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
-
-    // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
-  }
 
   return {
     deltas,

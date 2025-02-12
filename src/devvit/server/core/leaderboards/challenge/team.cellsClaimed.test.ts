@@ -2,12 +2,21 @@ import {expect} from 'vitest'
 import type {Team} from '../../../../../shared/team'
 import {DevvitTest} from '../../_utils/DevvitTest'
 import {
+  teamStatsCellsClaimedForTeam,
   teamStatsCellsClaimedGet,
   teamStatsCellsClaimedIncrementForMember,
   teamStatsCellsClaimedInit,
 } from './team.cellsClaimed'
 
 DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
+  await expect(
+    teamStatsCellsClaimedForTeam({
+      redis: ctx.redis,
+      challengeNumber: 0,
+      team: 0,
+    }),
+  ).resolves.toBe(0)
+
   await teamStatsCellsClaimedInit({redis: ctx.redis, challengeNumber: 0})
 
   await expect(
@@ -45,6 +54,14 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
     challengeNumber: 0,
     member: 2,
   })
+
+  await expect(
+    teamStatsCellsClaimedForTeam({
+      redis: ctx.redis,
+      challengeNumber: 0,
+      team: 0,
+    }),
+  ).resolves.toBe(2)
 
   await expect(
     teamStatsCellsClaimedGet({

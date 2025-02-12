@@ -1,9 +1,14 @@
 import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
+import {getTeamFromUserId} from '../../../shared/team'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
-import {challengeMakeNew} from './challenge'
-import {fieldClaimCells, fieldGet} from './field'
+import {type ChallengeConfig, challengeMakeNew} from './challenge'
+import {type Delta, deltasGet} from './deltas'
+import {_fieldClaimCellsSuccess, fieldClaimCells, fieldGet} from './field'
+import {playerStatsCellsClaimedForMember} from './leaderboards/challenge/player.cellsClaimed'
+import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
   const {challengeNumber} = await challengeMakeNew({
@@ -185,7 +190,126 @@ DevvitTest.it(
   },
 )
 
-// TODO: Tests for all of the deltas logic
+DevvitTest.it(
+  '_fieldClaimCellsSuccess - should game over for user when hitting a mine and count team stats',
+  async ctx => {
+    const challengeConfig: ChallengeConfig = {
+      size: 2,
+      seed: makeRandomSeed(),
+      mineDensity: 0,
+      partitionSize: 2,
+    }
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: challengeConfig,
+    })
+
+    const deltas: Delta[] = [
+      {coord: {x: 0, y: 0}, isMine: false, team: 0},
+      {coord: {x: 1, y: 1}, isMine: true, team: 0},
+    ]
+
+    await _fieldClaimCellsSuccess({
+      challengeNumber,
+      ctx,
+      deltas,
+      userId: 't2_foo',
+      fieldConfig: challengeConfig,
+    })
+
+    await expect(
+      deltasGet({challengeNumber, redis: ctx.redis}),
+    ).resolves.toEqual(deltas)
+
+    await expect(
+      playerStatsCellsClaimedForMember({
+        redis: ctx.redis,
+        challengeNumber,
+        member: 't2_foo',
+      }),
+    ).resolves.toEqual(-1)
+
+    await expect(
+      teamStatsCellsClaimedForTeam({
+        redis: ctx.redis,
+        challengeNumber,
+        team: getTeamFromUserId('t2_foo'),
+      }),
+    ).resolves.toEqual(2)
+
+    await expect(
+      teamStatsMinesHitForTeam({
+        redis: ctx.redis,
+        challengeNumber,
+        team: getTeamFromUserId('t2_foo'),
+      }),
+    ).resolves.toEqual(1)
+
+    // Not called because game is technically not over at 50% claimed
+    expect(ctx.realtime.send).toHaveBeenCalledTimes(0)
+  },
+)
+
+DevvitTest.it(
+  '_fieldClaimCellsSuccess - should end the game when second place cannot overtake first place',
+  async ctx => {
+    const challengeConfig: ChallengeConfig = {
+      size: 2,
+      seed: makeRandomSeed(),
+      mineDensity: 0,
+      partitionSize: 2,
+    }
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: challengeConfig,
+    })
+
+    const deltas: Delta[] = [
+      {coord: {x: 0, y: 0}, isMine: false, team: 0},
+      {coord: {x: 1, y: 1}, isMine: false, team: 0},
+      {coord: {x: 1, y: 2}, isMine: false, team: 0},
+    ]
+
+    await _fieldClaimCellsSuccess({
+      challengeNumber,
+      ctx,
+      deltas,
+      userId: 't2_foo',
+      fieldConfig: challengeConfig,
+    })
+
+    await expect(
+      deltasGet({challengeNumber, redis: ctx.redis}),
+    ).resolves.toEqual(deltas)
+
+    await expect(
+      playerStatsCellsClaimedForMember({
+        redis: ctx.redis,
+        challengeNumber,
+        member: 't2_foo',
+      }),
+    ).resolves.toEqual(3)
+
+    await expect(
+      teamStatsCellsClaimedForTeam({
+        redis: ctx.redis,
+        challengeNumber,
+        team: getTeamFromUserId('t2_foo'),
+      }),
+    ).resolves.toEqual(3)
+
+    await expect(
+      teamStatsMinesHitForTeam({
+        redis: ctx.redis,
+        challengeNumber,
+        team: getTeamFromUserId('t2_foo'),
+      }),
+    ).resolves.toEqual(0)
+
+    // Not called because game is technically not over at 50% claimed
+    expect(ctx.realtime.send).toHaveBeenCalledTimes(1)
+  },
+)
 
 // TODO: Need to figure out how to get the entire bitfield in order
 // DevvitTest.it(

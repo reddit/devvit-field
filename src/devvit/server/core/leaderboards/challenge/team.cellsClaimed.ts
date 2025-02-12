@@ -74,3 +74,19 @@ export const teamStatsCellsClaimedInit = async ({
     ...teams.map(team => ({member: team.toString(), score: 0})),
   )
 }
+
+export const teamStatsCellsClaimedForTeam = async ({
+  redis,
+  challengeNumber,
+  team,
+}: {
+  redis: Devvit.Context['redis']
+  challengeNumber: number
+  team: Team
+}): Promise<number> => {
+  const result = await redis.zScore(
+    getRedisKey(challengeNumber),
+    team.toString(),
+  )
+  return result === undefined ? 0 : result
+}
