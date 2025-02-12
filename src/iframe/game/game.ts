@@ -222,33 +222,37 @@ export class Game {
     switch (msg.type) {
       case 'Init': {
         this.debug = msg.debug
+        this.seed = msg.seed ?? (0 as Seed)
+        this.rnd = new Random(this.seed)
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
 
         // to-do: delete random nonsense.
+        // to-do: if (devMode)
 
         for (let y = 0; y < msg.field.wh.h; y++)
           for (let x = 0; x < msg.field.wh.w; x++)
-            this.field[y * msg.field.wh.w + x] = Math.trunc(Math.random() * 6)
+            if (this.rnd.num() < 0.2)
+              this.field[y * msg.field.wh.w + x] = Math.trunc(
+                this.rnd.num() * 6,
+              )
 
         for (let y = 0; y < msg.field.wh.h; y++) {
-          this.field[y * msg.field.wh.w] = Math.trunc(Math.random() * 6)
+          this.field[y * msg.field.wh.w] = Math.trunc(this.rnd.num() * 6)
           this.field[y * msg.field.wh.w + msg.field.wh.w - 1] = Math.trunc(
-            Math.random() * 6,
+            this.rnd.num() * 6,
           )
         }
         for (let y = 0; y < msg.field.wh.h; y++)
           for (let x = 0; x < msg.field.wh.w; x++) {
-            this.field[x] = Math.trunc(Math.random() * 6)
+            this.field[x] = Math.trunc(this.rnd.num() * 6)
             this.field[(msg.field.wh.h - 1) * msg.field.wh.w + x] = Math.trunc(
-              Math.random() * 6,
+              this.rnd.num() * 6,
             )
           }
 
         this.fieldConfig = msg.field
         this.p1 = msg.p1
         this.mode = msg.mode
-        this.seed = msg.seed ?? (0 as Seed)
-        this.rnd = new Random(this.seed)
         if (this.debug) console.log('init')
         this.#fulfil()
         // Init this.connected.

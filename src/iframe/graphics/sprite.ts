@@ -14,6 +14,10 @@ export type SpriteJSON = {
   zend?: boolean
 }
 
+// to-do: can this be a utility that operates on an array + index? Pushing quads
+//        seems to fit well with ents being the most important objects that
+//        manage their own drawing. Would like to extend to 53 bits for scaling
+//        and additional features.
 export class Sprite<T> implements Bmp, Box {
   static parse<T>(atlas: Atlas<T>, json: Readonly<SpriteJSON>): Sprite<T> {
     if (!(json.tag in atlas.anim)) throw Error(`no sprite tag "${json.tag}"`)

@@ -53,6 +53,8 @@ export class PointerPoller {
     this.#delta[0] = this.#delta[1]
     this.#delta[1] = {x: 0, y: 0}
     this.#drag = (this.#drag & 4) | ((this.#drag & 7) >> 1)
+    // to-do: it's inconsistent to be left-shifting here and right-shifting
+    //        above.
     this.#on <<= 1
     this.#wheel[0] = this.#wheel[1]
     this.#wheel[1] = {x: 0, y: 0, z: 0}
@@ -105,6 +107,9 @@ export class PointerPoller {
 
   #onPointEvent = (ev: PointerEvent): void => {
     if (!ev.isTrusted) return
+
+    // to-do: record event here and move processing to poll() which happens
+    //        before reading. It's hard to make sense out of band here.
 
     // Ignore non-primary inputs to avoid flickering between distant points.
     if (!ev.isPrimary) return
