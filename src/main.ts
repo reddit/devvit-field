@@ -4,8 +4,14 @@ import './devvit/triggers/checkMinefield.js'
 import './devvit/triggers/install.js'
 import './devvit/triggers/upgrade.js'
 
-import type {Hello, Metadata, PingMessage} from '@devvit/protos'
+import {
+  type Hello,
+  HelloDefinition,
+  type Metadata,
+  type PingMessage,
+} from '@devvit/protos'
 import {Devvit} from '@devvit/public-api'
+import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {challengeMakeNew} from './devvit/server/core/challenge.js'
 
@@ -25,6 +31,11 @@ Devvit.addMenuItem({
 })
 
 export default class extends Devvit implements Hello {
+  constructor(config: Config) {
+    super(config)
+    config.provides(HelloDefinition)
+  }
+
   async Ping(msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
     console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
     return msg
