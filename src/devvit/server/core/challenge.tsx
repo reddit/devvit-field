@@ -3,7 +3,6 @@ import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
 import type {Seed} from '../../../shared/types/random'
 import {Preview} from '../../components/preview'
-import type {NewDevvitContext} from './_utils/NewDevvitContext'
 import {setChallengeNumberForPost} from './challengeToPost'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
@@ -57,7 +56,7 @@ export const challengeConfigGet = async ({
   redis,
   challengeNumber,
 }: {
-  redis: NewDevvitContext['redis']
+  redis: Devvit.Context['redis']
   challengeNumber: number
 }): Promise<ChallengeConfig> => {
   const config = await redis.hGetAll(createChallengeConfigKey(challengeNumber))
@@ -73,7 +72,7 @@ export const challengeConfigGetClientSafeProps = async ({
   redis,
   challengeNumber,
 }: {
-  redis: NewDevvitContext['redis']
+  redis: Devvit.Context['redis']
   challengeNumber: number
 }): Promise<Pick<ChallengeConfig, 'partitionSize' | 'size'>> => {
   const {partitionSize, size} = await challengeConfigGet({
@@ -96,7 +95,7 @@ const _challengeConfigSet = async ({
   challengeNumber,
   config,
 }: {
-  redis: NewDevvitContext['redis']
+  redis: Devvit.Context['redis']
   challengeNumber: number
   config: Partial<ChallengeConfig>
 }): Promise<void> => {
@@ -156,7 +155,7 @@ export const challengeMakeNew = async ({
   ctx,
   config: configParams,
 }: {
-  ctx: NewDevvitContext
+  ctx: Devvit.Context
   config?: Partial<ChallengeConfig>
 }): Promise<{postID: string; url: string; challengeNumber: number}> => {
   if (!ctx.subredditName) {

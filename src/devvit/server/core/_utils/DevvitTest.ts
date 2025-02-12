@@ -7,6 +7,7 @@ import type {
   CommentSubmissionOptions,
   CrosspostOptions,
   CustomPostTextFallbackOptions,
+  Devvit,
   EnrichedThumbnail,
   JSONValue,
   JobContext,
@@ -25,7 +26,6 @@ import type {CacheOptions} from '@devvit/public-api/devvit/internals/promise_cac
 import Redis from 'ioredis'
 import {RedisMemoryServer} from 'redis-memory-server'
 import {type TestContext, it as itCore, vi} from 'vitest'
-import type {BitfieldCommand, NewDevvitContext} from './NewDevvitContext'
 
 const redisServer = new RedisMemoryServer()
 const host = await redisServer.getHost()
@@ -90,7 +90,7 @@ export namespace DevvitTest {
   const mockRedisClientMethods = ({
     prefix,
   }: {prefix?: string | undefined} = {}): Omit<
-    NewDevvitContext['redis'],
+    Devvit.Context['redis'],
     'global'
   > => {
     const makeKey = (key: string) => (prefix ? `${prefix}:${key}` : key)
@@ -339,7 +339,7 @@ export namespace DevvitTest {
 
   const mockRedisClient = ({
     prefix,
-  }: {prefix?: string} = {}): NewDevvitContext['redis'] => {
+  }: {prefix?: string} = {}): Devvit.Context['redis'] => {
     const appLevel = mockRedisClientMethods({prefix})
     // No prefix since they're global!
     const globalLevel = mockRedisClientMethods()
@@ -356,7 +356,7 @@ export namespace DevvitTest {
   // }
 
   interface ContextMap {
-    ui: NewDevvitContext
+    ui: Devvit.Context
     job: JobContext
     trigger: TriggerContext
   }

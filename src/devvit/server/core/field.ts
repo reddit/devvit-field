@@ -1,9 +1,8 @@
-import type {Devvit} from '@devvit/public-api'
+import type {BitfieldCommand, Devvit} from '@devvit/public-api'
 import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
 import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {T2} from '../../../shared/types/tid'
-import type {BitfieldCommand, NewDevvitContext} from './_utils/NewDevvitContext'
 import {type ChallengeConfig, challengeConfigGet} from './challenge'
 import type {Delta} from './deltas'
 import {deltasAdd} from './deltas'
@@ -183,7 +182,7 @@ export const fieldClaimCells = async ({
   coords: XY[]
   userId: T2
   challengeNumber: number
-  ctx: NewDevvitContext
+  ctx: Devvit.Context
 }): Promise<{deltas: Delta[]}> => {
   if (coords.length === 0) return {deltas: []}
 
@@ -299,7 +298,7 @@ export const fieldGet = async ({
   redis,
 }: {
   challengeNumber: number
-  redis: NewDevvitContext['redis']
+  redis: Devvit.Context['redis']
 }): Promise<number[]> => {
   const meta = await challengeConfigGet({redis, challengeNumber})
 
