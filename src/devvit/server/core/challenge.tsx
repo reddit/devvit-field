@@ -39,6 +39,8 @@ export type ChallengeConfig = {
    */
   mineDensity: number
   // TODO: Theme variables and other config that we want to change per sub
+
+  // TODO: Add a debug flag here
 }
 
 const createChallengeConfigKey = (challengeNumber: number) =>

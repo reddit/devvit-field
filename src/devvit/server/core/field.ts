@@ -1,6 +1,6 @@
 import type {Devvit} from '@devvit/public-api'
 import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
-import {type Team, getTeamFromUserId} from '../../../shared/team'
+import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {T2} from '../../../shared/types/tid'
 import type {BitfieldCommand, NewDevvitContext} from './_utils/NewDevvitContext'
@@ -37,6 +37,8 @@ const enforceBounds = ({
   cols: number
   rows: number
 }): XY => {
+  // TODO: Enforce integer
+
   if (coord.x < 0 || coord.x >= cols || coord.y < 0 || coord.y >= rows) {
     throw new Error(`Out of bounds: ${coord.x}, ${coord.y}`)
   }
@@ -76,6 +78,8 @@ const produceValidBatch = ({
 }
 
 /**
+ * @internal
+ *
  * Ran after claiming cells to do post processing. Broken out for testing only.
  */
 export const _fieldClaimCellsSuccess = async ({
@@ -145,9 +149,10 @@ export const _fieldClaimCellsSuccess = async ({
   })
 
   if (isOver) {
+    // TODO: Increment user stats here or do it somewhere else?
     await ctx.realtime.send('game_over', {
       challengeNumber,
-      winner: winner ?? null,
+      winningTeam: winner ?? null,
     })
 
     // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
@@ -272,6 +277,7 @@ export const fieldClaimCells = async ({
     fieldConfig,
   })
 
+  // TODO: Where I return to client anything you need like user's scores and other things
   return {
     deltas,
   }
