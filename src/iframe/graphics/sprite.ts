@@ -68,7 +68,7 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get cel(): number {
-    return (this._iffzz >> 6) & 0xf
+    return (this._iffzz >> 6) & 0xf // to-do: should this be an unsigned shift?
   }
 
   /** Set to Looper.frame to start at the beginning. */

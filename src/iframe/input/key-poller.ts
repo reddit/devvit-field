@@ -8,7 +8,7 @@ export class KeyPoller {
   }
 
   register(op: 'add' | 'remove'): void {
-    const fn = <const>`${op}EventListener`
+    const fn = `${op}EventListener` as const
     // keyup is lost if window loses focus.
     globalThis[fn]('blur', this.reset, {capture: true, passive: true})
     for (const type of ['keydown', 'keyup']) {

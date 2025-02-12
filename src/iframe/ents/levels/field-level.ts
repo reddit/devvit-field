@@ -43,13 +43,13 @@ export class FieldLevel implements LevelEnt {
       )
       game.fieldScale = zoomLevels[this.#index]!
     }
-    if (!game.ctrl.handled && game.ctrl.isOnStart('A')) {
+    if (!game.ctrl.handled && game.ctrl.isOffStart('A') && !game.ctrl.drag) {
       game.ctrl.handled = true
       // to-do: move this mutation to a centralized store or Game so it's easier
       //        to see how state changes.
       const xy = {
-        x: Math.trunc(game.ctrl.point.x / game.fieldScale),
-        y: Math.trunc(game.ctrl.point.y / game.fieldScale),
+        x: Math.trunc(game.cam.x + game.ctrl.screenPoint.x / game.fieldScale),
+        y: Math.trunc(game.cam.y + game.ctrl.screenPoint.y / game.fieldScale),
       }
       if (
         xy.x < 0 ||
@@ -63,6 +63,24 @@ export class FieldLevel implements LevelEnt {
       // to-do: post message.
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
+    }
+    if (!game.ctrl.handled && game.ctrl.drag) {
+      game.ctrl.handled = true
+      const scale = 5 / game.fieldScale
+      const half = {
+        w: 0.5 * (game.fieldConfig?.wh.w ?? 0),
+        h: 0.5 * (game.fieldConfig?.wh.h ?? 0),
+      }
+      // to-do: consider scaling.
+      // to-do: fix zoom.
+      game.cam.x = Math.min(
+        half.w,
+        Math.max(-half.w, game.cam.x - game.ctrl.delta.x * scale),
+      )
+      game.cam.y = Math.min(
+        half.h,
+        Math.max(-half.h, game.cam.y - game.ctrl.delta.y * scale),
+      )
     }
   }
 }

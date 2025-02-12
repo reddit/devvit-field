@@ -32,6 +32,7 @@ export class ToolbeltEnt implements Ent {
 
   update(game: Game): void {
     this.#black.w = this.#fade.w = game.cam.w
-    game.ctrl.handled ||= !!game.zoo.cursor?.hits(game, this.#black, 'Client')
+    if (!game.ctrl.drag)
+      game.ctrl.handled ||= !!game.zoo.cursor?.hits(game, this.#black, 'Client')
   }
 }
