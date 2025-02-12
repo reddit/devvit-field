@@ -46,3 +46,16 @@ export const playerStatsCellsClaimedIncrementForMember = async ({
     incrementBy,
   )
 }
+
+export const playerStatsCellsClaimedForMember = async ({
+  redis,
+  challengeNumber,
+  member,
+}: {
+  redis: Devvit.Context['redis']
+  challengeNumber: number
+  member: T2
+}): Promise<number> => {
+  const result = await redis.zScore(getRedisKey(challengeNumber), member)
+  return result === undefined ? 0 : result
+}

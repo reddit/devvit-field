@@ -5,6 +5,8 @@ import type {Seed} from '../../../shared/types/random'
 import {Preview} from '../../components/preview'
 import type {NewDevvitContext} from './_utils/NewDevvitContext'
 import {setChallengeNumberForPost} from './challengeToPost'
+import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
 const currentChallengeNumberKey = 'current_challenge_number'
 
@@ -189,6 +191,16 @@ export const challengeMakeNew = async ({
   await setChallengeNumberForPost({
     challengeNumber: newChallengeNumber,
     postId: post.id,
+    redis: ctx.redis,
+  })
+
+  await teamStatsCellsClaimedInit({
+    challengeNumber: newChallengeNumber,
+    redis: ctx.redis,
+  })
+
+  await teamStatsMinesHitInit({
+    challengeNumber: newChallengeNumber,
     redis: ctx.redis,
   })
 
