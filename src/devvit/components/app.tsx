@@ -3,13 +3,11 @@ import {Devvit} from '@devvit/public-api'
 import {type JSONValue, useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
-import {
-  type DevvitMessage,
-  type IframeMessage,
-  type RealtimeMessage,
-  realtimeVersion,
+import type {
+  DevvitMessage,
+  IframeMessage,
+  RealtimeMessage,
 } from '../../shared/types/message.ts'
-import {useChannel2} from '../hooks/use-channel2.js'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {
