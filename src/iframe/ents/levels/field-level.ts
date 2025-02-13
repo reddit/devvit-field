@@ -56,11 +56,13 @@ export class FieldLevel implements LevelEnt {
         xy.y >= game.fieldConfig!.wh.h
       )
         return
-      game.field[xy.y * game.fieldConfig!.wh.w + xy.x] = 1
-      game.renderer.setCell(xy, 1)
+
+      // to-do: batch these messages
       // to-do: post message.
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
+
+      game.postMessage({type: 'ClaimCells', cells: [xy]})
     }
     if (!game.ctrl.handled && game.ctrl.drag) {
       game.ctrl.handled = true

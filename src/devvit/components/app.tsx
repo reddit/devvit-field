@@ -2,6 +2,7 @@
 import {Devvit} from '@devvit/public-api'
 import {type JSONValue, useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
+import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
 import {
   type DevvitMessage,
   type IframeMessage,
@@ -14,23 +15,32 @@ import {useState2} from '../hooks/use-state2.ts'
 import {
   challengeConfigGetClientSafeProps,
   challengeGetCurrentChallengeNumber,
-} from '../server/core/challenge.tsx'
+} from '../server/core/challenge.ts'
+import {fieldClaimCells} from '../server/core/field.ts'
 import {userGetOrSet} from '../server/core/user.ts'
 import {Title} from './title.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const session = useSession(ctx)
-  const [currentChallengeNumber] = useState2(() =>
-    challengeGetCurrentChallengeNumber({redis: ctx.redis}),
-  )
-  const [profile] = useState2(async () => userGetOrSet({ctx}))
-  const p1 = {profile, sid: session.sid}
-  const [_config] = useState2(async () => {
-    return await challengeConfigGetClientSafeProps({
+  const [{challengeConfig, challengeNumber, profile}] = useState2(async () => {
+    const [profile, challengeNumber] = await Promise.all([
+      userGetOrSet({ctx}),
+      challengeGetCurrentChallengeNumber({redis: ctx.redis}),
+    ])
+
+    const challengeConfig = await challengeConfigGetClientSafeProps({
       redis: ctx.redis,
-      challengeNumber: currentChallengeNumber,
+      challengeNumber,
     })
+
+    return {
+      challengeNumber,
+      profile,
+      challengeConfig,
+    }
   })
+
+  const p1 = {profile, sid: session.sid}
 
   const [loaded, setLoaded] = useState2(false)
   // to-do: move to UseWebViewResult.mounted.
@@ -46,7 +56,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   if (!mounted)
     iframe.postMessage = (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg)
 
-  function onMsg(msg: IframeMessage): void {
+  async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
       console.log(
         `${profile.username} Devvit ← iframe msg=${JSON.stringify(msg)}`,
@@ -65,13 +75,32 @@ export function App(ctx: Devvit.Context): JSX.Element {
         iframe.postMessage({
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
-          // to-do: make this configurable.
-          field: {wh: {w: 3333, h: 3333}},
+          field: {wh: {w: challengeConfig.size, h: challengeConfig.size}},
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
           type: 'Init',
         })
         break
+      case 'ClaimCells': {
+        const {deltas} = await fieldClaimCells({
+          challengeNumber,
+          coords: msg.cells,
+          ctx,
+          userId: profile.t2,
+        })
+
+        iframe.postMessage({
+          type: 'Cell',
+          boxes: deltas.map(({coord: xy, team, isMine}) => ({
+            cell: isMine ? 'Ban' : 'Clear',
+            xy,
+            team,
+          })),
+        })
+
+        break
+      }
+
       default:
         msg satisfies never
     }
@@ -80,7 +109,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   const [messages, setMessages] = useState2<string[]>([])
 
   useChannel<{now: string}>({
-    name: `challenge_${currentChallengeNumber}`,
+    name: `challenge_${challengeNumber}`,
     // TODO: There's no guarantee that the latest message will always
     // be the most current representation of the challenge. We should
     // only set the state if this message (by timestamp) is newer than
@@ -91,12 +120,17 @@ export function App(ctx: Devvit.Context): JSX.Element {
   }).subscribe()
 
   const chan = useChannel2<RealtimeMessage>({
-    chan: session.t3,
+    chan: GLOBAL_REALTIME_CHANNEL,
     onPeerMessage(msg) {
       if (session.debug)
         console.log(
           `${profile.username} Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
+
+      if (msg.type === 'ChallengeComplete') {
+        ctx.ui.showToast('Challenge Complete. Devs please do something!')
+      }
+
       iframe.postMessage(msg)
     },
     p1,
