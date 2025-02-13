@@ -14,7 +14,7 @@ import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
 import {EIDFactory} from '../ents/eid.ts'
-import {FieldLevel} from '../ents/levels/field-level.ts'
+import {WelcomeLevel} from '../ents/levels/welcome-level.ts'
 import {Zoo} from '../ents/zoo.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
@@ -105,7 +105,7 @@ export class Game {
     this.looper.onResume = this.#onResume
     this.#onLoop()
 
-    const lvl = new FieldLevel(this)
+    const lvl = new WelcomeLevel(this)
 
     const assets = await AssetMap()
 

@@ -19,20 +19,24 @@ export type FollowCamOrientation =
   | 'Center'
 
 export class Cam {
-  valid: boolean = false
+  /** Fractional (but only integral is ever honored). */
+  minWH: WH = {w: 256, h: 256}
+  /** Integral. */
+  h: number = this.minWH.h
+  /** Integral. */
+  w: number = this.minWH.w
   mode: 'Int' | 'Fraction' = 'Fraction' // to-do: invalidate?
-  minWH: WH = {w: 256, h: 256} // Ints when intScale. to-do: invalidate?
   minScale: number = 1 // Int when intScale. to-do: invalidate?
+  prev: {x: number; y: number; w: number; h: number; scale: number}
+  /** Integral scale when mode is int. */
+  scale: number = 1
+  /** Fractional. */
+  x: number = 0
+  /** Fractional. */
+  y: number = 0
 
-  #h: number = this.minWH.h // Int when intScale.
-  #scale: number = 1 // Int when intScale.
-  #w: number = this.minWH.w // Int when intScale.
-  #x: number = 0 // Fraction.
-  #y: number = 0 // Fraction.
-
-  /** Integral height. */
-  get h(): number {
-    return this.#h
+  constructor() {
+    this.prev = {x: this.x, y: this.y, w: this.w, h: this.h, scale: this.scale}
   }
 
   isVisible(box: Readonly<XY & Partial<WH>>): boolean {
@@ -104,20 +108,25 @@ export class Cam {
 
   /** Fill or just barely exceed the viewport in scaled pixels. */
   resize(zoomOut?: number): void {
-    this.#scale = camScale(this.minWH, this.minScale, zoomOut, this.mode)
+    this.prev = {x: this.x, y: this.y, w: this.w, h: this.h, scale: this.scale}
+    this.scale = camScale(this.minWH, this.minScale, zoomOut, this.mode)
 
     const native = camNativeWH()
-    const w = Math.ceil(native.w / this.#scale)
-    const h = Math.ceil(native.h / this.#scale)
-    if (w === this.#w && h === this.#h) return
-    this.#w = w
-    this.#h = h
-    this.valid = false
+    const w = Math.ceil(native.w / this.scale)
+    const h = Math.ceil(native.h / this.scale)
+    if (w === this.w && h === this.h) return
+    this.w = w
+    this.h = h
   }
 
-  /** Integral scale when mode is int. */
-  get scale(): number {
-    return this.#scale
+  get valid(): boolean {
+    return (
+      this.scale === this.prev.scale &&
+      this.x === this.prev.x &&
+      this.y === this.prev.y &&
+      this.w === this.prev.w &&
+      this.h === this.prev.h
+    )
   }
 
   /** Returns position in fractional level coordinates. */
@@ -129,34 +138,9 @@ export class Cam {
     // WH of body in CSS px; document.body.getBoundingClientRect() returns
     // incorrectly large sizing on mobile that includes the address bar.
     return {
-      x: (clientXY.x / innerWidth) * this.#w,
-      y: (clientXY.y / innerHeight) * this.#h,
+      x: (clientXY.x / innerWidth) * this.w,
+      y: (clientXY.y / innerHeight) * this.h,
     }
-  }
-
-  /** Integral width. */
-  get w(): number {
-    return this.#w
-  }
-
-  get x(): number {
-    return this.#x
-  }
-
-  set x(x: number) {
-    if (this.#x === x) return
-    this.#x = x
-    this.valid = false
-  }
-
-  get y(): number {
-    return this.#y
-  }
-
-  set y(y: number) {
-    if (this.#y === y) return
-    this.#y = y
-    this.valid = false
   }
 }
 
