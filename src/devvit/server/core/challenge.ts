@@ -2,8 +2,6 @@
 import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
 import type {Seed} from '../../../shared/types/random'
-import {Preview} from '../../components/preview'
-import {setChallengeNumberForPost} from './challengeToPost'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
@@ -157,7 +155,7 @@ export const challengeMakeNew = async ({
 }: {
   ctx: Devvit.Context
   config?: Partial<ChallengeConfig>
-}): Promise<{postID: string; url: string; challengeNumber: number}> => {
+}): Promise<{challengeNumber: number}> => {
   if (!ctx.subredditName) {
     throw new Error('No subreddit name')
   }
@@ -169,6 +167,30 @@ export const challengeMakeNew = async ({
   const config = {
     ...makeDefaultChallengeConfig(),
     ...configParams,
+  }
+
+  if (
+    !Number.isInteger(config.size) ||
+    !Number.isInteger(config.partitionSize) ||
+    !Number.isInteger(config.mineDensity)
+  ) {
+    throw new Error('Size, partitionSize, and mineDensity must be integers')
+  }
+
+  if (config.size < 2) {
+    throw new Error('Size must be greater than 1')
+  }
+
+  if (config.partitionSize < 1) {
+    throw new Error('Partition size must be greater than 0')
+  }
+
+  if (config.partitionSize > config.size) {
+    throw new Error('Partition size must be less than or equal to size')
+  }
+
+  if (config.mineDensity < 0 || config.mineDensity > 100) {
+    throw new Error('Mine density must be between 0 and 100')
   }
 
   if (config.size % config.partitionSize !== 0) {
@@ -183,18 +205,6 @@ export const challengeMakeNew = async ({
     config,
   })
 
-  const post = await ctx.reddit.submitPost({
-    preview: <Preview />,
-    subredditName: ctx.subredditName,
-    title: `Banfield #${newChallengeNumber}`,
-  })
-
-  await setChallengeNumberForPost({
-    challengeNumber: newChallengeNumber,
-    postId: post.id,
-    redis: ctx.redis,
-  })
-
   await teamStatsCellsClaimedInit({
     challengeNumber: newChallengeNumber,
     redis: ctx.redis,
@@ -205,7 +215,7 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  return {postID: post.id, url: post.url, challengeNumber: newChallengeNumber}
+  return {challengeNumber: newChallengeNumber}
 }
 
 /** Inits keys needed in redis for the rest of the system to work */

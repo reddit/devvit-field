@@ -94,7 +94,7 @@ export class Game {
 
   async start(): Promise<void> {
     addEventListener('message', this.#onMsg)
-    this.#postMessage({type: 'Registered'})
+    this.postMessage({type: 'Registered'})
     this.ctrl.register('add')
     this.looper.register('add')
 
@@ -126,7 +126,7 @@ export class Game {
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
 
-    this.#postMessage({type: 'Loaded'})
+    this.postMessage({type: 'Loaded'})
     console.log('loaded')
   }
 
@@ -197,7 +197,7 @@ export class Game {
 
   #onLoop = (): void => {
     if (this.ctrl.isOnStart('A') && this.mode === 'PopIn')
-      this.#postMessage({type: 'PopOut'})
+      this.postMessage({type: 'PopOut'})
 
     this.bmps.size = 0
     // Don't await; this can hang.
@@ -265,6 +265,13 @@ export class Game {
       case 'Cell':
         // to-do: implement.
         if (!this.p1) return
+        // to-do: implement teams
+        for (const {xy, cell, team: _team} of msg.boxes) {
+          const i = xy.y * this.fieldConfig!.wh.w + xy.x
+          if (this.field[i]) return
+          this.field[i] = cell === 'Ban' ? 2 : 1
+          this.renderer.setCell(xy, this.field[i])
+        }
         break
       case 'Connected':
         if (!this.p1) return
@@ -275,6 +282,10 @@ export class Game {
         this.#onDisconnect()
         break
       case 'Field':
+        if (!this.p1) return
+        // to-do: implement.
+        break
+      case 'ChallengeComplete':
         if (!this.p1) return
         // to-do: implement.
         break
@@ -293,7 +304,7 @@ export class Game {
     console.log('resumed')
   }
 
-  #postMessage(msg: Readonly<IframeMessage>): void {
+  postMessage(msg: Readonly<IframeMessage>): void {
     // to-do: peer messages: game.devPeerChan?.postMessage(msg)
     parent.postMessage(msg, document.referrer || '*')
   }

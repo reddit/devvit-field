@@ -1,7 +1,9 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
 import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
+import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
 import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
+import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {type ChallengeConfig, challengeConfigGet} from './challenge'
 import type {Delta} from './deltas'
@@ -139,20 +141,24 @@ export const _fieldClaimCellsSuccess = async ({
     incrementBy: deltas.length,
   })
 
-  const {isOver, winner} = computeScore({
+  const standings = await teamStatsCellsClaimedGet({
+    challengeNumber,
+    redis: ctx.redis,
+  })
+
+  const {isOver} = computeScore({
     size: fieldConfig.size,
-    teams: await teamStatsCellsClaimedGet({
-      challengeNumber,
-      redis: ctx.redis,
-    }),
+    teams: standings,
   })
 
   if (isOver) {
-    // TODO: Increment user stats here or do it somewhere else?
-    await ctx.realtime.send('game_over', {
+    const msg: ChallengeCompleteMessage = {
       challengeNumber,
-      winningTeam: winner ?? null,
-    })
+      standings,
+      type: 'ChallengeComplete',
+    }
+    // TODO: Increment user stats here or do it somewhere else?
+    await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
 
     // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
 
@@ -187,6 +193,9 @@ export const fieldClaimCells = async ({
   if (coords.length === 0) return {deltas: []}
 
   const fieldKey = createFieldKey(challengeNumber)
+  // We need a lookup here instead of passing in the config from blocks land
+  // because blocks doesn't have the seed and other backend only pieces
+  // of information that we need
   const fieldConfig = await challengeConfigGet({
     redis: ctx.redis,
     challengeNumber,
