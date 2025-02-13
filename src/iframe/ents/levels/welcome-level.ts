@@ -23,7 +23,7 @@ export class WelcomeLevel implements LevelEnt {
     this.#bg = new Sprite(game.atlas, 'background--White')
     this.#bg.z = Layer.Default
 
-    const str = 'Welcome to r/DontPlayBanfield #003'
+    const str = 'Welcome to r/DontPlayBanfield #003' // to-do: get from init.
     const layout = layoutText(memProp5x6, str, textW)
     this.#text.length = 0
     for (const [i, char] of layout.chars.entries()) {
@@ -41,8 +41,6 @@ export class WelcomeLevel implements LevelEnt {
 
   init(game: Game): void {
     game.zoo.clear()
-    // to-do: levels shouldn't add themselves, only children. The caller should
-    //        add them.
     game.zoo.add(this, new CursorEnt(game))
     this.#updateBg(game)
     this.#updateText(game)
