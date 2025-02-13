@@ -1,6 +1,6 @@
 import type {Seed} from './types/random.ts'
 import type {SID} from './types/sid.ts'
-import {type T2} from './types/tid.ts'
+import type {T2} from './types/tid.ts'
 
 /** Immutable R2 user data. */
 export type Profile = {
