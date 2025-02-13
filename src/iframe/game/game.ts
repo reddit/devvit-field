@@ -14,7 +14,7 @@ import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
 import {EIDFactory} from '../ents/eid.ts'
-import {FieldLevel} from '../ents/levels/field-level.ts'
+import {WelcomeLevel} from '../ents/levels/welcome-level.ts'
 import {Zoo} from '../ents/zoo.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
@@ -105,7 +105,7 @@ export class Game {
     this.looper.onResume = this.#onResume
     this.#onLoop()
 
-    const lvl = new FieldLevel(this)
+    const lvl = new WelcomeLevel(this)
 
     const assets = await AssetMap()
 
@@ -267,11 +267,10 @@ export class Game {
         if (!this.p1) return
         // to-do: implement teams
         for (const {xy, cell, team: _team} of msg.boxes) {
-          this.field[xy.y * this.fieldConfig!.wh.w + xy.x] =
-            // NOTE: I just guessed on numbers here. We'll want a color
-            // map so that blank, ban, and team colors are all distinct.
-            cell === 'Ban' ? 2 : 1
-          this.renderer.setCell(xy, cell === 'Ban' ? 2 : 1)
+          const i = xy.y * this.fieldConfig!.wh.w + xy.x
+          if (this.field[i]) return
+          this.field[i] = cell === 'Ban' ? 2 : 1
+          this.renderer.setCell(xy, this.field[i])
         }
         break
       case 'Connected':
