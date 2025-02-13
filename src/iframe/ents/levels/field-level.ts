@@ -56,28 +56,33 @@ export class FieldLevel implements LevelEnt {
         xy.y >= game.fieldConfig!.wh.h
       )
         return
-      game.field[xy.y * game.fieldConfig!.wh.w + xy.x] = 1
-      game.renderer.setCell(xy, 1)
+      const i = xy.y * game.fieldConfig!.wh.w + xy.x
+      if (game.field[i]) return
+      game.field[i] = 1
+      game.renderer.setCell(xy, game.field[i])
       // to-do: post message.
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
     }
     if (!game.ctrl.handled && game.ctrl.drag) {
       game.ctrl.handled = true
-      const scale = 5 / game.fieldScale
-      const half = {
-        w: 0.5 * (game.fieldConfig?.wh.w ?? 0),
-        h: 0.5 * (game.fieldConfig?.wh.h ?? 0),
+      const wh = {
+        w: game.fieldConfig?.wh.w ?? 0,
+        h: game.fieldConfig?.wh.h ?? 0,
       }
-      // to-do: consider scaling.
-      // to-do: fix zoom.
       game.cam.x = Math.min(
-        half.w,
-        Math.max(-half.w, game.cam.x - game.ctrl.delta.x * scale),
+        wh.w,
+        Math.max(
+          -wh.w,
+          game.cam.x - game.ctrl.delta.x / game.fieldScale / game.cam.scale,
+        ),
       )
       game.cam.y = Math.min(
-        half.h,
-        Math.max(-half.h, game.cam.y - game.ctrl.delta.y * scale),
+        wh.h,
+        Math.max(
+          -wh.h,
+          game.cam.y - game.ctrl.delta.y / game.fieldScale / game.cam.scale,
+        ),
       )
     }
   }
