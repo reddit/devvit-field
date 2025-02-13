@@ -119,9 +119,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
     },
   }).subscribe()
 
-  const chan = useChannel2<RealtimeMessage>({
-    chan: GLOBAL_REALTIME_CHANNEL,
-    onPeerMessage(msg) {
+  const chan = useChannel<RealtimeMessage>({
+    name: GLOBAL_REALTIME_CHANNEL,
+    onMessage(msg) {
       if (session.debug)
         console.log(
           `${profile.username} Devvit ← realtime msg=${JSON.stringify(msg)}`,
@@ -133,11 +133,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
       iframe.postMessage(msg)
     },
-    p1,
-    version: realtimeVersion,
-    onConnected: () => iframe.postMessage({type: 'Connected'}),
-    onDisconnected: () => iframe.postMessage({type: 'Disconnected'}),
-    // to-do: onOutdated alert.
+    onSubscribed: () => iframe.postMessage({type: 'Connected'}),
+    onUnsubscribed: () => iframe.postMessage({type: 'Disconnected'}),
   })
   chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
 

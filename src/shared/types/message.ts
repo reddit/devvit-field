@@ -74,6 +74,8 @@ export type ChallengeCompleteMessage = {
   standings: {member: Team; score: number}[]
 }
 
+// TODO: Remove if there are no peer to peer messages. We won't have peer for things like
+// scheduled jobs
 /** Base realtime message sent or received. */
 export type RealtimeSystemMessage = {
   peer: Player
