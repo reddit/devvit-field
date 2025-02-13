@@ -20,7 +20,7 @@ export type InitDevvitMessage = {
   /** Connected may be sent before Registered. Reinit status. */
   connected: boolean
   /**
-   * Configure iframe lifetime debug mode. this is by request in devvit but that
+   * Configure iframe lifetime debug mode. This is by request in devvit but that
    * granularity doesn't make sense in the iframe.
    */
   debug: boolean

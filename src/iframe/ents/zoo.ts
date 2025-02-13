@@ -32,7 +32,10 @@ export class Zoo {
   }
 
   remove(...ents: readonly Readonly<Ent>[]): void {
-    for (const ent of ents) delete this.#ents[ent.eid]
+    for (const ent of ents) {
+      delete this.#ents[ent.eid]
+      if (ent === this.#cursor) this.#cursor = undefined
+    }
   }
 
   update(game: Game): void {
