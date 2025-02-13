@@ -5,7 +5,7 @@ import {Sprite} from '../graphics/sprite.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
-export class ToolbeltEnt implements Ent {
+export class DashboardEnt implements Ent {
   readonly eid: EID
   hidden: boolean = false
   #black: Sprite<Tag>

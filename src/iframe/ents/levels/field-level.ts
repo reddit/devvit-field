@@ -1,7 +1,7 @@
 import type {Game} from '../../game/game.ts'
 import {CursorEnt} from '../cursor-ent.ts'
+import {DashboardEnt} from '../dashboard.ts'
 import type {EID} from '../eid.ts'
-import {ToolbeltEnt} from '../toolbelt.ts'
 import type {LevelEnt} from './level-ent.ts'
 
 // It'd probably be better to use an exponential here but this was easier at the
@@ -25,7 +25,7 @@ export class FieldLevel implements LevelEnt {
 
   init(game: Game): void {
     game.zoo.clear()
-    game.zoo.add(this, new CursorEnt(game), new ToolbeltEnt(game))
+    game.zoo.add(this, new CursorEnt(game), new DashboardEnt(game))
   }
 
   update(game: Game): void {
