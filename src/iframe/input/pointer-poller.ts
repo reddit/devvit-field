@@ -39,7 +39,8 @@ export class PointerPoller {
   }
 
   get delta(): XY {
-    return xySub(this.#clientXY[1], this.#clientXY[0])
+    const xy = xySub(this.#clientXY[1], this.#clientXY[0])
+    return {x: xy.x / this.#cam.scale, y: xy.y / this.#cam.scale}
   }
 
   get drag(): boolean {

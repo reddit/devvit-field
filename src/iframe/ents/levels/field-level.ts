@@ -72,17 +72,11 @@ export class FieldLevel implements LevelEnt {
       }
       game.cam.x = Math.min(
         wh.w,
-        Math.max(
-          -wh.w,
-          game.cam.x - game.ctrl.delta.x / game.fieldScale / game.cam.scale,
-        ),
+        Math.max(-wh.w, game.cam.x - game.ctrl.delta.x / game.fieldScale),
       )
       game.cam.y = Math.min(
         wh.h,
-        Math.max(
-          -wh.h,
-          game.cam.y - game.ctrl.delta.y / game.fieldScale / game.cam.scale,
-        ),
+        Math.max(-wh.h, game.cam.y - game.ctrl.delta.y / game.fieldScale),
       )
     }
   }
