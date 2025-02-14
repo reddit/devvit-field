@@ -5,7 +5,7 @@ import type {T2} from './types/tid.ts'
 /** Immutable R2 user data. */
 export type Profile = {
   /** True if sub moderator or employee. */
-  superuser?: boolean // to-do: make me required and fix all the errors.
+  superuser: boolean
   /** Player user ID. t2_0 for anons. */
   t2: T2
   /** Player username. eg, spez. */

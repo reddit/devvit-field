@@ -5,7 +5,7 @@ import {noT2, noUsername} from '../../../shared/types/tid'
 import {globalStatsIncrement} from './globalStats'
 
 export function noProfile(): Profile {
-  return {t2: noT2, username: noUsername}
+  return {t2: noT2, username: noUsername, superuser: false}
 }
 
 const userKey = 'users'
@@ -29,7 +29,7 @@ export const userMaybeGet = async ({
 export const userGet = async (args: {
   redis: Devvit.Context['redis']
   userId: string
-}): Promise<Profile | undefined> => {
+}): Promise<Profile> => {
   const user = await userMaybeGet(args)
 
   if (!user) {
@@ -71,6 +71,7 @@ export const userGetOrSet = async ({
   const user: Profile = {
     t2: userProfile.id,
     username: userProfile.username,
+    superuser: false,
   }
 
   await userSet({
@@ -85,4 +86,17 @@ export const userGetOrSet = async ({
   })
 
   return user
+}
+
+/** Makes a given user a super user */
+export const userMakeSuperuser = async ({
+  redis,
+  userId,
+}: {
+  redis: Devvit.Context['redis']
+  userId: string
+}): Promise<void> => {
+  const user = await userGet({redis, userId})
+
+  await userSet({redis, user: {...user, superuser: true}})
 }
