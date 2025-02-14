@@ -26,7 +26,7 @@ void main() {
     discard;
 
   vec2 fracXY = fract(xy);
-  float borderW = 0.001 * uScale;
+  float borderW = 0.1;
   if (uScale >= 10. &&
       (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
        fracXY.y < borderW || fracXY.y > 1.0 - borderW)) {
