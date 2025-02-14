@@ -12,9 +12,11 @@ const zoomLevels: readonly number[] = [
   30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50,
 ]
 
+const userMinZoom: number = zoomLevels.indexOf(10)!
+
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
-  #index: number
+  #index: number = userMinZoom
 
   constructor(game: Game) {
     this.eid = game.eid.new()
@@ -31,7 +33,7 @@ export class FieldLevel implements LevelEnt {
   update(game: Game): void {
     if (game.ctrl.wheel.y) {
       this.#index = Math.max(
-        0,
+        game.p1?.profile.superuser ? 0 : userMinZoom,
         Math.min(
           zoomLevels.length - 1,
           this.#index - Math.sign(game.ctrl.wheel.y),
