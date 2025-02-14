@@ -55,6 +55,7 @@ const formKey = Devvit.createForm(
     try {
       const {challengeNumber} = await challengeMakeNew({ctx, config})
 
+      if (!ctx.subredditName) throw Error('no sub name')
       const post = await ctx.reddit.submitPost({
         preview: <Preview />,
         subredditName: ctx.subredditName,
