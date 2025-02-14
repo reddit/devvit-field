@@ -71,7 +71,7 @@ export const userGetOrSet = async ({
   const user: Profile = {
     t2: userProfile.id,
     username: userProfile.username,
-    superuser: false,
+    superuser: userProfile.isAdmin,
   }
 
   await userSet({

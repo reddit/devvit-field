@@ -1,7 +1,12 @@
-import {expect, vi} from 'vitest'
+import {beforeEach, expect, vi} from 'vitest'
 import type {T2} from '../../../shared/types/tid'
 import {DevvitTest} from './_utils/DevvitTest'
 import * as userMethods from './user'
+
+beforeEach(() => {
+  // reset mocks
+  vi.resetAllMocks()
+})
 
 DevvitTest.it('userGetOrSet - return defaults if no user found', async ctx => {
   await expect(
@@ -41,6 +46,21 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
     superuser: false,
   })
   expect(spy).toHaveBeenCalledTimes(1)
+})
+
+DevvitTest.it('userGetOrSet - set superuser', async ctx => {
+  // @ts-expect-error - testing and don't need all methods
+  const spy = vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
+    username: 'foo',
+    id: ctx.userId as T2,
+    isAdmin: true,
+  })
+
+  await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
+    t2: ctx.userId as T2,
+    username: 'foo',
+    superuser: true,
+  })
 })
 
 DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
