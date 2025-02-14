@@ -170,11 +170,10 @@ export class Cam {
 
     const prev = this.fieldScale
     this.#fieldZoomIndex = index
-    const next = this.fieldScale
 
     const half = {w: this.w / 2, h: this.h / 2}
-    this.x += half.w / prev - half.w / next
-    this.y += half.h / prev - half.h / next
+    this.x += half.w / prev - half.w / this.fieldScale
+    this.y += half.h / prev - half.h / this.fieldScale
   }
 }
 
