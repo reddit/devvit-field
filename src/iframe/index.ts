@@ -1,5 +1,6 @@
 import './utils/dispose.ts'
 import './utils/crypto.ts'
+import './elements/overlay-el.ts'
 
 import {Game} from './game/game.ts'
 

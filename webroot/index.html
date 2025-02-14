@@ -32,9 +32,14 @@
         /* Update on each pointermove *touch* Event like *mouse* Events. */
         touch-action: none;
       }
+
+      overlay-el {
+        position: fixed;
+      }
     </style>
   </head>
   <body>
+    <overlay-el></overlay-el>
     <canvas tabIndex='0'></canvas> <!-- Set tabIndex to propagate key events. -->
     <script src='index.js' type='module' async></script>
   </body>

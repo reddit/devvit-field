@@ -13,8 +13,9 @@ import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
+import type {OverlayEl} from '../elements/overlay-el.ts'
 import {EIDFactory} from '../ents/eid.ts'
-import {WelcomeLevel} from '../ents/levels/welcome-level.ts'
+import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
@@ -58,6 +59,7 @@ export class Game {
   looper: Looper
   mode?: IframeMode
   now: UTCMillis
+  overlay: OverlayEl
   p1?: Player
   renderer: Renderer
   rnd?: Random
@@ -70,6 +72,10 @@ export class Game {
     const canvas = document.querySelector('canvas')
     if (!canvas) throw Error('no canvas')
     this.canvas = canvas
+
+    const overlay = document.querySelector('overlay-el')
+    if (!overlay) throw Error('no overlay')
+    this.overlay = overlay
 
     this.cam = new Cam()
     this.cam.minWH = {w: minCanvasWH.w, h: minCanvasWH.h}
@@ -88,7 +94,6 @@ export class Game {
     this.renderer = new Renderer(canvas)
     this.zoo = new Zoo()
     this.looper = new Looper(canvas, this.cam, this.ctrl, this.renderer)
-    this.renderer.clearColor(paletteBlack)
   }
 
   async start(): Promise<void> {
@@ -99,12 +104,14 @@ export class Game {
 
     if (devMode) this.#initDevMode()
 
+    this.renderer.clearColor(paletteBlack)
+
     this.looper.onPause = this.#onPause
     this.looper.onResize = this.#onResize
     this.looper.onResume = this.#onResume
     this.#onLoop()
 
-    const lvl = new WelcomeLevel(this)
+    const lvl = new FieldLevel(this)
 
     const assets = await AssetMap()
 
@@ -124,6 +131,8 @@ export class Game {
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
+
+    this.overlay.game = this
 
     this.postMessage({type: 'Loaded'})
     console.log('loaded')
