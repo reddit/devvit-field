@@ -18,6 +18,15 @@ export type FollowCamOrientation =
   | 'Northwest'
   | 'Center'
 
+// It'd probably be better to use an exponential here but this was easier at the
+// cost of index state, Integers above 1 and tenths below.
+const fieldZoomLevels: readonly number[] = [
+  0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+  30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50,
+]
+const userMinFieldZoomIndex: number = fieldZoomLevels.indexOf(10)!
+
 export class Cam {
   /** Fractional (but only integral is ever honored). */
   minWH: WH = {w: 256, h: 256}
@@ -34,9 +43,14 @@ export class Cam {
   x: number = 0
   /** Fractional. */
   y: number = 0
+  #fieldZoomIndex: number = userMinFieldZoomIndex
 
   constructor() {
     this.prev = {x: this.x, y: this.y, w: this.w, h: this.h, scale: this.scale}
+  }
+
+  get fieldScale(): number {
+    return fieldZoomLevels[this.#fieldZoomIndex]!
   }
 
   isVisible(box: Readonly<XY & Partial<WH>>): boolean {
@@ -141,6 +155,26 @@ export class Cam {
       x: (clientXY.x / innerWidth) * this.w,
       y: (clientXY.y / innerHeight) * this.h,
     }
+  }
+
+  /** Independent zoom for the field (doesn't impact UI). */
+  zoomField(dir: 'In' | 'Out', superuser: boolean): void {
+    const index = Math.max(
+      superuser ? 0 : userMinFieldZoomIndex,
+      Math.min(
+        fieldZoomLevels.length - 1,
+        this.#fieldZoomIndex + (dir === 'In' ? 1 : -1),
+      ),
+    )
+    if (this.#fieldZoomIndex === index) return
+
+    const prev = this.fieldScale
+    this.#fieldZoomIndex = index
+    const next = this.fieldScale
+
+    const half = {w: this.w / 2, h: this.h / 2}
+    this.x += half.w / prev - half.w / next
+    this.y += half.h / prev - half.h / next
   }
 }
 

@@ -53,7 +53,6 @@ export class Game {
   eid: EIDFactory
   field: Uint8Array
   fieldConfig: Readonly<FieldConfig> | undefined
-  fieldScale: number = 30
   img?: AssetMap['img']
   init: Promise<void>
   looper: Looper
@@ -208,7 +207,7 @@ export class Game {
     this.zoo.update(this)
     this.zoo.draw(this)
 
-    this.looper.render(this.cam, this.bmps, this.#onLoop, this.fieldScale)
+    this.looper.render(this.cam, this.bmps, this.#onLoop, this.cam.fieldScale)
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
