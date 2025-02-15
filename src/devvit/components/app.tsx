@@ -1,8 +1,9 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit} from '@devvit/public-api'
-import {type JSONValue, useChannel, useWebView} from '@devvit/public-api'
+import {Devvit, type JSONValue} from '@devvit/public-api'
+import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
+import {playButtonWidth} from '../../shared/theme.ts'
 import type {
   DevvitMessage,
   IframeMessage,
@@ -40,20 +41,28 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   const p1 = {profile, sid: session.sid}
 
-  const [loaded, setLoaded] = useState2(false)
+  let [loaded, setLoaded] = useState2(false)
   // to-do: move to UseWebViewResult.mounted.
-  const [mounted, setMounted] = useState2(false)
+  let [mounted, setMounted] = useState2(false)
   const iframe = useWebView<IframeMessage, DevvitMessage>({
     onMessage: onMsg,
     onUnmount() {
-      setLoaded(false)
-      setMounted(false)
+      setLoaded((loaded = false))
+      setMounted((mounted = false))
     },
   })
   // to-do: support three mount states from hook.
-  if (!mounted)
+  // to-do: DX-8861 delete Android condition.
+  if (!mounted && session.userAgent.client !== 'Android')
     iframe.postMessage = (msg: DevvitMessage) =>
       ctx.ui.webView.postMessage('web-view', msg)
+
+  function popOut(): void {
+    setLoaded((loaded = false))
+    setMounted((mounted = true))
+    mounted = true
+    iframe.mount()
+  }
 
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
@@ -63,12 +72,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
     switch (msg.type) {
       case 'Loaded':
-        setLoaded(true)
+        setLoaded((loaded = true))
         break
       case 'PopOut':
-        setLoaded(false)
-        setMounted(true)
-        iframe.mount()
+        popOut()
         break
       case 'Registered':
         iframe.postMessage({
@@ -137,12 +144,29 @@ export function App(ctx: Devvit.Context): JSX.Element {
   })
   chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
 
+  // to-do: DX-8861 delete Android specialization.
+  if (session.userAgent.client === 'Android')
+    return (
+      <Title loaded={mounted && loaded}>
+        {/* biome-ignore lint/a11y/useButtonType: */}
+        <button
+          appearance='secondary'
+          size='large'
+          minWidth={`${playButtonWidth}px`}
+          icon='play-outline'
+          onPress={popOut}
+        >
+          Play
+        </button>
+      </Title>
+    )
+
   return (
     // Hack: turning off the loading animation changes the DOM which causes the
     //       web view to be loaded, discarded, and loaded again. No webview in
     //       the tree during pop-out mode but just let it forever spin when put
     //       in.
-    // Hack: DX-8859 ID must be specified here and in postMessage().
+    // Hack: DX-8859 ID must be specified here and in postMessage() for Android.
     <Title loaded={mounted && loaded}>
       {!mounted && (
         <webview
