@@ -19,7 +19,7 @@ import {userMakeSuperuser} from './devvit/server/core/user.js'
 
 Devvit.configure({redditAPI: true, redis: true, realtime: true})
 
-Devvit.addCustomPostType({name: '', height: 'regular', render: App})
+Devvit.addCustomPostType({name: '', height: 'tall', render: App})
 
 const formKey = Devvit.createForm(
   {
