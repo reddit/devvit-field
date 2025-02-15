@@ -1,10 +1,11 @@
+import type {User} from '@devvit/public-api'
 import {beforeEach, expect, vi} from 'vitest'
 import type {T2} from '../../../shared/types/tid'
 import {DevvitTest} from './_utils/DevvitTest'
 import * as userMethods from './user'
 
 beforeEach(() => {
-  // reset mocks
+  DevvitTest.resetRedis()
   vi.resetAllMocks()
 })
 
@@ -19,11 +20,11 @@ DevvitTest.it('userGetOrSet - return defaults if no user found', async ctx => {
 })
 
 DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
-  // @ts-expect-error - testing and don't need all methods
   const spy = vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
     username: 'foo',
     id: ctx.userId as T2,
-  })
+    isAdmin: false,
+  } as User)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     t2: ctx.userId as T2,
@@ -49,12 +50,11 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
 })
 
 DevvitTest.it('userGetOrSet - set superuser', async ctx => {
-  // @ts-expect-error - testing and don't need all methods
-  const spy = vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
+  vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
     username: 'foo',
     id: ctx.userId as T2,
     isAdmin: true,
-  })
+  } as User)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     t2: ctx.userId as T2,
@@ -64,11 +64,11 @@ DevvitTest.it('userGetOrSet - set superuser', async ctx => {
 })
 
 DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
-  // @ts-expect-error - testing and don't need all methods
-  const spy = vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
+  vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
     username: 'foo',
     id: ctx.userId as T2,
-  })
+    isAdmin: false,
+  } as User)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     t2: ctx.userId as T2,
