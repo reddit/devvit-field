@@ -52,7 +52,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
   })
   // to-do: support three mount states from hook.
   if (!mounted)
-    iframe.postMessage = (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg)
+    iframe.postMessage = (msg: DevvitMessage) =>
+      ctx.ui.webView.postMessage('web-view', msg)
 
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
@@ -141,11 +142,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
     //       web view to be loaded, discarded, and loaded again. No webview in
     //       the tree during pop-out mode but just let it forever spin when put
     //       in.
+    // Hack: DX-8859 ID must be specified here and in postMessage().
     <Title loaded={mounted && loaded}>
       {!mounted && (
         <webview
           grow
           height='100%'
+          id='web-view'
           onMessage={onMsg as (message: JSONValue) => Promise<void>}
           url='index.html'
           width='100%'

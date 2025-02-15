@@ -221,7 +221,11 @@ export class Game {
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
     // Filter any unknown messages.
-    if (ev.isTrusted === devMode || ev.data.type !== 'devvit-message') return
+    if (ev.data.type !== 'devvit-message') return
+
+    // Hack: DX-8860 events are untrusted on Android.
+    if (ev.isTrusted === devMode && !/Android/i.test(navigator.userAgent))
+      return
 
     const msg = ev.data.data.message
     // if (this.debug || (msg.type === 'Init' && msg.debug))
