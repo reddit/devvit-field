@@ -1,10 +1,5 @@
 import './utils/dispose.ts'
 import './utils/crypto.ts'
-import './elements/overlay-el.ts'
-
-import {Game} from './game/game.ts'
+import './elements/game-el.ts'
 
 console.log(`Banfield v${version}`)
-
-const game = new Game()
-await game.start()

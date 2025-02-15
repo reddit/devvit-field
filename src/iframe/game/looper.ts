@@ -86,7 +86,7 @@ export class Looper {
     this.#loop = undefined
 
     this.onResize()
-    this.#cam.resize()
+    this.#cam.resize(this.#canvas)
 
     this.#ctrl.poll(this.millis)
     loop?.()

@@ -8,39 +8,16 @@
     <!-- to-do: update me. -->
     <link rel='preload' href='assets/atlas.webp' as='image' type='image/webp' />
     <style>
-      *,
-      ::before,
-      ::after {
-        box-sizing: border-box; /* Dimensions include any border and padding. */
-        -webkit-tap-highlight-color: transparent;
-        outline: none; /* Disable focus outline. */
-        user-select: none;
-        -webkit-touch-callout: none; /* to-do: Disable context menu on iOS? */
-      }
-
       body {
         margin: 0;
         width: 100vw;
         height: 100vh;
         overflow: hidden;
       }
-
-      canvas {
-        cursor: none; /* Cursor provided by app. */
-        display: none;
-        image-rendering: pixelated;
-        /* Update on each pointermove *touch* Event like *mouse* Events. */
-        touch-action: none;
-      }
-
-      overlay-el {
-        position: fixed;
-      }
     </style>
   </head>
   <body>
-    <overlay-el></overlay-el>
-    <canvas tabIndex='0'></canvas> <!-- Set tabIndex to propagate key events. -->
+    <game-el></game-el>
     <script src='index.js' type='module' async></script>
   </body>
 </html>

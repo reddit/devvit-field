@@ -120,8 +120,8 @@ export class PointerPoller {
       type => type === ev.pointerType,
     )
     ;({clientX: this.#clientXY[2].x, clientY: this.#clientXY[2].y} = ev)
-    this.screenXY = this.#cam.toScreenXY(this.#clientXY[2])
-    this.xy = this.#cam.toLevelXY(this.#clientXY[2])
+    this.screenXY = this.#cam.toScreenXY(this.#canvas, this.#clientXY[2])
+    this.xy = this.#cam.toLevelXY(this.#canvas, this.#clientXY[2])
 
     this.#on |= 1
 

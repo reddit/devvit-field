@@ -13,7 +13,6 @@ import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
-import type {OverlayEl} from '../elements/overlay-el.ts'
 import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
@@ -46,9 +45,9 @@ export class Game {
   audio?: AudioBufferByName
   bmps: BmpAttribBuffer
   cam: Cam
-  canvas: HTMLCanvasElement
+  canvas!: HTMLCanvasElement
   connected: boolean
-  ctrl: Input<DefaultButton>
+  ctrl!: Input<DefaultButton>
   debug: boolean
   devPeerChan: BroadcastChannel | undefined
   eid: EIDFactory
@@ -56,12 +55,11 @@ export class Game {
   fieldConfig: Readonly<FieldConfig> | undefined
   img?: AssetMap['img']
   init: Promise<void>
-  looper: Looper
+  looper!: Looper
   mode?: IframeMode
   now: UTCMillis
-  overlay: OverlayEl
   p1?: Player
-  renderer: Renderer
+  renderer!: Renderer
   rnd?: Random
   seed?: Seed
   zoo: Zoo
@@ -69,18 +67,9 @@ export class Game {
   #fulfil!: () => void
 
   constructor() {
-    const canvas = document.querySelector('canvas')
-    if (!canvas) throw Error('no canvas')
-    this.canvas = canvas
-
-    const overlay = document.querySelector('overlay-el')
-    if (!overlay) throw Error('no overlay')
-    this.overlay = overlay
-
     this.cam = new Cam()
     this.cam.minWH = {w: minCanvasWH.w, h: minCanvasWH.h}
-    this.ctrl = new Input(this.cam, canvas)
-    this.ctrl.mapDefault()
+
     this.ac = new AudioContext()
     this.atlas = atlas as Atlas<Tag>
     this.bmps = new BmpAttribBuffer(100)
@@ -91,12 +80,17 @@ export class Game {
     this.field = new Uint8Array()
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
-    this.renderer = new Renderer(canvas)
     this.zoo = new Zoo()
-    this.looper = new Looper(canvas, this.cam, this.ctrl, this.renderer)
   }
 
-  async start(): Promise<void> {
+  async start(canvas: HTMLCanvasElement): Promise<void> {
+    this.canvas = canvas
+    this.ctrl = new Input(this.cam, canvas)
+    this.ctrl.mapDefault()
+
+    this.renderer = new Renderer(canvas)
+    this.looper = new Looper(canvas, this.cam, this.ctrl, this.renderer)
+
     addEventListener('message', this.#onMsg)
     this.postMessage({type: 'Registered'})
     this.ctrl.register('add')
@@ -131,8 +125,6 @@ export class Game {
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
-
-    this.overlay.game = this
 
     this.postMessage({type: 'Loaded'})
     console.log('loaded')

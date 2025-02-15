@@ -121,11 +121,11 @@ export class Cam {
   }
 
   /** Fill or just barely exceed the viewport in scaled pixels. */
-  resize(zoomOut?: number): void {
+  resize(canvas: HTMLCanvasElement, zoomOut?: number): void {
     this.prev = {x: this.x, y: this.y, w: this.w, h: this.h, scale: this.scale}
-    this.scale = camScale(this.minWH, this.minScale, zoomOut, this.mode)
+    this.scale = camScale(canvas, this.minWH, this.minScale, zoomOut, this.mode)
 
-    const native = camNativeWH()
+    const native = camNativeWH(canvas)
     const w = Math.ceil(native.w / this.scale)
     const h = Math.ceil(native.h / this.scale)
     if (w === this.w && h === this.h) return
@@ -144,16 +144,16 @@ export class Cam {
   }
 
   /** Returns position in fractional level coordinates. */
-  toLevelXY(clientXY: Readonly<XY>): XY {
-    return xyAdd(this, this.toScreenXY(clientXY))
+  toLevelXY(canvas: HTMLCanvasElement, clientXY: Readonly<XY>): XY {
+    return xyAdd(this, this.toScreenXY(canvas, clientXY))
   }
 
-  toScreenXY(clientXY: Readonly<XY>): XY {
+  toScreenXY(canvas: HTMLCanvasElement, clientXY: Readonly<XY>): XY {
     // WH of body in CSS px; document.body.getBoundingClientRect() returns
     // incorrectly large sizing on mobile that includes the address bar.
     return {
-      x: (clientXY.x / innerWidth) * this.w,
-      y: (clientXY.y / innerHeight) * this.h,
+      x: (clientXY.x / canvas.parentElement!.clientWidth) * this.w,
+      y: (clientXY.y / canvas.parentElement!.clientHeight) * this.h,
     }
   }
 
@@ -178,12 +178,13 @@ export class Cam {
 }
 
 export function camScale(
+  canvas: HTMLCanvasElement,
   minWH: Readonly<WH>,
   minScale: number,
   zoomOut: number | undefined,
   mode: 'Int' | 'Fraction',
 ): number {
-  const native = camNativeWH()
+  const native = camNativeWH(canvas)
   const scale = Math.max(
     minScale,
     // Default is to zoom in as much as possible.
@@ -193,9 +194,9 @@ export function camScale(
 }
 
 /** Returns dimensions in physical pixels. */
-export function camNativeWH(): WH {
+export function camNativeWH(canvas: HTMLCanvasElement): WH {
   return {
-    w: Math.ceil(innerWidth * devicePixelRatio),
-    h: Math.ceil(innerHeight * devicePixelRatio),
+    w: Math.ceil(canvas.parentElement!.clientWidth * devicePixelRatio),
+    h: Math.ceil(canvas.parentElement!.clientHeight * devicePixelRatio),
   }
 }
