@@ -1,4 +1,4 @@
-import {css, type CSSResult} from 'lit'
+import {type CSSResult, css} from 'lit'
 
 export const cssReset: CSSResult = css`
   *,
