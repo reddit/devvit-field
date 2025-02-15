@@ -65,7 +65,7 @@ DevvitTest.it(
     })
 
     expect(result).toEqual({
-      deltas: [{coord: {x: 1, y: 1}, isMine: false, team: 0}],
+      deltas: [{coord: {x: 1, y: 1}, isBan: false, team: 0}],
     })
 
     expect(
@@ -99,8 +99,8 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 
   expect(result).toEqual({
     deltas: [
-      {coord: {x: 0, y: 0}, isMine: false, team: 0},
-      {coord: {x: 1, y: 1}, isMine: false, team: 0},
+      {coord: {x: 0, y: 0}, isBan: false, team: 0},
+      {coord: {x: 1, y: 1}, isBan: false, team: 0},
     ],
   })
 
@@ -183,8 +183,8 @@ DevvitTest.it(
 
     expect(result).toEqual({
       deltas: [
-        {coord: {x: 0, y: 0}, isMine: false, team: 0},
-        {coord: {x: 0, y: 1}, isMine: false, team: 0},
+        {coord: {x: 0, y: 0}, isBan: false, team: 0},
+        {coord: {x: 0, y: 1}, isBan: false, team: 0},
       ],
     })
   },
@@ -205,8 +205,8 @@ DevvitTest.it(
     })
 
     const deltas: Delta[] = [
-      {coord: {x: 0, y: 0}, isMine: false, team: 0},
-      {coord: {x: 1, y: 1}, isMine: true, team: 0},
+      {coord: {x: 0, y: 0}, isBan: false, team: 0},
+      {coord: {x: 1, y: 1}, isBan: true, team: 0},
     ]
 
     await _fieldClaimCellsSuccess({
@@ -265,9 +265,9 @@ DevvitTest.it(
     })
 
     const deltas: Delta[] = [
-      {coord: {x: 0, y: 0}, isMine: false, team: 0},
-      {coord: {x: 1, y: 1}, isMine: false, team: 0},
-      {coord: {x: 1, y: 2}, isMine: false, team: 0},
+      {coord: {x: 0, y: 0}, isBan: false, team: 0},
+      {coord: {x: 1, y: 1}, isBan: false, team: 0},
+      {coord: {x: 1, y: 2}, isBan: false, team: 0},
     ]
 
     await _fieldClaimCellsSuccess({

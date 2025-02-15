@@ -34,8 +34,8 @@ void main() {
     return;
   }
 
-  lowp uint cell = texelFetch(uTex, ivec2(xy), 0).r;
-  oFrag = palette[cell];
+  lowp uint box = texelFetch(uTex, ivec2(xy), 0).r;
+  oFrag = palette[box];
 }`
 
 import {

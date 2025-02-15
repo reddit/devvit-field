@@ -106,7 +106,7 @@ export const _fieldClaimCellsSuccess = async ({
     deltas,
   })
 
-  const isGameOverForUser = deltas.some(delta => delta.isMine)
+  const isGameOverForUser = deltas.some(delta => delta.isBan)
 
   // User stats
   if (isGameOverForUser) {
@@ -272,7 +272,7 @@ export const fieldClaimCells = async ({
       deltas.push({
         coord: batchItem.coord,
         team,
-        isMine: batchItem.isMine,
+        isBan: batchItem.isMine,
       })
     }
   })

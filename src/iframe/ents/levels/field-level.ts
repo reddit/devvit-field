@@ -46,7 +46,7 @@ export class FieldLevel implements LevelEnt {
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
 
-      game.postMessage({type: 'ClaimCells', cells: [xy]})
+      game.postMessage({type: 'ClaimBoxes', boxes: [xy]})
     }
     if (!game.ctrl.handled && game.ctrl.drag) {
       game.ctrl.handled = true

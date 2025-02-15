@@ -179,7 +179,7 @@ export class Renderer {
     this.#gl.bindVertexArray(null)
   }
 
-  setCell(xy: Readonly<XY>, val: number): void {
+  setBox(xy: Readonly<XY>, val: number): void {
     if (!this.#fieldShader || !this.#gl) return
     this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[0]!)
     this.#gl.texSubImage2D(

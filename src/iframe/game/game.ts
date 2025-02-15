@@ -274,15 +274,15 @@ export class Game {
         }
         break
       }
-      case 'Cell':
+      case 'Box':
         // to-do: implement.
         if (!this.p1) return
         // to-do: implement teams
-        for (const {xy, cell, team: _team} of msg.boxes) {
+        for (const {xy, box, team: _team} of msg.boxes) {
           const i = xy.y * this.fieldConfig!.wh.w + xy.x
           if (this.field[i]) return
-          this.field[i] = cell === 'Ban' ? 2 : 1
-          this.renderer.setCell(xy, this.field[i])
+          this.field[i] = box === 'Ban' ? 2 : 1
+          this.renderer.setBox(xy, this.field[i])
         }
         break
       case 'Connected':

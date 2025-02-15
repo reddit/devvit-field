@@ -15,7 +15,7 @@ export type DevvitMessage =
   | InitDevvitMessage
   | {type: 'Connected'}
   | {type: 'Disconnected'}
-  | ClaimCellsResponse
+  | ClaimBoxesResponse
   | RealtimeMessage
 
 export type InitDevvitMessage = {
@@ -47,22 +47,22 @@ export type IframeMessage =
   | {type: 'Registered'}
   /** Expand the iframe beyond the post boundaries. */
   | {type: 'PopOut'}
-  /** Attempt to submit a batch of cells that have been clicked */
-  | {type: 'ClaimCells'; cells: XY[]}
+  /** Attempt to submit a batch of boxes that have been clicked */
+  | {type: 'ClaimBoxes'; boxes: XY[]}
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
-  | CellRealtimeMessage
+  | BoxRealtimeMessage
   | FieldBroadcast
   | ChallengeCompleteMessage
 
-type ClaimCellsResponse = {
-  type: 'Cell'
-  boxes: {cell: 'Ban' | 'Clear'; xy: XY; team: Team}[]
+type ClaimBoxesResponse = {
+  type: 'Box'
+  boxes: {box: 'Ban' | 'Empty'; xy: XY; team: Team}[]
 }
 
-/** Broadcasted by server when a cell has changed. */
-export type CellRealtimeMessage = RealtimeSystemMessage & ClaimCellsResponse
+/** Broadcasted by server when a box has changed. */
+export type BoxRealtimeMessage = RealtimeSystemMessage & ClaimBoxesResponse
 
 /** Broadcasted by server when a new field URL is available. */
 export type FieldBroadcast = {type: 'Field'; url: string}

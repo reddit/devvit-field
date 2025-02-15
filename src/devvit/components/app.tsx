@@ -87,18 +87,18 @@ export function App(ctx: Devvit.Context): JSX.Element {
           type: 'Init',
         })
         break
-      case 'ClaimCells': {
+      case 'ClaimBoxes': {
         const {deltas} = await fieldClaimCells({
           challengeNumber,
-          coords: msg.cells,
+          coords: msg.boxes,
           ctx,
           userId: profile.t2,
         })
 
         iframe.postMessage({
-          type: 'Cell',
-          boxes: deltas.map(({coord: xy, team, isMine}) => ({
-            cell: isMine ? 'Ban' : 'Clear',
+          type: 'Box',
+          boxes: deltas.map(({coord: xy, team, isBan}) => ({
+            box: isBan ? 'Ban' : 'Empty',
             xy,
             team,
           })),
