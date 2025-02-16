@@ -1,3 +1,4 @@
+import {audioPlay} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
 import type {EID} from '../eid.ts'
 import type {LevelEnt} from './level-ent.ts'
@@ -14,6 +15,15 @@ export class FieldLevel implements LevelEnt {
   init(game: Game): void {
     game.zoo.clear()
     game.zoo.add(this)
+
+    if (!game.audio) throw Error('no audio')
+    if (game.lvl === 'BananaField')
+      audioPlay(
+        game.ac,
+        game.audio['16ItemsInThe15OrLessAtA60sGroceryStore'],
+        true,
+        true,
+      )
   }
 
   update(game: Game): void {

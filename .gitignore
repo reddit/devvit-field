@@ -2,4 +2,7 @@
 /dist/
 /node_modules/
 /webroot/index.js*
-/coverage
+/coverage/
+
+# Audacity temporary files.
+/resources/audio/*.aup3-wal
