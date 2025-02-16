@@ -23,9 +23,11 @@ export type FollowCamOrientation =
 const fieldZoomLevels: readonly number[] = [
   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
   11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-  30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50,
+  30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 54, 58, 62, 66, 70, 74, 78, 82,
+  86, 90, 98, 106, 114, 122,
 ]
-const userMinFieldZoomIndex: number = fieldZoomLevels.indexOf(10)!
+const minUserFieldZoomIndex: number = fieldZoomLevels.indexOf(40)!
+const defaultFieldZoomIndex: number = fieldZoomLevels.indexOf(82)!
 
 export class Cam {
   /** Fractional (but only integral is ever honored). */
@@ -43,7 +45,7 @@ export class Cam {
   x: number = 0
   /** Fractional. */
   y: number = 0
-  #fieldZoomIndex: number = userMinFieldZoomIndex
+  #fieldZoomIndex: number = defaultFieldZoomIndex
 
   constructor() {
     this.prev = {x: this.x, y: this.y, w: this.w, h: this.h, scale: this.scale}
@@ -160,7 +162,7 @@ export class Cam {
   /** Independent zoom for the field (doesn't impact UI). */
   zoomField(dir: 'In' | 'Out', superuser: boolean): void {
     const index = Math.max(
-      superuser ? 0 : userMinFieldZoomIndex,
+      superuser ? 0 : minUserFieldZoomIndex,
       Math.min(
         fieldZoomLevels.length - 1,
         this.#fieldZoomIndex + (dir === 'In' ? 1 : -1),
