@@ -1,5 +1,5 @@
 import type {Player} from '../../shared/save.ts'
-import {cssHex, minCanvasWH, paletteBlack} from '../../shared/theme.ts'
+import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {
   DevvitMessage,
@@ -25,8 +25,6 @@ import atlas from './atlas.json' with {type: 'json'}
 import type {Tag} from './config.ts'
 import {Looper} from './looper.ts'
 
-// to-do: SavableGame for LocalStorage savable state.
-
 /**
  * Loading sequence is:
  * - Devvit <Preview>.
@@ -39,6 +37,7 @@ import {Looper} from './looper.ts'
 
 // to-do: make these vars private to prevent cheating.
 export class Game {
+  // to-do: SavableGame for LocalStorage savable state.
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
   ac: AudioContext
   atlas: Atlas<Tag>
@@ -67,12 +66,10 @@ export class Game {
   #fulfil!: () => void
 
   constructor() {
-    this.cam = new Cam()
-    this.cam.minWH = {w: minCanvasWH.w, h: minCanvasWH.h}
-
     this.ac = new AudioContext()
     this.atlas = atlas as Atlas<Tag>
     this.bmps = new BmpAttribBuffer(100)
+    this.cam = new Cam()
     this.connected = false
     this.debug = devMode
     this.devPeerChan = devMode ? new BroadcastChannel('dev') : undefined
@@ -132,9 +129,9 @@ export class Game {
 
   stop(): void {
     removeEventListener('message', this.#onMsg)
-    this.looper.cancel()
-    this.looper.register('remove')
-    this.ctrl.register('remove')
+    this.looper?.cancel()
+    this.looper?.register('remove')
+    this.ctrl?.register('remove')
   }
 
   #initDevMode(): void {
@@ -177,6 +174,11 @@ export class Game {
       )
   }
 
+  #onConnect(): void {
+    if (this.debug) console.log('connected')
+    this.connected = true
+  }
+
   #onDevMsg(msg: Readonly<DevvitMessage>): void {
     this.#onMsg(
       new MessageEvent<DevvitSystemMessage>('message', {
@@ -185,17 +187,15 @@ export class Game {
     )
   }
 
-  #onConnect(): void {
-    if (this.debug) console.log('connected')
-    this.connected = true
-  }
-
   #onDisconnect(): void {
     if (this.debug) console.log('disconnected')
     this.connected = false
   }
 
   #onLoop = (): void => {
+    this.cam.minWH.w = this.canvas.parentElement!.clientWidth
+    this.cam.minWH.h = this.canvas.parentElement!.clientHeight
+
     if (this.ctrl.isOnStart('A') && this.mode === 'PopIn')
       this.postMessage({type: 'PopOut'})
 

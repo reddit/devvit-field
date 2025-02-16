@@ -49,18 +49,8 @@ export class FieldLevel implements LevelEnt {
     }
     if (!game.ctrl.handled && game.ctrl.drag) {
       game.ctrl.handled = true
-      const wh = {
-        w: game.fieldConfig?.wh.w ?? 0,
-        h: game.fieldConfig?.wh.h ?? 0,
-      }
-      game.cam.x = Math.min(
-        wh.w,
-        Math.max(-wh.w, game.cam.x - game.ctrl.delta.x / game.cam.fieldScale),
-      )
-      game.cam.y = Math.min(
-        wh.h,
-        Math.max(-wh.h, game.cam.y - game.ctrl.delta.y / game.cam.fieldScale),
-      )
+      game.cam.x = game.cam.x - game.ctrl.delta.x / game.cam.fieldScale
+      game.cam.y = game.cam.y - game.ctrl.delta.y / game.cam.fieldScale
     }
   }
 }
