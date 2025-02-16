@@ -38,7 +38,7 @@ export function minefieldIsMine({
 
   const rnd = new Random(createSeedFromCoords(seed, coord, cols))
 
-  return rnd.num() < config.mineDensity / 100
+  return rnd.num < config.mineDensity / 100
 }
 
 function createSeedFromCoords(seed: Seed, coord: XY, cols: number): Seed {

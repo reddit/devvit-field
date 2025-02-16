@@ -19,8 +19,8 @@ export class Random {
         1) as Seed // [1, 0x7fff_fffe]
   }
 
-  /** @return a fraction in [0, 1). */
-  num(): number {
+  /** Returns a fraction in [0, 1). */
+  get num(): number {
     this.seed = ((this.seed * 16_807) % randomEndSeed) as Seed
     return (this.seed - 1) / (randomEndSeed - 1)
   }

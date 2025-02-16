@@ -159,18 +159,18 @@ export class Game {
           connected: true,
           debug: true,
           field: {wh: {w: 3333, h: 3333}},
-          mode: rnd.num() < 0.5 ? 'PopIn' : 'PopOut',
+          mode: rnd.num < 0.5 ? 'PopIn' : 'PopOut',
           p1,
           seed: seed as Seed,
           type: 'Init',
         })
       },
-      Math.trunc(rnd.num() * 1000),
+      Math.trunc(rnd.num * 1000),
     )
-    if (rnd.num() < 0.1)
+    if (rnd.num < 0.1)
       setTimeout(
         () => this.#onDevMsg({type: 'Connected'}),
-        Math.trunc(rnd.num() * 1000),
+        Math.trunc(rnd.num * 1000),
       )
   }
 
@@ -235,22 +235,20 @@ export class Game {
 
         for (let y = 0; y < msg.field.wh.h; y++)
           for (let x = 0; x < msg.field.wh.w; x++)
-            if (this.rnd.num() < 0.2)
-              this.field[y * msg.field.wh.w + x] = Math.trunc(
-                this.rnd.num() * 6,
-              )
+            if (this.rnd.num < 0.2)
+              this.field[y * msg.field.wh.w + x] = Math.trunc(this.rnd.num * 6)
 
         for (let y = 0; y < msg.field.wh.h; y++) {
-          this.field[y * msg.field.wh.w] = Math.trunc(this.rnd.num() * 6)
+          this.field[y * msg.field.wh.w] = Math.trunc(this.rnd.num * 6)
           this.field[y * msg.field.wh.w + msg.field.wh.w - 1] = Math.trunc(
-            this.rnd.num() * 6,
+            this.rnd.num * 6,
           )
         }
         for (let y = 0; y < msg.field.wh.h; y++)
           for (let x = 0; x < msg.field.wh.w; x++) {
-            this.field[x] = Math.trunc(this.rnd.num() * 6)
+            this.field[x] = Math.trunc(this.rnd.num * 6)
             this.field[(msg.field.wh.h - 1) * msg.field.wh.w + x] = Math.trunc(
-              this.rnd.num() * 6,
+              this.rnd.num * 6,
             )
           }
 
