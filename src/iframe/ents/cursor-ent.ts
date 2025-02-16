@@ -16,7 +16,7 @@ export class CursorEnt implements Ent {
 
   constructor(game: Game) {
     this.eid = game.eid.new()
-    this.#sprite = new Sprite(game.atlas, 'cursor--Point')
+    this.#sprite = new Sprite(game.atlas, 'cursor--Point' as Tag)
     this.#sprite.z = Layer.Cursor
   }
 

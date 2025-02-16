@@ -1,5 +1,4 @@
 import type {Game} from '../../game/game.ts'
-import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import type {LevelEnt} from './level-ent.ts'
 
@@ -14,7 +13,7 @@ export class FieldLevel implements LevelEnt {
 
   init(game: Game): void {
     game.zoo.clear()
-    game.zoo.add(this, new CursorEnt(game))
+    game.zoo.add(this)
   }
 
   update(game: Game): void {
