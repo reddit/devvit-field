@@ -24,10 +24,10 @@ const fieldZoomLevels: readonly number[] = [
   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
   11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
   30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 54, 58, 62, 66, 70, 74, 78, 82,
-  86, 90, 98, 106, 114, 122,
+  86, 90, 98, 106, 114, 122, 130, 138, 146, 154, 162, 170,
 ]
 const minUserFieldZoomIndex: number = fieldZoomLevels.indexOf(40)!
-const defaultFieldZoomIndex: number = fieldZoomLevels.indexOf(82)!
+const defaultFieldZoomIndex: number = fieldZoomLevels.indexOf(98)!
 
 export class Cam {
   /** Fractional (but only integral is ever honored). */
