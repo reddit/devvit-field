@@ -79,12 +79,17 @@ export function App(ctx: Devvit.Context): JSX.Element {
         break
       case 'Registered':
         iframe.postMessage({
+          challenge: challengeNumber,
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
           field: {wh: {w: challengeConfig.size, h: challengeConfig.size}},
+          lvl: ctx.subredditName ?? '',
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
+          score: 0, // to-do: fill me out.
+          team: 'Juice Box', // to-do: fill me out.
           type: 'Init',
+          visible: 0, // to-do: fill me out.
         })
         break
       case 'ClaimBoxes': {

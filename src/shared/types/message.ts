@@ -19,6 +19,7 @@ export type DevvitMessage =
   | RealtimeMessage
 
 export type InitDevvitMessage = {
+  challenge: number
   /** Connected may be sent before Registered. Reinit status. */
   connected: boolean
   /**
@@ -27,10 +28,17 @@ export type InitDevvitMessage = {
    */
   debug: boolean
   field: FieldConfig
+  /** The level and subreddit name without an r/ prefix. Eg, BananaField. */
+  lvl: string
   mode: IframeMode
   p1: Player
+  /** Team score. */
+  score: number
   seed?: Seed
+  team: string
   type: 'Init'
+  /** Number of boxes in the field visible; [0, field size]. */
+  visible: number
 }
 
 /** The Devvit API wraps all messages from Blocks to the iframe. */

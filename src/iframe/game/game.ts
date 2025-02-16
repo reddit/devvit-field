@@ -13,6 +13,7 @@ import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
+import {Bubble} from '../elements/bubble.ts'
 import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
@@ -45,6 +46,8 @@ export class Game {
   bmps: BmpAttribBuffer
   cam: Cam
   canvas!: HTMLCanvasElement
+  /** The match number. */
+  challenge: number | undefined
   connected: boolean
   ctrl!: Input<DefaultButton>
   debug: boolean
@@ -54,13 +57,20 @@ export class Game {
   fieldConfig: Readonly<FieldConfig> | undefined
   img?: AssetMap['img']
   init: Promise<void>
+  /** The level and subreddit name without an r/ prefix. Eg, BananaField. */
+  lvl?: string
   looper!: Looper
   mode?: IframeMode
   now: UTCMillis
   p1?: Player
   renderer!: Renderer
   rnd?: Random
+  /** Team score. */
+  score: number | undefined
   seed?: Seed
+  team: string | undefined
+  /** Number of boxes in the field visible; [0, field size]. */
+  visible: number | undefined
   zoo: Zoo
 
   #fulfil!: () => void
@@ -153,15 +163,35 @@ export class Game {
     // this sequence but it doesn't matter.
     const rnd = new Random(seed as Seed)
 
+    const lvl = [
+      'PlayBanField',
+      'CantPlayBanField',
+      'BananaField',
+      'WhyBanField',
+      'WhatIsBanField',
+    ][Math.trunc(rnd.num * 5)]!
+    const size = 128 * (1 + Math.trunc(rnd.num * 25))
+    const field = {wh: {w: size, h: size}}
+    const team = ['Flamingo', 'Juice Box', 'Lasagna', 'Sunshine'][
+      Math.trunc(rnd.num * 4)
+    ]!
+
+    const visible = Math.trunc(rnd.num * field.wh.w * field.wh.h)
+
     setTimeout(
       () => {
         this.#onDevMsg({
+          challenge: Math.trunc(rnd.num * 10_000),
           connected: true,
           debug: true,
-          field: {wh: {w: 3333, h: 3333}},
+          field,
+          lvl,
           mode: rnd.num < 0.5 ? 'PopIn' : 'PopOut',
           p1,
           seed: seed as Seed,
+          score: Math.trunc(rnd.num * (visible + 1)),
+          team,
+          visible,
           type: 'Init',
         })
       },
@@ -225,33 +255,29 @@ export class Game {
 
     switch (msg.type) {
       case 'Init': {
+        this.challenge = msg.challenge
         this.debug = msg.debug
+        this.lvl = msg.lvl
+        this.score = msg.score
         this.seed = msg.seed ?? (0 as Seed)
         this.rnd = new Random(this.seed)
+        this.team = msg.team
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
+        this.visible = msg.visible
 
-        // to-do: delete random nonsense.
-        // to-do: if (devMode)
-
-        for (let y = 0; y < msg.field.wh.h; y++)
-          for (let x = 0; x < msg.field.wh.w; x++)
-            if (this.rnd.num < 0.2)
-              this.field[y * msg.field.wh.w + x] = Math.trunc(this.rnd.num * 6)
-
-        for (let y = 0; y < msg.field.wh.h; y++) {
-          this.field[y * msg.field.wh.w] = Math.trunc(this.rnd.num * 6)
-          this.field[y * msg.field.wh.w + msg.field.wh.w - 1] = Math.trunc(
-            this.rnd.num * 6,
-          )
+        if (devMode) {
+          let visible = 0
+          end: for (;;)
+            for (let y = 0; y < msg.field.wh.h; y++)
+              for (let x = 0; x < msg.field.wh.w; x++) {
+                if (visible === this.visible) break end
+                if (this.rnd.num < 0.2) {
+                  visible++
+                  this.field[y * msg.field.wh.w + x] =
+                    1 + Math.trunc(this.rnd.num * 5)
+                }
+              }
         }
-        for (let y = 0; y < msg.field.wh.h; y++)
-          for (let x = 0; x < msg.field.wh.w; x++) {
-            this.field[x] = Math.trunc(this.rnd.num * 6)
-            this.field[(msg.field.wh.h - 1) * msg.field.wh.w + x] = Math.trunc(
-              this.rnd.num * 6,
-            )
-          }
-
         this.fieldConfig = msg.field
         this.p1 = msg.p1
         this.mode = msg.mode
@@ -262,6 +288,7 @@ export class Game {
           if (msg.connected) this.#onConnect()
           else this.#onDisconnect()
         }
+        this.canvas.dispatchEvent(Bubble('game-update', undefined))
         break
       }
       case 'Box':
