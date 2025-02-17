@@ -86,6 +86,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           lvl: ctx.subredditName ?? '',
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
+          players: 0, // to-do: fill me out. useChannel2()?
           score: 0, // to-do: fill me out.
           team: 'Juice Box', // to-do: fill me out.
           type: 'Init',

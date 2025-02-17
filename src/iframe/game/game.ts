@@ -63,6 +63,8 @@ export class Game {
   mode?: IframeMode
   now: UTCMillis
   p1?: Player
+  /** Number of players online including p1; 0 when offline. */
+  players: number
   renderer!: Renderer
   rnd?: Random
   /** Team score. */
@@ -87,6 +89,7 @@ export class Game {
     this.field = new Uint8Array()
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
+    this.players = 0
     this.zoo = new Zoo()
   }
 
@@ -188,6 +191,7 @@ export class Game {
           lvl,
           mode: rnd.num < 0.5 ? 'PopIn' : 'PopOut',
           p1,
+          players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
           score: Math.trunc(rnd.num * (visible + 1)),
           team,
@@ -258,6 +262,7 @@ export class Game {
         this.challenge = msg.challenge
         this.debug = msg.debug
         this.lvl = msg.lvl
+        this.players = msg.players
         this.score = msg.score
         this.seed = msg.seed ?? (0 as Seed)
         this.rnd = new Random(this.seed)

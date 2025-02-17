@@ -87,6 +87,7 @@ export class GameEl extends LitElement {
       <header-el
         challenge='${ifDefined(this.#game.challenge)}'
         level='${ifDefined(this.#game.lvl)}'
+        players='${this.#game.players}'
         visible-ratio='${ifDefined(visibleRatio)}'
       ></header-el>
       <div class='canvas-box'>

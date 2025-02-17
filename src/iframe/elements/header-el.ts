@@ -28,6 +28,8 @@ export class HeaderEl extends LitElement {
 
   @property({type: Number}) accessor challenge: number | undefined
   @property() accessor level: string = ''
+  @property({type: Number}) accessor players: number = 0
+  /** Ratio of cells visible; [0, 1]. */
   @property({attribute: 'visible-ratio', type: Number})
   accessor visibleRatio: number | undefined
 
@@ -37,6 +39,7 @@ export class HeaderEl extends LitElement {
     return html`
       <span class='challenge'>Banfield #${this.challenge}</span>
       <span class='level'>r/${this.level}</span>
+      <span class='players'>${this.players ? html`${this.players} online` : 'offline'}</span>
       <span class='visible'>${(this.visibleRatio * 100).toFixed(2)}%</span>
     `
   }

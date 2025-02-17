@@ -32,6 +32,8 @@ export type InitDevvitMessage = {
   lvl: string
   mode: IframeMode
   p1: Player
+  /** Number of players online including p1; 0 when offline. */
+  players: number
   /** Team score. */
   score: number
   seed?: Seed
