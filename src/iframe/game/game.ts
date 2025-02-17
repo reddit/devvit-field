@@ -110,7 +110,7 @@ export class Game {
     this.ctrl.register('add')
     this.looper.register('add')
 
-    if (devMode) this.#initDevMode()
+    this.#initDevMode()
 
     this.renderer.clearColor(paletteBlack)
 
@@ -152,6 +152,8 @@ export class Game {
   }
 
   #initDevMode(): void {
+    if (!devMode) return
+
     this.devPeerChan?.addEventListener('message', ev => {
       if (!ev.isTrusted) return
       this.#onDevMsg(ev.data)

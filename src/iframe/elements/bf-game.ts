@@ -1,11 +1,12 @@
 import {
   type CSSResultGroup,
   LitElement,
+  type PropertyValues,
   type TemplateResult,
   css,
   html,
 } from 'lit'
-import {customElement, query} from 'lit/decorators.js'
+import {customElement, query, state} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
@@ -17,6 +18,7 @@ import './bf-welcome-dialog.ts'
 
 declare global {
   interface HTMLElementEventMap {
+    'game-ui': CustomEvent<UI>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>
   }
@@ -24,6 +26,14 @@ declare global {
     'bf-game': BFGame
   }
 }
+
+// to-do: fill out the remaining states.
+export type UI =
+  // | 'Banned'
+  'Intro' | 'Loading' | 'Playing'
+// | 'Promoted'
+// | 'Replaying'
+// | 'Scored'
 
 /**
  * Game canvas wrapper and DOM UI. Pass primitive properties to children so
@@ -66,6 +76,7 @@ export class BFGame extends LitElement {
 
   #game: Game = new Game()
   @query('canvas') private accessor _canvas!: HTMLCanvasElement
+  @state() accessor _ui: UI = 'Loading'
 
   override async connectedCallback(): Promise<void> {
     super.connectedCallback()
@@ -76,6 +87,12 @@ export class BFGame extends LitElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback()
     this.#game.stop()
+  }
+
+  protected override update(props: PropertyValues<this>): void {
+    super.update(props)
+    if (this._ui === 'Loading' && this.#game.mode === 'PopOut')
+      this._ui = 'Intro'
   }
 
   override render(): TemplateResult {
@@ -91,13 +108,16 @@ export class BFGame extends LitElement {
         ? this.#game.teamBoxCounts[this.#game.team]
         : undefined
 
-    // to-do: literally forcing the user to stop and consent to the dialog feels
-    //        like an antipattern. What in the world do we have to say that is
-    //        so important? Verify this makes sense with Knut.
     let dialog
-    if (this.#game.mode === 'PopOut' && this.#game.teamBoxCounts) {
-      dialog = html`
+    switch (this._ui) {
+      case 'Intro':
+        // to-do: literally forcing the user to stop and consent to the dialog
+        //        feels like an antipattern. What in the world do we have to say
+        //        that is so important? Verify this makes sense with Knut.
+        if (this.#game.teamBoxCounts)
+          dialog = html`
         <bf-welcome-dialog
+          @close='${this.#onIntroClose}'
           challenge=${this.#game.challenge ?? 0}
           sub=${this.#game.sub ?? ''}
           flamingo='${this.#game.teamBoxCounts[0]}'
@@ -107,6 +127,13 @@ export class BFGame extends LitElement {
           open
         ></bf-welcome-dialog>
       `
+        break
+      case 'Loading':
+        break
+      case 'Playing':
+        break
+      default:
+        this._ui satisfies never
     }
 
     return html`
@@ -128,5 +155,9 @@ export class BFGame extends LitElement {
         team='${ifDefined(this.#game.team)}'
       ></bf-footer>
     `
+  }
+
+  #onIntroClose(): void {
+    this._ui = 'Playing'
   }
 }
