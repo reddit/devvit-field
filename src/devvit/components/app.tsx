@@ -14,9 +14,9 @@ import {useState2} from '../hooks/use-state2.ts'
 import {
   challengeConfigGetClientSafeProps,
   challengeGetCurrentChallengeNumber,
-} from '../server/core/challenge.ts'
-import {fieldClaimCells} from '../server/core/field.ts'
-import {userGetOrSet} from '../server/core/user.ts'
+} from '../server/core/challenge.js'
+import {fieldClaimCells} from '../server/core/field.js'
+import {userGetOrSet} from '../server/core/user.js'
 import {Title} from './title.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {

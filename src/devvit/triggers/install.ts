@@ -3,6 +3,8 @@ import {challengeOnInstall} from '../server/core/challenge'
 import {leaderboardInit} from '../server/core/leaderboards/global/leaderboard'
 import {teamStatsWinsInit} from '../server/core/leaderboards/subreddit/team.wins'
 
+// to-do: triggers only run on the server. Move this code under server/.
+
 export const initialize = async (ctx: TriggerContext): Promise<void> => {
   await challengeOnInstall({redis: ctx.redis})
   await leaderboardInit({redis: ctx.redis})

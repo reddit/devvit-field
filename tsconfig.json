@@ -2,10 +2,11 @@
   // Only build references.
   "files": [],
   "references": [
-    { "path": "src/devvit" },
-    { "path": "src/iframe" },
-    { "path": "src/shared" },
-    { "path": "src/test" },
-    { "path": "tools" }
+    { "path": "./src/devvit" },
+    { "path": "./src/devvit/server" },
+    { "path": "./src/iframe" },
+    { "path": "./src/shared" },
+    { "path": "./src/test" },
+    { "path": "./tools" }
   ]
 }

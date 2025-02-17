@@ -15,6 +15,7 @@
   "include": ["**/*", "../**/*.test.ts"],
   "references": [
     { "path": "../devvit" },
+    { "path": "../devvit/server" },
     { "path": "../iframe" },
     { "path": "../shared" }
   ]
