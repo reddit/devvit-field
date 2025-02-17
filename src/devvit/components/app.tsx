@@ -150,23 +150,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
   })
   chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
 
-  // to-do: DX-8861 delete Android specialization.
-  if (session.userAgent.client === 'Android')
-    return (
-      <Title loaded={mounted && loaded}>
-        {/* biome-ignore lint/a11y/useButtonType: */}
-        <button
-          appearance='secondary'
-          size='large'
-          minWidth={`${playButtonWidth}px`}
-          icon='play-outline'
-          onPress={popOut}
-        >
-          Play
-        </button>
-      </Title>
-    )
-
   return (
     // Hack: turning off the loading animation changes the DOM which causes the
     //       web view to be loaded, discarded, and loaded again. No webview in
@@ -174,7 +157,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
     //       in.
     // Hack: DX-8859 ID must be specified here and in postMessage() for Android.
     <Title loaded={mounted && loaded}>
-      {!mounted && (
+      {/* to-do: DX-8861 delete Android specialization. */}
+      {!mounted && session.userAgent.client !== 'Android' && (
         <webview
           grow
           height='100%'
@@ -184,6 +168,16 @@ export function App(ctx: Devvit.Context): JSX.Element {
           width='100%'
         />
       )}
+      {/* biome-ignore lint/a11y/useButtonType: */}
+      <button
+        appearance='secondary'
+        size='large'
+        minWidth={`${playButtonWidth}px`}
+        icon='play-outline'
+        onPress={popOut}
+      >
+        Enter the BanField
+      </button>
     </Title>
   )
 }
