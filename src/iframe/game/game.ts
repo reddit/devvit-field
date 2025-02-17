@@ -1,11 +1,14 @@
 import type {Player} from '../../shared/save.ts'
+import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
+import type {FieldSub} from '../../shared/types/field.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
   IframeMessage,
   IframeMode,
+  TeamBoxCounts,
 } from '../../shared/types/message.ts'
 import {Random, type Seed} from '../../shared/types/random.ts'
 import {SID} from '../../shared/types/sid.ts'
@@ -57,8 +60,6 @@ export class Game {
   fieldConfig: Readonly<FieldConfig> | undefined
   img?: AssetMap['img']
   init: Promise<void>
-  /** The level and subreddit name without an r/ prefix. Eg, BananaField. */
-  lvl?: string
   looper!: Looper
   mode?: IframeMode
   now: UTCMillis
@@ -66,10 +67,14 @@ export class Game {
   /** Number of players online including p1; 0 when offline. */
   players: number
   renderer!: Renderer
-  /** Team score. */
-  score: number | undefined
   seed?: Seed
-  team: string | undefined
+  /**
+   * The subreddit name without an r/ prefix. Eg, BananaField. The field level
+   * when not in a dev sub.
+   */
+  sub?: FieldSub | string
+  team: Team | undefined
+  teamBoxCounts: TeamBoxCounts | undefined
   /** Number of boxes in the field visible; [0, field size]. */
   visible: number | undefined
   zoo: Zoo
@@ -172,7 +177,7 @@ export class Game {
           },
         }
 
-    const lvl = [
+    const sub = [
       'PlayBanField',
       'CantPlayBanField',
       'BananaField',
@@ -181,11 +186,15 @@ export class Game {
     ][Math.trunc(rnd.num * 5)]!
     const size = 128 * (1 + Math.trunc(rnd.num * 25))
     const field = {wh: {w: size, h: size}}
-    const team = ['Flamingo', 'Juice Box', 'Lasagna', 'Sunshine'][
-      Math.trunc(rnd.num * 4)
-    ]!
-
+    const team = Math.trunc(rnd.num * 4) as Team
     const visible = Math.trunc(rnd.num * field.wh.w * field.wh.h)
+    const teamBoxCounts: TeamBoxCounts = [0, 0, 0, 0]
+    let counted = 0
+    for (const team in teamBoxCounts) {
+      teamBoxCounts[team] = Math.trunc(rnd.num * (visible - counted + 1))
+      counted += teamBoxCounts[team]
+    }
+    teamBoxCounts[teamBoxCounts.length - 1]! += visible - counted
 
     setTimeout(
       () => {
@@ -194,13 +203,13 @@ export class Game {
           connected: true,
           debug: true,
           field,
-          lvl,
           mode: 'PopOut',
           p1,
           players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
-          score: Math.trunc(rnd.num * (visible + 1)),
+          sub,
           team,
+          teamBoxCounts,
           visible,
           type: 'Init',
         })
@@ -267,11 +276,11 @@ export class Game {
       case 'Init': {
         this.challenge = msg.challenge
         this.debug = msg.debug
-        this.lvl = msg.lvl
         this.players = msg.players
-        this.score = msg.score
         this.seed = msg.seed ?? (0 as Seed)
+        this.sub = msg.sub
         this.team = msg.team
+        this.teamBoxCounts = msg.teamBoxCounts
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
         this.visible = msg.visible
 

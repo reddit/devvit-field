@@ -10,12 +10,12 @@ import {cssReset} from './css-reset.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
-    'header-el': HeaderEl
+    'bf-header': BFHeader
   }
 }
 
-@customElement('header-el')
-export class HeaderEl extends LitElement {
+@customElement('bf-header')
+export class BFHeader extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 
@@ -30,17 +30,17 @@ export class HeaderEl extends LitElement {
   @property() accessor level: string = ''
   @property({type: Number}) accessor players: number = 0
   /** Ratio of cells visible; [0, 1]. */
-  @property({attribute: 'visible-ratio', type: Number})
-  accessor visibleRatio: number | undefined
+  @property({attribute: 'visible', type: Number})
+  accessor visible: number | undefined
 
   override render(): TemplateResult {
-    if (this.challenge == null || !this.level || this.visibleRatio == null)
-      return html`&nbsp;`
+    if (this.challenge == null || !this.level || this.visible == null)
+      return html` `
     return html`
       <span class='challenge'>Banfield #${this.challenge}</span>
       <span class='level'>r/${this.level}</span>
       <span class='players'>${this.players ? html`${this.players} online` : 'offline'}</span>
-      <span class='visible'>${(this.visibleRatio * 100).toFixed(2)}%</span>
+      <span class='visible'>${(this.visible * 100).toFixed(2)}%</span>
     `
   }
 }

@@ -10,16 +10,18 @@ import {ifDefined} from 'lit/directives/if-defined.js'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
 
-import './footer-el.ts'
-import './header-el.ts'
+import './bf-footer.ts'
+import './bf-header.ts'
+import './bf-team-chart.ts'
+import './bf-welcome-dialog.ts'
 
 declare global {
   interface HTMLElementEventMap {
     /** Request update; Game properties have changed. */
-    'game-update': undefined
+    'game-update': CustomEvent<undefined>
   }
   interface HTMLElementTagNameMap {
-    'game-el': GameEl
+    'bf-game': BFGame
   }
 }
 
@@ -27,8 +29,8 @@ declare global {
  * Game canvas wrapper and DOM UI. Pass primitive properties to children so
  * that @game-update updates children.
  */
-@customElement('game-el')
-export class GameEl extends LitElement {
+@customElement('bf-game')
+export class BFGame extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 
@@ -77,29 +79,54 @@ export class GameEl extends LitElement {
   }
 
   override render(): TemplateResult {
-    const visibleRatio =
+    const fieldSize = this.#game.fieldConfig
+      ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h
+      : 0
+    const visible =
       this.#game.fieldConfig && this.#game.visible != null
-        ? this.#game.visible /
-          (this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h)
+        ? this.#game.visible / fieldSize
+        : undefined
+    const score =
+      this.#game.team != null && this.#game.teamBoxCounts
+        ? this.#game.teamBoxCounts[this.#game.team]
         : undefined
 
+    // to-do: literally forcing the user to stop and consent to the dialog feels
+    //        like an antipattern. What in the world do we have to say that is
+    //        so important? Verify this makes sense with Knut.
+    let dialog
+    if (this.#game.mode === 'PopOut' && this.#game.teamBoxCounts) {
+      dialog = html`
+        <bf-welcome-dialog
+          challenge=${this.#game.challenge ?? 0}
+          sub=${this.#game.sub ?? ''}
+          flamingo='${this.#game.teamBoxCounts[0]}'
+          juiceBox='${this.#game.teamBoxCounts[1]}'
+          lasagna='${this.#game.teamBoxCounts[2]}'
+          sunshine='${this.#game.teamBoxCounts[3]}'
+          open
+        ></bf-welcome-dialog>
+      `
+    }
+
     return html`
-      <header-el
+      ${dialog}
+      <bf-header
         challenge='${ifDefined(this.#game.challenge)}'
-        level='${ifDefined(this.#game.lvl)}'
+        level='${ifDefined(this.#game.sub)}'
         players='${this.#game.players}'
-        visible-ratio='${ifDefined(visibleRatio)}'
-      ></header-el>
+        visible='${ifDefined(visible)}'
+      ></bf-header>
       <div class='canvas-box'>
         <canvas
           @game-update='${() => this.requestUpdate()}'
           tabIndex='0'
         ></canvas> <!--- Set tabIndex to propagate key events. -->
       </div>
-      <footer-el
-        score='${ifDefined(this.#game.score)}'
+      <bf-footer
+        score='${ifDefined(score)}'
         team='${ifDefined(this.#game.team)}'
-      ></footer-el>
+      ></bf-footer>
     `
   }
 }

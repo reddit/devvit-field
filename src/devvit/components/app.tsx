@@ -80,12 +80,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
           field: {wh: {w: challengeConfig.size, h: challengeConfig.size}},
-          lvl: ctx.subredditName ?? '',
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
           players: 0, // to-do: fill me out. useChannel2()?
-          score: 0, // to-do: fill me out.
-          team: 'Juice Box', // to-do: fill me out.
+          sub: ctx.subredditName ?? '',
+          team: 1, // to-do: fill me out.
+          teamBoxCounts: [0, 0, 0, 0], // to-do: fill me out.
           type: 'Init',
           visible: 0, // to-do: fill me out.
         })

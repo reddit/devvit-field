@@ -10,12 +10,12 @@ import {cssReset} from './css-reset.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
-    'footer-el': FooterEl
+    'bf-footer': BFFooter
   }
 }
 
-@customElement('footer-el')
-export class FooterEl extends LitElement {
+@customElement('bf-footer')
+export class BFFooter extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 

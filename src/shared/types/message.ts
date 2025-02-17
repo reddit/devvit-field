@@ -2,6 +2,7 @@ import type {Player} from '../save.ts'
 import type {Team} from '../team.ts'
 import type {XY} from './2d.ts'
 import type {FieldConfig} from './field-config.ts'
+import type {FieldSub} from './field.ts'
 import type {Seed} from './random.ts'
 
 /**
@@ -28,16 +29,18 @@ export type InitDevvitMessage = {
    */
   debug: boolean
   field: FieldConfig
-  /** The level and subreddit name without an r/ prefix. Eg, BananaField. */
-  lvl: string
   mode: IframeMode
   p1: Player
   /** Number of players online including p1; 0 when offline. */
   players: number
-  /** Team score. */
-  score: number
   seed?: Seed
-  team: string
+  /**
+   * The subreddit name without an r/ prefix. Eg, BananaField. The field level
+   * when not in a dev sub.
+   */
+  sub: FieldSub | string
+  team: Team
+  teamBoxCounts: TeamBoxCounts
   type: 'Init'
   /** Number of boxes in the field visible; [0, field size]. */
   visible: number
@@ -93,6 +96,12 @@ export type RealtimeSystemMessage = {
 
 /** Whether the iframe is hosted in the post (pop-in) or a dialog (pop-out). */
 export type IframeMode = 'PopIn' | 'PopOut'
+
+/**
+ * Team scores in boxes for a given field. This is different than the score for
+ * completing a descent loop.
+ */
+export type TeamBoxCounts = [number, number, number, number]
 
 /** Message schema version supported by this instance. */
 export const realtimeVersion: number = 0
