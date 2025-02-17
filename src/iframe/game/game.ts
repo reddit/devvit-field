@@ -66,7 +66,6 @@ export class Game {
   /** Number of players online including p1; 0 when offline. */
   players: number
   renderer!: Renderer
-  rnd?: Random
   /** Team score. */
   score: number | undefined
   seed?: Seed
@@ -164,7 +163,14 @@ export class Game {
 
     // Reuse the dev seed here. A new Random will be made at Init that repeats
     // this sequence but it doesn't matter.
-    const rnd = new Random(seed as Seed)
+    // Hack: add extra devMode check. https://github.com/evanw/esbuild/issues/4083
+    const rnd = devMode
+      ? new Random(seed as Seed)
+      : {
+          get num() {
+            return Math.random()
+          },
+        }
 
     const lvl = [
       'PlayBanField',
@@ -265,21 +271,21 @@ export class Game {
         this.players = msg.players
         this.score = msg.score
         this.seed = msg.seed ?? (0 as Seed)
-        this.rnd = new Random(this.seed)
         this.team = msg.team
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
         this.visible = msg.visible
 
         if (devMode) {
+          const rnd = new Random(this.seed)
           let visible = 0
           end: for (;;)
             for (let y = 0; y < msg.field.wh.h; y++)
               for (let x = 0; x < msg.field.wh.w; x++) {
                 if (visible === this.visible) break end
-                if (this.rnd.num < 0.2) {
+                if (rnd.num < 0.2) {
                   visible++
                   this.field[y * msg.field.wh.w + x] =
-                    1 + Math.trunc(this.rnd.num * 5)
+                    1 + Math.trunc(rnd.num * 5)
                 }
               }
         }
