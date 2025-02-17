@@ -12,6 +12,8 @@ import type {
 
 const maxAnimCels: number = 16
 
+// to-do: don't require font tags in config.json.
+
 export function parseAtlas<T>(
   ase: Aseprite,
   tags: {readonly [tag: string]: AnimOffsetConfig},
