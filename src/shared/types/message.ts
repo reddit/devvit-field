@@ -55,8 +55,6 @@ export type IframeMessage =
   | {type: 'Loaded'}
   /** Iframe has registered a message listener. */
   | {type: 'Registered'}
-  /** Expand the iframe beyond the post boundaries. */
-  | {type: 'PopOut'}
   /** Attempt to submit a batch of boxes that have been clicked */
   | {type: 'ClaimBoxes'; boxes: XY[]}
 

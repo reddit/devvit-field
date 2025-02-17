@@ -195,7 +195,7 @@ export class Game {
           debug: true,
           field,
           lvl,
-          mode: rnd.num < 0.5 ? 'PopIn' : 'PopOut',
+          mode: 'PopOut',
           p1,
           players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
@@ -236,8 +236,8 @@ export class Game {
     this.cam.minWH.w = this.canvas.parentElement!.clientWidth
     this.cam.minWH.h = this.canvas.parentElement!.clientHeight
 
-    if (this.ctrl.isOnStart('A') && this.mode === 'PopIn')
-      this.postMessage({type: 'PopOut'})
+    // Suppress all input when popped in and pre-init.
+    if (this.mode !== 'PopOut') this.ctrl.handled = true
 
     this.bmps.size = 0
     // Don't await; this can hang.

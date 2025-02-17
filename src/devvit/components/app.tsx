@@ -74,9 +74,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'Loaded':
         setLoaded((loaded = true))
         break
-      case 'PopOut':
-        popOut()
-        break
       case 'Registered':
         iframe.postMessage({
           challenge: challengeNumber,
