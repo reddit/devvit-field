@@ -25,11 +25,11 @@ export function audioPlay(
   src.buffer = buf
   src.loop = loop
 
-  // Fade in the entire first loop, 20% volume thereafter.
+  // Fade in the entire first loop, 16% volume thereafter.
   const gain = ctx.createGain()
   const now = ctx.currentTime
   gain.gain.setValueAtTime(0, now)
-  gain.gain.linearRampToValueAtTime(0.2, now + buf.duration)
+  gain.gain.linearRampToValueAtTime(0.16, now + buf.duration)
   src.connect(gain)
 
   gain.connect(ctx.destination)
