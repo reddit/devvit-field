@@ -296,7 +296,7 @@ export class Game {
                 if (rnd.num < 0.2) {
                   visible++
                   this.field[y * msg.field.wh.w + x] =
-                    1 + Math.trunc(rnd.num * 5)
+                    rnd.num < 0.05 ? 1 : 4 + Math.trunc(rnd.num * 4)
                 }
               }
         }

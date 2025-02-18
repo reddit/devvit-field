@@ -13,8 +13,10 @@ import {cssReset} from './css-reset.ts'
 
 import './bf-footer.ts'
 import './bf-header.ts'
+import './bf-open-button.ts'
 import './bf-team-chart.ts'
 import './bf-welcome-dialog.ts'
+import {spacePx} from '../../shared/theme.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -68,6 +70,13 @@ export class BFGame extends LitElement {
       touch-action: none;
     }
 
+    bf-open-button {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: ${spacePx}px;
+    }
+
     .canvas-box {
       height: 100%;
       overflow: hidden;
@@ -108,6 +117,7 @@ export class BFGame extends LitElement {
         ? this.#game.teamBoxCounts[this.#game.team]
         : undefined
 
+    let button
     let dialog
     switch (this._ui) {
       case 'Intro':
@@ -131,6 +141,7 @@ export class BFGame extends LitElement {
       case 'Loading':
         break
       case 'Playing':
+        button = html`<bf-open-button></bf-open-button>`
         break
       default:
         this._ui satisfies never
@@ -144,8 +155,10 @@ export class BFGame extends LitElement {
         players='${this.#game.players}'
         visible='${ifDefined(visible)}'
       ></bf-header>
+      ${button}
       <div class='canvas-box'>
         <canvas
+          @game-ui='${(ev: CustomEvent<UI>) => (this._ui = ev.detail)}'
           @game-update='${() => this.requestUpdate()}'
           tabIndex='0'
         ></canvas> <!--- Set tabIndex to propagate key events. -->

@@ -6,6 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
+import {type Team, teamName} from '../../shared/team.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -27,12 +28,12 @@ export class BFFooter extends LitElement {
   `
 
   @property({type: Number}) accessor score: number | undefined
-  @property() accessor team: string = ''
+  @property({type: Number}) accessor team: Team | undefined
 
   override render(): TemplateResult {
-    if (this.score == null || !this.team) return html`&nbsp;`
+    if (this.score == null || this.team == null) return html`&nbsp;`
     return html`
-      <span class='score'>${this.team}: ${this.score}</span>
+      <span class='score'>${teamName[this.team]}: ${this.score}</span>
       <span></span>
       <a href='https://reddit.com/r/gamesonreddit'>r/GamesOnReddit</a>
     `

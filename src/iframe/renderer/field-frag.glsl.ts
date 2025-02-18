@@ -13,8 +13,10 @@ out highp vec4 oFrag;
 const vec4 palette[] = vec4[](
   ${rgbaVec4(paletteBlack)},
   ${rgbaVec4(paletteBanBox)},
-  ${rgbaVec4(paletteJuiceBox)},
+  ${rgbaVec4(paletteSelected)},
+  ${rgbaVec4(paletteWaiting)},
   ${rgbaVec4(paletteFlamingo)},
+  ${rgbaVec4(paletteJuiceBox)},
   ${rgbaVec4(paletteLasagna)},
   ${rgbaVec4(paletteSunshine)}
 );
@@ -44,7 +46,9 @@ import {
   paletteFlamingo,
   paletteJuiceBox,
   paletteLasagna,
+  paletteSelected,
   paletteSunshine,
+  paletteWaiting,
 } from '../../shared/theme.ts'
 
 function rgbaVec4(rgba: number): string {
