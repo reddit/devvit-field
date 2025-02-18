@@ -407,7 +407,7 @@ export namespace DevvitTest {
             subredditId: 't5_dii275' as const,
             subredditName: 'xBanland0',
             permalink: '/r/xBanland0/comments/1in6n7n/banfield_9/',
-            title: 'Banfield #9',
+            title: 'BanField #9',
             body:
               '# DX_Bundle:\n' +
               '\n' +

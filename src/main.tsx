@@ -23,7 +23,7 @@ Devvit.addCustomPostType({name: '', height: 'tall', render: App})
 
 const formKey = Devvit.createForm(
   {
-    title: 'New Banfield Post',
+    title: 'New BanField Post',
     description:
       'Used for development purposes only! In production, there will only be one banfield post per subreddit.',
     fields: [
@@ -60,7 +60,7 @@ const formKey = Devvit.createForm(
       const post = await ctx.reddit.submitPost({
         preview: <Preview />,
         subredditName: ctx.subredditName,
-        title: `Banfield #${challengeNumber}`,
+        title: `BanField #${challengeNumber}`,
       })
 
       ctx.ui.navigateTo(post.url)
@@ -76,7 +76,7 @@ const formKey = Devvit.createForm(
 
 Devvit.addMenuItem({
   forUserType: ['moderator'],
-  label: '[Banfield] New Banfield Post',
+  label: '[BanField] New Post',
   location: 'subreddit',
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(formKey)
@@ -134,7 +134,7 @@ const superuserFormKey = Devvit.createForm(
 
 Devvit.addMenuItem({
   forUserType: ['moderator'],
-  label: '[Banfield] Make superuser',
+  label: '[BanField] Make Superuser',
   location: 'subreddit',
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(superuserFormKey)

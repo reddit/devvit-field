@@ -9,7 +9,7 @@
   },
   "typescript.preferences.autoImportSpecifierExcludeRegexes": ["^node:test"],
   "cSpell.words": [
-    "Banfield",
+    "BanField",
     "Bitfield",
     "Devvit",
     "incrby",

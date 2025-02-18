@@ -37,7 +37,7 @@ export class BFHeader extends LitElement {
     if (this.challenge == null || !this.level || this.visible == null)
       return html` `
     return html`
-      <span class='challenge'>Banfield #${this.challenge}</span>
+      <span class='challenge'>BanField #${this.challenge}</span>
       <span class='level'>r/${this.level}</span>
       <span class='players'>${this.players ? html`${this.players} online` : 'offline'}</span>
       <span class='visible'>${(this.visible * 100).toFixed(2)}%</span>

@@ -212,8 +212,8 @@ export class Game {
           sub,
           team,
           teamBoxCounts,
-          visible,
           type: 'Init',
+          visible,
         })
       },
       Math.trunc(rnd.num * 1000),
