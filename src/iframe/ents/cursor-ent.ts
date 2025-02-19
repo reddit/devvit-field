@@ -58,12 +58,12 @@ export class CursorEnt implements Ent {
   }
 
   update(game: Game): void {
-    if (game.ctrl.pointOn && game.ctrl.pointType === 'mouse')
+    if (game.ctrl.pointOn && game.ctrl.pointType === 'Mouse')
       this.#visible = true
     else if (
       // to-do: make it possible to detect keyboard distinctly.
       game.ctrl.isAnyOn('L', 'R', 'U', 'D') ||
-      game.ctrl.pointType !== 'mouse'
+      game.ctrl.pointType !== 'Mouse'
     )
       this.#visible = false
     this.#sprite.x =

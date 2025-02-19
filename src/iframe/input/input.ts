@@ -2,7 +2,7 @@ import type {XY, XYZ} from '../../shared/types/2d.js'
 import type {Cam} from '../renderer/cam.js'
 import {KeyPoller} from './key-poller.js'
 import {PadPoller} from './pad-poller.js'
-import {PointerPoller} from './pointer-poller.js'
+import {type PointType, PointerPoller} from './pointer-poller.js'
 
 // biome-ignore format:
 export type DefaultButton =
@@ -129,7 +129,8 @@ export class Input<T extends string> {
   }
 
   mapClick(button: T, ...clicks: readonly number[]): void {
-    for (const click of clicks) this.#pointer.map(click, this.#map(button))
+    for (const click of clicks)
+      this.#pointer.bitByButton[click] = this.#map(button)
   }
 
   mapDefault(): void {
@@ -170,7 +171,7 @@ export class Input<T extends string> {
     return this.#pointer.on
   }
 
-  get pointType(): 'mouse' | 'touch' | 'pen' | undefined {
+  get pointType(): PointType | undefined {
     return this.#pointer.type
   }
 
