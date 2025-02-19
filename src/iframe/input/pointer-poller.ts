@@ -1,16 +1,25 @@
 import {type XY, type XYZ, xyDistance, xySub} from '../../shared/types/2d.ts'
 import type {Cam} from '../renderer/cam.ts'
 
+export type PointType =
+  (typeof pointTypeByPointerType)[keyof typeof pointTypeByPointerType]
+
+const pointTypeByPointerType = {
+  mouse: 'Mouse',
+  pen: 'Pen',
+  touch: 'Touch',
+} as const
+
 export class PointerPoller {
+  readonly bitByButton: {[btn: number]: number} = {}
   bits: number = 0
   allowContextMenu: boolean = false // Suppress right-click.
   /** The potential start of a drag. */
   readonly dragClientStart: XY = {x: 0, y: 0}
   screenXY: XY = {x: 0, y: 0}
-  type: 'mouse' | 'touch' | 'pen' | undefined
+  type: PointType | undefined
   /** Level coordinates of pointer recorded with the camera at capture time. */
   xy: XY = {x: 0, y: 0}
-  readonly #bitByButton: {[btn: number]: number} = {}
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
   readonly #clientXY: [XY, XY, XY] = [
@@ -45,10 +54,6 @@ export class PointerPoller {
 
   get drag(): boolean {
     return (this.#drag & 7) !== 0
-  }
-
-  map(button: number, bit: number): void {
-    this.#bitByButton[button] = bit
   }
 
   // to-do: clarify this is for including movement and align with Input.gestured.
@@ -116,9 +121,10 @@ export class PointerPoller {
     if (!ev.isPrimary) return
 
     this.bits = this.#evButtonsToBits(ev.buttons)
-    this.type = (['mouse', 'touch', 'pen'] as const).find(
-      type => type === ev.pointerType,
-    )
+    this.type =
+      pointTypeByPointerType[
+        ev.pointerType as keyof typeof pointTypeByPointerType
+      ]
     ;({clientX: this.#clientXY[2].x, clientY: this.#clientXY[2].y} = ev)
     this.screenXY = this.#cam.toScreenXY(this.#canvas, this.#clientXY[2])
     this.xy = this.#cam.toLevelXY(this.#canvas, this.#clientXY[2])
@@ -151,7 +157,7 @@ export class PointerPoller {
     let bits = 0
     for (let button = 1; button <= buttons; button <<= 1) {
       if ((button & buttons) !== button) continue
-      bits |= this.#bitByButton[button] ?? 0
+      bits |= this.bitByButton[button] ?? 0
     }
     return bits
   }
