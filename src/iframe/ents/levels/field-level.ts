@@ -28,22 +28,25 @@ export class FieldLevel implements LevelEnt {
   }
 
   update(game: Game): void {
-    if (game.ctrl.wheel.y)
-      game.cam.zoomField(
-        game.ctrl.wheel.y > 0 ? 'Out' : 'In',
+    const {cam, ctrl} = game
+    if (ctrl.wheel.y) {
+      cam.zoomField(
+        ctrl.wheel.y > 0 ? 'Out' : 'In',
         !!game.p1?.profile.superuser,
       )
-    if (!game.ctrl.handled && game.ctrl.isOffStart('A') && !game.ctrl.drag) {
-      game.ctrl.handled = true
+    }
+
+    if (ctrl.pinch) {
+      ctrl.handled = true
+    }
+
+    if (!ctrl.handled && ctrl.isOffStart('A') && !ctrl.drag && !ctrl.pinch) {
+      ctrl.handled = true
       // to-do: move this mutation to a centralized store or Game so it's easier
       //        to see how state changes.
       const xy = {
-        x: Math.trunc(
-          game.cam.x + game.ctrl.screenPoint.x / game.cam.fieldScale,
-        ),
-        y: Math.trunc(
-          game.cam.y + game.ctrl.screenPoint.y / game.cam.fieldScale,
-        ),
+        x: Math.trunc(cam.x + ctrl.screenPoint.x / cam.fieldScale),
+        y: Math.trunc(cam.y + ctrl.screenPoint.y / cam.fieldScale),
       }
       if (
         xy.x < 0 ||
@@ -58,10 +61,10 @@ export class FieldLevel implements LevelEnt {
 
       game.postMessage({type: 'ClaimBoxes', boxes: [xy]})
     }
-    if (!game.ctrl.handled && game.ctrl.drag) {
-      game.ctrl.handled = true
-      game.cam.x = game.cam.x - game.ctrl.delta.x / game.cam.fieldScale
-      game.cam.y = game.cam.y - game.ctrl.delta.y / game.cam.fieldScale
+    if (!ctrl.handled && ctrl.drag) {
+      ctrl.handled = true
+      cam.x = cam.x - ctrl.delta.x / cam.fieldScale
+      cam.y = cam.y - ctrl.delta.y / cam.fieldScale
     }
   }
 }

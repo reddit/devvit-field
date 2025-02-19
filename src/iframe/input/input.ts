@@ -40,12 +40,20 @@ export class Input<T extends string> {
     this.#pointer = new PointerPoller(cam, canvas)
   }
 
+  set allowContextMenu(allow: boolean) {
+    this.#pointer.allowContextMenu = allow
+  }
+
+  get clientPoint(): Readonly<XY> {
+    return this.#pointer.clientXY
+  }
+
   get delta(): Readonly<XY> {
     return this.#pointer.delta
   }
 
   get drag(): boolean {
-    return this.#pointer.drag
+    return !this.pinch && this.#pointer.drag
   }
 
   /**
@@ -71,14 +79,6 @@ export class Input<T extends string> {
       this.isCombo(...combo) &&
       !!combo.at(-1)?.every(button => this.isOnStart(button))
     )
-  }
-
-  set allowContextMenu(allow: boolean) {
-    this.#pointer.allowContextMenu = allow
-  }
-
-  get clientPoint(): Readonly<XY> {
-    return this.#pointer.clientXY
   }
 
   /** True if any button is held on or off. */
@@ -159,6 +159,10 @@ export class Input<T extends string> {
   /** @arg keys Union of case-sensitive KeyboardEvent.key. */
   mapKey(button: T, ...keys: readonly string[]): void {
     for (const key of keys) this.#keyboard.map(key, this.#map(button))
+  }
+
+  get pinch(): number {
+    return this.#pointer.pinch
   }
 
   /** Pointer location in level coordinates. */

@@ -7,6 +7,7 @@ export type PointType =
 type Point = {
   bits: number
   clientXY: XY
+  ev: 'pointercancel' | 'pointerdown' | 'pointermove' | 'pointerup'
   id: number
   /**
    * Cursors should only use the primary inputs to avoid flickering between
@@ -33,14 +34,20 @@ export class PointerPoller {
   readonly dragClientStart: XY = {x: 0, y: 0}
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
-  readonly #primary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
-  readonly #secondary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
   /**
    * Hack: every loop poll is called first. Drag is wanted to start on time but
    * finish one loop late so that off starts one loop ahead.
    */
   #drag: number = 0
   #on: number = 0
+  #pinch: {cur: number; curDelta: number; next: number; nextDelta: number} = {
+    cur: 0,
+    curDelta: 0,
+    next: 0,
+    nextDelta: 0,
+  }
+  readonly #primary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
+  readonly #secondary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
   readonly #wheel: {cur: XYZ; next: XYZ} = {
     cur: {x: 0, y: 0, z: 0},
     next: {x: 0, y: 0, z: 0},
@@ -68,11 +75,18 @@ export class PointerPoller {
     return (this.#on & 3) !== 0
   }
 
+  get pinch(): number {
+    return this.#pinch.curDelta
+  }
+
   poll(): void {
     this.#drag = (this.#drag & 4) | ((this.#drag & 7) >>> 1)
     // to-do: it's inconsistent to be left-shifting here and right-shifting
     //        above.
     this.#on <<= 1
+    this.#pinch.curDelta = this.#pinch.nextDelta
+    this.#pinch.cur = this.#pinch.next
+    this.#pinch.nextDelta = 0
     const delta = xySub(this.#primary.next.clientXY, this.#primary.cur.clientXY)
     this.delta = {x: delta.x / this.#cam.scale, y: delta.y / this.#cam.scale}
     this.#primary.cur = structuredClone(this.#primary.next)
@@ -101,11 +115,17 @@ export class PointerPoller {
   }
 
   reset = (): void => {
-    this.#primary.next.bits = 0
     this.delta = {x: 0, y: 0}
     this.#drag = 0
     this.#on = 0
+    this.#pinch.next = 0
+    this.#pinch.nextDelta = 0
+    this.#primary.next.bits = 0
+    this.#primary.next.ev = 'pointercancel'
     this.#primary.next.type = undefined
+    this.#secondary.next.bits = 0
+    this.#secondary.next.ev = 'pointercancel'
+    this.#secondary.next.type = undefined
     this.#wheel.next = {x: 0, y: 0, z: 0}
   }
 
@@ -140,6 +160,7 @@ export class PointerPoller {
     const point = ev.isPrimary ? this.#primary.next : this.#secondary.next
 
     point.bits = this.#evButtonsToBits(ev.buttons)
+    point.ev = ev.type as Point['ev']
     point.type =
       pointTypeByPointerType[
         ev.pointerType as keyof typeof pointTypeByPointerType
@@ -148,15 +169,32 @@ export class PointerPoller {
     point.screenXY = this.#cam.toScreenXY(this.#canvas, point.clientXY)
     point.xy = this.#cam.toLevelXY(this.#canvas, point.clientXY)
 
-    if (ev.isPrimary)
-      if (ev.type === 'pointerdown') {
-        this.#canvas.setPointerCapture(ev.pointerId)
-        if (ev.isPrimary) {
-          this.dragClientStart.x = point.clientXY.x
-          this.dragClientStart.y = point.clientXY.y
-        }
-        ev.preventDefault() // Not passive.
+    if (
+      (this.#primary.next.ev === 'pointerdown' ||
+        this.#primary.next.ev === 'pointermove') &&
+      (this.#secondary.next.ev === 'pointerdown' ||
+        this.#secondary.next.ev === 'pointermove')
+    ) {
+      const alt = ev.isPrimary ? this.#secondary.next : this.#primary.next
+      if (ev.type === 'pointerdown')
+        this.#pinch.next = this.#pinch.cur = xyDistance(
+          point.clientXY,
+          alt.clientXY,
+        )
+      else this.#pinch.next = xyDistance(point.clientXY, alt.clientXY)
+    } else this.#pinch.cur = this.#pinch.next
+
+    this.#pinch.nextDelta =
+      (this.#pinch.next - this.#pinch.cur) / this.#cam.scale
+
+    if (ev.type === 'pointerdown') {
+      this.#canvas.setPointerCapture(ev.pointerId)
+      if (ev.isPrimary) {
+        this.dragClientStart.x = point.clientXY.x
+        this.dragClientStart.y = point.clientXY.y
       }
+      ev.preventDefault() // Not passive.
+    }
     if (ev.isPrimary) {
       this.#on |= 1
       this.#drag =
@@ -189,6 +227,7 @@ function Point(): Point {
   return {
     bits: 0,
     clientXY: {x: 0, y: 0},
+    ev: 'pointercancel',
     id: 0,
     primary: false,
     screenXY: {x: 0, y: 0},
