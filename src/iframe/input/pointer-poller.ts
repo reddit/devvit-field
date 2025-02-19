@@ -11,9 +11,10 @@ const pointTypeByPointerType = {
 } as const
 
 export class PointerPoller {
+  allowContextMenu: boolean = false // Suppress right-click.
   readonly bitByButton: {[btn: number]: number} = {}
   bits: number = 0
-  allowContextMenu: boolean = false // Suppress right-click.
+  delta: XY = {x: 0, y: 0}
   /** The potential start of a drag. */
   readonly dragClientStart: XY = {x: 0, y: 0}
   screenXY: XY = {x: 0, y: 0}
@@ -22,8 +23,7 @@ export class PointerPoller {
   xy: XY = {x: 0, y: 0}
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
-  readonly #clientXY: [XY, XY, XY] = [
-    {x: 0, y: 0},
+  readonly #clientXY: [cur: XY, next: XY] = [
     {x: 0, y: 0},
     {x: 0, y: 0},
   ]
@@ -44,12 +44,7 @@ export class PointerPoller {
   }
 
   get clientXY(): XY {
-    return this.#clientXY[2]
-  }
-
-  get delta(): XY {
-    const xy = xySub(this.#clientXY[1], this.#clientXY[0])
-    return {x: xy.x / this.#cam.scale, y: xy.y / this.#cam.scale}
+    return this.#clientXY[0]
   }
 
   get drag(): boolean {
@@ -66,8 +61,9 @@ export class PointerPoller {
     // to-do: it's inconsistent to be left-shifting here and right-shifting
     //        above.
     this.#on <<= 1
-    this.#clientXY[0] = this.#clientXY[1]
-    this.#clientXY[1] = {...this.#clientXY[2]}
+    const delta = xySub(this.#clientXY[1], this.#clientXY[0])
+    this.delta = {x: delta.x / this.#cam.scale, y: delta.y / this.#cam.scale}
+    this.#clientXY[0] = {...this.#clientXY[1]}
     this.#wheel[0] = this.#wheel[1]
     this.#wheel[1] = {x: 0, y: 0, z: 0}
   }
@@ -94,6 +90,7 @@ export class PointerPoller {
 
   reset = (): void => {
     this.bits = 0
+    this.delta = {x: 0, y: 0}
     this.#drag = 0
     this.#on = 0
     this.type = undefined
@@ -125,23 +122,23 @@ export class PointerPoller {
       pointTypeByPointerType[
         ev.pointerType as keyof typeof pointTypeByPointerType
       ]
-    ;({clientX: this.#clientXY[2].x, clientY: this.#clientXY[2].y} = ev)
-    this.screenXY = this.#cam.toScreenXY(this.#canvas, this.#clientXY[2])
-    this.xy = this.#cam.toLevelXY(this.#canvas, this.#clientXY[2])
+    ;({clientX: this.#clientXY[1].x, clientY: this.#clientXY[1].y} = ev)
+    this.screenXY = this.#cam.toScreenXY(this.#canvas, this.#clientXY[1])
+    this.xy = this.#cam.toLevelXY(this.#canvas, this.#clientXY[1])
 
     this.#on |= 1
 
     if (ev.type === 'pointerdown') {
       this.#canvas.setPointerCapture(ev.pointerId)
-      this.dragClientStart.x = this.#clientXY[2].x
-      this.dragClientStart.y = this.#clientXY[2].y
+      this.dragClientStart.x = this.#clientXY[1].x
+      this.dragClientStart.y = this.#clientXY[1].y
       ev.preventDefault() // Not passive.
     }
     this.#drag =
       (this.#drag & 3) |
       (!!this.bits &&
       (this.#drag & 4 ||
-        xyDistance(this.#clientXY[2], this.dragClientStart) > 5)
+        xyDistance(this.#clientXY[1], this.dragClientStart) > 5)
         ? 4
         : 0)
   }
