@@ -155,6 +155,8 @@ export default class extends Devvit implements Hello {
       makeAPIClients({metadata: meta ?? {}}),
       getContextFromMetadata(meta ?? {}),
     )
+    const bouncepotato = await ctx.reddit.getUserByUsername('bouncepotato')
+    console.log(`${bouncepotato?.username}=${bouncepotato?.id}`)
     console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
     return msg
   }
