@@ -1,12 +1,16 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
 import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
 import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
+import {
+  getPartitionAndLocalCoords,
+  makePartitionKey,
+} from '../../../shared/partition'
 import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
+import type {Delta} from '../../../shared/types/field'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {type ChallengeConfig, challengeConfigGet} from './challenge'
-import type {Delta} from './deltas'
 import {deltasAdd} from './deltas'
 import {
   playerStatsCellsClaimedGameOver,
@@ -20,8 +24,8 @@ import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team
 import {minefieldIsMine} from './minefield'
 import {computeScore} from './score'
 
-const createFieldKey = (challengeNumber: number) =>
-  `challenge:${challengeNumber}:field` as const
+const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
+  `challenge:${challengeNumber}:field:${makePartitionKey(partitionXY)}` as const
 
 export const FIELD_CELL_BITS = 3
 
@@ -38,7 +42,9 @@ const enforceBounds = ({
   cols: number
   rows: number
 }): XY => {
-  // TODO: Enforce integer
+  if (!Number.isInteger(coord.x) || !Number.isInteger(coord.y)) {
+    throw new Error(`Non-integer: ${coord.x}, ${coord.y}`)
+  }
 
   if (coord.x < 0 || coord.x >= cols || coord.y < 0 || coord.y >= rows) {
     throw new Error(`Out of bounds: ${coord.x}, ${coord.y}`)
@@ -47,30 +53,47 @@ const enforceBounds = ({
   return coord
 }
 
+type BatchItem = Omit<Delta, 'team'> & {
+  partitionXY: XY
+  localXY: XY
+}
+
 /**
  * Runs through a batch of coords and breaks AFTER the first mine is hit. This
  * is used to ensure cell claims and scoring since the client doesn't know where
- * mine are.
+ * mines are.
  */
 const produceValidBatch = ({
   coords,
   challengeConfig,
 }: {coords: XY[]; challengeConfig: ChallengeConfig}) => {
-  const validCoords: {coord: XY; isMine: boolean}[] = []
+  const validCoords: BatchItem[] = []
 
   for (const coord of coords) {
-    const isMine = minefieldIsMine({
+    // This is the bounds for the board
+    // We also enforce bounds for the partition at the bitfield write sites
+    enforceBounds({
+      coord,
+      cols: challengeConfig.size,
+      rows: challengeConfig.size,
+    })
+
+    const isBan = minefieldIsMine({
       seed: challengeConfig.seed,
       coord,
       cols: challengeConfig.size,
       config: {mineDensity: challengeConfig.mineDensity},
     })
 
-    validCoords.push({coord, isMine})
+    validCoords.push({
+      globalXY: coord,
+      isBan,
+      ...getPartitionAndLocalCoords(coord, challengeConfig.partitionSize),
+    })
 
     // Once the user hits a mine, the game is over for them so we
     // drop the rest of the batch on the floor.
-    if (isMine) {
+    if (isBan) {
       break
     }
   }
@@ -160,69 +183,63 @@ export const _fieldClaimCellsSuccess = async ({
     // TODO: Increment user stats here or do it somewhere else?
     await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
 
+    await ctx.scheduler.runJob({
+      runAt: new Date(),
+      name: 'ON_CHALLENGE_END',
+      data: {challengeNumber},
+    })
+
     // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
 
     // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
   }
 }
 
-export const fieldClaimCells = async ({
-  coords,
-  userId,
-  challengeNumber,
+/**
+ * @internal
+ *
+ * The actual bitfield operations ran for a partition. Broken out for testing only.
+ */
+const _fieldClaimCellsBitfieldOpsForPartition = async ({
+  batch,
+  fieldConfig,
   ctx,
+  userId,
+  fieldPartitionKey,
 }: {
-  /**
-   * NOTE: This has to be in the order that the user clicked from the client since we don't
-   * know if there are mines or not in what they clicked. We use this order to chop off the
-   * batch at the first hit mine.
-   *
-   * Example:
-   * [0,1] not mine
-   * [0,2] mine
-   * [0,3] not mine
-   *
-   * Only [0,1] and [0,2] will be attempted to be claimed for the user and team. The user
-   * will get game over. The team will get one point for [0,1].
-   */
-  coords: XY[]
-  userId: T2
-  challengeNumber: number
+  batch: BatchItem[]
+  fieldConfig: ChallengeConfig
   ctx: Devvit.Context
-}): Promise<{deltas: Delta[]}> => {
-  if (coords.length === 0) return {deltas: []}
-
-  const fieldKey = createFieldKey(challengeNumber)
-  // We need a lookup here instead of passing in the config from blocks land
-  // because blocks doesn't have the seed and other backend only pieces
-  // of information that we need
-  const fieldConfig = await challengeConfigGet({
-    redis: ctx.redis,
-    challengeNumber,
-  })
-
-  const batch = produceValidBatch({coords, challengeConfig: fieldConfig})
-
+  userId: T2
+  fieldPartitionKey: ReturnType<typeof createFieldPartitionKey>
+}): Promise<Delta[]> => {
   // Produce and operation for each coord that we want to claim. The return value
   // will be used to see if we successfully claimed the cell.
   const claimOps: BitfieldCommand[] = batch.map(
-    ({coord}): BitfieldCommand => [
+    ({localXY}): BitfieldCommand => [
       'set',
       `u${FIELD_CELL_BITS}`,
       coordsToOffset(
-        enforceBounds({coord, cols: fieldConfig.size, rows: fieldConfig.size}),
-        fieldConfig.size,
+        enforceBounds({
+          coord: localXY,
+          cols: fieldConfig.partitionSize,
+          rows: fieldConfig.partitionSize,
+        }),
+        fieldConfig.partitionSize,
       ),
       encodeVTT(1, 0), // we assume team 0 here since there isn't an extra bit to define an unknown team!
     ],
   )
 
-  // @ts-expect-error - not sure
-  const claimOpsReturn = await ctx.redis.bitfield(fieldKey, ...claimOps.flat())
+  const claimOpsReturn = await ctx.redis.bitfield(
+    fieldPartitionKey,
+    // @ts-expect-error - not sure
+    ...claimOps.flat(),
+  )
 
-  if (claimOpsReturn.length !== coords.length) {
+  if (claimOpsReturn.length !== batch.length) {
     throw new Error(
-      'Claim ops return length does not match coords length. We expect a 1:1 mapping in length and order. This means our understanding of the API is incorrect.',
+      'Claim ops return length does not match batch length. We expect a 1:1 mapping in length and order. This means our understanding of the API is incorrect.',
     )
   }
 
@@ -245,11 +262,11 @@ export const fieldClaimCells = async ({
         `u${FIELD_CELL_BITS}`,
         coordsToOffset(
           enforceBounds({
-            coord: batchItem.coord,
-            cols: fieldConfig.size,
-            rows: fieldConfig.size,
+            coord: batchItem.localXY,
+            cols: fieldConfig.partitionSize,
+            rows: fieldConfig.partitionSize,
           }),
-          fieldConfig.size,
+          fieldConfig.partitionSize,
         ),
         encodeVTT(1, teamNumber),
       ])
@@ -257,7 +274,7 @@ export const fieldClaimCells = async ({
   })
 
   const teamOpsReturn = await ctx.redis.bitfield(
-    fieldKey,
+    fieldPartitionKey,
     // @ts-expect-error - not sure
     ...teamWriteOps.flat(),
   )
@@ -270,12 +287,88 @@ export const fieldClaimCells = async ({
 
     if (batchItem) {
       deltas.push({
-        coord: batchItem.coord,
+        globalXY: batchItem.globalXY,
+        isBan: batchItem.isBan,
         team,
-        isBan: batchItem.isMine,
       })
     }
   })
+
+  return deltas
+}
+
+export const fieldClaimCells = async ({
+  coords,
+  userId,
+  challengeNumber,
+  ctx,
+}: {
+  /**
+   * NOTE: This has to be in the order that the user clicked from the client since we don't
+   * know if there are mines or not in what they clicked. We use this order to chop off the
+   * batch at the first hit mine.
+   *
+   * THESE ARE GLOBAL coords!
+   *
+   * Example:
+   * [0,1] not mine
+   * [0,2] mine
+   * [0,3] not mine
+   *
+   * Only [0,1] and [0,2] will be attempted to be claimed for the user and team. The user
+   * will get game over. The team will get one point for [0,1].
+   */
+  coords: XY[]
+  userId: T2
+  challengeNumber: number
+  ctx: Devvit.Context
+}): Promise<{deltas: Delta[]}> => {
+  if (coords.length === 0) return {deltas: []}
+
+  // We need a lookup here instead of passing in the config from blocks land
+  // because blocks doesn't have the seed and other backend only pieces
+  // of information that we need
+  const fieldConfig = await challengeConfigGet({
+    redis: ctx.redis,
+    challengeNumber,
+  })
+
+  const batch = produceValidBatch({coords, challengeConfig: fieldConfig})
+
+  // First, get the
+  const partitionBatchMap: Record<
+    ReturnType<typeof createFieldPartitionKey>,
+    typeof batch
+  > = {}
+
+  for (const batchItem of batch) {
+    const fieldPartitionKey = createFieldPartitionKey(
+      challengeNumber,
+      batchItem.partitionXY,
+    )
+
+    if (!partitionBatchMap[fieldPartitionKey]) {
+      partitionBatchMap[fieldPartitionKey] = []
+    }
+
+    partitionBatchMap[fieldPartitionKey].push(batchItem)
+  }
+
+  const fieldsOpsReturn = await Promise.all(
+    Object.entries(partitionBatchMap).map(([fieldPartitionKey, batch]) =>
+      _fieldClaimCellsBitfieldOpsForPartition({
+        batch,
+        fieldPartitionKey: fieldPartitionKey as ReturnType<
+          typeof createFieldPartitionKey
+        >,
+        ctx,
+        fieldConfig,
+        userId,
+      }),
+    ),
+  )
+
+  const deltas = fieldsOpsReturn.flat()
 
   await _fieldClaimCellsSuccess({
     challengeNumber,
@@ -305,9 +398,11 @@ export const fieldClaimCells = async ({
 export const fieldGet = async ({
   challengeNumber,
   redis,
+  partitionXY,
 }: {
   challengeNumber: number
   redis: Devvit.Context['redis']
+  partitionXY: XY
 }): Promise<number[]> => {
   const meta = await challengeConfigGet({redis, challengeNumber})
 
@@ -319,7 +414,9 @@ export const fieldGet = async ({
     )
   }
 
-  const data = await redis.get(createFieldKey(challengeNumber))
+  const data = await redis.get(
+    createFieldPartitionKey(challengeNumber, partitionXY),
+  )
   if (data === undefined) {
     throw new Error('No field data found')
   }
@@ -332,7 +429,7 @@ export const fieldGet = async ({
 
   // TODO: Is there a limit here? Should we chunk?
   const result = await redis.bitfield(
-    createFieldKey(challengeNumber),
+    createFieldPartitionKey(challengeNumber, partitionXY),
     // @ts-expect-error - not sure
     ...commands.flat(),
   )

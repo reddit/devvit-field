@@ -1,15 +1,17 @@
 import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
+import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
 import {type ChallengeConfig, challengeMakeNew} from './challenge'
-import {type Delta, deltasGet} from './deltas'
+import {deltasGet} from './deltas'
 import {_fieldClaimCellsSuccess, fieldClaimCells, fieldGet} from './field'
 import {playerStatsCellsClaimedForMember} from './leaderboards/challenge/player.cellsClaimed'
 import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 
+// TODO: Tests for the partition level checks
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
   const {challengeNumber} = await challengeMakeNew({
     ctx,
@@ -65,18 +67,63 @@ DevvitTest.it(
     })
 
     expect(result).toEqual({
-      deltas: [{coord: {x: 1, y: 1}, isBan: false, team: 0}],
+      deltas: [{globalXY: {x: 1, y: 1}, isBan: false, team: 0}],
     })
 
     expect(
       toMatrix({
-        result: await fieldGet({challengeNumber, redis: ctx.redis}),
+        result: await fieldGet({
+          challengeNumber,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
         cols: 2,
         rows: 2,
       }),
     ).toEqual([
       ['_', '_'],
       ['_', '3'],
+    ])
+  },
+)
+
+DevvitTest.it(
+  'fieldClaimCells - should claim a cell for a partition and return if it was claimed',
+  async ctx => {
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {
+        size: 10,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 2,
+      },
+    })
+
+    const result = await fieldClaimCells({
+      coords: [{x: 8, y: 8}],
+      challengeNumber,
+      userId: 't2_foo',
+      ctx,
+    })
+
+    expect(result).toEqual({
+      deltas: [{globalXY: {x: 8, y: 8}, isBan: false, team: 0}],
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          redis: ctx.redis,
+          partitionXY: {x: 4, y: 4},
+        }),
+        cols: 2,
+        rows: 2,
+      }),
+    ).toEqual([
+      ['3', '_'],
+      ['_', '_'],
     ])
   },
 )
@@ -99,14 +146,18 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 
   expect(result).toEqual({
     deltas: [
-      {coord: {x: 0, y: 0}, isBan: false, team: 0},
-      {coord: {x: 1, y: 1}, isBan: false, team: 0},
+      {globalXY: {x: 0, y: 0}, isBan: false, team: 0},
+      {globalXY: {x: 1, y: 1}, isBan: false, team: 0},
     ],
   })
 
   expect(
     toMatrix({
-      result: await fieldGet({challengeNumber, redis: ctx.redis}),
+      result: await fieldGet({
+        challengeNumber,
+        redis: ctx.redis,
+        partitionXY: {x: 0, y: 0},
+      }),
       cols: 2,
       rows: 2,
     }),
@@ -183,8 +234,8 @@ DevvitTest.it(
 
     expect(result).toEqual({
       deltas: [
-        {coord: {x: 0, y: 0}, isBan: false, team: 0},
-        {coord: {x: 0, y: 1}, isBan: false, team: 0},
+        {globalXY: {x: 0, y: 0}, isBan: false, team: 0},
+        {globalXY: {x: 0, y: 1}, isBan: false, team: 0},
       ],
     })
   },
@@ -205,8 +256,8 @@ DevvitTest.it(
     })
 
     const deltas: Delta[] = [
-      {coord: {x: 0, y: 0}, isBan: false, team: 0},
-      {coord: {x: 1, y: 1}, isBan: true, team: 0},
+      {globalXY: {x: 0, y: 0}, isBan: false, team: 0},
+      {globalXY: {x: 1, y: 1}, isBan: true, team: 0},
     ]
 
     await _fieldClaimCellsSuccess({
@@ -265,9 +316,9 @@ DevvitTest.it(
     })
 
     const deltas: Delta[] = [
-      {coord: {x: 0, y: 0}, isBan: false, team: 0},
-      {coord: {x: 1, y: 1}, isBan: false, team: 0},
-      {coord: {x: 1, y: 2}, isBan: false, team: 0},
+      {globalXY: {x: 0, y: 0}, isBan: false, team: 0},
+      {globalXY: {x: 1, y: 1}, isBan: false, team: 0},
+      {globalXY: {x: 1, y: 2}, isBan: false, team: 0},
     ]
 
     await _fieldClaimCellsSuccess({
@@ -306,15 +357,21 @@ DevvitTest.it(
       }),
     ).resolves.toEqual(0)
 
-    // Not called because game is technically not over at 50% claimed
     expect(ctx.realtime.send).toHaveBeenCalledTimes(1)
+    expect(ctx.scheduler.runJob).toHaveBeenCalledWith({
+      data: {
+        challengeNumber: 1,
+      },
+      name: 'ON_CHALLENGE_END',
+      runAt: expect.any(Date),
+    })
   },
 )
 
 // TODO: Need to figure out how to get the entire bitfield in order
 // DevvitTest.it(
 //   'get should return the field in the exact order that redis would using many bitfield commands',
-//   async ctx => {
+//   async _ctx => {
 //     const key = 'foo'
 //     const rows = 2
 //     const cols = 2
@@ -365,29 +422,7 @@ DevvitTest.it(
 //      */
 
 //     const plainString = await DevvitTest.con.get(key)
-//     const buffer = Buffer.from(plainString!)
-
-//     const numbers: number[] = []
-//     let bitOffset = 0
-
-//     // AI slop, but it appears to work and show the issue
-//     // The order is messed up when I pull it out of Redis this way
-//     // It talks about this in order of the bits on https://redis.io/docs/latest/commands/bitfield/
-//     while (bitOffset < buffer.length * 8) {
-//       const byteIndex = Math.floor(bitOffset / 8)
-//       const bitPosition = bitOffset % 8
-
-//       // Get two consecutive bytes (if available)
-//       const byte1 = buffer[byteIndex] || 0
-//       const byte2 = buffer[byteIndex + 1] || 0
-
-//       // Combine bytes and shift to get the 3 bits we want
-//       const combined = (byte1 << 8) | byte2
-//       const value = (combined >> (13 - bitPosition)) & 0b111
-
-//       numbers.push(value)
-//       bitOffset += 3
-//     }
+//     const buffer = Buffer.from(plainString!, 'binary')
 
 //     expect(
 //       toMatrix({

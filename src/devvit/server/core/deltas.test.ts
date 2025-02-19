@@ -1,6 +1,7 @@
 import {expect} from 'vitest'
+import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
-import {type Delta, deltasAdd, deltasClear, deltasGet} from './deltas'
+import {deltasAdd, deltasClear, deltasGet} from './deltas'
 
 DevvitTest.it('should be able to add, get, and remove deltas', async ctx => {
   const challengeNumber = 0
@@ -10,12 +11,12 @@ DevvitTest.it('should be able to add, get, and remove deltas', async ctx => {
 
   const deltas: Delta[] = [
     {
-      coord: {x: 0, y: 0},
+      globalXY: {x: 0, y: 0},
       team: 0,
       isBan: false,
     },
     {
-      coord: {x: 1, y: 0},
+      globalXY: {x: 1, y: 0},
       team: 0,
       isBan: false,
     },

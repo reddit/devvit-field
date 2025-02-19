@@ -393,6 +393,11 @@ export namespace DevvitTest {
       realtime: {
         send: vi.fn(),
       },
+      scheduler: {
+        runJob: vi.fn(),
+        cancelJob: vi.fn(),
+        listJobs: vi.fn(),
+      },
       reddit: {
         getUserById(_id) {
           throw new Error('Not implemented in test')

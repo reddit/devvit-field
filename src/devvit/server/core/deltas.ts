@@ -1,12 +1,5 @@
 import type {Devvit} from '@devvit/public-api'
-import type {Team} from '../../../shared/team'
-import type {XY} from '../../../shared/types/2d'
-
-export type Delta = {
-  coord: XY
-  team: Team
-  isBan: boolean
-}
+import type {Delta} from '../../../shared/types/field'
 
 const getChallengeDeltasKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:deltas` as const

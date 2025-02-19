@@ -100,7 +100,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
         iframe.postMessage({
           type: 'Box',
-          boxes: deltas.map(({coord: xy, team, isBan}) => ({
+          boxes: deltas.map(({globalXY: xy, team, isBan}) => ({
             box: isBan ? 'Ban' : 'Empty',
             xy,
             team,

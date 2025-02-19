@@ -92,6 +92,7 @@ const superuserFormKey = Devvit.createForm(
         type: 'paragraph',
         name: 'usernames',
         label: 'Usernames',
+        lineHeight: 4,
         helpText: 'Separate multiple usernames with a comma.',
         required: true,
       },

@@ -3,10 +3,12 @@ import {
   type JSONObject,
   type ScheduledJobHandler,
 } from '@devvit/public-api'
-import {getPartitionCoords} from '../../shared/partition'
+import {getPartitionCoords, makePartitionKey} from '../../shared/partition'
+import type {PartitionKey} from '../../shared/types/2d'
+import type {Delta} from '../../shared/types/field'
 import {challengeMaybeGetCurrentChallengeNumber} from '../server/core/challenge'
 import {challengeConfigGet} from '../server/core/challenge'
-import {type Delta, deltasGet} from '../server/core/deltas'
+import {deltasGet} from '../server/core/deltas'
 
 export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   _,
@@ -30,13 +32,11 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   /**
    * Roll through all deltas and group them by partition
    */
-  type PartitionKey = `px${number}_py${number}`
   const partitionMap: Record<PartitionKey, Delta[]> = {}
 
   for (const delta of deltas) {
-    const partition = getPartitionCoords(delta.coord, config.partitionSize)
-    const partitionKey =
-      `px${partition.partitionX}_py${partition.partitionY}` as const
+    const partition = getPartitionCoords(delta.globalXY, config.partitionSize)
+    const partitionKey = makePartitionKey(partition)
 
     partitionMap[partitionKey] = [...(partitionMap[partitionKey] || []), delta]
   }
