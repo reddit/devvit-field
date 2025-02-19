@@ -4,17 +4,17 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@devvit/protos": "0.11.7",
-    "@devvit/public-api": "0.11.8-next-2025-02-12-ce9f2981c.0",
+    "@devvit/public-api": "0.11.8-next-2025-02-19-cb929a523.0",
     "@devvit/shared-types": "0.11.7",
     "@types/node": "22.13.1",
-    "@vitest/coverage-v8": "^3.0.5",
-    "devvit": "0.11.7",
+    "@vitest/coverage-v8": "3.0.6",
+    "devvit": "0.11.8-next-2025-02-19-cb929a523.0",
     "esbuild": "0.25.0",
     "ioredis": "5.5.0",
     "lit": "3.2.1",
     "redis-memory-server": "0.12.1",
     "typescript": "5.8.0-beta",
-    "vitest": "3.0.5"
+    "vitest": "3.0.6"
   },
   "engines": {
     "node": ">=22.6"
