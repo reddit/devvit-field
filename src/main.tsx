@@ -11,6 +11,8 @@ import {
   type PingMessage,
 } from '@devvit/protos'
 import {Devvit} from '@devvit/public-api'
+import {makeAPIClients} from '@devvit/public-api/apis/makeAPIClients.js'
+import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/context.js'
 import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {Preview} from './devvit/components/preview.js'
@@ -149,6 +151,10 @@ export default class extends Devvit implements Hello {
   }
 
   async Ping(msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+    const ctx = Object.assign(
+      makeAPIClients({metadata: meta ?? {}}),
+      getContextFromMetadata(meta ?? {}),
+    )
     console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
     return msg
   }
