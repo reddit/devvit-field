@@ -4,6 +4,21 @@ import type {Cam} from '../renderer/cam.ts'
 export type PointType =
   (typeof pointTypeByPointerType)[keyof typeof pointTypeByPointerType]
 
+type Point = {
+  bits: number
+  clientXY: XY
+  id: number
+  /**
+   * Cursors should only use the primary inputs to avoid flickering between
+   * distant points. Inputs may all be secondaries.
+   */
+  primary: boolean
+  screenXY: XY
+  type: PointType | undefined
+  /** Level coordinates of pointer recorded with the camera at capture time. */
+  xy: XY
+}
+
 const pointTypeByPointerType = {
   mouse: 'Mouse',
   pen: 'Pen',
@@ -13,38 +28,35 @@ const pointTypeByPointerType = {
 export class PointerPoller {
   allowContextMenu: boolean = false // Suppress right-click.
   readonly bitByButton: {[btn: number]: number} = {}
-  bits: number = 0
   delta: XY = {x: 0, y: 0}
   /** The potential start of a drag. */
   readonly dragClientStart: XY = {x: 0, y: 0}
-  screenXY: XY = {x: 0, y: 0}
-  type: PointType | undefined
-  /** Level coordinates of pointer recorded with the camera at capture time. */
-  xy: XY = {x: 0, y: 0}
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
-  readonly #clientXY: [cur: XY, next: XY] = [
-    {x: 0, y: 0},
-    {x: 0, y: 0},
-  ]
+  readonly #primary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
+  readonly #secondary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
   /**
    * Hack: every loop poll is called first. Drag is wanted to start on time but
    * finish one loop late so that off starts one loop ahead.
    */
   #drag: number = 0
   #on: number = 0
-  readonly #wheel: [XYZ, XYZ] = [
-    {x: 0, y: 0, z: 0},
-    {x: 0, y: 0, z: 0},
-  ]
+  readonly #wheel: {cur: XYZ; next: XYZ} = {
+    cur: {x: 0, y: 0, z: 0},
+    next: {x: 0, y: 0, z: 0},
+  }
 
   constructor(cam: Readonly<Cam>, canvas: HTMLCanvasElement) {
     this.#cam = cam
     this.#canvas = canvas
   }
 
+  get bits(): number {
+    return this.#primary.cur.bits
+  }
+
   get clientXY(): XY {
-    return this.#clientXY[0]
+    return this.#primary.cur.clientXY
   }
 
   get drag(): boolean {
@@ -57,15 +69,15 @@ export class PointerPoller {
   }
 
   poll(): void {
-    this.#drag = (this.#drag & 4) | ((this.#drag & 7) >> 1)
+    this.#drag = (this.#drag & 4) | ((this.#drag & 7) >>> 1)
     // to-do: it's inconsistent to be left-shifting here and right-shifting
     //        above.
     this.#on <<= 1
-    const delta = xySub(this.#clientXY[1], this.#clientXY[0])
+    const delta = xySub(this.#primary.next.clientXY, this.#primary.cur.clientXY)
     this.delta = {x: delta.x / this.#cam.scale, y: delta.y / this.#cam.scale}
-    this.#clientXY[0] = {...this.#clientXY[1]}
-    this.#wheel[0] = this.#wheel[1]
-    this.#wheel[1] = {x: 0, y: 0, z: 0}
+    this.#primary.cur = structuredClone(this.#primary.next)
+    this.#wheel.cur = this.#wheel.next
+    this.#wheel.next = {x: 0, y: 0, z: 0}
   }
 
   register(op: 'add' | 'remove'): void {
@@ -89,18 +101,29 @@ export class PointerPoller {
   }
 
   reset = (): void => {
-    this.bits = 0
+    this.#primary.next.bits = 0
     this.delta = {x: 0, y: 0}
     this.#drag = 0
     this.#on = 0
-    this.type = undefined
-    this.#wheel[0] = {x: 0, y: 0, z: 0}
-    this.#wheel[1] = {x: 0, y: 0, z: 0}
+    this.#primary.next.type = undefined
+    this.#wheel.next = {x: 0, y: 0, z: 0}
+  }
+
+  get screenXY(): XY {
+    return this.#primary.cur.screenXY
+  }
+
+  get type(): PointType | undefined {
+    return this.#primary.cur.type
   }
 
   /** Wheel delta. */
   get wheel(): XYZ {
-    return this.#wheel[0]
+    return this.#wheel.cur
+  }
+
+  get xy(): XY {
+    return this.#primary.cur.xy
   }
 
   #onContextMenuEvent = (ev: Event): void => {
@@ -114,40 +137,42 @@ export class PointerPoller {
     // to-do: record event here and move processing to poll() which happens
     //        before reading. It's hard to make sense out of band here.
 
-    // Ignore non-primary inputs to avoid flickering between distant points.
-    if (!ev.isPrimary) return
+    const point = ev.isPrimary ? this.#primary.next : this.#secondary.next
 
-    this.bits = this.#evButtonsToBits(ev.buttons)
-    this.type =
+    point.bits = this.#evButtonsToBits(ev.buttons)
+    point.type =
       pointTypeByPointerType[
         ev.pointerType as keyof typeof pointTypeByPointerType
       ]
-    ;({clientX: this.#clientXY[1].x, clientY: this.#clientXY[1].y} = ev)
-    this.screenXY = this.#cam.toScreenXY(this.#canvas, this.#clientXY[1])
-    this.xy = this.#cam.toLevelXY(this.#canvas, this.#clientXY[1])
+    ;({clientX: point.clientXY.x, clientY: point.clientXY.y} = ev)
+    point.screenXY = this.#cam.toScreenXY(this.#canvas, point.clientXY)
+    point.xy = this.#cam.toLevelXY(this.#canvas, point.clientXY)
 
-    this.#on |= 1
-
-    if (ev.type === 'pointerdown') {
-      this.#canvas.setPointerCapture(ev.pointerId)
-      this.dragClientStart.x = this.#clientXY[1].x
-      this.dragClientStart.y = this.#clientXY[1].y
-      ev.preventDefault() // Not passive.
+    if (ev.isPrimary)
+      if (ev.type === 'pointerdown') {
+        this.#canvas.setPointerCapture(ev.pointerId)
+        if (ev.isPrimary) {
+          this.dragClientStart.x = point.clientXY.x
+          this.dragClientStart.y = point.clientXY.y
+        }
+        ev.preventDefault() // Not passive.
+      }
+    if (ev.isPrimary) {
+      this.#on |= 1
+      this.#drag =
+        (this.#drag & 3) |
+        (!!point.bits &&
+        (this.#drag & 4 || xyDistance(point.clientXY, this.dragClientStart) > 5)
+          ? 4
+          : 0)
     }
-    this.#drag =
-      (this.#drag & 3) |
-      (!!this.bits &&
-      (this.#drag & 4 ||
-        xyDistance(this.#clientXY[1], this.dragClientStart) > 5)
-        ? 4
-        : 0)
   }
 
   #onWheel = (ev: WheelEvent): void => {
     if (!ev.isTrusted) return
-    this.#wheel[1].x = ev.shiftKey ? ev.deltaY : ev.deltaX
-    this.#wheel[1].y = ev.shiftKey ? ev.deltaX : ev.deltaY
-    this.#wheel[1].z = ev.deltaZ
+    this.#wheel.next.x = ev.shiftKey ? ev.deltaY : ev.deltaX
+    this.#wheel.next.y = ev.shiftKey ? ev.deltaX : ev.deltaY
+    this.#wheel.next.z = ev.deltaZ
   }
 
   #evButtonsToBits(buttons: number): number {
@@ -157,5 +182,17 @@ export class PointerPoller {
       bits |= this.bitByButton[button] ?? 0
     }
     return bits
+  }
+}
+
+function Point(): Point {
+  return {
+    bits: 0,
+    clientXY: {x: 0, y: 0},
+    id: 0,
+    primary: false,
+    screenXY: {x: 0, y: 0},
+    type: undefined,
+    xy: {x: 0, y: 0},
   }
 }
