@@ -6,7 +6,7 @@ import {
   css,
   html,
 } from 'lit'
-import {customElement, query, state} from 'lit/decorators.js'
+import {customElement, property, query} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
@@ -83,9 +83,10 @@ export class BFGame extends LitElement {
     }
   `
 
-  #game: Game = new Game()
+  @property({reflect: true}) accessor ui: UI = 'Loading'
+
+  #game: Game = new Game(this)
   @query('canvas') private accessor _canvas!: HTMLCanvasElement
-  @state() accessor _ui: UI = 'Loading'
 
   override async connectedCallback(): Promise<void> {
     super.connectedCallback()
@@ -100,8 +101,7 @@ export class BFGame extends LitElement {
 
   protected override update(props: PropertyValues<this>): void {
     super.update(props)
-    if (this._ui === 'Loading' && this.#game.mode === 'PopOut')
-      this._ui = 'Intro'
+    if (this.ui === 'Loading' && this.#game.mode === 'PopOut') this.ui = 'Intro'
   }
 
   override render(): TemplateResult {
@@ -119,7 +119,7 @@ export class BFGame extends LitElement {
 
     let button
     let dialog
-    switch (this._ui) {
+    switch (this.ui) {
       case 'Intro':
         // to-do: literally forcing the user to stop and consent to the dialog
         //        feels like an antipattern. What in the world do we have to say
@@ -144,7 +144,7 @@ export class BFGame extends LitElement {
         button = html`<bf-open-button></bf-open-button>`
         break
       default:
-        this._ui satisfies never
+        this.ui satisfies never
     }
 
     return html`
@@ -158,7 +158,7 @@ export class BFGame extends LitElement {
       ${button}
       <div class='canvas-box'>
         <canvas
-          @game-ui='${(ev: CustomEvent<UI>) => (this._ui = ev.detail)}'
+          @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
           @game-update='${() => this.requestUpdate()}'
           tabIndex='0'
         ></canvas> <!--- Set tabIndex to propagate key events. -->
@@ -171,6 +171,6 @@ export class BFGame extends LitElement {
   }
 
   #onIntroClose(): void {
-    this._ui = 'Playing'
+    this.ui = 'Playing'
   }
 }

@@ -75,5 +75,19 @@ export class FieldLevel implements LevelEnt {
       cam.x = cam.x - ctrl.delta.x / cam.fieldScale
       cam.y = cam.y - ctrl.delta.y / cam.fieldScale
     }
+    if (!ctrl.handled && game.ctrl.isAnyOn('L', 'R', 'U', 'D')) {
+      ctrl.handled = true
+
+      const dir = {x: 0, y: 0}
+      if (ctrl.isOn('L')) dir.x--
+      if (ctrl.isOn('R')) dir.x++
+      if (ctrl.isOn('U')) dir.y--
+      if (ctrl.isOn('D')) dir.y++
+
+      const speed = (dir.x && dir.y ? Math.sqrt(25 / 2) : 5) / cam.fieldScale
+
+      cam.x += dir.x * speed
+      cam.y += dir.y * speed
+    }
   }
 }

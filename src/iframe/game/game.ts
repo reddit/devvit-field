@@ -16,6 +16,7 @@ import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
+import type {BFGame} from '../elements/bf-game.ts'
 import {Bubble} from '../elements/bubble.ts'
 import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
@@ -75,13 +76,14 @@ export class Game {
   sub?: FieldSub | string
   team: Team | undefined
   teamBoxCounts: TeamBoxCounts | undefined
+  ui: BFGame
   /** Number of boxes in the field visible; [0, field size]. */
   visible: number | undefined
   zoo: Zoo
 
   #fulfil!: () => void
 
-  constructor() {
+  constructor(ui: BFGame) {
     this.ac = new AudioContext()
     this.atlas = atlas as Atlas<Tag>
     this.bmps = new BmpAttribBuffer(100)
@@ -94,6 +96,7 @@ export class Game {
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
     this.players = 0
+    this.ui = ui
     this.zoo = new Zoo()
   }
 
@@ -249,7 +252,8 @@ export class Game {
       this.canvas.parentElement!.clientHeight * devicePixelRatio
 
     // Suppress all input when popped in and pre-init.
-    if (this.mode !== 'PopOut') this.ctrl.handled = true
+    if (this.mode !== 'PopOut' || this.ui.ui !== 'Playing')
+      this.ctrl.handled = true
 
     this.bmps.size = 0
     // Don't await; this can hang.
