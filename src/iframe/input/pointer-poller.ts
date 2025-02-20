@@ -166,7 +166,7 @@ export class PointerPoller {
       pointTypeByPointerType[
         ev.pointerType as keyof typeof pointTypeByPointerType
       ]
-    ;({clientX: point.clientXY.x, clientY: point.clientXY.y} = ev)
+    ;({offsetX: point.clientXY.x, offsetY: point.clientXY.y} = ev)
     point.screenXY = this.#cam.toScreenXY(this.#canvas, point.clientXY)
     point.xy = this.#cam.toLevelXY(this.#canvas, point.clientXY)
 
