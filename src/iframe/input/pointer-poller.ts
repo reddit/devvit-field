@@ -32,6 +32,7 @@ export class PointerPoller {
   delta: XY = {x: 0, y: 0}
   /** The potential start of a drag. */
   readonly dragClientStart: XY = {x: 0, y: 0}
+  midScreenPoint: XY = {x: 0, y: 0}
   readonly #cam: Readonly<Cam>
   readonly #canvas: HTMLCanvasElement
   /**
@@ -177,12 +178,20 @@ export class PointerPoller {
         this.#secondary.next.ev === 'pointermove')
     ) {
       const alt = ev.isPrimary ? this.#secondary.next : this.#primary.next
-      if (ev.type === 'pointerdown')
+      if (ev.type === 'pointerdown') {
         this.#pinch.start = this.#pinch.end = xyDistance(
           point.screenXY,
           alt.screenXY,
         )
-      else this.#pinch.end = xyDistance(point.screenXY, alt.screenXY)
+        const diff = xySub(
+          this.#primary.next.screenXY,
+          this.#secondary.next.screenXY,
+        )
+        this.midScreenPoint = xySub(this.#primary.next.screenXY, {
+          x: diff.x / 2,
+          y: diff.y / 2,
+        })
+      } else this.#pinch.end = xyDistance(point.screenXY, alt.screenXY)
     } else this.#pinch.start = this.#pinch.end
 
     if (ev.type === 'pointerdown') {

@@ -44,7 +44,7 @@ export class FieldLevel implements LevelEnt {
       ctrl.handled = true
       cam.setFieldScaleLevel(
         this.#zoomLvl + Math.trunc(ctrl.pinch / 50),
-        ctrl.screenPoint,
+        ctrl.midScreenPoint,
         !!p1?.profile.superuser,
       )
     } else this.#zoomLvl = cam.fieldScaleLevel

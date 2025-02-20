@@ -161,6 +161,10 @@ export class Input<T extends string> {
     for (const key of keys) this.#keyboard.map(key, this.#map(button))
   }
 
+  get midScreenPoint(): XY {
+    return this.#pointer.midScreenPoint
+  }
+
   get pinch(): number {
     return this.#pointer.pinch
   }
