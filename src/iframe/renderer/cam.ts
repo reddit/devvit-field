@@ -19,15 +19,15 @@ export type FollowCamOrientation =
   | 'Center'
 
 // It'd probably be better to use an exponential here but this was easier at the
-// cost of index state, Integers above 1 and tenths below.
-const fieldZoomLevels: readonly number[] = [
-  0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-  11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-  30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 54, 58, 62, 66, 70, 74, 78, 82,
-  86, 90, 98, 106, 114, 122, 130, 138, 146, 154, 162, 170,
+// cost of index state.
+const fieldScaleLvls: readonly number[] = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+  23, 24, 25, 26, 27, 28, 29, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 54,
+  58, 62, 66, 70, 74, 78, 82, 86, 90, 98, 106, 114, 122, 130, 138, 146, 154,
+  162, 170,
 ]
-const minUserFieldZoomIndex: number = fieldZoomLevels.indexOf(40)!
-const defaultFieldZoomIndex: number = fieldZoomLevels.indexOf(98)!
+const minUserFieldScaleLvl: number = fieldScaleLvls.indexOf(40)!
+const defaultFieldScaleLvl: number = fieldScaleLvls.indexOf(98)!
 
 export class Cam {
   /** Fractional (but only integral is ever honored). */
@@ -45,14 +45,18 @@ export class Cam {
   x: number = 0
   /** Fractional. */
   y: number = 0
-  #fieldZoomIndex: number = defaultFieldZoomIndex
+  #fieldScaleLvl: number = defaultFieldScaleLvl
 
   constructor() {
     this.prev = {x: this.x, y: this.y, w: this.w, h: this.h, scale: this.scale}
   }
 
   get fieldScale(): number {
-    return fieldZoomLevels[this.#fieldZoomIndex]!
+    return fieldScaleLvls[this.#fieldScaleLvl]!
+  }
+
+  get fieldScaleLevel(): number {
+    return this.#fieldScaleLvl
   }
 
   isVisible(box: Readonly<XY & Partial<WH>>): boolean {
@@ -135,14 +139,19 @@ export class Cam {
     this.h = h
   }
 
-  get valid(): boolean {
-    return (
-      this.scale === this.prev.scale &&
-      this.x === this.prev.x &&
-      this.y === this.prev.y &&
-      this.w === this.prev.w &&
-      this.h === this.prev.h
+  /** Independent zoom for the field (doesn't impact UI). */
+  setFieldScaleLevel(lvl: number, pt: Readonly<XY>, superuser: boolean): void {
+    const index = Math.max(
+      superuser ? 0 : minUserFieldScaleLvl,
+      Math.min(fieldScaleLvls.length - 1, lvl),
     )
+    if (this.#fieldScaleLvl === index) return
+
+    const prev = this.fieldScale
+    this.#fieldScaleLvl = index
+
+    this.x += pt.x / prev - pt.x / this.fieldScale
+    this.y += pt.y / prev - pt.y / this.fieldScale
   }
 
   /** Returns position in fractional level coordinates. */
@@ -159,23 +168,14 @@ export class Cam {
     }
   }
 
-  /** Independent zoom for the field (doesn't impact UI). */
-  zoomField(dir: 'In' | 'Out', superuser: boolean): void {
-    const index = Math.max(
-      superuser ? 0 : minUserFieldZoomIndex,
-      Math.min(
-        fieldZoomLevels.length - 1,
-        this.#fieldZoomIndex + (dir === 'In' ? 1 : -1),
-      ),
+  get valid(): boolean {
+    return (
+      this.scale === this.prev.scale &&
+      this.x === this.prev.x &&
+      this.y === this.prev.y &&
+      this.w === this.prev.w &&
+      this.h === this.prev.h
     )
-    if (this.#fieldZoomIndex === index) return
-
-    const prev = this.fieldScale
-    this.#fieldZoomIndex = index
-
-    const half = {w: this.w / 2, h: this.h / 2}
-    this.x += half.w / prev - half.w / this.fieldScale
-    this.y += half.h / prev - half.h / this.fieldScale
   }
 }
 

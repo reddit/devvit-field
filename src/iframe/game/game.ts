@@ -244,8 +244,9 @@ export class Game {
   }
 
   #onLoop = (): void => {
-    this.cam.minWH.w = this.canvas.parentElement!.clientWidth
-    this.cam.minWH.h = this.canvas.parentElement!.clientHeight
+    this.cam.minWH.w = this.canvas.parentElement!.clientWidth * devicePixelRatio
+    this.cam.minWH.h =
+      this.canvas.parentElement!.clientHeight * devicePixelRatio
 
     // Suppress all input when popped in and pre-init.
     if (this.mode !== 'PopOut') this.ctrl.handled = true

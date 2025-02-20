@@ -6,9 +6,11 @@ import type {LevelEnt} from './level-ent.ts'
 
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
+  #zoomLvl: number
 
   constructor(game: Game) {
     this.eid = game.eid.new()
+    this.#zoomLvl = game.cam.fieldScale
   }
 
   draw(_game: Readonly<Game>): void {}
@@ -28,17 +30,24 @@ export class FieldLevel implements LevelEnt {
   }
 
   update(game: Game): void {
-    const {cam, ctrl} = game
+    const {cam, ctrl, fieldConfig, p1} = game
     if (ctrl.wheel.y) {
-      cam.zoomField(
-        ctrl.wheel.y > 0 ? 'Out' : 'In',
-        !!game.p1?.profile.superuser,
+      this.#zoomLvl += ctrl.wheel.y > 0 ? -1 : 1
+      cam.setFieldScaleLevel(
+        this.#zoomLvl,
+        ctrl.screenPoint,
+        !!p1?.profile.superuser,
       )
     }
 
     if (ctrl.pinch) {
       ctrl.handled = true
-    }
+      cam.setFieldScaleLevel(
+        this.#zoomLvl + Math.trunc(ctrl.pinch / 50),
+        ctrl.screenPoint,
+        !!p1?.profile.superuser,
+      )
+    } else this.#zoomLvl = cam.fieldScaleLevel
 
     if (!ctrl.handled && ctrl.isOffStart('A') && !ctrl.drag && !ctrl.pinch) {
       ctrl.handled = true
@@ -50,9 +59,9 @@ export class FieldLevel implements LevelEnt {
       }
       if (
         xy.x < 0 ||
-        xy.x >= game.fieldConfig!.wh.w ||
+        xy.x >= fieldConfig!.wh.w ||
         xy.y < 0 ||
-        xy.y >= game.fieldConfig!.wh.h
+        xy.y >= fieldConfig!.wh.h
       )
         return
       // to-do: post message.

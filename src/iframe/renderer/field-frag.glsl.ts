@@ -22,8 +22,7 @@ const vec4 palette[] = vec4[](
 );
 
 void main() {
-  vec2 screenXY = vUV * uCam.zw;
-  vec2 xy = (screenXY / uScale) + uCam.xy;
+  vec2 xy = vUV * uCam.zw + uCam.xy;
   if (xy.x < 0. || xy.x >= float(uFieldWH.x) || xy.y < 0. || xy.y >= float(uFieldWH.y))
     discard;
 

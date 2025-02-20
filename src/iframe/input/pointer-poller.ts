@@ -40,12 +40,7 @@ export class PointerPoller {
    */
   #drag: number = 0
   #on: number = 0
-  #pinch: {cur: number; curDelta: number; next: number; nextDelta: number} = {
-    cur: 0,
-    curDelta: 0,
-    next: 0,
-    nextDelta: 0,
-  }
+  #pinch: {end: number; start: number} = {end: 0, start: 0}
   readonly #primary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
   readonly #secondary: {cur: Point; next: Point} = {cur: Point(), next: Point()}
   readonly #wheel: {cur: XYZ; next: XYZ} = {
@@ -76,7 +71,7 @@ export class PointerPoller {
   }
 
   get pinch(): number {
-    return this.#pinch.curDelta
+    return (this.#pinch.end - this.#pinch.start) / this.#cam.scale
   }
 
   poll(): void {
@@ -84,11 +79,8 @@ export class PointerPoller {
     // to-do: it's inconsistent to be left-shifting here and right-shifting
     //        above.
     this.#on <<= 1
-    this.#pinch.curDelta = this.#pinch.nextDelta
-    this.#pinch.cur = this.#pinch.next
-    this.#pinch.nextDelta = 0
     const delta = xySub(this.#primary.next.clientXY, this.#primary.cur.clientXY)
-    this.delta = {x: delta.x / this.#cam.scale, y: delta.y / this.#cam.scale}
+    this.delta = this.#cam.toScreenXY(this.#canvas, delta)
     this.#primary.cur = structuredClone(this.#primary.next)
     this.#wheel.cur = this.#wheel.next
     this.#wheel.next = {x: 0, y: 0, z: 0}
@@ -118,13 +110,14 @@ export class PointerPoller {
     this.delta = {x: 0, y: 0}
     this.#drag = 0
     this.#on = 0
-    this.#pinch.next = 0
-    this.#pinch.nextDelta = 0
+    this.#pinch.start = this.#pinch.end
     this.#primary.next.bits = 0
     this.#primary.next.ev = 'pointercancel'
+    this.#primary.next.id = 0
     this.#primary.next.type = undefined
     this.#secondary.next.bits = 0
     this.#secondary.next.ev = 'pointercancel'
+    this.#secondary.next.id = 0
     this.#secondary.next.type = undefined
     this.#wheel.next = {x: 0, y: 0, z: 0}
   }
@@ -159,6 +152,14 @@ export class PointerPoller {
 
     const point = ev.isPrimary ? this.#primary.next : this.#secondary.next
 
+    if (
+      ev.pointerId !== point.id &&
+      point.id &&
+      point.ev !== 'pointercancel' &&
+      point.ev !== 'pointerup'
+    )
+      return
+
     point.bits = this.#evButtonsToBits(ev.buttons)
     point.ev = ev.type as Point['ev']
     point.type =
@@ -177,15 +178,12 @@ export class PointerPoller {
     ) {
       const alt = ev.isPrimary ? this.#secondary.next : this.#primary.next
       if (ev.type === 'pointerdown')
-        this.#pinch.next = this.#pinch.cur = xyDistance(
-          point.clientXY,
-          alt.clientXY,
+        this.#pinch.start = this.#pinch.end = xyDistance(
+          point.screenXY,
+          alt.screenXY,
         )
-      else this.#pinch.next = xyDistance(point.clientXY, alt.clientXY)
-    } else this.#pinch.cur = this.#pinch.next
-
-    this.#pinch.nextDelta =
-      (this.#pinch.next - this.#pinch.cur) / this.#cam.scale
+      else this.#pinch.end = xyDistance(point.screenXY, alt.screenXY)
+    } else this.#pinch.start = this.#pinch.end
 
     if (ev.type === 'pointerdown') {
       this.#canvas.setPointerCapture(ev.pointerId)
@@ -200,7 +198,9 @@ export class PointerPoller {
       this.#drag =
         (this.#drag & 3) |
         (!!point.bits &&
-        (this.#drag & 4 || xyDistance(point.clientXY, this.dragClientStart) > 5)
+        (this.#drag & 4 ||
+          xyDistance(point.clientXY, this.dragClientStart) >
+            5 * devicePixelRatio)
           ? 4
           : 0)
     }
