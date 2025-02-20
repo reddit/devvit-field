@@ -150,14 +150,16 @@ export default class extends Devvit implements Hello {
     config.provides(HelloDefinition)
   }
 
-  async Ping(msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+  async Ping(_msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
     const ctx = Object.assign(
       makeAPIClients({metadata: meta ?? {}}),
       getContextFromMetadata(meta ?? {}),
     )
     const bouncepotato = await ctx.reddit.getUserByUsername('bouncepotato')
-    console.log(`${bouncepotato?.username}=${bouncepotato?.id}`)
-    console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
-    return msg
+    return {
+      delayMillis: 0,
+      message: `${bouncepotato?.username}=${bouncepotato?.id}`,
+      successProbability: 0,
+    }
   }
 }

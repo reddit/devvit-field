@@ -1,4 +1,5 @@
 /devvit.dev.yaml
+/devvit.load.yaml
 /dist/
 /node_modules/
 /webroot/index.js*
