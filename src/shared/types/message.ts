@@ -2,7 +2,7 @@ import type {Player} from '../save.ts'
 import type {Team} from '../team.ts'
 import type {XY} from './2d.ts'
 import type {FieldConfig} from './field-config.ts'
-import type {FieldSub} from './field.ts'
+import type {Delta, FieldSub} from './field.ts'
 import type {Seed} from './random.ts'
 
 /**
@@ -44,6 +44,10 @@ export type InitDevvitMessage = {
   type: 'Init'
   /** Number of boxes in the field visible; [0, field size]. */
   visible: number
+  /** The starting global coordinates for the player */
+  initialGlobalXY: XY
+  /** The deltas for the partition the user starts in */
+  initialDeltas: Delta[]
 }
 
 /** The Devvit API wraps all messages from Blocks to the iframe. */
@@ -69,7 +73,7 @@ export type RealtimeMessage =
 
 type ClaimBoxesResponse = {
   type: 'Box'
-  boxes: {box: 'Ban' | 'Empty'; xy: XY; team: Team}[]
+  deltas: Delta[]
 }
 
 /** Broadcasted by server when a box has changed. */

@@ -2,7 +2,7 @@ import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
-import type {FieldSub} from '../../shared/types/field.ts'
+import type {Delta, FieldSub} from '../../shared/types/field.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
@@ -217,6 +217,8 @@ export class Game {
           teamBoxCounts,
           type: 'Init',
           visible,
+          initialGlobalXY: {x: 0, y: 0},
+          initialDeltas: [],
         })
       },
       Math.trunc(rnd.num * 1000),
@@ -267,6 +269,16 @@ export class Game {
     this.looper.render(this.cam, this.bmps, this.#onLoop, this.cam.fieldScale)
   }
 
+  #applyDeltas = (deltas: Delta[]): void => {
+    for (const {globalXY, isBan} of deltas) {
+      const i = globalXY.y * this.fieldConfig!.wh.w + globalXY.x
+      if (this.field[i]) return
+      // TODO: Team and ban color map
+      this.field[i] = isBan ? 2 : 1
+      this.renderer.setBox(globalXY, this.field[i])
+    }
+  }
+
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
     // Filter any unknown messages.
     if (ev.data.type !== 'devvit-message') return
@@ -290,6 +302,7 @@ export class Game {
         this.teamBoxCounts = msg.teamBoxCounts
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
         this.visible = msg.visible
+        this.fieldConfig = msg.field
 
         if (devMode) {
           const rnd = new Random(this.seed)
@@ -304,8 +317,10 @@ export class Game {
                     rnd.num < 0.05 ? 1 : 4 + Math.trunc(rnd.num * 4)
                 }
               }
+        } else {
+          this.#applyDeltas(msg.initialDeltas)
         }
-        this.fieldConfig = msg.field
+
         this.p1 = msg.p1
         this.mode = msg.mode
         if (this.debug) console.log('init')
@@ -322,12 +337,7 @@ export class Game {
         // to-do: implement.
         if (!this.p1) return
         // to-do: implement teams
-        for (const {xy, box, team: _team} of msg.boxes) {
-          const i = xy.y * this.fieldConfig!.wh.w + xy.x
-          if (this.field[i]) return
-          this.field[i] = box === 'Ban' ? 2 : 1
-          this.renderer.setBox(xy, this.field[i])
-        }
+        this.#applyDeltas(msg.deltas)
         break
       case 'Connected':
         if (!this.p1) return

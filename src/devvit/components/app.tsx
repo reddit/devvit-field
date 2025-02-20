@@ -3,39 +3,63 @@ import {Devvit, type JSONValue} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
+import {getPartitionCoords} from '../../shared/partition.ts'
 import {playButtonWidth} from '../../shared/theme.ts'
+import type {XY} from '../../shared/types/2d.ts'
 import type {
   DevvitMessage,
   IframeMessage,
   RealtimeMessage,
 } from '../../shared/types/message.ts'
+import {Random} from '../../shared/types/random.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {
-  challengeConfigGetClientSafeProps,
+  challengeConfigGet,
   challengeGetCurrentChallengeNumber,
+  makeSafeChallengeConfig,
 } from '../server/core/challenge.js'
-import {fieldClaimCells} from '../server/core/field.js'
+import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
 import {userGetOrSet} from '../server/core/user.js'
 import {Title} from './title.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const session = useSession(ctx)
-  const [{challengeConfig, challengeNumber, profile}] = useState2(async () => {
+  const [
+    {challengeConfig, challengeNumber, profile, initialDeltas, initialGlobalXY},
+  ] = useState2(async () => {
     const [profile, challengeNumber] = await Promise.all([
       userGetOrSet({ctx}),
       challengeGetCurrentChallengeNumber({redis: ctx.redis}),
     ])
 
-    const challengeConfig = await challengeConfigGetClientSafeProps({
+    const challengeConfig = await challengeConfigGet({
       redis: ctx.redis,
       challengeNumber,
+    })
+
+    const rnd = new Random(challengeConfig.seed)
+    const initialGlobalXY: XY = {
+      x: Math.trunc(rnd.num * challengeConfig.size),
+      y: Math.trunc(rnd.num * challengeConfig.size),
+    }
+
+    const deltas = await fieldGetDeltas({
+      challengeNumber,
+      redis: ctx.redis,
+      partitionXY: getPartitionCoords(
+        initialGlobalXY,
+        challengeConfig.partitionSize,
+      ),
     })
 
     return {
       challengeNumber,
       profile,
-      challengeConfig,
+      // DO NOT RETURN THE SEED
+      challengeConfig: makeSafeChallengeConfig(challengeConfig),
+      initialGlobalXY,
+      initialDeltas: deltas,
     }
   })
 
@@ -87,6 +111,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
           teamBoxCounts: [0, 0, 0, 0], // to-do: fill me out.
           type: 'Init',
           visible: 0, // to-do: fill me out.
+          initialDeltas,
+          initialGlobalXY,
         })
         break
       case 'ClaimBoxes': {
@@ -99,11 +125,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
         iframe.postMessage({
           type: 'Box',
-          boxes: deltas.map(({globalXY: xy, team, isBan}) => ({
-            box: isBan ? 'Ban' : 'Empty',
-            xy,
-            team,
-          })),
+          deltas,
         })
 
         break

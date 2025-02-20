@@ -12,19 +12,19 @@ DevvitTest.it('should increment, and get challenge stats', async ctx => {
     playerStatsCellsClaimedForMember({
       redis: ctx.redis,
       challengeNumber: 0,
-      member: 't2_foo',
+      member: 't2_1cgemlvzgq',
     }),
   ).resolves.toBe(0)
 
   await playerStatsCellsClaimedIncrementForMember({
     redis: ctx.redis,
     challengeNumber: 0,
-    member: 't2_foo',
+    member: 't2_1cgemlvzgq',
   })
   await playerStatsCellsClaimedIncrementForMember({
     redis: ctx.redis,
     challengeNumber: 0,
-    member: 't2_foo',
+    member: 't2_1cgemlvzgq',
   })
   await playerStatsCellsClaimedIncrementForMember({
     redis: ctx.redis,
@@ -47,7 +47,7 @@ DevvitTest.it('should increment, and get challenge stats', async ctx => {
     playerStatsCellsClaimedForMember({
       redis: ctx.redis,
       challengeNumber: 0,
-      member: 't2_foo',
+      member: 't2_1cgemlvzgq',
     }),
   ).resolves.toBe(2)
 
@@ -58,7 +58,7 @@ DevvitTest.it('should increment, and get challenge stats', async ctx => {
       sort: 'DESC',
     }),
   ).resolves.toEqual([
-    {member: 't2_foo', score: 2},
+    {member: 't2_1cgemlvzgq', score: 2},
     {member: 't2_baz', score: 1},
     {member: 't2_bar', score: 0},
   ] satisfies Array<{member: T2; score: number}>)
@@ -72,6 +72,6 @@ DevvitTest.it('should increment, and get challenge stats', async ctx => {
   ).resolves.toEqual([
     {member: 't2_bar', score: 0},
     {member: 't2_baz', score: 1},
-    {member: 't2_foo', score: 2},
+    {member: 't2_1cgemlvzgq', score: 2},
   ] satisfies Array<{member: T2; score: number}>)
 })

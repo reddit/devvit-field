@@ -1,7 +1,7 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
-import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
 import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
+  getGlobalCoords,
   getPartitionAndLocalCoords,
   makePartitionKey,
 } from '../../../shared/partition'
@@ -10,6 +10,8 @@ import type {XY} from '../../../shared/types/2d'
 import type {Delta} from '../../../shared/types/field'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
+import {decodeVTT, encodeVTT} from './bitfieldHelpers'
+// import {parseBitfieldToFlatArray} from './bitfieldHelpers'
 import {type ChallengeConfig, challengeConfigGet} from './challenge'
 import {deltasAdd} from './deltas'
 import {
@@ -281,15 +283,14 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
 
   // Produce the deltas from the write operation to be stored somewhere
   const deltas: Delta[] = []
-  teamOpsReturn.forEach((value, i) => {
+  teamOpsReturn.forEach((_value, i) => {
     const batchItem = batch[teamWriteOpsBatchIndex[i]!]
-    const {team} = decodeVTT(value)
 
     if (batchItem) {
       deltas.push({
         globalXY: batchItem.globalXY,
         isBan: batchItem.isBan,
-        team,
+        team: teamNumber,
       })
     }
   })
@@ -391,9 +392,10 @@ export const fieldClaimCells = async ({
  * way to return all items in a bitfield. At a minimum, we need to the
  * partition a required command so we don't risk sending 10 million bits at once.
  *
- * TODO: I tried to use redis.get, but the problem is that Redis orders the bits
- * differently and I couldn't figure out how to rearrange them. It would also be nice
- * to use redis.getBuffer if it can be added.
+ * TODO: Replace this with redis.getBuffer when it's available.
+ *
+ * @returns Array of numbers (you need to decode with decodeVTT). If the partition
+ * does not yet exist in redis, returns empty array!
  */
 export const fieldGet = async ({
   challengeNumber,
@@ -417,9 +419,7 @@ export const fieldGet = async ({
   const data = await redis.get(
     createFieldPartitionKey(challengeNumber, partitionXY),
   )
-  if (data === undefined) {
-    throw new Error('No field data found')
-  }
+  if (data === undefined) return []
 
   const commands: BitfieldCommand[] = []
 
@@ -435,4 +435,46 @@ export const fieldGet = async ({
   )
 
   return result
+}
+
+export const fieldGetDeltas = async ({
+  challengeNumber,
+  redis,
+  partitionXY,
+}: {
+  challengeNumber: number
+  redis: Devvit.Context['redis']
+  partitionXY: XY
+}): Promise<Delta[]> => {
+  const meta = await challengeConfigGet({redis, challengeNumber})
+  const fieldData = await fieldGet({challengeNumber, redis, partitionXY})
+
+  if (fieldData.length === 0) return []
+
+  const deltas: Delta[] = []
+
+  for (let i = 0; i < meta.partitionSize * meta.partitionSize; i++) {
+    const {claimed, team} = decodeVTT(fieldData[i]!)
+
+    if (claimed === 0) continue
+
+    const localXY = {
+      x: i % meta.partitionSize,
+      y: Math.floor(i / meta.partitionSize),
+    }
+    const globalXY = getGlobalCoords(partitionXY, localXY, meta.partitionSize)
+
+    deltas.push({
+      globalXY,
+      isBan: minefieldIsMine({
+        seed: meta.seed,
+        coord: globalXY,
+        cols: meta.size,
+        config: {mineDensity: meta.mineDensity},
+      }),
+      team,
+    })
+  }
+
+  return deltas
 }

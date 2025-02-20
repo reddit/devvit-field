@@ -70,3 +70,18 @@ export function getPartitionAndLocalCoords(
     localXY: getLocalCoords(globalCoord, partitionSize),
   }
 }
+
+/**
+ * Given a partition coordinate and a local coordinate within that partition,
+ * returns the global coordinate.
+ */
+export function getGlobalCoords(
+  partitionXY: XY,
+  localXY: XY,
+  partitionSize: number,
+): XY {
+  return {
+    x: partitionXY.x * partitionSize + localXY.x,
+    y: partitionXY.y * partitionSize + localXY.y,
+  }
+}

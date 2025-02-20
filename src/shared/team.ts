@@ -20,15 +20,5 @@ export const teamName: {readonly [team in Team]: string} = {
  * the remainder of the number divided by 4.
  */
 export function getTeamFromUserId(id: T2): Team {
-  // to-do: revise or add unit tests to verify even distribution. We don't want
-  //        the majority of people landing on one team. I think T2s are base 36.
-  //        If so, we can do something like
-  //        `Number.parseInt(t2.slice(3), 36) & 3`.
-  let hash = 0
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash << 5) - hash + id.charCodeAt(i)
-    hash |= 0 // Convert to 32-bit integer
-  }
-
-  return (Math.abs(hash) % 4) as Team
+  return (Number.parseInt(id.slice(3), 36) & 3) as Team
 }

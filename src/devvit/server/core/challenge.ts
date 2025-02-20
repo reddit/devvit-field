@@ -66,20 +66,16 @@ export const challengeConfigGet = async ({
   return deserializeChallengeConfig(config)
 }
 
-export const challengeConfigGetClientSafeProps = async ({
-  redis,
-  challengeNumber,
-}: {
-  redis: Devvit.Context['redis']
-  challengeNumber: number
-}): Promise<Pick<ChallengeConfig, 'partitionSize' | 'size'>> => {
-  const {partitionSize, size} = await challengeConfigGet({
-    redis,
-    challengeNumber,
-  })
+/**
+ * Returns client safe properties to the client. Please don't put the seed here.
+ */
+export const makeSafeChallengeConfig = (
+  config: ChallengeConfig,
+): Pick<ChallengeConfig, 'size' | 'partitionSize'> => {
   return {
-    partitionSize,
-    size,
+    // DO NOT ADD SEED HERE
+    size: config.size,
+    partitionSize: config.partitionSize,
   }
 }
 
