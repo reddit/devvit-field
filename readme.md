@@ -64,7 +64,7 @@ launches [local iframe development](#local-iframe-development).
 - `run format`: apply lint fixes automatically where available.
 - `run build`: compile source inputs to artifacts under `dist/` and `webroot/`.
 - `run build:atlas`: compile Aseprite assets into atlas (requires `aseprite`).
-- `run devvit:install`: build, upload, and install a new version to to-do: r/.
+- `run devvit:install`: build, upload, and install a new version to prod subs.
 
 💡 Add `--` to pass arguments to the script command. For example,
 `npm run test:unit -- --update` to update snapshots.
