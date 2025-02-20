@@ -20,7 +20,7 @@ npm start
 ```
 
 Visit **[http://localhost:1234](http://localhost:1234)** in your web browser. No
-code or data is uploaded.
+code or data is uploaded. Append `?seed=#` to seed.
 
 ### Playtest Production and Devvit Blocks
 
