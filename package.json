@@ -30,7 +30,7 @@
     "devvit:playtest": "sh -c 'devvit playtest --config=devvit.dev.yaml --log-runtime \"$@\"|grep --invert --line-buffered \"\\[api\\]\"' --",
     "format": "npm run formatter -- --fix",
     "formatter": "biome check --error-on-warnings",
-    "playtest": "sh -c 'trap \"kill 0\" exit; npm start& npm run build -- --watch& npm run devvit:playtest -- \"$@\"& wait' --",
+    "playtest": "sh -c 'trap \"kill 0\" exit; npm start& tools/build.ts --watch& npm run devvit:playtest -- \"$@\"& wait' --",
     "start": "tools/build.ts --dev-mode --watch",
     "test": "npm run test:format && npm run test:types && npm run test:unit",
     "test:format": "npm run formatter",
