@@ -16,8 +16,14 @@ import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/contex
 import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {Preview} from './devvit/components/preview.js'
-import {challengeMakeNew} from './devvit/server/core/challenge.js'
+import {
+  challengeConfigGet,
+  challengeMakeNew,
+} from './devvit/server/core/challenge.js'
+import {fieldClaimCells} from './devvit/server/core/field.js'
 import {userMakeSuperuser} from './devvit/server/core/user.js'
+import {getPartitionCoords} from './shared/partition.js'
+import type {T2} from './shared/types/tid.js'
 
 Devvit.configure({redditAPI: true, redis: true, realtime: true})
 
@@ -144,6 +150,10 @@ Devvit.addMenuItem({
   },
 })
 
+const getRandomBetween = (min: number, max: number) => {
+  return Math.floor(Math.random() * (max - min) + min)
+}
+
 export default class extends Devvit implements Hello {
   constructor(config: Config) {
     super(config)
@@ -151,13 +161,36 @@ export default class extends Devvit implements Hello {
   }
 
   async Ping(msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+    // We use delay millis as a proxy for challenge number
+    // If not provided, return the message
+    if (!msg.delayMillis) return msg
+
     const ctx = Object.assign(
       makeAPIClients({metadata: meta ?? {}}),
       getContextFromMetadata(meta ?? {}),
     )
-    const bouncepotato = await ctx.reddit.getUserByUsername('bouncepotato')
-    console.log(`${bouncepotato?.username}=${bouncepotato?.id}`)
-    console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
+
+    const challenge = await challengeConfigGet({
+      challengeNumber: msg.delayMillis,
+      redis: ctx.redis,
+    })
+
+    const x = getRandomBetween(0, challenge.size)
+    const y = getRandomBetween(0, challenge.size)
+
+    if (!ctx.userId) throw new Error('No user id')
+    console.log('claiming cell', x, y)
+
+    await fieldClaimCells({
+      coords: [{x, y}],
+      challengeNumber: msg.delayMillis,
+      ctx,
+      userId: ctx.userId as T2,
+    })
+
+    // const bouncepotato = await ctx.reddit.getUserByUsername('bouncepotato')
+    // console.log(`${bouncepotato?.username}=${bouncepotato?.id}`)
+    // console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
     return msg
   }
 }
