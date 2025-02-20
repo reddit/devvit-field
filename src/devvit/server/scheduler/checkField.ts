@@ -3,12 +3,12 @@ import {
   type JSONObject,
   type ScheduledJobHandler,
 } from '@devvit/public-api'
-import {getPartitionCoords, makePartitionKey} from '../../shared/partition'
-import type {PartitionKey} from '../../shared/types/2d'
-import type {Delta} from '../../shared/types/field'
-import {challengeMaybeGetCurrentChallengeNumber} from '../server/core/challenge'
-import {challengeConfigGet} from '../server/core/challenge'
-import {deltasGet} from '../server/core/deltas'
+import {getPartitionCoords, makePartitionKey} from '../../../shared/partition'
+import type {PartitionKey} from '../../../shared/types/2d'
+import type {Delta} from '../../../shared/types/field'
+import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
+import {challengeConfigGet} from '../core/challenge'
+import {deltasGet} from '../core/deltas'
 
 export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   _,

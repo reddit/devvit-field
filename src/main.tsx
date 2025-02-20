@@ -1,8 +1,7 @@
-import './devvit/triggers/checkField.js'
-
 // Keep these imports last
-import './devvit/triggers/install.js'
-import './devvit/triggers/upgrade.js'
+import './devvit/server/scheduler/checkField.js'
+import './devvit/server/triggers/install.js'
+import './devvit/server/triggers/upgrade.js'
 
 import {
   type Hello,
