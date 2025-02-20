@@ -52,8 +52,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     },
   })
   // to-do: support three mount states from hook.
-  // to-do: DX-8861 delete Android condition.
-  if (!mounted && session.userAgent.client !== 'Android')
+  if (!mounted)
     iframe.postMessage = (msg: DevvitMessage) =>
       ctx.ui.webView.postMessage('web-view', msg)
 
@@ -152,10 +151,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
     //       web view to be loaded, discarded, and loaded again. No webview in
     //       the tree during pop-out mode but just let it forever spin when put
     //       in.
-    // Hack: DX-8859 ID must be specified here and in postMessage() for Android.
     <Title loaded={mounted && loaded}>
-      {/* to-do: DX-8861 delete Android specialization. */}
-      {!mounted && session.userAgent.client !== 'Android' && (
+      {!mounted && (
         <webview
           grow
           height='100%'
