@@ -3,9 +3,9 @@
   "description": "",
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@devvit/protos": "0.11.7",
+    "@devvit/protos": "0.11.8-next-2025-02-19-fd8ef88c8.0",
     "@devvit/public-api": "0.11.8-next-2025-02-19-fd8ef88c8.0",
-    "@devvit/shared-types": "0.11.7",
+    "@devvit/shared-types": "0.11.8-next-2025-02-19-fd8ef88c8.0",
     "@types/node": "22.13.1",
     "@vitest/coverage-v8": "3.0.6",
     "devvit": "0.11.8-next-2025-02-19-fd8ef88c8.0",
