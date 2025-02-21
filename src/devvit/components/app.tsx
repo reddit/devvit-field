@@ -94,6 +94,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
       )
 
     switch (msg.type) {
+      case 'ConnectPartitions':
+        console.log(
+          `to-do: sub/unsub partition realtime ${JSON.stringify(msg.parts)}`,
+        )
+        break
       case 'Loaded':
         setLoaded((loaded = true))
         break
@@ -102,7 +107,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
           challenge: challengeNumber,
           connected: chan.status === ChannelStatus.Connected,
           debug: session.debug,
-          field: {wh: {w: challengeConfig.size, h: challengeConfig.size}},
+          field: {
+            partSize: challengeConfig.partitionSize,
+            wh: {w: challengeConfig.size, h: challengeConfig.size},
+          },
           mode: mounted ? 'PopOut' : 'PopIn',
           p1,
           players: 0, // to-do: fill me out. useChannel2()?

@@ -27,6 +27,10 @@ export function xyDistance(from: Readonly<XY>, to: Readonly<XY>): number {
   return xyMagnitude(xySub(from, to))
 }
 
+export function xyEq(lhs: Readonly<XY>, rhs: Readonly<XY>): boolean {
+  return lhs.x === rhs.x && lhs.y === rhs.y
+}
+
 export function xyMagnitude(xy: Readonly<XY>): number {
   return Math.sqrt(xy.x * xy.x + xy.y * xy.y)
 }

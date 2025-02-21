@@ -28,6 +28,8 @@ export const peerDisconnectIntervalMillis: number = 1_000
 export const peerDefaultDisconnectMillis: number = 5_000
 export const peerMaxSyncInterval: number = 1_000 // to-do: fix.
 
+export const partitionConnectionUpdateInterval: number = 5_000
+
 export function cssHex(val: number): `#${string}` {
   return `#${val.toString(16).padStart(8, '0')}`
 }

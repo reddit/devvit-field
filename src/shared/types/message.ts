@@ -64,6 +64,17 @@ export type IframeMessage =
   | {type: 'Registered'}
   /** Attempt to submit a batch of boxes that have been clicked */
   | {type: 'ClaimBoxes'; boxes: XY[]}
+  /** Report partition subscriptions requested. */
+  | {
+      type: 'ConnectPartitions'
+      /**
+       * The set of partition subscriptions currently wanted identified by
+       * global origin. The iframe assumes any unwanted connections will be
+       * disconnected and existing connections still wanted will remain
+       * unchanged.
+       */
+      parts: XY[]
+    }
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
