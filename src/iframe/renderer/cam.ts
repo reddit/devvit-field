@@ -160,6 +160,7 @@ export class Cam {
     return xyAdd(this, this.toScreenXY(canvas, clientXY))
   }
 
+  /** Scaled camera pixels but relative the top-left of the viewport. */
   toScreenXY(canvas: HTMLCanvasElement, clientXY: Readonly<XY>): XY {
     // WH of body in CSS px; document.body.getBoundingClientRect() returns
     // incorrectly large sizing on mobile that includes the address bar.

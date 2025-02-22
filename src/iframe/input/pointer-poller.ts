@@ -29,6 +29,7 @@ const pointTypeByPointerType = {
 export class PointerPoller {
   allowContextMenu: boolean = false // Suppress right-click.
   readonly bitByButton: {[btn: number]: number} = {}
+  /** In screen pixels. */
   delta: XY = {x: 0, y: 0}
   /** The potential start of a drag. */
   readonly dragClientStart: XY = {x: 0, y: 0}

@@ -9,11 +9,6 @@ export class RealtimeConnector {
   #start: XY = {x: 0, y: 0}
   #end: XY = {x: 0, y: 0}
   #parts?: XY[]
-  #postMessage = new Throttle(
-    (game: Game) =>
-      game.postMessage({type: 'ConnectPartitions', parts: this.#parts ?? []}),
-    partitionConnectionUpdateInterval,
-  )
 
   update(game: Game): void {
     if ((this.#parts && game.cam.valid) || !game.fieldConfig) return
@@ -24,10 +19,14 @@ export class RealtimeConnector {
 
     this.#start = start
     this.#end = end
-    this.#parts = [...newParts(start, end, game.fieldConfig.partSize)]
 
-    this.#postMessage.schedule(game)
+    this.#postMessage.schedule(game, game.fieldConfig.partSize)
   }
+
+  #postMessage = new Throttle((game: Game, partSize: number): void => {
+    this.#parts = [...newParts(this.#start, this.#end, partSize)]
+    game.postMessage({type: 'ConnectPartitions', parts: this.#parts})
+  }, partitionConnectionUpdateInterval)
 }
 
 function* newParts(
@@ -39,23 +38,18 @@ function* newParts(
     for (let x = start.x; x < end.x; x += partSize) yield {x, y}
 }
 
-export function newStartEnd(
+function newStartEnd(
   cam: Readonly<Cam>,
   config: Readonly<FieldConfig>,
 ): [XY, XY] {
+  const size = config.partSize
   // cam.x/y/w/h is scaled by cam.scale and in level coordinates.
   // cam.fieldScale is pixels per level pixel.
   // cam.w/h is the size of the parent.
   // to-do: review cam.x/y considers cam.scale.
   const start = {
-    x: Math.max(
-      0,
-      Math.floor(cam.x / cam.scale / config.partSize) * config.partSize,
-    ),
-    y: Math.max(
-      0,
-      Math.floor(cam.y / cam.scale / config.partSize) * config.partSize,
-    ),
+    x: Math.max(0, Math.floor(cam.x / cam.scale / size) * size),
+    y: Math.max(0, Math.floor(cam.y / cam.scale / size) * size),
   }
   const end = {
     x: Math.max(
@@ -63,9 +57,8 @@ export function newStartEnd(
       Math.min(
         config.wh.w,
         Math.ceil(
-          (cam.x / cam.scale + cam.w / cam.scale / cam.fieldScale) /
-            config.partSize,
-        ) * config.partSize,
+          (cam.x / cam.scale + cam.w / cam.scale / cam.fieldScale) / size,
+        ) * size,
       ),
     ),
     y: Math.max(
@@ -73,9 +66,8 @@ export function newStartEnd(
       Math.min(
         config.wh.h,
         Math.ceil(
-          (cam.y / cam.scale + cam.h / cam.scale / cam.fieldScale) /
-            config.partSize,
-        ) * config.partSize,
+          (cam.y / cam.scale + cam.h / cam.scale / cam.fieldScale) / size,
+        ) * size,
       ),
     ),
   }

@@ -25,6 +25,12 @@ import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
+import {
+  fieldArrayIndex,
+  fieldArraySetBan,
+  fieldArraySetTeam,
+  fieldArraySetVisible,
+} from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
 import atlas from './atlas.json' with {type: 'json'}
 import type {Tag} from './config.ts'
@@ -154,6 +160,18 @@ export class Game {
     this.ctrl?.register('remove')
   }
 
+  #applyDeltas(deltas: Delta[]): void {
+    if (!this.fieldConfig) return
+    for (const {globalXY, isBan, team} of deltas) {
+      const i = fieldArrayIndex(this.fieldConfig, globalXY)
+      fieldArraySetTeam(this.field, i, team)
+      fieldArraySetBan(this.field, i, isBan)
+      fieldArraySetVisible(this.field, i, true)
+      // to-do: it may be faster to send the entire array for many changes.
+      this.renderer.setBox(globalXY, this.field[i]!)
+    }
+  }
+
   #initDevMode(): void {
     if (!devMode) return
 
@@ -189,8 +207,9 @@ export class Game {
       'WhyBanField',
       'WhatIsBanField',
     ][Math.trunc(rnd.num * 5)]!
-    const size = 128 * (1 + Math.trunc(rnd.num * 25))
-    const field = {wh: {w: size, h: size}}
+    const partSize = 128
+    const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
+    const field = {partSize, wh: {w: size, h: size}}
     const team = Math.trunc(rnd.num * 4) as Team
     const visible = Math.trunc(rnd.num * field.wh.w * field.wh.h)
     const teamBoxCounts: TeamBoxCounts = [0, 0, 0, 0]
@@ -269,16 +288,6 @@ export class Game {
     this.looper.render(this.cam, this.bmps, this.#onLoop, this.cam.fieldScale)
   }
 
-  #applyDeltas = (deltas: Delta[]): void => {
-    for (const {globalXY, isBan} of deltas) {
-      const i = globalXY.y * this.fieldConfig!.wh.w + globalXY.x
-      if (this.field[i]) return
-      // TODO: Team and ban color map
-      this.field[i] = isBan ? 2 : 1
-      this.renderer.setBox(globalXY, this.field[i])
-    }
-  }
-
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
     // Filter any unknown messages.
     if (ev.data.type !== 'devvit-message') return
@@ -313,14 +322,18 @@ export class Game {
                 if (visible === this.visible) break end
                 if (rnd.num < 0.2) {
                   visible++
-                  this.field[y * msg.field.wh.w + x] =
-                    rnd.num < 0.05 ? 1 : 4 + Math.trunc(rnd.num * 4)
+                  const i = fieldArrayIndex(this.fieldConfig, {x, y})
+                  fieldArraySetTeam(
+                    this.field,
+                    i,
+                    Math.trunc(rnd.num * 4) as Team,
+                  )
+                  fieldArraySetVisible(this.field, i, true)
                 }
               }
-        } else {
-          this.#applyDeltas(msg.initialDeltas)
         }
 
+        this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
         this.mode = msg.mode
         if (this.debug) console.log('init')
