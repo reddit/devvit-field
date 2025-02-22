@@ -7,7 +7,7 @@ import {
   unsafeCSS,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {cssHex, paletteLemonLime} from '../../shared/theme.ts'
+import {cssHex, paletteTerminalGreen} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -22,7 +22,7 @@ export class BFCoords extends LitElement {
     ${cssReset}
 
     :host {
-      color: ${unsafeCSS(cssHex(paletteLemonLime))};
+      color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
       display: inline-block;
       font-family: 'Silkscreen';
     }

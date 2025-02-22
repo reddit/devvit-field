@@ -12,12 +12,8 @@ import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-button.ts'
-import './bf-coords.ts'
 import './bf-footer.ts'
 import './bf-header.ts'
-import './bf-team-chart.ts'
-import './bf-welcome-dialog.ts'
-import {spacePx} from '../../shared/theme.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -33,7 +29,7 @@ declare global {
 // to-do: fill out the remaining states.
 export type UI =
   // | 'Banned'
-  'Intro' | 'Loading' | 'Playing'
+  'Loading' | 'Playing'
 // | 'Promoted'
 // | 'Replaying'
 // | 'Scored'
@@ -51,20 +47,6 @@ export class BFGame extends LitElement {
       display: flex;
       flex-direction: column;
       height: 100%;
-    }
-
-    bf-claim-button {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: ${spacePx}px;
-    }
-
-    bf-coords {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 128px;
     }
 
     canvas {
@@ -100,7 +82,8 @@ export class BFGame extends LitElement {
 
   protected override update(props: PropertyValues<this>): void {
     super.update(props)
-    if (this.ui === 'Loading' && this.#game.mode === 'PopOut') this.ui = 'Intro'
+    if (this.ui === 'Loading' && this.#game.mode === 'PopOut')
+      this.ui = 'Playing'
   }
 
   override render(): TemplateResult {
@@ -116,45 +99,22 @@ export class BFGame extends LitElement {
         ? this.#game.teamBoxCounts[this.#game.team]
         : undefined
 
-    let button
-    let dialog
     switch (this.ui) {
-      case 'Intro':
-        // to-do: literally forcing the user to stop and consent to the dialog
-        //        feels like an antipattern. What in the world do we have to say
-        //        that is so important? Verify this makes sense with Knut.
-        if (this.#game.teamBoxCounts)
-          dialog = html`
-        <bf-welcome-dialog
-          @close='${this.#onIntroClose}'
-          challenge=${this.#game.challenge ?? 0}
-          sub=${this.#game.sub ?? ''}
-          flamingo='${this.#game.teamBoxCounts[0]}'
-          juiceBox='${this.#game.teamBoxCounts[1]}'
-          lasagna='${this.#game.teamBoxCounts[2]}'
-          sunshine='${this.#game.teamBoxCounts[3]}'
-          open
-        ></bf-welcome-dialog>
-      `
-        break
       case 'Loading':
         break
       case 'Playing':
-        button = html`<bf-button>Claim</bf-button>`
         break
       default:
         this.ui satisfies never
     }
 
     return html`
-      ${dialog}
       <bf-header
         challenge='${ifDefined(this.#game.challenge)}'
         level='${ifDefined(this.#game.sub)}'
         players='${this.#game.players}'
         visible='${ifDefined(visible)}'
       ></bf-header>
-      ${button}
       <div class='canvas-box'>
         <canvas
           @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
@@ -162,18 +122,12 @@ export class BFGame extends LitElement {
           tabIndex='0'
         ></canvas> <!--- Set tabIndex to propagate key events. -->
       </div>
-      <bf-coords
-        x='${this.#game.select.x}'
-        y='${this.#game.select.y}'
-      ></bf-coords>
       <bf-footer
         score='${ifDefined(score)}'
         team='${ifDefined(this.#game.team)}'
+        x='${this.#game.select.x}'
+        y='${this.#game.select.y}'
       ></bf-footer>
     `
-  }
-
-  #onIntroClose(): void {
-    this.ui = 'Playing'
   }
 }

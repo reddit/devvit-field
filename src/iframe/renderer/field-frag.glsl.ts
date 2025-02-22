@@ -49,7 +49,7 @@ void main() {
       (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
        fracXY.y < borderW || fracXY.y > 1.0 - borderW)
   ) {
-    oFrag = ${rgbaVec4(paletteSelected)};
+    oFrag = ${rgbaVec4(paletteTerminalGreen)};
     return;
   }
 
@@ -81,7 +81,7 @@ import {
   paletteJuiceBox,
   paletteLasagna,
   palettePending,
-  paletteSelected,
+  paletteTerminalGreen,
   paletteSunshine,
 } from '../../shared/theme.ts'
 import {
