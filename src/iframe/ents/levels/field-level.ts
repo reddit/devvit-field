@@ -1,7 +1,12 @@
+import {type XY, boxHits} from '../../../shared/types/2d.ts'
 import type {FieldSub} from '../../../shared/types/field.ts'
 import {audioPlay} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
 import {RealtimeConnector} from '../../realtime-connector.ts'
+import {
+  fieldArrayIndex,
+  fieldArraySetSelected,
+} from '../../renderer/field-array.ts'
 import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import type {LevelEnt} from './level-ent.ts'
@@ -9,6 +14,8 @@ import type {LevelEnt} from './level-ent.ts'
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
   #rtConnector: RealtimeConnector = new RealtimeConnector()
+  // to-do: providing the previous pointer position in Input would be handy.
+  #select: XY = {x: 0, y: 0}
   #zoomLvl: number
 
   constructor(game: Game) {
@@ -33,8 +40,53 @@ export class FieldLevel implements LevelEnt {
   }
 
   update(game: Game): void {
+    this.#updatePick(game)
     this.#updatePosition(game)
     this.#updateZoom(game)
+  }
+
+  #updatePick(game: Game): void {
+    const {cam, ctrl, field, fieldConfig} = game
+
+    const select = {
+      x: Math.trunc(
+        cam.x / cam.scale + ctrl.screenPoint.x / cam.scale / cam.fieldScale,
+      ),
+      y: Math.trunc(
+        cam.y / cam.scale + ctrl.screenPoint.y / cam.scale / cam.fieldScale,
+      ),
+    }
+
+    if (
+      fieldConfig &&
+      ctrl.isOnStart('A') &&
+      !ctrl.drag &&
+      !ctrl.pinch &&
+      !ctrl.handled &&
+      boxHits(fieldConfig.wh, select)
+    ) {
+      // to-do: I broke the trailing edge of drag. It should stay on one extra
+      //        cycle. This was an issue when trying to use isOffStart().
+      ctrl.handled = true
+
+      // to-do: move this mutation to a centralized store or Game so it's easier
+      //        to see how state changes.
+      // to-do: set state to indeterminate and wait until response to mark
+      //        state. Aggregate clicks while waiting.
+      {
+        const i = fieldArrayIndex(fieldConfig, this.#select)
+        fieldArraySetSelected(field, i, false)
+        game.renderer.setBox(this.#select, field[i]!)
+      }
+      this.#select = select
+      {
+        const i = fieldArrayIndex(fieldConfig, this.#select)
+        fieldArraySetSelected(field, i, true)
+        game.renderer.setBox(this.#select, field[i]!)
+      }
+
+      game.postMessage({type: 'ClaimBoxes', boxes: [select]})
+    }
   }
 
   #updatePosition(game: Game): void {
