@@ -1,4 +1,4 @@
-import type {WH, XY} from './2d.ts'
+import type {WH} from './2d.ts'
 
 export type FieldConfig = {
   /** Width and height of each partition in boxes. */
@@ -6,4 +6,3 @@ export type FieldConfig = {
   /** Width and height of field in boxes. */
   wh: WH
 }
-

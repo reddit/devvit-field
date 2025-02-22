@@ -1,8 +1,9 @@
 import {partitionConnectionUpdateInterval} from '../shared/theme.ts'
 import {Throttle} from '../shared/throttle.ts'
-import {type Box, type XY, xyEq} from '../shared/types/2d.ts'
+import {type XY, xyEq} from '../shared/types/2d.ts'
 import type {FieldConfig} from '../shared/types/field-config.ts'
 import type {Game} from './game/game.ts'
+import type {Cam} from './renderer/cam.ts'
 
 export class RealtimeConnector {
   #start: XY = {x: 0, y: 0}
@@ -39,21 +40,43 @@ function* newParts(
 }
 
 export function newStartEnd(
-  cam: Readonly<Box & {fieldScale: number}>,
+  cam: Readonly<Cam>,
   config: Readonly<FieldConfig>,
 ): [XY, XY] {
+  // cam.x/y/w/h is scaled by cam.scale and in level coordinates.
+  // cam.fieldScale is pixels per level pixel.
+  // cam.w/h is the size of the parent.
+  // to-do: review cam.x/y considers cam.scale.
   const start = {
-    x: Math.max(0, Math.floor(cam.x / cam.fieldScale)),
-    y: Math.max(0, Math.floor(cam.y / cam.fieldScale)),
+    x: Math.max(
+      0,
+      Math.floor(cam.x / cam.scale / config.partSize) * config.partSize,
+    ),
+    y: Math.max(
+      0,
+      Math.floor(cam.y / cam.scale / config.partSize) * config.partSize,
+    ),
   }
   const end = {
     x: Math.max(
       0,
-      Math.min(config.wh.w, Math.floor((cam.x + cam.w) / cam.fieldScale)),
+      Math.min(
+        config.wh.w,
+        Math.ceil(
+          (cam.x / cam.scale + cam.w / cam.scale / cam.fieldScale) /
+            config.partSize,
+        ) * config.partSize,
+      ),
     ),
     y: Math.max(
       0,
-      Math.min(config.wh.h, Math.floor((cam.y + cam.h) / cam.fieldScale)),
+      Math.min(
+        config.wh.h,
+        Math.ceil(
+          (cam.y / cam.scale + cam.h / cam.scale / cam.fieldScale) /
+            config.partSize,
+        ) * config.partSize,
+      ),
     ),
   }
   return [start, end]
