@@ -12,7 +12,7 @@ import {cssReset} from './css-reset.ts'
 
 import './bf-button.ts'
 import './bf-coords.ts'
-import {cssHex, paletteTerminalGreen} from '../../shared/theme.ts'
+import {cssHex, paletteBlack, paletteTerminalGreen} from '../../shared/theme.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -27,7 +27,6 @@ export class BFFooter extends LitElement {
 
     :host {
       /* display: flex; */
-      background: grey;
       /* justify-content: space-between; */
     }
 
@@ -35,14 +34,19 @@ export class BFFooter extends LitElement {
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 128px;
+      bottom: 84px;
     }
 
     .patron {
+      background-color: ${unsafeCSS(cssHex(paletteBlack))};
       color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
       display: block;
       font-family: 'Silkscreen';
       text-align: center;
+    }
+
+    .patron > a {
+      color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
     }
   `
 

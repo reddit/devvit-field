@@ -5,15 +5,15 @@ import {
   type TemplateResult,
   css,
   html,
+  unsafeCSS,
 } from 'lit'
 import {customElement, property, query} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
+import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
 
-import './bf-button.ts'
 import './bf-footer.ts'
-import './bf-header.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -47,6 +47,7 @@ export class BFGame extends LitElement {
       display: flex;
       flex-direction: column;
       height: 100%;
+      background-color: ${unsafeCSS(cssHex(paletteDarkGrey))};
     }
 
     canvas {
@@ -56,11 +57,33 @@ export class BFGame extends LitElement {
       /* Update on each pointermove *touch* Event like *mouse* Events. */
       touch-action: none;
       outline: none; /* Disable focus outline. */
+      border-style: solid;
+      border-width: 1px;
+      border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      border-radius: 1px;
     }
 
     .canvas-box {
       height: 100%;
+    }
+
+    .terminal {
+      height: 100%;
       overflow: hidden;
+      border-style: solid;
+      border-radius: 2px;
+      border-width: 2px;
+      border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      margin-block-start: 8px;
+      margin-block-end: 20px;
+      margin-inline-start: 5px;
+      margin-inline-end: 5px;
+
+      padding-block-start: 8px;
+      padding-block-end: 8px;
+      padding-inline-start: 11px;
+      padding-inline-end: 11px;
+
     }
   `
 
@@ -109,18 +132,14 @@ export class BFGame extends LitElement {
     }
 
     return html`
-      <bf-header
-        challenge='${ifDefined(this.#game.challenge)}'
-        level='${ifDefined(this.#game.sub)}'
-        players='${this.#game.players}'
-        visible='${ifDefined(visible)}'
-      ></bf-header>
-      <div class='canvas-box'>
-        <canvas
-          @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
-          @game-update='${() => this.requestUpdate()}'
-          tabIndex='0'
-        ></canvas> <!--- Set tabIndex to propagate key events. -->
+      <div class='terminal'>
+        <div class='canvas-box'>
+          <canvas
+            @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
+            @game-update='${() => this.requestUpdate()}'
+            tabIndex='0'
+          ></canvas> <!--- Set tabIndex to propagate key events. -->
+        </div>
       </div>
       <bf-footer
         score='${ifDefined(score)}'
