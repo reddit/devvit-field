@@ -15,8 +15,6 @@ export class FieldLevel implements LevelEnt {
     this.#zoomLvl = game.cam.fieldScale
   }
 
-  draw(_game: Readonly<Game>): void {}
-
   init(game: Game): void {
     game.zoo.clear()
     game.zoo.add(this)
@@ -73,8 +71,8 @@ export class FieldLevel implements LevelEnt {
     if (ctrl.drag && !ctrl.handled) {
       ctrl.handled = true
 
-      cam.x = cam.x - ctrl.delta.x / cam.fieldScale
-      cam.y = cam.y - ctrl.delta.y / cam.fieldScale
+      cam.x -= ctrl.delta.x / cam.fieldScale
+      cam.y -= ctrl.delta.y / cam.fieldScale
 
       this.#rtConnector.update(game)
     }
@@ -106,6 +104,8 @@ export class FieldLevel implements LevelEnt {
         game.ctrl.screenPoint,
         !!game.p1?.profile.superuser,
       )
+
+      this.#rtConnector.update(game)
     }
 
     if (game.ctrl.pinch && !game.ctrl.handled) {
@@ -116,6 +116,8 @@ export class FieldLevel implements LevelEnt {
         game.ctrl.midScreenPoint,
         !!game.p1?.profile.superuser,
       )
+
+      this.#rtConnector.update(game)
     } else this.#zoomLvl = game.cam.fieldScaleLevel
   }
 }
