@@ -52,6 +52,13 @@ export class BFGame extends LitElement {
       height: 100%;
     }
 
+    bf-claim-button {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: ${spacePx}px;
+    }
+
     canvas {
       /* cursor: none; Cursor provided by app. */
       display: none;
@@ -59,13 +66,6 @@ export class BFGame extends LitElement {
       /* Update on each pointermove *touch* Event like *mouse* Events. */
       touch-action: none;
       outline: none; /* Disable focus outline. */
-    }
-
-    bf-claim-button {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: ${spacePx}px;
     }
 
     .canvas-box {

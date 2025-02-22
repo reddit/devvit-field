@@ -277,8 +277,14 @@ export class Game {
       this.ctrl.handled = true
 
     this.bmps.size = 0
+
     // Don't await; this can hang.
-    if (this.ctrl.gestured && this.ac.state !== 'running') void this.ac.resume()
+    if (
+      this.mode === 'PopOut' &&
+      this.ctrl.gestured &&
+      this.ac.state !== 'running'
+    )
+      void this.ac.resume().catch(console.warn)
 
     this.now = utcMillisNow()
 
@@ -375,6 +381,7 @@ export class Game {
 
   #onPause = (): void => {
     console.log('paused')
+    void this.ac.suspend().catch(console.warn)
   }
 
   #onResize = (): void => {}
