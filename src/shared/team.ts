@@ -18,6 +18,8 @@ export const teamName: {readonly [team in Team]: string} = {
  * Produces a deterministic team number from a user ID. Randomness is determined
  * by the assembling a number from the character codes of the user ID and returning
  * the remainder of the number divided by 4.
+ *
+ * TODO: Pull 100,00 userIds and test the distribution
  */
 export function getTeamFromUserId(id: T2): Team {
   return (Number.parseInt(id.slice(3), 36) & 3) as Team

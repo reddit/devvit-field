@@ -3,67 +3,25 @@ import {Devvit, type JSONValue} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
-import {getPartitionCoords} from '../../shared/partition.ts'
 import {playButtonWidth} from '../../shared/theme.ts'
-import type {XY} from '../../shared/types/2d.ts'
 import type {
   DevvitMessage,
   IframeMessage,
   RealtimeMessage,
 } from '../../shared/types/message.ts'
-import {Random} from '../../shared/types/random.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
+import {type AppState, appInitState} from '../server/core/app.js'
 import {
-  challengeConfigGet,
-  challengeGetCurrentChallengeNumber,
-  makeSafeChallengeConfig,
-} from '../server/core/challenge.js'
-import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
-import {userGetOrSet} from '../server/core/user.js'
+  fieldClaimCells,
+  fieldValidateUserAndAttemptAscend,
+} from '../server/core/field.js'
+import {userAttemptToClaimSpecialPointForTeam} from '../server/core/user.js'
 import {Title} from './title.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const session = useSession(ctx)
-  const [
-    {challengeConfig, challengeNumber, profile, initialDeltas, initialGlobalXY},
-  ] = useState2(async () => {
-    const [profile, challengeNumber] = await Promise.all([
-      userGetOrSet({ctx}),
-      challengeGetCurrentChallengeNumber({redis: ctx.redis}),
-    ])
-
-    const challengeConfig = await challengeConfigGet({
-      redis: ctx.redis,
-      challengeNumber,
-    })
-
-    const rnd = new Random(challengeConfig.seed)
-    const initialGlobalXY: XY = {
-      x: Math.trunc(rnd.num * challengeConfig.size),
-      y: Math.trunc(rnd.num * challengeConfig.size),
-    }
-
-    const deltas = await fieldGetDeltas({
-      challengeNumber,
-      redis: ctx.redis,
-      partitionXY: getPartitionCoords(
-        initialGlobalXY,
-        challengeConfig.partitionSize,
-      ),
-    })
-
-    return {
-      challengeNumber,
-      profile,
-      // DO NOT RETURN THE SEED
-      challengeConfig: makeSafeChallengeConfig(challengeConfig),
-      initialGlobalXY,
-      initialDeltas: deltas,
-    }
-  })
-
-  const p1 = {profile, sid: session.sid}
+  const [appState, setAppState] = useState2(async () => await appInitState(ctx))
 
   let [loaded, setLoaded] = useState2(false)
   // to-do: move to UseWebViewResult.mounted.
@@ -87,10 +45,48 @@ export function App(ctx: Devvit.Context): JSX.Element {
     iframe.mount()
   }
 
+  function sendInitToIframe(
+    state: AppState,
+    {reinit}: {reinit: boolean} = {reinit: false},
+  ): void {
+    if (!state.pass) return
+
+    const {
+      profile,
+      challengeConfig,
+      challengeNumber,
+      initialDeltas,
+      initialGlobalXY,
+    } = state
+
+    const p1 = {profile, sid: session.sid}
+
+    iframe.postMessage({
+      challenge: challengeNumber,
+      connected: chan.status === ChannelStatus.Connected,
+      debug: session.debug,
+      field: {
+        partSize: challengeConfig.partitionSize,
+        wh: {w: challengeConfig.size, h: challengeConfig.size},
+      },
+      mode: mounted ? 'PopOut' : 'PopIn',
+      p1,
+      players: 0, // to-do: fill me out. useChannel2()?
+      sub: ctx.subredditName ?? '',
+      team: 1, // to-do: fill me out.
+      teamBoxCounts: [0, 0, 0, 0], // to-do: fill me out.
+      type: 'Init',
+      visible: 0, // to-do: fill me out.
+      initialDeltas,
+      initialGlobalXY,
+      reinit,
+    })
+  }
+
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
       console.log(
-        `${profile.username} Devvit ← iframe msg=${JSON.stringify(msg)}`,
+        `${appState.pass ? appState.profile.username : 'app state no pass'} Devvit ← iframe msg=${JSON.stringify(msg)}`,
       )
 
     switch (msg.type) {
@@ -102,38 +98,78 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'Loaded':
         setLoaded((loaded = true))
         break
-      case 'Registered':
-        iframe.postMessage({
-          challenge: challengeNumber,
-          connected: chan.status === ChannelStatus.Connected,
-          debug: session.debug,
-          field: {
-            partSize: challengeConfig.partitionSize,
-            wh: {w: challengeConfig.size, h: challengeConfig.size},
-          },
-          mode: mounted ? 'PopOut' : 'PopIn',
-          p1,
-          players: 0, // to-do: fill me out. useChannel2()?
-          sub: ctx.subredditName ?? '',
-          team: 1, // to-do: fill me out.
-          teamBoxCounts: [0, 0, 0, 0], // to-do: fill me out.
-          type: 'Init',
-          visible: 0, // to-do: fill me out.
-          initialDeltas,
-          initialGlobalXY,
-        })
+      case 'Registered': {
+        if (appState.pass === false) {
+          const {pass: _pass, ...rest} = appState
+          iframe.postMessage({type: 'Dialog', ...rest})
+          return
+        }
+        sendInitToIframe(appState)
+
         break
+      }
       case 'ClaimBoxes': {
+        if (appState.pass === false) {
+          const {pass: _pass, ...rest} = appState
+          iframe.postMessage({type: 'Dialog', ...rest})
+          return
+        }
+        const result = await fieldValidateUserAndAttemptAscend({
+          challengeNumber: appState.challengeNumber,
+          ctx,
+          profile: appState.profile,
+        })
+
+        if (result.pass === false) {
+          const {pass: _pass, ...rest} = result
+          iframe.postMessage({type: 'Dialog', ...rest})
+        }
+
         const {deltas} = await fieldClaimCells({
-          challengeNumber,
+          challengeNumber: appState.challengeNumber,
           coords: msg.boxes,
           ctx,
-          userId: profile.t2,
+          userId: appState.profile.t2,
         })
 
         iframe.postMessage({
           type: 'Box',
           deltas,
+        })
+
+        break
+      }
+      case 'OnNextChallengeClicked': {
+        if (appState.pass === false) break
+
+        // This handles ascension! Keep in mind that if
+        // we get here all of the state in the app is now
+        // old so we need to refresh all of it
+        const newAppState = await appInitState(ctx)
+
+        setAppState(newAppState)
+
+        // TODO: Do I also need to set loaded back to false here?
+
+        if (newAppState.pass) {
+          // User did not ascend, close dialog and continue
+          sendInitToIframe(appState, {reinit: true})
+        } else {
+          ctx.ui.navigateTo(newAppState.redirectURL)
+        }
+
+        break
+      }
+      case 'ClaimGlobalPointForTeam': {
+        if (appState.pass === false) {
+          const {pass: _pass, ...rest} = appState
+          iframe.postMessage({type: 'Dialog', ...rest})
+          return
+        }
+
+        await userAttemptToClaimSpecialPointForTeam({
+          ctx,
+          userId: appState.profile.t2,
         })
 
         break
@@ -144,25 +180,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
     }
   }
 
-  const [messages, setMessages] = useState2<string[]>([])
-
-  useChannel<{now: string}>({
-    name: `challenge_${challengeNumber}`,
-    // TODO: There's no guarantee that the latest message will always
-    // be the most current representation of the challenge. We should
-    // only set the state if this message (by timestamp) is newer than
-    // the current state.
-    onMessage: msg => {
-      setMessages([...messages, msg.now].reverse().slice(0, 10).reverse())
-    },
-  }).subscribe()
-
   const chan = useChannel<RealtimeMessage>({
     name: GLOBAL_REALTIME_CHANNEL,
     onMessage(msg) {
       if (session.debug)
         console.log(
-          `${profile.username} Devvit ← realtime msg=${JSON.stringify(msg)}`,
+          `${appState.pass ? appState.profile.username : 'app state no pass'} Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
 
       if (msg.type === 'ChallengeComplete') {

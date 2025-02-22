@@ -2,6 +2,7 @@ import type {BitfieldCommand} from '@devvit/public-api'
 import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
+import {USER_IDS} from '../../../shared/test-utils'
 import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
@@ -15,8 +16,8 @@ import {
   fieldGet,
   fieldGetDeltas,
 } from './field'
-import {playerStatsCellsClaimedForMember} from './leaderboards/challenge/player.cellsClaimed'
 import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsByPlayerCellsClaimedForMember} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 
 // TODO: Tests for the partition level checks
@@ -30,7 +31,7 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
     fieldClaimCells({
       coords: [{x: -1, y: 0}],
       challengeNumber,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       ctx,
     }),
   ).rejects.toThrow(/Out of bounds/)
@@ -39,7 +40,7 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
     fieldClaimCells({
       coords: [{x: 2, y: 0}],
       challengeNumber,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       ctx,
     }),
   ).rejects.toThrow(/Out of bounds/)
@@ -48,7 +49,7 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
     fieldClaimCells({
       coords: [{x: 0, y: 2}],
       challengeNumber,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       ctx,
     }),
   ).rejects.toThrow(/Out of bounds/)
@@ -70,7 +71,7 @@ DevvitTest.it(
     const result = await fieldClaimCells({
       coords: [{x: 1, y: 1}],
       challengeNumber,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       ctx,
     })
 
@@ -121,7 +122,7 @@ DevvitTest.it(
     const result = await fieldClaimCells({
       coords: [{x: 8, y: 8}],
       challengeNumber,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       ctx,
     })
 
@@ -167,7 +168,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
       {x: 0, y: 0},
       {x: 1, y: 1},
     ],
-    userId: 't2_1cgemlvzgq',
+    userId: USER_IDS.TEAM_2_PLAYER_1,
     challengeNumber,
     ctx,
   })
@@ -220,7 +221,7 @@ DevvitTest.it(
 
     await fieldClaimCells({
       coords: [{x: 1, y: 1}],
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       challengeNumber,
       ctx,
     })
@@ -228,7 +229,7 @@ DevvitTest.it(
     // Claiming again and deltas should not return anything
     const result = await fieldClaimCells({
       coords: [{x: 1, y: 1}],
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       challengeNumber,
       ctx,
     })
@@ -252,7 +253,7 @@ DevvitTest.it(
 
     await fieldClaimCells({
       coords: [{x: 1, y: 1}],
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       challengeNumber,
       ctx,
     })
@@ -265,7 +266,7 @@ DevvitTest.it(
         {x: 1, y: 1},
         {x: 0, y: 1},
       ],
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       challengeNumber,
       ctx,
     })
@@ -302,7 +303,7 @@ DevvitTest.it(
       challengeNumber,
       ctx,
       deltas,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       fieldConfig: challengeConfig,
     })
 
@@ -311,18 +312,18 @@ DevvitTest.it(
     ).resolves.toEqual(deltas)
 
     await expect(
-      playerStatsCellsClaimedForMember({
+      teamStatsByPlayerCellsClaimedForMember({
         redis: ctx.redis,
         challengeNumber,
-        member: 't2_1cgemlvzgq',
+        member: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(-1)
+    ).resolves.toEqual(undefined)
 
     await expect(
       teamStatsCellsClaimedForTeam({
         redis: ctx.redis,
         challengeNumber,
-        team: getTeamFromUserId('t2_1cgemlvzgq'),
+        team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
     ).resolves.toEqual(2)
 
@@ -330,7 +331,7 @@ DevvitTest.it(
       teamStatsMinesHitForTeam({
         redis: ctx.redis,
         challengeNumber,
-        team: getTeamFromUserId('t2_1cgemlvzgq'),
+        team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
     ).resolves.toEqual(1)
 
@@ -363,7 +364,7 @@ DevvitTest.it(
       challengeNumber,
       ctx,
       deltas,
-      userId: 't2_1cgemlvzgq',
+      userId: USER_IDS.TEAM_2_PLAYER_1,
       fieldConfig: challengeConfig,
     })
 
@@ -372,10 +373,10 @@ DevvitTest.it(
     ).resolves.toEqual(deltas)
 
     await expect(
-      playerStatsCellsClaimedForMember({
+      teamStatsByPlayerCellsClaimedForMember({
         redis: ctx.redis,
         challengeNumber,
-        member: 't2_1cgemlvzgq',
+        member: USER_IDS.TEAM_2_PLAYER_1,
       }),
     ).resolves.toEqual(3)
 
@@ -383,7 +384,7 @@ DevvitTest.it(
       teamStatsCellsClaimedForTeam({
         redis: ctx.redis,
         challengeNumber,
-        team: getTeamFromUserId('t2_1cgemlvzgq'),
+        team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
     ).resolves.toEqual(3)
 
@@ -391,7 +392,7 @@ DevvitTest.it(
       teamStatsMinesHitForTeam({
         redis: ctx.redis,
         challengeNumber,
-        team: getTeamFromUserId('t2_1cgemlvzgq'),
+        team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
     ).resolves.toEqual(0)
 

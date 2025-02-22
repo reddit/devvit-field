@@ -5,26 +5,42 @@ import {
   getPartitionAndLocalCoords,
   makePartitionKey,
 } from '../../../shared/partition'
+import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {Delta} from '../../../shared/types/field'
-import type {ChallengeCompleteMessage} from '../../../shared/types/message'
+import type {
+  ChallengeCompleteMessage,
+  DialogMessage,
+} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
-// import {parseBitfieldToFlatArray} from './bitfieldHelpers'
-import {type ChallengeConfig, challengeConfigGet} from './challenge'
-import {deltasAdd} from './deltas'
 import {
-  playerStatsCellsClaimedGameOver,
-  playerStatsCellsClaimedIncrementForMember,
-} from './leaderboards/challenge/player.cellsClaimed'
+  type ChallengeConfig,
+  challengeConfigGet,
+  challengeGetCurrentChallengeNumber,
+  challengeMakeNew,
+} from './challenge'
+import {deltasAdd} from './deltas'
 import {
   teamStatsCellsClaimedGet,
   teamStatsCellsClaimedIncrementForMember,
 } from './leaderboards/challenge/team.cellsClaimed'
+import {
+  teamStatsByPlayerCellsClaimedForMember,
+  teamStatsByPlayerCellsClaimedGameOver,
+  teamStatsByPlayerCellsClaimedIncrementForMember,
+} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
+import {levels, makeLevelRedirect} from './levels'
 import {minefieldIsMine} from './minefield'
 import {computeScore} from './score'
+import {
+  userAscendLevel,
+  userDescendLevel,
+  userGet,
+  userSetLastPlayedChallenge,
+} from './user'
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
   `challenge:${challengeNumber}:field:${makePartitionKey(partitionXY)}` as const
@@ -135,18 +151,29 @@ export const _fieldClaimCellsSuccess = async ({
 
   // User stats
   if (isGameOverForUser) {
-    await playerStatsCellsClaimedGameOver({
+    await teamStatsByPlayerCellsClaimedGameOver({
       challengeNumber,
       member: userId,
       redis: ctx.redis,
     })
+
+    await userDescendLevel({
+      redis: ctx.redis,
+      userId,
+    })
   } else {
-    await playerStatsCellsClaimedIncrementForMember({
+    await teamStatsByPlayerCellsClaimedIncrementForMember({
       challengeNumber,
       member: userId,
       redis: ctx.redis,
       // Since it's not game over, user gets all the deltas produced
       incrementBy: deltas.length,
+    })
+
+    await userSetLastPlayedChallenge({
+      challengeNumber,
+      redis: ctx.redis,
+      userId,
     })
   }
 
@@ -185,15 +212,11 @@ export const _fieldClaimCellsSuccess = async ({
     // TODO: Increment user stats here or do it somewhere else?
     await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
 
-    await ctx.scheduler.runJob({
-      runAt: new Date(),
-      name: 'ON_CHALLENGE_END',
-      data: {challengeNumber},
-    })
-
-    // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
-
     // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
+    // Make a new game immediately, because yolo
+    await challengeMakeNew({
+      ctx,
+    })
   }
 }
 
@@ -298,6 +321,91 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   return deltas
 }
 
+type CanUserClaimCellsResponse =
+  | {
+      pass: true
+    }
+  | ({
+      pass: false
+      redirectURL: string
+    } & Omit<DialogMessage, 'type'>)
+
+export const fieldValidateUserAndAttemptAscend = async ({
+  profile,
+  challengeNumber,
+  ctx,
+}: {
+  profile: Profile
+  challengeNumber: number
+  ctx: Devvit.Context
+}): Promise<CanUserClaimCellsResponse> => {
+  // User has never played before
+  if (
+    profile.lastPlayedChallengeNumberForLevel === 0 &&
+    profile.currentLevel === 0
+  ) {
+    return {pass: true}
+  }
+
+  const level = levels.find(x => x.subredditId === ctx.subredditId)
+  if (!level) {
+    throw new Error(`No level config found for subreddit ${ctx.subredditId}`)
+  }
+
+  if (profile.currentLevel !== level.id) {
+    return {
+      pass: false,
+      message: `You are not on the correct level. You need to be at level ${level.id}.`,
+      redirectURL: makeLevelRedirect(level.id),
+      code: 'WrongLevel',
+    }
+  }
+
+  const currentChallengeNumber = await challengeGetCurrentChallengeNumber({
+    redis: ctx.redis,
+  })
+
+  if (profile.lastPlayedChallengeNumberForLevel === currentChallengeNumber) {
+    return {pass: true}
+  }
+
+  const standings = await teamStatsCellsClaimedGet({
+    challengeNumber,
+    redis: ctx.redis,
+  })
+
+  const winningTeam = standings[0]!.member
+  const userTeam = getTeamFromUserId(profile.t2)
+
+  if (winningTeam === userTeam) {
+    const cellsClaimed = await teamStatsByPlayerCellsClaimedForMember({
+      challengeNumber,
+      member: profile.t2,
+      redis: ctx.redis,
+    })
+    if (cellsClaimed && cellsClaimed > 0) {
+      const newLevel = await userAscendLevel({
+        redis: ctx.redis,
+        userId: profile.t2,
+      })
+
+      return {
+        pass: false,
+        message: `You were on the winning team and claimed more than one cell. You have ascended to level ${newLevel}.`,
+        code: 'WrongLevel',
+        redirectURL: makeLevelRedirect(newLevel),
+      }
+    }
+  }
+
+  return {pass: true}
+}
+
+/**
+ * NOTE: Call fieldValidateUserAndAttemptAscend before this function to ensure
+ * the user can claim cells! Separated to make it easier for the client to
+ * handle the failure cases.
+ */
 export const fieldClaimCells = async ({
   coords,
   userId,

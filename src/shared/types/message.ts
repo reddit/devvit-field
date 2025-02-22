@@ -18,6 +18,8 @@ export type DevvitMessage =
   | {type: 'Disconnected'}
   | ClaimBoxesResponse
   | RealtimeMessage
+  | DialogMessage
+  | {type: 'ContinueToNextChallenge'}
 
 export type InitDevvitMessage = {
   challenge: number
@@ -48,6 +50,8 @@ export type InitDevvitMessage = {
   initialGlobalXY: XY
   /** The deltas for the partition the user starts in */
   initialDeltas: Delta[]
+  /** Will be true if this is the init message to play a new found */
+  reinit?: boolean
 }
 
 /** The Devvit API wraps all messages from Blocks to the iframe. */
@@ -75,6 +79,10 @@ export type IframeMessage =
        */
       parts: XY[]
     }
+  /** Used on the click for next round, */
+  | {type: 'OnNextChallengeClicked'}
+  /** Used when there is a very special point to be claimed */
+  | {type: 'ClaimGlobalPointForTeam'}
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
@@ -98,6 +106,14 @@ export type ChallengeCompleteMessage = {
   type: 'ChallengeComplete'
   challengeNumber: number
   standings: {member: Team; score: number}[]
+}
+
+/** Triggered when a challenge is completed */
+export type DialogMessage = {
+  type: 'Dialog'
+  redirectURL: string
+  message: string
+  code: 'WrongLevel'
 }
 
 // TODO: Remove if there are no peer to peer messages. We won't have peer for things like
