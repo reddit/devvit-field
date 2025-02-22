@@ -50,7 +50,7 @@ export type InitDevvitMessage = {
   initialGlobalXY: XY
   /** The deltas for the partition the user starts in */
   initialDeltas: Delta[]
-  /** Will be true if this is the init message to play a new found */
+  /** Will be true if this is the init message to play a new challenge */
   reinit?: boolean
 }
 
