@@ -85,4 +85,8 @@ launches [local iframe development](#local-iframe-development).
   - **assets**/: iframe data uploads.
   - **index.\***: iframe webpage code uploads.
 
+## Attributions
+
+- Edit Undo font created by Brian Kent.
+
 ## [License (BSD-3-Clause)](docs/license.md)

@@ -11,9 +11,9 @@ import {ifDefined} from 'lit/directives/if-defined.js'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
 
+import './bf-claim-button.ts'
 import './bf-footer.ts'
 import './bf-header.ts'
-import './bf-open-button.ts'
 import './bf-team-chart.ts'
 import './bf-welcome-dialog.ts'
 import {spacePx} from '../../shared/theme.ts'
@@ -52,25 +52,16 @@ export class BFGame extends LitElement {
       height: 100%;
     }
 
-    *,
-    ::before,
-    ::after {
-      box-sizing: border-box; /* Dimensions include any border and padding. */
-      -webkit-tap-highlight-color: transparent;
-      outline: none; /* Disable focus outline. */
-      user-select: none;
-      -webkit-touch-callout: none; /* to-do: Disable context menu on iOS? */
-    }
-
     canvas {
       /* cursor: none; Cursor provided by app. */
       display: none;
       image-rendering: pixelated;
       /* Update on each pointermove *touch* Event like *mouse* Events. */
       touch-action: none;
+      outline: none; /* Disable focus outline. */
     }
 
-    bf-open-button {
+    bf-claim-button {
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
@@ -141,7 +132,7 @@ export class BFGame extends LitElement {
       case 'Loading':
         break
       case 'Playing':
-        button = html`<bf-open-button></bf-open-button>`
+        button = html`<bf-claim-button></bf-claim-button>`
         break
       default:
         this.ui satisfies never

@@ -12,12 +12,12 @@ import {cssReset} from './css-reset.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
-    'bf-open-button': BFOpenButton
+    'bf-claim-button': BFClaimButton
   }
 }
 
-@customElement('bf-open-button')
-export class BFOpenButton extends LitElement {
+@customElement('bf-claim-button')
+export class BFClaimButton extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 
@@ -25,6 +25,7 @@ export class BFOpenButton extends LitElement {
       display: inline-block;
       width: 80px;
       height: 80px;
+      font-size: 24px;
     }
 
     button {
@@ -48,6 +49,6 @@ export class BFOpenButton extends LitElement {
   `
 
   protected override render(): TemplateResult {
-    return html`<button></button>`
+    return html`<button>Claim</button>`
   }
 }
