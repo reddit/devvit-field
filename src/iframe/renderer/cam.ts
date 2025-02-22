@@ -189,11 +189,13 @@ export function camScale(
   mode: 'Int' | 'Fraction',
 ): number {
   const native = camNativeWH(canvas)
-  const scale = Math.max(
+  let scale = Math.max(
     minScale,
     // Default is to zoom in as much as possible.
     Math.min(native.w / minWH.w, native.h / minWH.h) - (zoomOut ?? 0),
   )
+  // If it's within .05 of an integer, use the integer.
+  scale = Math.round(scale) - scale < 0.05 ? Math.round(scale) : scale
   return mode === 'Int' ? Math.trunc(scale) : scale
 }
 

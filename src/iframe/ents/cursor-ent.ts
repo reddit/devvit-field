@@ -64,7 +64,7 @@ export class CursorEnt implements Ent {
   }
 
   update(game: Game): void {
-    const {cam, ctrl, fieldConfig} = game
+    const {cam, ctrl, field, fieldConfig} = game
 
     if (ctrl.pointOn && ctrl.pointType === 'Mouse') {
       // this.#visible = true
@@ -93,7 +93,7 @@ export class CursorEnt implements Ent {
       boxHits(fieldConfig.wh, select)
     ) {
       // to-do: I broke the trailing edge of drag. It should stay on one extra
-      //        cycle.
+      //        cycle. This was an issue when trying to use isOffStart().
       ctrl.handled = true
 
       // to-do: move this mutation to a centralized store or Game so it's easier
@@ -101,15 +101,15 @@ export class CursorEnt implements Ent {
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
       {
-        const i = fieldArrayIndex(game.fieldConfig!, this.#select)
-        fieldArraySetSelected(game.field, i, false)
-        game.renderer.setBox(this.#select, game.field[i]!)
+        const i = fieldArrayIndex(fieldConfig, this.#select)
+        fieldArraySetSelected(field, i, false)
+        game.renderer.setBox(this.#select, field[i]!)
       }
       this.#select = select
       {
-        const i = fieldArrayIndex(game.fieldConfig!, this.#select)
-        fieldArraySetSelected(game.field, i, true)
-        game.renderer.setBox(this.#select, game.field[i]!)
+        const i = fieldArrayIndex(fieldConfig, this.#select)
+        fieldArraySetSelected(field, i, true)
+        game.renderer.setBox(this.#select, field[i]!)
       }
 
       game.postMessage({type: 'ClaimBoxes', boxes: [select]})
