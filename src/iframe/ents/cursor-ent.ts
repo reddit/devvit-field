@@ -86,7 +86,7 @@ export class CursorEnt implements Ent {
 
     if (
       fieldConfig &&
-      ctrl.isOffStart('A') &&
+      ctrl.isOnStart('A') &&
       !ctrl.drag &&
       !ctrl.pinch &&
       !ctrl.handled &&

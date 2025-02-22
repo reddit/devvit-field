@@ -90,22 +90,17 @@ export class PointerPoller {
 
   register(op: 'add' | 'remove'): void {
     const fn = `${op}EventListener` as const
-    this.#canvas[fn]('pointercancel', this.reset, {
-      capture: true,
-      passive: true,
-    })
+    const opts = {capture: true, passive: true}
+    this.#canvas[fn]('pointercancel', this.reset, opts)
     for (const type of ['pointerdown', 'pointermove', 'pointerup']) {
-      this.#canvas[fn](type, this.#onPointEvent as EventListener, {
-        capture: true,
-        passive: type !== 'pointerdown',
-      })
+      this.#canvas[fn](type, this.#onPoint as EventListener, opts)
     }
     // to-do: should be part of pointer? If so, why bother separating key poll?
-    this.#canvas[fn]('wheel', this.#onWheel as EventListener, {
-      capture: true,
-      passive: true,
-    })
-    this.#canvas[fn]('contextmenu', this.#onContextMenuEvent, {capture: true})
+    this.#canvas[fn]('wheel', this.#onWheel as EventListener, opts)
+    this.#canvas[fn]('contextmenu', this.#onContextMenu, {capture: true})
+
+    // Disable long press vibration.
+    this.#canvas[fn]('touchstart', this.#onContextMenu, {capture: true})
   }
 
   reset = (): void => {
@@ -141,12 +136,12 @@ export class PointerPoller {
     return this.#primary.cur.xy
   }
 
-  #onContextMenuEvent = (ev: Event): void => {
+  #onContextMenu = (ev: Event): void => {
     if (!ev.isTrusted) return
     if (!this.allowContextMenu) ev.preventDefault()
   }
 
-  #onPointEvent = (ev: PointerEvent): void => {
+  #onPoint = (ev: PointerEvent): void => {
     if (!ev.isTrusted) return
 
     // to-do: record event here and move processing to poll() which happens
@@ -201,7 +196,6 @@ export class PointerPoller {
         this.dragClientStart.x = point.clientXY.x
         this.dragClientStart.y = point.clientXY.y
       }
-      ev.preventDefault() // Not passive.
     }
     if (ev.isPrimary) {
       this.#on |= 1
