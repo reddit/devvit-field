@@ -189,6 +189,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
         )
 
       if (msg.type === 'ChallengeComplete') {
+        // TODO: Unsubscribe listeners? Or, let them continue to flow knowing that we'll get the
+        // deltas when we reinit the app?
         ctx.ui.showToast('Challenge Complete. Devs please do something!')
       }
 

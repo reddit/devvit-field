@@ -5,7 +5,6 @@ import {getTeamFromUserId} from '../../../shared/team'
 import type {Level} from '../../../shared/types/level'
 import {type T2, noT2, noUsername} from '../../../shared/types/tid'
 import {globalStatsIncrement} from './globalStats'
-import {teamStatsByPlayerCellsClaimedForMember} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {leaderboardIncrementForTeam} from './leaderboards/global/leaderboard'
 import {levels} from './levels'
 
