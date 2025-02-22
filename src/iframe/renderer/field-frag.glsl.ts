@@ -26,13 +26,13 @@ void main() {
     discard;
 
   vec2 fracXY = fract(xy);
-  float borderW = 0.1;
+  float borderW = 0.02;
   if (
     uScale >= 10. &&
     (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
      fracXY.y < borderW || fracXY.y > 1.0 - borderW)
   ) {
-    oFrag = ${rgbaVec4(paletteBlack)};
+    oFrag = ${rgbaVec4(paletteGrid)};
     return;
   }
 
@@ -44,7 +44,7 @@ void main() {
   bool ban = ((box >> ${fieldArrayBanShift}) & ${fieldArrayBanMask}u) == ${fieldArrayBanOn}u;
   lowp uint team = ((box >> ${fieldArrayTeamShift}) & ${fieldArrayTeamMask}u);
 
-  borderW = .25;
+  borderW = .1;
   if (select &&
       (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
        fracXY.y < borderW || fracXY.y > 1.0 - borderW)
@@ -77,6 +77,7 @@ import {
   paletteBanBox,
   paletteBlack,
   paletteFlamingo,
+  paletteGrid,
   paletteJuiceBox,
   paletteLasagna,
   palettePending,
