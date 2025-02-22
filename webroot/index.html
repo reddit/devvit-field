@@ -9,10 +9,17 @@
     <link rel='preload' href='assets/atlas.webp' as='image' type='image/webp' />
     <link rel='preload' href='assets/audio.cat' as='fetch' crossorigin='anonymous' />
     <link rel='preload' href='assets/edit-undo.ttf' as='font' type='font/ttf' crossorigin='anonymous' />
+    <link rel='preload' href='assets/slkscr.ttf' as='font' type='font/ttf' crossorigin='anonymous' />
     <style>
       @font-face {
         font-family: 'Edit Undo BRK';
         src: local('Edit Undo BRK'), url(assets/edit-undo.ttf) format('opentype');
+        font-display: block; /* Wait as long as possible for font to download. */
+      }
+
+      @font-face {
+        font-family: 'Silkscreen';
+        src: local('Silkscreen'), url(assets/slkscr.ttf) format('opentype');
         font-display: block; /* Wait as long as possible for font to download. */
       }
 

@@ -25,6 +25,10 @@ export class BFFooter extends LitElement {
       background: grey;
       justify-content: space-between;
     }
+
+    .patron {
+      font-family: 'Silkscreen'
+    }
   `
 
   @property({type: Number}) accessor score: number | undefined
@@ -35,7 +39,7 @@ export class BFFooter extends LitElement {
     return html`
       <span class='score'>${teamName[this.team]}: ${this.score}</span>
       <span></span>
-      <a href='https://reddit.com/r/gamesonreddit'>r/GamesOnReddit</a>
+      <a class='patron' href='https://reddit.com/r/gamesonreddit'>Brought to you by r/GamesOnReddit</a>
     `
   }
 }

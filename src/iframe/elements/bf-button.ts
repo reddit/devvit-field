@@ -4,9 +4,15 @@ import {
   type TemplateResult,
   css,
   html,
+  unsafeCSS,
 } from 'lit'
 import {customElement} from 'lit/decorators.js'
-import {radiusPx} from '../../shared/theme.ts'
+import {
+  cssHex,
+  paletteBlack,
+  paletteLemonLime,
+  radiusPx,
+} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -27,6 +33,7 @@ export class BFButton extends LitElement {
 
     /* Default button styles. Medium size. */
     button {
+      background-color: ${unsafeCSS(cssHex(paletteLemonLime))};
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -36,6 +43,10 @@ export class BFButton extends LitElement {
       white-space: nowrap;
       border-style: none;
       border-radius: ${radiusPx}px;
+      /* justify-content: center; */
+      border-width: 2px;
+      border-style: solid;
+      border-color: ${unsafeCSS(cssHex(paletteBlack))};
     }
   `
 

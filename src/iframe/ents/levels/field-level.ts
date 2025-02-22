@@ -1,6 +1,7 @@
-import {type XY, boxHits} from '../../../shared/types/2d.ts'
+import {boxHits} from '../../../shared/types/2d.ts'
 import type {FieldSub} from '../../../shared/types/field.ts'
 import {audioPlay} from '../../audio.ts'
+import {Bubble} from '../../elements/bubble.ts'
 import type {Game} from '../../game/game.ts'
 import {RealtimeConnector} from '../../realtime-connector.ts'
 import {
@@ -14,8 +15,6 @@ import type {LevelEnt} from './level-ent.ts'
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
   #rtConnector: RealtimeConnector = new RealtimeConnector()
-  // to-do: providing the previous pointer position in Input would be handy.
-  #select: XY = {x: 0, y: 0}
   #zoomLvl: number
 
   constructor(game: Game) {
@@ -41,9 +40,12 @@ export class FieldLevel implements LevelEnt {
 
   update(game: Game): void {
     this.#updatePick(game)
+    this.#updateOpen(game)
     this.#updatePosition(game)
     this.#updateZoom(game)
   }
+
+  #updateOpen(game: Game): void {}
 
   #updatePick(game: Game): void {
     const {cam, ctrl, field, fieldConfig} = game
@@ -74,15 +76,16 @@ export class FieldLevel implements LevelEnt {
       // to-do: set state to indeterminate and wait until response to mark
       //        state. Aggregate clicks while waiting.
       {
-        const i = fieldArrayIndex(fieldConfig, this.#select)
+        const i = fieldArrayIndex(fieldConfig, game.select)
         fieldArraySetSelected(field, i, false)
-        game.renderer.setBox(this.#select, field[i]!)
+        game.renderer.setBox(game.select, field[i]!)
       }
-      this.#select = select
+      game.select = select
+      game.canvas.dispatchEvent(Bubble('game-update', undefined))
       {
-        const i = fieldArrayIndex(fieldConfig, this.#select)
+        const i = fieldArrayIndex(fieldConfig, game.select)
         fieldArraySetSelected(field, i, true)
-        game.renderer.setBox(this.#select, field[i]!)
+        game.renderer.setBox(game.select, field[i]!)
       }
 
       game.postMessage({type: 'ClaimBoxes', boxes: [select]})

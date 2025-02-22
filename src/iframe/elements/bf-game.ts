@@ -11,7 +11,8 @@ import {ifDefined} from 'lit/directives/if-defined.js'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
 
-import './bf-claim-button.ts'
+import './bf-button.ts'
+import './bf-coords.ts'
 import './bf-footer.ts'
 import './bf-header.ts'
 import './bf-team-chart.ts'
@@ -57,6 +58,13 @@ export class BFGame extends LitElement {
       left: 50%;
       transform: translateX(-50%);
       bottom: ${spacePx}px;
+    }
+
+    bf-coords {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 128px;
     }
 
     canvas {
@@ -132,7 +140,7 @@ export class BFGame extends LitElement {
       case 'Loading':
         break
       case 'Playing':
-        button = html`<bf-claim-button></bf-claim-button>`
+        button = html`<bf-button>Claim</bf-button>`
         break
       default:
         this.ui satisfies never
@@ -154,6 +162,10 @@ export class BFGame extends LitElement {
           tabIndex='0'
         ></canvas> <!--- Set tabIndex to propagate key events. -->
       </div>
+      <bf-coords
+        x='${this.#game.select.x}'
+        y='${this.#game.select.y}'
+      ></bf-coords>
       <bf-footer
         score='${ifDefined(score)}'
         team='${ifDefined(this.#game.team)}'

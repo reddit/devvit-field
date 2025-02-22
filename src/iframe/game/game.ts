@@ -1,6 +1,7 @@
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
+import type {XY} from '../../shared/types/2d.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta, FieldSub} from '../../shared/types/field.ts'
 import type {
@@ -75,6 +76,8 @@ export class Game {
   players: number
   renderer!: Renderer
   seed?: Seed
+  // to-do: providing the previous pointer position in Input would be handy.
+  select: XY
   /**
    * The subreddit name without an r/ prefix. Eg, BananaField. The field level
    * when not in a dev sub.
@@ -102,6 +105,7 @@ export class Game {
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
     this.players = 0
+    this.select = {x: 0, y: 0}
     this.ui = ui
     this.zoo = new Zoo()
   }

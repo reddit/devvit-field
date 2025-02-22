@@ -13,6 +13,7 @@ export const cssReset: CSSResult = css`
 
   :host {
     font-family: 'Edit Undo BRK';
+    /* All fonts are pixelated. */
     font-smooth: never;
     -webkit-font-smoothing : none;
   }
