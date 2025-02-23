@@ -31,7 +31,7 @@ export class BFCoords extends LitElement {
   @property({type: Number}) accessor x: number = 0
   @property({type: Number}) accessor y: number = 0
 
-  override render(): TemplateResult {
+  protected override render(): TemplateResult {
     return html`(${this.x.toString().padStart(4, '0')}, ${this.y.toString().padStart(4, '0')})`
   }
 }

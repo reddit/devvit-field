@@ -17,7 +17,7 @@ export async function AssetMap(): Promise<AssetMap> {
 
   return {
     audio: {
-      '16ItemsInThe15OrLessAtA60sGroceryStore': audioCat.slice(0, 211588),
+      '16ItemsInThe15OrLessAtA60sGroceryStore': audioCat.slice(0, 85824),
     },
     img: {atlas},
   }

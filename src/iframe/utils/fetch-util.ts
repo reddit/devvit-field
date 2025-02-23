@@ -3,7 +3,7 @@ export async function fetchAudio(url: string): Promise<ArrayBuffer> {
   if (!rsp.ok)
     throw Error(`fetch error ${rsp.status}: ${rsp.statusText} for ${url}`)
   const type = rsp.headers.get('Content-Type')
-  if (!type?.startsWith(devMode ? 'application/octet' : 'audio/opus'))
+  if (!type?.startsWith(devMode ? 'application/octet' : 'audio/mpeg'))
     throw Error(`bad fetch response type ${type} for ${url}`)
   return await rsp.arrayBuffer()
 }

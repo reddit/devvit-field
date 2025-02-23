@@ -18,6 +18,7 @@ import './bf-footer.ts'
 
 declare global {
   interface HTMLElementEventMap {
+    'game-debug': CustomEvent<string>
     'game-ui': CustomEvent<UI>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>
@@ -85,10 +86,17 @@ export class BFGame extends LitElement {
       padding-inline-start: 11px;
       padding-inline-end: 11px;
     }
+
+    pre {
+      height: 100px;
+      overflow: auto;
+      background: #fff;
+    }
   `
 
   @property({reflect: true}) accessor ui: UI = 'Loading'
 
+  #dbgLogs: string[] = []
   #game: Game = new Game(this)
   @query('canvas') private accessor _canvas!: HTMLCanvasElement
 
@@ -135,6 +143,10 @@ export class BFGame extends LitElement {
       <div class='terminal'>
         <div class='canvas-box'>
           <canvas
+            @game-debug='${(ev: CustomEvent<string>) => {
+              this.#dbgLogs.push(ev.detail)
+              this.requestUpdate()
+            }}'
             @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
             @game-update='${() => this.requestUpdate()}'
             tabIndex='0'
@@ -147,6 +159,7 @@ export class BFGame extends LitElement {
         ></bf-control-panel>
       </div>
       <bf-footer></bf-footer>
+      ${this.#dbgLogs.length ? html`<pre>${this.#dbgLogs.join('\n')}</pre>` : ''}
     `
   }
 
