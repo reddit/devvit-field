@@ -47,6 +47,56 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   const partitionKeys = Object.keys(partitionMap) as PartitionKey[]
   for (const partitionKey of partitionKeys) {
     const deltas = partitionMap[partitionKey]!
+    // to-do: Promise.all() or Promise.allSettled(). Plugin time actually counts
+    //        against apps.
+    // [remote] 2025-02-23T16:46:56.040Z Error: 2 UNKNOWN: failed to send realtime event for app: banfieldoid Post "https://gql-rt.reddit.com/query": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+    //     at callErrorFromStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksTransformer.js:25:16)
+    //     at Object.onReceiveStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksReconciler.js:153:43)
+    //     at Object.onReceiveStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksTransformer.js:533:4)
+    //     at Object.onReceiveStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksTransformer.js:498:52)
+    //     at <unknown> (src/devvit/components/app.tsx:179:2)
+    //     at process.processTicksAndRejections (node_modules/kind-of/index.js:46:25)
+    // for call at
+    //     at Client2.makeUnaryRequest (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksReconciler.js:123:9)
+    //     at /srv/index.cjs:133536:62
+    //     at /srv/index.cjs:133595:5
+    //     at new Promise (<anonymous>)
+    //     at GrpcWrapper._GrpcWrapper_promiseWithGrpcCallback2 (/srv/index.cjs:133593:10)
+    //     at GrpcWrapper.request (/srv/index.cjs:133535:110)
+    //     at GenericPluginClient.Send (/srv/index.cjs:119137:93)
+    //     at wrapped.<computed> [as Send] (node_modules/@devvit/public-api/devvit/Devvit.js:287:140)
+    //     at RealtimeClient.send (node_modules/@devvit/public-api/apis/realtime/RealtimeClient.js:21:36)
+    //     at onRun (src/devvit/server/scheduler/checkField.ts:50:23) {
+    //   cause: [Error: 2 UNKNOWN: failed to send realtime event for app: banfieldoid Post "https://gql-rt.reddit.com/query": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)] {
+    //     code: 2,
+    //     details: 'failed to send realtime event for app: banfieldoid Post "https://gql-rt.reddit.com/query": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)',
+    //     metadata: _Metadata { internalRepr: Map(0) {}, options: {} }
+    //   }
+    // }
+    // [remote] 2025-02-23T16:47:43.338Z Error: 16 UNAUTHENTICATED: failed to authenticate plugin request; upstream request missing or timed out
+    //     at callErrorFromStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksTransformer.js:25:16)
+    //     at Object.onReceiveStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksReconciler.js:153:43)
+    //     at Object.onReceiveStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksTransformer.js:533:4)
+    //     at Object.onReceiveStatus (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksTransformer.js:498:52)
+    //     at <unknown> (src/devvit/components/app.tsx:175:2)
+    //     at process.processTicksAndRejections (node_modules/kind-of/index.js:46:25)
+    // for call at
+    //     at Client2.makeUnaryRequest (node_modules/@devvit/public-api/devvit/internals/blocks/BlocksReconciler.js:123:9)
+    //     at /srv/index.cjs:133536:62
+    //     at /srv/index.cjs:133595:5
+    //     at new Promise (<anonymous>)
+    //     at GrpcWrapper._GrpcWrapper_promiseWithGrpcCallback2 (/srv/index.cjs:133593:10)
+    //     at GrpcWrapper.request (/srv/index.cjs:133535:110)
+    //     at GenericPluginClient.Send (/srv/index.cjs:119137:93)
+    //     at wrapped.<computed> [as Send] (node_modules/@devvit/public-api/devvit/Devvit.js:287:140)
+    //     at RealtimeClient.send (node_modules/@devvit/public-api/apis/realtime/RealtimeClient.js:21:36)
+    //     at onRun (src/devvit/server/scheduler/checkField.ts:50:23) {
+    //   cause: [Error: 16 UNAUTHENTICATED: failed to authenticate plugin request; upstream request missing or timed out] {
+    //     code: 16,
+    //     details: 'failed to authenticate plugin request; upstream request missing or timed out',
+    //     metadata: _Metadata { internalRepr: Map(0) {}, options: {} }
+    //   }
+    // }
     await ctx.realtime.send(
       `challenge_${currentChallengeNumber}_partition__${partitionKey}`,
       {
