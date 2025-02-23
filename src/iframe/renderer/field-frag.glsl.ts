@@ -53,11 +53,6 @@ void main() {
     return;
   }
 
-  if (!visible) {
-    oFrag = ${rgbaVec4(paletteBlack)};
-    return;
-  }
-
   if (ban) {
     oFrag = ${rgbaVec4(paletteBanBox)};
     return;
@@ -70,6 +65,11 @@ void main() {
 
   // to-do: user.
 
+  if (!visible) {
+    oFrag = ${rgbaVec4(paletteBlack)};
+    return;
+  }
+
   oFrag = bgTeam[team];
 }`
 
@@ -81,8 +81,8 @@ import {
   paletteJuiceBox,
   paletteLasagna,
   palettePending,
-  paletteTerminalGreen,
   paletteSunshine,
+  paletteTerminalGreen,
 } from '../../shared/theme.ts'
 import {
   fieldArrayBanMask,

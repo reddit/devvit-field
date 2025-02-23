@@ -11,6 +11,10 @@ export const cssReset: CSSResult = css`
     -webkit-touch-callout: none; /* to-do: Disable context menu on iOS? */
   }
 
+  * {
+    margin: 0;
+  }
+
   :host {
     font-family: 'Edit Undo BRK';
     /* All fonts are pixelated. */

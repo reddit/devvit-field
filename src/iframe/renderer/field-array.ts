@@ -53,6 +53,13 @@ export function fieldArraySetSelected(
       fieldArraySelectShift)
 }
 
+export function fieldArrayGetPending(field: Uint8Array, i: number): boolean {
+  return (
+    ((field[i]! >>> fieldArrayPendShift) & fieldArrayPendMask) ===
+    fieldArrayPendOn
+  )
+}
+
 export function fieldArraySetPending(
   field: Uint8Array,
   i: number,
@@ -71,6 +78,13 @@ export function fieldArraySetUser(
   field[i] =
     (field[i]! & ~(fieldArrayUserMask << fieldArrayUserShift)) |
     ((user ? fieldArrayUserOn : fieldArrayUserOff) << fieldArrayUserShift)
+}
+
+export function fieldArrayGetVisible(field: Uint8Array, i: number): boolean {
+  return (
+    ((field[i]! >>> fieldArrayVisibleShift) & fieldArrayVisibleMask) ===
+    fieldArrayVisibleOn
+  )
 }
 
 export function fieldArraySetVisible(

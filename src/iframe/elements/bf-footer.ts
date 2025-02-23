@@ -6,13 +6,12 @@ import {
   html,
   unsafeCSS,
 } from 'lit'
-import {customElement, property} from 'lit/decorators.js'
-import {type Team, teamName} from '../../shared/team.ts'
+import {customElement} from 'lit/decorators.js'
+import {cssHex, paletteBlack, paletteTerminalGreen} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-button.ts'
 import './bf-coords.ts'
-import {cssHex, paletteBlack, paletteTerminalGreen} from '../../shared/theme.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -26,18 +25,6 @@ export class BFFooter extends LitElement {
     ${cssReset}
 
     :host {
-      /* display: flex; */
-      /* justify-content: space-between; */
-    }
-
-    bf-coords {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 84px;
-    }
-
-    .patron {
       background-color: ${unsafeCSS(cssHex(paletteBlack))};
       color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
       display: block;
@@ -45,26 +32,14 @@ export class BFFooter extends LitElement {
       text-align: center;
     }
 
-    .patron > a {
+    a {
       color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
     }
   `
 
-  @property({type: Number}) accessor score: number | undefined
-  @property({type: Number}) accessor team: Team | undefined
-  @property({type: Number}) accessor x: number = 0
-  @property({type: Number}) accessor y: number = 0
-
-  override render(): TemplateResult {
-    if (this.score == null || this.team == null) return html`&nbsp;`
+  protected override render(): TemplateResult {
     return html`
-          <bf-coords x='${this.x}' y='${this.y}' ></bf-coords>
-          <bf-button>Claim</bf-button>
-      <span class='score'>${teamName[this.team]}: ${this.score}</span>
-      <span></span>
-      <div class='patron'>
-        Brought to you by <a href='https://reddit.com/r/gamesonreddit'>r/GamesOnReddit</a>
-      </div>
+      Brought to you by <a href='https://reddit.com/r/gamesonreddit'>r/GamesOnReddit</a>
     `
   }
 }

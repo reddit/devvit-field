@@ -8,11 +8,12 @@ import {
   unsafeCSS,
 } from 'lit'
 import {customElement, property, query} from 'lit/decorators.js'
-import {ifDefined} from 'lit/directives/if-defined.js'
 import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
+import type {XY} from '../../shared/types/2d.ts'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
 
+import './bf-control-panel.ts'
 import './bf-footer.ts'
 
 declare global {
@@ -73,17 +74,16 @@ export class BFGame extends LitElement {
       border-style: solid;
       border-radius: 2px;
       border-width: 2px;
+      border-bottom-width: 0;
       border-color: ${unsafeCSS(cssHex(paletteBlack))};
       margin-block-start: 8px;
-      margin-block-end: 20px;
       margin-inline-start: 5px;
       margin-inline-end: 5px;
 
       padding-block-start: 8px;
-      padding-block-end: 8px;
+      padding-block-end: 70px;
       padding-inline-start: 11px;
       padding-inline-end: 11px;
-
     }
   `
 
@@ -109,18 +109,18 @@ export class BFGame extends LitElement {
       this.ui = 'Playing'
   }
 
-  override render(): TemplateResult {
-    const fieldSize = this.#game.fieldConfig
-      ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h
-      : 0
-    const visible =
-      this.#game.fieldConfig && this.#game.visible != null
-        ? this.#game.visible / fieldSize
-        : undefined
-    const score =
-      this.#game.team != null && this.#game.teamBoxCounts
-        ? this.#game.teamBoxCounts[this.#game.team]
-        : undefined
+  protected override render(): TemplateResult {
+    // const fieldSize = this.#game.fieldConfig
+    //   ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h
+    //   : 0
+    // const visible =
+    //   this.#game.fieldConfig && this.#game.visible != null
+    //     ? this.#game.visible / fieldSize
+    //     : undefined
+    // const score =
+    //   this.#game.team != null && this.#game.teamBoxCounts
+    //     ? this.#game.teamBoxCounts[this.#game.team]
+    //     : undefined
 
     switch (this.ui) {
       case 'Loading':
@@ -140,13 +140,17 @@ export class BFGame extends LitElement {
             tabIndex='0'
           ></canvas> <!--- Set tabIndex to propagate key events. -->
         </div>
+        <bf-control-panel
+          @claim='${this.#onClaim}'
+          x='${this.#game.select.x}'
+          y='${this.#game.select.y}'
+        ></bf-control-panel>
       </div>
-      <bf-footer
-        score='${ifDefined(score)}'
-        team='${ifDefined(this.#game.team)}'
-        x='${this.#game.select.x}'
-        y='${this.#game.select.y}'
-      ></bf-footer>
+      <bf-footer></bf-footer>
     `
+  }
+
+  #onClaim(ev: CustomEvent<XY>): void {
+    this.#game.claimBox(ev.detail)
   }
 }

@@ -27,8 +27,12 @@ import {type DefaultButton, Input} from '../input/input.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
 import {
+  fieldArrayGetPending,
+  fieldArrayGetVisible,
   fieldArrayIndex,
   fieldArraySetBan,
+  fieldArraySetPending,
+  fieldArraySetSelected,
   fieldArraySetTeam,
   fieldArraySetVisible,
 } from '../renderer/field-array.ts'
@@ -108,6 +112,54 @@ export class Game {
     this.select = {x: 0, y: 0}
     this.ui = ui
     this.zoo = new Zoo()
+  }
+
+  claimBox(xy: Readonly<XY>): void {
+    if (!this.fieldConfig) return
+    let i = fieldArrayIndex(this.fieldConfig, xy)
+    if (
+      !fieldArrayGetPending(this.field, i) &&
+      !fieldArrayGetVisible(this.field, i)
+    ) {
+      fieldArraySetPending(this.field, i, true)
+      this.renderer.setBox(xy, this.field[i]!)
+      // to-do: aggregate.
+      this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
+    }
+
+    i = (i + 1) % this.field.length
+    const select = {
+      x: i % this.fieldConfig.wh.w,
+      y: Math.trunc(i / this.fieldConfig.wh.w) % this.fieldConfig.wh.h,
+    }
+    this.selectBox(select)
+
+    // to-do: do a proper hit detection with the viewport. It's possible for
+    //        select to be off screen.
+    if (select.x < xy.x) {
+      this.cam.x =
+        select.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2
+      this.cam.y =
+        select.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2
+    } else this.cam.x++
+  }
+
+  selectBox(xy: Readonly<XY>): void {
+    if (!this.fieldConfig) return
+    // to-do: move this mutation to a centralized store so it's easier to see
+    // //     how state changes.
+    {
+      const i = fieldArrayIndex(this.fieldConfig, this.select)
+      fieldArraySetSelected(this.field, i, false)
+      this.renderer.setBox(this.select, this.field[i]!)
+    }
+    this.select = xy
+    this.canvas.dispatchEvent(Bubble('game-update', undefined))
+    {
+      const i = fieldArrayIndex(this.fieldConfig, this.select)
+      fieldArraySetSelected(this.field, i, true)
+      this.renderer.setBox(this.select, this.field[i]!)
+    }
   }
 
   async start(canvas: HTMLCanvasElement): Promise<void> {
@@ -204,13 +256,15 @@ export class Game {
           },
         }
 
-    const sub = [
-      'PlayBanField',
-      'CantPlayBanField',
-      'BananaField',
-      'WhyBanField',
-      'WhatIsBanField',
-    ][Math.trunc(rnd.num * 5)]!
+    const sub = devMode
+      ? [
+          'PlayBanField',
+          'CantPlayBanField',
+          'BananaField',
+          'WhyBanField',
+          'WhatIsBanField',
+        ][Math.trunc(rnd.num * 5)]!
+      : ''
     const partSize = 128
     const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
     const field = {partSize, wh: {w: size, h: size}}
