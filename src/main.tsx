@@ -16,7 +16,7 @@ import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {Preview} from './devvit/components/preview.js'
 import {challengeMakeNew} from './devvit/server/core/challenge.js'
-import {levels, makeLevelRedirect} from './devvit/server/core/levels.js'
+import {makeLevelRedirect} from './devvit/server/core/levels.js'
 import {userMakeSuperuser, userSetLevel} from './devvit/server/core/user.js'
 import type {Level} from './shared/types/level.js'
 

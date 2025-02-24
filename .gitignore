@@ -2,6 +2,7 @@
 /devvit.load.yaml
 /dist/
 /node_modules/
+/src/devvit/server/core/config.dev.json
 /webroot/index.js*
 /coverage/
 

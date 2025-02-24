@@ -108,7 +108,6 @@ export type ChallengeCompleteMessage = {
   standings: {member: Team; score: number}[]
 }
 
-/** Triggered when a challenge is completed */
 export type DialogMessage = {
   type: 'Dialog'
   redirectURL: string
