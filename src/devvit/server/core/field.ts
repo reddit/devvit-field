@@ -524,10 +524,10 @@ export const fieldGet = async ({
     )
   }
 
-  const data = await redis.get(
+  const data = await redis.strLen(
     createFieldPartitionKey(challengeNumber, partitionXY),
   )
-  if (data === undefined) return []
+  if (data === 0) return []
 
   const commands: BitfieldCommand[] = []
 

@@ -131,8 +131,11 @@ export type IframeMode = 'PopIn' | 'PopOut'
 /**
  * Team scores in boxes for a given field. This is different than the score for
  * completing a descent loop.
+ *
+ * TODO: I'm not sure if you want this by team order OR by points descending. I figured
+ * you wanted by team number in order so you could infer the team from the index.
  */
-export type TeamBoxCounts = [number, number, number, number]
+export type TeamBoxCounts = [t0: number, t1: number, t2: number, t3: number]
 
 /** Message schema version supported by this instance. */
 export const realtimeVersion: number = 0

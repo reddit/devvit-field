@@ -10,6 +10,7 @@ import {
   makeSafeChallengeConfig,
 } from './challenge'
 import {fieldGetDeltas, fieldValidateUserAndAttemptAscend} from './field'
+import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
 import {levels} from './levels'
 import {userGetOrSet} from './user'
 
@@ -22,7 +23,9 @@ export type AppState =
       challengeConfig: Awaited<ReturnType<typeof makeSafeChallengeConfig>>
       profile: Awaited<ReturnType<typeof userGetOrSet>>
       initialDeltas: Awaited<ReturnType<typeof fieldGetDeltas>>
+      initialCellsClaimed: Awaited<ReturnType<typeof teamStatsCellsClaimedGet>>
       initialGlobalXY: XY
+      visible: number
       level: LevelConfig
     }
   | ({
@@ -44,10 +47,17 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     return result
   }
 
-  const challengeConfig = await challengeConfigGet({
-    redis: ctx.redis,
-    challengeNumber,
-  })
+  const [challengeConfig, initialCellsClaimed] = await Promise.all([
+    challengeConfigGet({
+      redis: ctx.redis,
+      challengeNumber,
+    }),
+    teamStatsCellsClaimedGet({
+      challengeNumber,
+      redis: ctx.redis,
+      sort: 'DESC',
+    }),
+  ])
 
   const rnd = new Random(challengeConfig.seed)
   const initialGlobalXY: XY = {
@@ -69,6 +79,13 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     throw new Error(`No level found for ${profile.currentLevel}`)
   }
 
+  const totalCellsForField = challengeConfig.size * challengeConfig.size
+  const totalCellsClaimed = initialCellsClaimed.reduce(
+    (acc, {score}) => acc + score,
+    0,
+  )
+  const visible = totalCellsClaimed - totalCellsForField
+
   return {
     pass: true,
     challengeNumber,
@@ -77,6 +94,8 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     challengeConfig: makeSafeChallengeConfig(challengeConfig),
     initialGlobalXY,
     initialDeltas: deltas,
+    initialCellsClaimed,
+    visible,
     level,
   }
 }
