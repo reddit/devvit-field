@@ -1,7 +1,6 @@
 import {
   type CSSResultGroup,
   LitElement,
-  type PropertyValues,
   type TemplateResult,
   css,
   html,
@@ -97,27 +96,21 @@ export class BFGame extends LitElement {
     }
   `
 
+  // to-do: pass to game.
+  @query('canvas') accessor canvas!: HTMLCanvasElement
   @property({reflect: true}) accessor ui: UI = 'Loading'
 
   #dbgLogs: string[] = []
   #game: Game = new Game(this)
-  @query('canvas') private accessor _canvas!: HTMLCanvasElement
 
-  override async connectedCallback(): Promise<void> {
+  override connectedCallback(): void {
     super.connectedCallback()
-    await this.updateComplete
-    this.#game.start(this._canvas)
+    void this.#game.start()
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback()
     this.#game.stop()
-  }
-
-  protected override update(props: PropertyValues<this>): void {
-    super.update(props)
-    if (this.ui === 'Loading' && this.#game.mode === 'PopOut')
-      this.ui = 'Playing'
   }
 
   protected override render(): TemplateResult {

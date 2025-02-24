@@ -162,13 +162,22 @@ export class Game {
     }
   }
 
-  async start(canvas: HTMLCanvasElement): Promise<void> {
-    this.canvas = canvas
-    this.ctrl = new Input(this.cam, canvas)
+  async start(): Promise<void> {
+    // The native apps do not support messages before load. Await in parallel
+    // with assets.
+    const [, assets] = await Promise.all([
+      new Promise(resolve => addEventListener('load', resolve)),
+      AssetMap(),
+      // Wait for canvas.
+      this.ui.updateComplete,
+    ])
+
+    this.canvas = this.ui.canvas
+    this.ctrl = new Input(this.cam, this.canvas)
     this.ctrl.mapDefault()
 
-    this.renderer = new Renderer(canvas)
-    this.looper = new Looper(canvas, this.cam, this.ctrl, this.renderer)
+    this.renderer = new Renderer(this.canvas)
+    this.looper = new Looper(this.canvas, this.cam, this.ctrl, this.renderer)
 
     addEventListener('message', this.#onMsg)
     this.postMessage({type: 'Registered'})
@@ -186,8 +195,6 @@ export class Game {
 
     const lvl = new FieldLevel(this)
 
-    const assets = await AssetMap()
-
     this.audio = await Audio(assets)
     this.img = assets.img
 
@@ -204,6 +211,8 @@ export class Game {
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
+
+    if (this.mode === 'PopOut') this.ui.ui = 'Playing'
 
     this.postMessage({type: 'Loaded'})
     console.log('loaded')
@@ -356,8 +365,11 @@ export class Game {
     // Filter any unknown messages.
     if (ev.data.type !== 'devvit-message') return
 
-    // Hack: DX-8860 events are untrusted on Android.
-    if (ev.isTrusted === devMode && !/Android/i.test(navigator.userAgent))
+    // Hack: events are untrusted on Android and iOS native apps.
+    if (
+      ev.isTrusted === devMode &&
+      !/Android|iPad|iPhone|iPod/i.test(navigator.userAgent)
+    )
       return
 
     const msg = ev.data.data.message

@@ -96,8 +96,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     },
   })
   // to-do: support three mount states from hook.
-  // to-do: delete Android condition.
-  if (!mounted && session.userAgent.client !== 'Android')
+  if (!mounted)
     iframe.postMessage = (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg)
 
   function popOut(): void {
@@ -352,8 +351,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     //       the tree during pop-out mode but just let it forever spin when put
     //       in.
     <Title loaded={mounted && loaded}>
-      {/* to-do: delete Android specialization. */}
-      {!mounted && session.userAgent.client !== 'Android' && (
+      {!mounted && (
         <webview
           grow
           height='100%'
