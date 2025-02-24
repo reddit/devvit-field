@@ -258,6 +258,16 @@ DevvitTest.it(
         superuser: false,
       },
     })
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_3_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
 
     const {challengeNumber} = await challengeMakeNew({
       ctx,
@@ -271,7 +281,7 @@ DevvitTest.it(
 
     await fieldClaimCells({
       coords: [{x: 1, y: 1}],
-      userId: USER_IDS.TEAM_2_PLAYER_1,
+      userId: USER_IDS.TEAM_3_PLAYER_1,
       challengeNumber,
       ctx,
     })
