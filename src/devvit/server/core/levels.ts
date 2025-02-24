@@ -66,38 +66,6 @@ export const levels: LevelConfig[] = [
     subredditName: 'xBanland2',
     theme: {},
   },
-  // {
-  //   id: 1,
-  //   subredditId: 't5_dkz0gv',
-  //   // @ts-expect-error need to install on the sub and make a post first
-  //   postId: '',
-  //   subredditName: 'CantPlayBanField',
-  //   theme: {},
-  // },
-  // {
-  //   id: 2,
-  //   subredditId: 't5_dkz0k9',
-  //   // @ts-expect-error need to install on the sub and make a post first
-  //   postId: '',
-  //   subredditName: 'BananaField',
-  //   theme: {},
-  // },
-  // {
-  //   id: 3,
-  //   subredditId: 't5_dkz0qm',
-  //   // @ts-expect-error need to install on the sub and make a post first
-  //   postId: '',
-  //   subredditName: 'WhyBanField',
-  //   theme: {},
-  // },
-  // {
-  //   id: 4,
-  //   subredditId: 't5_dkz0tb',
-  //   // @ts-expect-error need to install on the sub and make a post first
-  //   postId: '',
-  //   subredditName: 'WhatIsBanField',
-  //   theme: {},
-  // },
 ]
 
 export const makeLevelRedirect = (levelNumber: number) => {
