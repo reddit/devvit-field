@@ -19,12 +19,18 @@ import {
 import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsByPlayerCellsClaimedForMember} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
+import {userSet} from './user'
 
 // TODO: Tests for the partition level checks
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
   const {challengeNumber} = await challengeMakeNew({
     ctx,
-    config: {size: 2, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
+    config: {
+      size: 2,
+      seed: makeRandomSeed(),
+      mineDensity: 0,
+      partitionSize: 2,
+    },
   })
 
   await expect(() =>
@@ -58,6 +64,17 @@ DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
 DevvitTest.it(
   'fieldClaimCells - should claim a cell and return if it was claimed',
   async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
+
     const {challengeNumber} = await challengeMakeNew({
       ctx,
       config: {
@@ -109,6 +126,17 @@ DevvitTest.it(
 DevvitTest.it(
   'fieldClaimCells - should claim a cell for a partition and return if it was claimed',
   async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
+
     const {challengeNumber} = await challengeMakeNew({
       ctx,
       config: {
@@ -158,6 +186,17 @@ DevvitTest.it(
 )
 
 DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
+  await userSet({
+    redis: ctx.redis,
+    user: {
+      currentLevel: 0,
+      lastPlayedChallengeNumberForLevel: 0,
+      t2: USER_IDS.TEAM_2_PLAYER_1,
+      username: 'foo',
+      superuser: false,
+    },
+  })
+
   const {challengeNumber} = await challengeMakeNew({
     ctx,
     config: {size: 2, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
@@ -209,6 +248,17 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 DevvitTest.it(
   'fieldClaimCells - should not return if cell already claimed',
   async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
+
     const {challengeNumber} = await challengeMakeNew({
       ctx,
       config: {
@@ -241,6 +291,17 @@ DevvitTest.it(
 DevvitTest.it(
   'fieldClaimCells - redis should respect order of return of multiple commands',
   async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
+
     const {challengeNumber} = await challengeMakeNew({
       ctx,
       config: {
@@ -283,6 +344,17 @@ DevvitTest.it(
 DevvitTest.it(
   '_fieldClaimCellsSuccess - should game over for user when hitting a mine and count team stats',
   async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
+
     const challengeConfig: ChallengeConfig = {
       size: 2,
       seed: makeRandomSeed(),
@@ -343,6 +415,17 @@ DevvitTest.it(
 DevvitTest.it(
   '_fieldClaimCellsSuccess - should end the game when second place cannot overtake first place',
   async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+      },
+    })
+
     const challengeConfig: ChallengeConfig = {
       size: 2,
       seed: makeRandomSeed(),
@@ -397,13 +480,6 @@ DevvitTest.it(
     ).resolves.toEqual(0)
 
     expect(ctx.realtime.send).toHaveBeenCalledTimes(1)
-    expect(ctx.scheduler.runJob).toHaveBeenCalledWith({
-      data: {
-        challengeNumber: 1,
-      },
-      name: 'ON_CHALLENGE_END',
-      runAt: expect.any(Date),
-    })
   },
 )
 

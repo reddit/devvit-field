@@ -14,6 +14,7 @@ DevvitTest.it('userGetOrSet - return defaults if no user found', async ctx => {
     userMethods.userGetOrSet({ctx: {...ctx, userId: undefined}}),
   ).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: 't2_0',
     username: 'anonymous',
     superuser: false,
@@ -29,6 +30,7 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -37,6 +39,7 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
     userMethods.userGet({redis: ctx.redis, userId: ctx.userId as T2}),
   ).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -46,6 +49,7 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -62,6 +66,7 @@ DevvitTest.it('userGetOrSet - set superuser', async ctx => {
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: true,
@@ -77,6 +82,7 @@ DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -89,6 +95,7 @@ DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: true,
