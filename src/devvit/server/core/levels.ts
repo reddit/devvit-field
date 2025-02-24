@@ -52,6 +52,20 @@ export const levels: LevelConfig[] = [
     subredditName: 'xBanland0',
     theme: {},
   },
+  {
+    id: 1,
+    subredditId: 't5_dii2at',
+    postId: 't3_1iwup5r',
+    subredditName: 'xBanland1',
+    theme: {},
+  },
+  {
+    id: 2,
+    subredditId: 't5_dii2xj',
+    postId: 't3_1iwuphy',
+    subredditName: 'xBanland2',
+    theme: {},
+  },
   // {
   //   id: 1,
   //   subredditId: 't5_dkz0gv',

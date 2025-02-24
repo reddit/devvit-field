@@ -38,7 +38,6 @@ import {computeScore} from './score'
 import {
   userAscendLevel,
   userDescendLevel,
-  userGet,
   userSetLastPlayedChallenge,
 } from './user'
 
@@ -151,6 +150,7 @@ export const _fieldClaimCellsSuccess = async ({
 
   // User stats
   if (isGameOverForUser) {
+    console.log(`Game over for ${userId}. Hit a mine!`)
     await teamStatsByPlayerCellsClaimedGameOver({
       challengeNumber,
       member: userId,
@@ -321,6 +321,17 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   return deltas
 }
 
+/**
+ * Make sure the user has access to:
+ * 1. View the field
+ * 2. Claims cells for the field
+ *
+ * pass: true means the user can claim cells
+ * pass: false means the user cannot claim cells
+ *
+ * On false, you'll be provided a message and a redirectURL
+ * to send the user to.
+ */
 type CanUserClaimCellsResponse =
   | {
       pass: true
@@ -355,8 +366,8 @@ export const fieldValidateUserAndAttemptAscend = async ({
   if (profile.currentLevel !== level.id) {
     return {
       pass: false,
-      message: `You are not on the correct level. You need to be at level ${level.id}.`,
-      redirectURL: makeLevelRedirect(level.id),
+      message: `You are not on the correct level. You should be at level ${profile.currentLevel}, not ${level.id}.`,
+      redirectURL: makeLevelRedirect(profile.currentLevel),
       code: 'WrongLevel',
     }
   }

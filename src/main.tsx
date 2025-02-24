@@ -16,7 +16,9 @@ import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {Preview} from './devvit/components/preview.js'
 import {challengeMakeNew} from './devvit/server/core/challenge.js'
-import {userMakeSuperuser} from './devvit/server/core/user.js'
+import {levels, makeLevelRedirect} from './devvit/server/core/levels.js'
+import {userMakeSuperuser, userSetLevel} from './devvit/server/core/user.js'
+import type {Level} from './shared/types/level.js'
 
 Devvit.configure({redditAPI: true, redis: true, realtime: true})
 
@@ -134,12 +136,62 @@ const superuserFormKey = Devvit.createForm(
   },
 )
 
+const setUserLevelFormKey = Devvit.createForm(
+  {
+    title: 'Set User Level',
+    description: 'Set a user to a given level. Useful for testing.',
+    fields: [
+      {
+        type: 'string',
+        label: 'Username',
+        name: 'username',
+        required: true,
+      },
+      {
+        type: 'select',
+        label: 'Level',
+        name: 'level',
+        required: true,
+        options: ([0, 1, 2, 3] as Level[]).map(x => ({
+          label: x.toString(),
+          value: x.toString(),
+        })),
+      },
+    ],
+  },
+  async ({values}, ctx) => {
+    const user = await ctx.reddit.getUserByUsername(values.username)
+
+    if (!user) {
+      ctx.ui.showToast(`User ${values.username} not found`)
+      return
+    }
+
+    const newLevel = await userSetLevel({
+      level: parseInt(values.level[0]!, 10) as Level,
+      redis: ctx.redis,
+      userId: user.id,
+    })
+
+    ctx.ui.navigateTo(makeLevelRedirect(newLevel))
+  },
+)
+
 Devvit.addMenuItem({
   forUserType: ['moderator'],
   label: '[BanField] Make Superuser',
   location: 'subreddit',
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(superuserFormKey)
+  },
+})
+
+Devvit.addMenuItem({
+  forUserType: ['moderator'],
+  label: '[BanField] Set User Level',
+  location: 'subreddit',
+  onPress: (_ev, ctx) => {
+    ctx.ui.showForm(setUserLevelFormKey)
   },
 })
 

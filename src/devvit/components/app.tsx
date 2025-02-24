@@ -32,7 +32,10 @@ import {
   fieldGetDeltas,
   fieldValidateUserAndAttemptAscend,
 } from '../server/core/field.js'
-import {userAttemptToClaimSpecialPointForTeam} from '../server/core/user.js'
+import {
+  userAttemptToClaimSpecialPointForTeam,
+  userGet,
+} from '../server/core/user.js'
 import {Title} from './title.tsx'
 
 function diffArrays<T>(oldList: T[], newList: T[]) {
@@ -235,7 +238,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         if (appState.pass === false) {
           const {pass: _pass, ...rest} = appState
           iframe.postMessage({type: 'Dialog', ...rest})
-          return
+          break
         }
         sendInitToIframe(appState)
 
@@ -250,12 +253,21 @@ export function App(ctx: Devvit.Context): JSX.Element {
         const result = await fieldValidateUserAndAttemptAscend({
           challengeNumber: appState.challengeNumber,
           ctx,
-          profile: appState.profile,
+          // You need to call this instead of the appState since
+          // app state can be stale. Use case where you hit this:
+          // 1. User claims a mine
+          // 2. User tries to click again before we show
+          //    the game over dialog
+          profile: await userGet({
+            redis: ctx.redis,
+            userId: appState.profile.t2,
+          }),
         })
 
         if (result.pass === false) {
           const {pass: _pass, ...rest} = result
           iframe.postMessage({type: 'Dialog', ...rest})
+          return
         }
 
         const {deltas} = await fieldClaimCells({
@@ -297,7 +309,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         if (appState.pass === false) {
           const {pass: _pass, ...rest} = appState
           iframe.postMessage({type: 'Dialog', ...rest})
-          return
+          break
         }
 
         await userAttemptToClaimSpecialPointForTeam({

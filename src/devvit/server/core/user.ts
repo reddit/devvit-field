@@ -161,8 +161,9 @@ export const userDescendLevel = async ({
   const user = await userGet({redis, userId})
 
   let newLevel = user.currentLevel + 1
-  if (newLevel > Object.keys(levels).length - 1) {
-    newLevel = 4 as Level
+  const lastLevel = Object.keys(levels).length - 1
+  if (newLevel > lastLevel) {
+    newLevel = lastLevel
   }
 
   if (user.currentLevel === newLevel) return user.currentLevel
@@ -198,7 +199,10 @@ export const userSetLevel = async ({
 
   if (user.currentLevel === level) return user.currentLevel
 
-  await userSet({redis, user: {...user, currentLevel: level}})
+  await userSet({
+    redis,
+    user: {...user, currentLevel: level, lastPlayedChallengeNumberForLevel: 0},
+  })
 
   return level
 }
