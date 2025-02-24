@@ -85,4 +85,10 @@ launches [local iframe development](#local-iframe-development).
   - **assets**/: iframe data uploads.
   - **index.\***: iframe webpage code uploads.
 
+## Attributions
+
+- [Departure Mono](https://departuremono.com) font created by
+  [Helena Zhang](https://helenazhang.com).
+- Edit Undo font created by [Brian Kent](mailto:kentpw@norwich.net).
+
 ## [License (BSD-3-Clause)](docs/license.md)

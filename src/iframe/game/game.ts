@@ -1,6 +1,7 @@
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
+import type {XY} from '../../shared/types/2d.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta, FieldSub} from '../../shared/types/field.ts'
 import type {
@@ -25,6 +26,16 @@ import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
+import {
+  fieldArrayGetPending,
+  fieldArrayGetVisible,
+  fieldArrayIndex,
+  fieldArraySetBan,
+  fieldArraySetPending,
+  fieldArraySetSelected,
+  fieldArraySetTeam,
+  fieldArraySetVisible,
+} from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
 import atlas from './atlas.json' with {type: 'json'}
 import type {Tag} from './config.ts'
@@ -69,6 +80,8 @@ export class Game {
   players: number
   renderer!: Renderer
   seed?: Seed
+  // to-do: providing the previous pointer position in Input would be handy.
+  select: XY
   /**
    * The subreddit name without an r/ prefix. Eg, BananaField. The field level
    * when not in a dev sub.
@@ -96,8 +109,57 @@ export class Game {
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.now = 0 as UTCMillis
     this.players = 0
+    this.select = {x: 0, y: 0}
     this.ui = ui
     this.zoo = new Zoo()
+  }
+
+  claimBox(xy: Readonly<XY>): void {
+    if (!this.fieldConfig) return
+    let i = fieldArrayIndex(this.fieldConfig, xy)
+    if (
+      !fieldArrayGetPending(this.field, i) &&
+      !fieldArrayGetVisible(this.field, i)
+    ) {
+      fieldArraySetPending(this.field, i, true)
+      this.renderer.setBox(xy, this.field[i]!)
+      // to-do: aggregate.
+      this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
+    }
+
+    i = (i + 1) % this.field.length
+    const select = {
+      x: i % this.fieldConfig.wh.w,
+      y: Math.trunc(i / this.fieldConfig.wh.w) % this.fieldConfig.wh.h,
+    }
+    this.selectBox(select)
+
+    // to-do: do a proper hit detection with the viewport. It's possible for
+    //        select to be off screen.
+    if (select.x < xy.x) {
+      this.cam.x =
+        select.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2
+      this.cam.y =
+        select.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2
+    } else this.cam.x++
+  }
+
+  selectBox(xy: Readonly<XY>): void {
+    if (!this.fieldConfig) return
+    // to-do: move this mutation to a centralized store so it's easier to see
+    // //     how state changes.
+    {
+      const i = fieldArrayIndex(this.fieldConfig, this.select)
+      fieldArraySetSelected(this.field, i, false)
+      this.renderer.setBox(this.select, this.field[i]!)
+    }
+    this.select = xy
+    this.canvas.dispatchEvent(Bubble('game-update', undefined))
+    {
+      const i = fieldArrayIndex(this.fieldConfig, this.select)
+      fieldArraySetSelected(this.field, i, true)
+      this.renderer.setBox(this.select, this.field[i]!)
+    }
   }
 
   async start(canvas: HTMLCanvasElement): Promise<void> {
@@ -154,6 +216,18 @@ export class Game {
     this.ctrl?.register('remove')
   }
 
+  #applyDeltas(deltas: Delta[]): void {
+    if (!this.fieldConfig) return
+    for (const {globalXY, isBan, team} of deltas) {
+      const i = fieldArrayIndex(this.fieldConfig, globalXY)
+      fieldArraySetTeam(this.field, i, team)
+      fieldArraySetBan(this.field, i, isBan)
+      fieldArraySetVisible(this.field, i, true)
+      // to-do: it may be faster to send the entire array for many changes.
+      this.renderer.setBox(globalXY, this.field[i]!)
+    }
+  }
+
   #initDevMode(): void {
     if (!devMode) return
 
@@ -182,15 +256,18 @@ export class Game {
           },
         }
 
-    const sub = [
-      'PlayBanField',
-      'CantPlayBanField',
-      'BananaField',
-      'WhyBanField',
-      'WhatIsBanField',
-    ][Math.trunc(rnd.num * 5)]!
-    const size = 128 * (1 + Math.trunc(rnd.num * 25))
-    const field = {wh: {w: size, h: size}}
+    const sub = devMode
+      ? [
+          'PlayBanField',
+          'CantPlayBanField',
+          'BananaField',
+          'WhyBanField',
+          'WhatIsBanField',
+        ][Math.trunc(rnd.num * 5)]!
+      : ''
+    const partSize = 128
+    const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
+    const field = {partSize, wh: {w: size, h: size}}
     const team = Math.trunc(rnd.num * 4) as Team
     const visible = Math.trunc(rnd.num * field.wh.w * field.wh.h)
     const teamBoxCounts: TeamBoxCounts = [0, 0, 0, 0]
@@ -258,8 +335,14 @@ export class Game {
       this.ctrl.handled = true
 
     this.bmps.size = 0
+
     // Don't await; this can hang.
-    if (this.ctrl.gestured && this.ac.state !== 'running') void this.ac.resume()
+    if (
+      this.mode === 'PopOut' &&
+      this.ctrl.gestured &&
+      this.ac.state !== 'running'
+    )
+      void this.ac.resume().catch(console.warn)
 
     this.now = utcMillisNow()
 
@@ -267,16 +350,6 @@ export class Game {
     this.zoo.draw(this)
 
     this.looper.render(this.cam, this.bmps, this.#onLoop, this.cam.fieldScale)
-  }
-
-  #applyDeltas = (deltas: Delta[]): void => {
-    for (const {globalXY, isBan} of deltas) {
-      const i = globalXY.y * this.fieldConfig!.wh.w + globalXY.x
-      if (this.field[i]) return
-      // TODO: Team and ban color map
-      this.field[i] = isBan ? 2 : 1
-      this.renderer.setBox(globalXY, this.field[i])
-    }
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
@@ -313,14 +386,18 @@ export class Game {
                 if (visible === this.visible) break end
                 if (rnd.num < 0.2) {
                   visible++
-                  this.field[y * msg.field.wh.w + x] =
-                    rnd.num < 0.05 ? 1 : 4 + Math.trunc(rnd.num * 4)
+                  const i = fieldArrayIndex(this.fieldConfig, {x, y})
+                  fieldArraySetTeam(
+                    this.field,
+                    i,
+                    Math.trunc(rnd.num * 4) as Team,
+                  )
+                  fieldArraySetVisible(this.field, i, true)
                 }
               }
-        } else {
-          this.#applyDeltas(msg.initialDeltas)
         }
 
+        this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
         this.mode = msg.mode
         if (this.debug) console.log('init')
@@ -362,6 +439,7 @@ export class Game {
 
   #onPause = (): void => {
     console.log('paused')
+    void this.ac.suspend().catch(console.warn)
   }
 
   #onResize = (): void => {}

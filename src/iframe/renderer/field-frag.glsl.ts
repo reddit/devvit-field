@@ -10,45 +10,99 @@ in vec2 vUV;
 
 out highp vec4 oFrag;
 
-const vec4 palette[] = vec4[](
-  ${rgbaVec4(paletteBlack)},
-  ${rgbaVec4(paletteBanBox)},
-  ${rgbaVec4(paletteSelected)},
-  ${rgbaVec4(paletteWaiting)},
+const vec4 bgTeam[] = vec4[](
   ${rgbaVec4(paletteFlamingo)},
   ${rgbaVec4(paletteJuiceBox)},
-  ${rgbaVec4(paletteLasagna)},
+  ${rgbaVec4(paletteLasagna)}, 
   ${rgbaVec4(paletteSunshine)}
 );
 
 void main() {
   vec2 xy = vUV * uCam.zw + uCam.xy;
-  if (xy.x < 0. || xy.x >= float(uFieldWH.x) || xy.y < 0. || xy.y >= float(uFieldWH.y))
+  if (
+    xy.x < 0. || xy.x >= float(uFieldWH.x) ||
+    xy.y < 0. || xy.y >= float(uFieldWH.y)
+  )
     discard;
 
   vec2 fracXY = fract(xy);
-  float borderW = 0.1;
-  if (uScale >= 10. &&
-      (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
-       fracXY.y < borderW || fracXY.y > 1.0 - borderW)) {
-    oFrag = ${rgbaVec4(paletteBlack)};
+  float borderW = 0.02;
+  if (
+    uScale >= 10. &&
+    (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
+     fracXY.y < borderW || fracXY.y > 1.0 - borderW)
+  ) {
+    oFrag = ${rgbaVec4(paletteGrid)};
     return;
   }
 
   lowp uint box = texelFetch(uTex, ivec2(xy), 0).r;
-  oFrag = palette[box];
+  bool select = ((box >> ${fieldArraySelectShift}) & ${fieldArraySelectMask}u) == ${fieldArraySelectOn}u;
+  bool pend = ((box >> ${fieldArrayPendShift}) & ${fieldArrayPendMask}u) == ${fieldArrayPendOn}u;
+  bool user = ((box >> ${fieldArrayUserShift}) & ${fieldArrayUserMask}u) == ${fieldArrayUserOn}u;
+  bool visible = ((box >> ${fieldArrayVisibleShift}) & ${fieldArrayVisibleMask}u) == ${fieldArrayVisibleOn}u;
+  bool ban = ((box >> ${fieldArrayBanShift}) & ${fieldArrayBanMask}u) == ${fieldArrayBanOn}u;
+  lowp uint team = ((box >> ${fieldArrayTeamShift}) & ${fieldArrayTeamMask}u);
+
+  borderW = .1;
+  if (select &&
+      (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
+       fracXY.y < borderW || fracXY.y > 1.0 - borderW)
+  ) {
+    oFrag = ${rgbaVec4(paletteTerminalGreen)};
+    return;
+  }
+
+  if (ban) {
+    oFrag = ${rgbaVec4(paletteBanBox)};
+    return;
+  }
+
+  if (pend) {
+    oFrag = ${rgbaVec4(palettePending)};
+    return;
+  }
+
+  // to-do: user.
+
+  if (!visible) {
+    oFrag = ${rgbaVec4(paletteBlack)};
+    return;
+  }
+
+  oFrag = bgTeam[team];
 }`
 
 import {
   paletteBanBox,
   paletteBlack,
   paletteFlamingo,
+  paletteGrid,
   paletteJuiceBox,
   paletteLasagna,
-  paletteSelected,
+  palettePending,
   paletteSunshine,
-  paletteWaiting,
+  paletteTerminalGreen,
 } from '../../shared/theme.ts'
+import {
+  fieldArrayBanMask,
+  fieldArrayBanOn,
+  fieldArrayBanShift,
+  fieldArrayPendMask,
+  fieldArrayPendOn,
+  fieldArrayPendShift,
+  fieldArraySelectMask,
+  fieldArraySelectOn,
+  fieldArraySelectShift,
+  fieldArrayTeamMask,
+  fieldArrayTeamShift,
+  fieldArrayUserMask,
+  fieldArrayUserOn,
+  fieldArrayUserShift,
+  fieldArrayVisibleMask,
+  fieldArrayVisibleOn,
+  fieldArrayVisibleShift,
+} from './field-array.ts'
 
 function rgbaVec4(rgba: number): string {
   const r = ((rgba >>> 24) & 0xff) / 0xff

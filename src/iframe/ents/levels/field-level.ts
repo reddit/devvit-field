@@ -1,7 +1,9 @@
+import {boxHits} from '../../../shared/types/2d.ts'
 import type {FieldSub} from '../../../shared/types/field.ts'
 import {audioPlay} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
 import {RealtimeConnector} from '../../realtime-connector.ts'
+import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import type {LevelEnt} from './level-ent.ts'
 
@@ -17,7 +19,7 @@ export class FieldLevel implements LevelEnt {
 
   init(game: Game): void {
     game.zoo.clear()
-    game.zoo.add(this)
+    game.zoo.add(this, new CursorEnt(game))
 
     if (!game.audio) throw Error('no audio')
     if (game.sub === ('BananaField' satisfies FieldSub))
@@ -39,29 +41,28 @@ export class FieldLevel implements LevelEnt {
 
   #updatePick(game: Game): void {
     const {cam, ctrl, fieldConfig} = game
-    if (ctrl.isOffStart('A') && !ctrl.drag && !ctrl.pinch && !ctrl.handled) {
+
+    const select = {
+      x: Math.trunc(
+        cam.x / cam.scale + ctrl.screenPoint.x / cam.scale / cam.fieldScale,
+      ),
+      y: Math.trunc(
+        cam.y / cam.scale + ctrl.screenPoint.y / cam.scale / cam.fieldScale,
+      ),
+    }
+
+    if (
+      fieldConfig &&
+      ctrl.isOnStart('A') &&
+      !ctrl.drag &&
+      !ctrl.pinch &&
+      !ctrl.handled &&
+      boxHits(fieldConfig.wh, select)
+    ) {
       // to-do: I broke the trailing edge of drag. It should stay on one extra
-      //        cycle.
+      //        cycle. This was an issue when trying to use isOffStart().
       ctrl.handled = true
-
-      // to-do: move this mutation to a centralized store or Game so it's easier
-      //        to see how state changes.
-      const xy = {
-        x: Math.trunc(cam.x + ctrl.screenPoint.x / cam.fieldScale),
-        y: Math.trunc(cam.y + ctrl.screenPoint.y / cam.fieldScale),
-      }
-      if (
-        xy.x < 0 ||
-        xy.x >= fieldConfig!.wh.w ||
-        xy.y < 0 ||
-        xy.y >= fieldConfig!.wh.h
-      )
-        return
-      // to-do: post message.
-      // to-do: set state to indeterminate and wait until response to mark
-      //        state. Aggregate clicks while waiting.
-
-      game.postMessage({type: 'ClaimBoxes', boxes: [xy]})
+      game.selectBox(select)
     }
   }
 
@@ -71,8 +72,8 @@ export class FieldLevel implements LevelEnt {
     if (ctrl.drag && !ctrl.handled) {
       ctrl.handled = true
 
-      cam.x -= ctrl.delta.x / cam.fieldScale
-      cam.y -= ctrl.delta.y / cam.fieldScale
+      cam.x -= ctrl.delta.x / cam.scale / cam.fieldScale
+      cam.y -= ctrl.delta.y / cam.scale / cam.fieldScale
 
       this.#rtConnector.update(game)
     }
@@ -86,7 +87,8 @@ export class FieldLevel implements LevelEnt {
       if (ctrl.isOn('U')) dir.y--
       if (ctrl.isOn('D')) dir.y++
 
-      const speed = (dir.x && dir.y ? Math.sqrt(25 / 2) : 5) / cam.fieldScale
+      const speed =
+        (dir.x && dir.y ? Math.sqrt(25 / 2) : 5) / cam.scale / cam.fieldScale
       cam.x += dir.x * speed
       cam.y += dir.y * speed
 

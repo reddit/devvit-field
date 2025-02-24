@@ -6,4 +6,4 @@
 /coverage/
 
 # Audacity temporary files.
-/resources/audio/*.aup3-wal
+*.aup3-wal
