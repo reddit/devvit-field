@@ -20,11 +20,12 @@ export type FollowCamOrientation =
 
 // It'd probably be better to use an exponential here but this was easier at the
 // cost of index state.
+// to-do: subpixel coordinates are truncating.
 const fieldScaleLvls: readonly number[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
   23, 24, 25, 26, 27, 28, 29, 30, 32, 34, 36, 38, 40, 42, 44, 46, 48, 50, 54,
   58, 62, 66, 70, 74, 78, 82, 86, 90, 98, 106, 114, 122, 130, 138, 146, 154,
-  162, 170,
+  162, 170, 178, 186, 194, 202, 210, 218, 226, 234, 242, 250,
 ]
 const minUserFieldScaleLvl: number = fieldScaleLvls.indexOf(40)!
 const defaultFieldScaleLvl: number = fieldScaleLvls.indexOf(98)!
@@ -159,6 +160,7 @@ export class Cam {
     return xyAdd(this, this.toScreenXY(canvas, clientXY))
   }
 
+  /** Scaled camera pixels but relative the top-left of the viewport. */
   toScreenXY(canvas: HTMLCanvasElement, clientXY: Readonly<XY>): XY {
     // WH of body in CSS px; document.body.getBoundingClientRect() returns
     // incorrectly large sizing on mobile that includes the address bar.
@@ -187,11 +189,13 @@ export function camScale(
   mode: 'Int' | 'Fraction',
 ): number {
   const native = camNativeWH(canvas)
-  const scale = Math.max(
+  let scale = Math.max(
     minScale,
     // Default is to zoom in as much as possible.
     Math.min(native.w / minWH.w, native.h / minWH.h) - (zoomOut ?? 0),
   )
+  // If it's within .05 of an integer, use the integer.
+  scale = Math.round(scale) - scale < 0.05 ? Math.round(scale) : scale
   return mode === 'Int' ? Math.trunc(scale) : scale
 }
 

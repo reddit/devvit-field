@@ -1,0 +1,75 @@
+import {partitionConnectionUpdateInterval} from '../shared/theme.ts'
+import {Throttle} from '../shared/throttle.ts'
+import {type XY, xyEq} from '../shared/types/2d.ts'
+import type {FieldConfig} from '../shared/types/field-config.ts'
+import type {Game} from './game/game.ts'
+import type {Cam} from './renderer/cam.ts'
+
+export class RealtimeConnector {
+  #start: XY = {x: 0, y: 0}
+  #end: XY = {x: 0, y: 0}
+  #parts?: XY[]
+
+  update(game: Game): void {
+    if ((this.#parts && game.cam.valid) || !game.fieldConfig) return
+
+    const [start, end] = newStartEnd(game.cam, game.fieldConfig)
+
+    if (xyEq(this.#start, start) && xyEq(this.#end, end)) return
+
+    this.#start = start
+    this.#end = end
+
+    this.#postMessage.schedule(game, game.fieldConfig.partSize)
+  }
+
+  #postMessage = new Throttle((game: Game, partSize: number): void => {
+    this.#parts = [...newParts(this.#start, this.#end, partSize)]
+    game.postMessage({type: 'ConnectPartitions', parts: this.#parts})
+  }, partitionConnectionUpdateInterval)
+}
+
+function* newParts(
+  start: Readonly<XY>,
+  end: Readonly<XY>,
+  partSize: number,
+): Generator<XY> {
+  for (let y = start.y; y < end.y; y += partSize)
+    for (let x = start.x; x < end.x; x += partSize) yield {x, y}
+}
+
+function newStartEnd(
+  cam: Readonly<Cam>,
+  config: Readonly<FieldConfig>,
+): [XY, XY] {
+  const size = config.partSize
+  // cam.x/y/w/h is scaled by cam.scale and in level coordinates.
+  // cam.fieldScale is pixels per level pixel.
+  // cam.w/h is the size of the parent.
+  // to-do: review cam.x/y considers cam.scale.
+  const start = {
+    x: Math.max(0, Math.floor(cam.x / cam.scale / size) * size),
+    y: Math.max(0, Math.floor(cam.y / cam.scale / size) * size),
+  }
+  const end = {
+    x: Math.max(
+      0,
+      Math.min(
+        config.wh.w,
+        Math.ceil(
+          (cam.x / cam.scale + cam.w / cam.scale / cam.fieldScale) / size,
+        ) * size,
+      ),
+    ),
+    y: Math.max(
+      0,
+      Math.min(
+        config.wh.h,
+        Math.ceil(
+          (cam.y / cam.scale + cam.h / cam.scale / cam.fieldScale) / size,
+        ) * size,
+      ),
+    ),
+  }
+  return [start, end]
+}

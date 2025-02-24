@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import {Devvit} from '@devvit/public-api'
+import {Devvit, type JobContext} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
 import type {Seed} from '../../../shared/types/random'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
@@ -35,7 +35,8 @@ export type ChallengeConfig = {
    * say it wouldn't be a fun feature if needed.
    */
   mineDensity: number
-  // TODO: Theme variables and other config that we want to change per sub
+
+  // TODO: Theme variables and other config that we want to change per sub?
 
   // TODO: Add a debug flag here
 }
@@ -66,20 +67,16 @@ export const challengeConfigGet = async ({
   return deserializeChallengeConfig(config)
 }
 
-export const challengeConfigGetClientSafeProps = async ({
-  redis,
-  challengeNumber,
-}: {
-  redis: Devvit.Context['redis']
-  challengeNumber: number
-}): Promise<Pick<ChallengeConfig, 'partitionSize' | 'size'>> => {
-  const {partitionSize, size} = await challengeConfigGet({
-    redis,
-    challengeNumber,
-  })
+/**
+ * Returns client safe properties to the client. Please don't put the seed here.
+ */
+export const makeSafeChallengeConfig = (
+  config: ChallengeConfig,
+): Pick<ChallengeConfig, 'size' | 'partitionSize'> => {
   return {
-    partitionSize,
-    size,
+    // DO NOT ADD SEED HERE
+    size: config.size,
+    partitionSize: config.partitionSize,
   }
 }
 
@@ -153,7 +150,7 @@ export const challengeMakeNew = async ({
   ctx,
   config: configParams,
 }: {
-  ctx: Devvit.Context
+  ctx: Devvit.Context | JobContext
   config?: Partial<ChallengeConfig>
 }): Promise<{challengeNumber: number}> => {
   if (!ctx.subredditName) {
@@ -261,5 +258,5 @@ function deserializeChallengeConfig(
 
       return [key, val]
     }),
-  ) as ChallengeConfig
+  ) as unknown as ChallengeConfig
 }

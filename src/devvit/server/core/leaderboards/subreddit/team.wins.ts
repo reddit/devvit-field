@@ -1,3 +1,4 @@
+// TODO: Delete? Haven't seen this in latest comps
 import type {Devvit} from '@devvit/public-api'
 import {type Team, teams} from '../../../../../shared/team'
 

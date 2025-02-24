@@ -1,8 +1,10 @@
 /devvit.dev.yaml
+/devvit.load.yaml
 /dist/
 /node_modules/
+/src/devvit/server/core/config.dev.json
 /webroot/index.js*
 /coverage/
 
 # Audacity temporary files.
-/resources/audio/*.aup3-wal
+*.aup3-wal

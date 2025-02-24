@@ -35,6 +35,11 @@ cp tools/devvit.template.yaml devvit.dev.yaml
 # Edit the name field to be uniquely associated to you such as banfieldfoo; it
 # must be 16 characters or less.
 
+cp src/devvit/server/core/config.template.json src/devvit/server/core/config.dev.json
+# Edit the T3 and T5 IDs at least.
+
+# Un/comment the imports in src/devvit/server/core/levels.ts.
+
 npx devvit upload --config=devvit.dev.yaml
 ```
 
@@ -64,7 +69,7 @@ launches [local iframe development](#local-iframe-development).
 - `run format`: apply lint fixes automatically where available.
 - `run build`: compile source inputs to artifacts under `dist/` and `webroot/`.
 - `run build:atlas`: compile Aseprite assets into atlas (requires `aseprite`).
-- `run devvit:install`: build, upload, and install a new version to to-do: r/.
+- `run devvit:install`: build, upload, and install a new version to prod subs.
 
 💡 Add `--` to pass arguments to the script command. For example,
 `npm run test:unit -- --update` to update snapshots.
@@ -84,5 +89,11 @@ launches [local iframe development](#local-iframe-development).
 - **webroot**/: iframe uploads.
   - **assets**/: iframe data uploads.
   - **index.\***: iframe webpage code uploads.
+
+## Attributions
+
+- [Departure Mono](https://departuremono.com) font created by
+  [Helena Zhang](https://helenazhang.com).
+- Edit Undo font created by [Brian Kent](mailto:kentpw@norwich.net).
 
 ## [License (BSD-3-Clause)](docs/license.md)

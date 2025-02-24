@@ -1,3 +1,4 @@
+import type {Level} from './types/level.ts'
 import type {Seed} from './types/random.ts'
 import type {SID} from './types/sid.ts'
 import type {T2} from './types/tid.ts'
@@ -10,6 +11,13 @@ export type Profile = {
   t2: T2
   /** Player username. eg, spez. */
   username: string
+  /** The level the user is currently on */
+  currentLevel: Level
+  /**
+   * The last challenge the user has submitted a click for. Used for verifying access control
+   * when paired with currentLevel
+   */
+  lastPlayedChallengeNumberForLevel: number
 }
 
 export type Player = {profile: Profile; sid: SID}

@@ -4,11 +4,30 @@
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width, maximum-scale=1, minimum-scale=1, user-scalable=no' />
     <title>BanField</title>
-    <!-- Align to AssetMap. -->
     <!-- to-do: update me. -->
-    <link rel='preload' href='assets/atlas.webp' as='image' type='image/webp' />
+    <link rel='preload' href='assets/edit-undo.ttf' as='font' type='font/ttf' crossorigin='anonymous' />
+    <link rel='preload' href='assets/departure-mono.woff2' as='font' type='font/woff2' crossorigin='anonymous' />
+    <link rel='preload' href='assets/icon/menu.svg' as='image' type='image/svg+xml' />
+    <link rel='preload' href='assets/icon/zoom-in.svg' as='image' type='image/svg+xml' />
+    <link rel='preload' href='assets/icon/zoom-out.svg' as='image' type='image/svg+xml' />
+
+    <!-- Align to AssetMap. -->
     <link rel='preload' href='assets/audio.cat' as='fetch' crossorigin='anonymous' />
+    <link rel='preload' href='assets/atlas.webp' as='image' type='image/webp' />
+
     <style>
+      @font-face {
+        font-family: 'Edit Undo BRK';
+        src: local('Edit Undo BRK'), url(assets/edit-undo.ttf) format('opentype');
+        font-display: block; /* Wait as long as possible for font to download. */
+      }
+
+      @font-face {
+        font-family: 'Departure Mono';
+        src: local('Departure Mono'), url(assets/departure-mono.woff2) format('woff2');
+        font-display: block; /* Wait as long as possible for font to download. */
+      }
+
       body {
         margin: 0;
         width: 100vw;

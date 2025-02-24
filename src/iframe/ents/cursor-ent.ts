@@ -16,7 +16,7 @@ export class CursorEnt implements Ent {
 
   constructor(game: Game) {
     this.eid = game.eid.new()
-    this.#sprite = new Sprite(game.atlas, 'cursor--Point' as Tag)
+    this.#sprite = new Sprite(game.atlas, 'background--Checkerboard') // 'cursor--Point'
     this.#sprite.z = Layer.Cursor
   }
 
@@ -58,17 +58,20 @@ export class CursorEnt implements Ent {
   }
 
   update(game: Game): void {
-    if (game.ctrl.pointOn && game.ctrl.pointType === 'Mouse')
-      this.#visible = true
-    else if (
+    const {ctrl} = game
+
+    if (ctrl.pointOn && ctrl.pointType === 'Mouse') {
+      // this.#visible = true
+    } else if (
       // to-do: make it possible to detect keyboard distinctly.
-      game.ctrl.isAnyOn('L', 'R', 'U', 'D') ||
-      game.ctrl.pointType !== 'Mouse'
+      ctrl.isAnyOn('L', 'R', 'U', 'D') ||
+      ctrl.pointType !== 'Mouse'
     )
       this.#visible = false
+
     this.#sprite.x =
-      Math.round(game.ctrl.screenPoint.x) - (hitbox.x + hitbox.w / 2)
+      Math.round(ctrl.screenPoint.x) - Math.trunc(hitbox.x + hitbox.w / 2)
     this.#sprite.y =
-      Math.round(game.ctrl.screenPoint.y) - (hitbox.y + hitbox.h / 2)
+      Math.round(ctrl.screenPoint.y) - Math.trunc(hitbox.y + hitbox.h / 2)
   }
 }

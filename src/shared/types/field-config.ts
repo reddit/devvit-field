@@ -1,6 +1,8 @@
 import type {WH} from './2d.ts'
 
 export type FieldConfig = {
-  /** Cell width and height. */
+  /** Width and height of each partition in boxes. */
+  partSize: number
+  /** Width and height of field in boxes. */
   wh: WH
 }

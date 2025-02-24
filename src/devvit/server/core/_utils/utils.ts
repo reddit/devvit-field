@@ -1,4 +1,4 @@
-import {decodeVTT} from '../../../../shared/bitfieldHelpers'
+import {decodeVTT} from '../bitfieldHelpers'
 
 interface MatrixConfig {
   result: number[]

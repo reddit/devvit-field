@@ -70,3 +70,34 @@ export function getPartitionAndLocalCoords(
     localXY: getLocalCoords(globalCoord, partitionSize),
   }
 }
+
+/**
+ * Given a partition coordinate and a local coordinate within that partition,
+ * returns the global coordinate.
+ */
+export function getGlobalCoords(
+  partitionXY: XY,
+  localXY: XY,
+  partitionSize: number,
+): XY {
+  return {
+    x: partitionXY.x * partitionSize + localXY.x,
+    y: partitionXY.y * partitionSize + localXY.y,
+  }
+}
+
+export function generatePartitionKeys(
+  gridSize: number,
+  partitionSize: number,
+): PartitionKey[] {
+  const partitionsPerSide = gridSize / partitionSize
+  const partitionKeys: PartitionKey[] = []
+
+  for (let x = 0; x < partitionsPerSide; x++) {
+    for (let y = 0; y < partitionsPerSide; y++) {
+      partitionKeys.push(`px_${x}__py_${y}`)
+    }
+  }
+
+  return partitionKeys
+}

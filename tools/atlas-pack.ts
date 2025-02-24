@@ -3,11 +3,14 @@
 //
 // atlas-pack.ts config.json
 
-import {type ExecFileException, execFile} from 'node:child_process'
+import {execFile} from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
+import util from 'node:util'
 import type {Config} from '../src/iframe/types/config.js'
 import {parseAtlas} from './atlas-parser.ts'
+
+const execFileAsync = util.promisify(execFile)
 
 const configFilename = process.argv
   .slice(2)
@@ -41,14 +44,7 @@ const atlas = parseAtlas(JSON.parse(json), config.tags)
 fs.writeFileSync(atlasJSONFilename, JSON.stringify(atlas, undefined, 2))
 
 async function ase(...args: readonly string[]): Promise<string> {
-  const [err, stdout, stderr] = await new Promise<
-    [ExecFileException | null, string, string]
-  >(resolve =>
-    execFile('aseprite', args, (err, stdout, stderr) =>
-      resolve([err, stdout, stderr]),
-    ),
-  )
+  const {stderr, stdout} = await execFileAsync('aseprite', args)
   process.stderr.write(stderr)
-  if (err) throw err
   return stdout
 }

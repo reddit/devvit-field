@@ -13,6 +13,8 @@ DevvitTest.it('userGetOrSet - return defaults if no user found', async ctx => {
   await expect(
     userMethods.userGetOrSet({ctx: {...ctx, userId: undefined}}),
   ).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: 't2_0',
     username: 'anonymous',
     superuser: false,
@@ -27,6 +29,8 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
   } as User)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -34,6 +38,8 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
   await expect(
     userMethods.userGet({redis: ctx.redis, userId: ctx.userId as T2}),
   ).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -42,6 +48,8 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
   expect(spy).toHaveBeenCalledTimes(1)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -57,6 +65,8 @@ DevvitTest.it('userGetOrSet - set superuser', async ctx => {
   } as User)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: true,
@@ -71,6 +81,8 @@ DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
   } as User)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
@@ -82,6 +94,8 @@ DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
   })
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
+    currentLevel: 0,
+    lastPlayedChallengeNumberForLevel: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: true,

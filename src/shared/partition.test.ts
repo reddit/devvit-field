@@ -1,5 +1,6 @@
 import {expect, it} from 'vitest'
 import {
+  getGlobalCoords,
   getLocalCoords,
   getPartitionAndLocalCoords,
   getPartitionCoords,
@@ -65,5 +66,25 @@ it('getPartitionAndLocalCoords', () => {
   expect(getPartitionAndLocalCoords({x: 11, y: 12}, 10)).toEqual({
     partitionXY: {x: 1, y: 1},
     localXY: {x: 1, y: 2},
+  })
+})
+
+it('getGlobalCoords', () => {
+  expect(getGlobalCoords({x: 0, y: 0}, {x: 0, y: 0}, 10)).toEqual({x: 0, y: 0})
+  expect(getGlobalCoords({x: 1, y: 1}, {x: 0, y: 0}, 10)).toEqual({
+    x: 10,
+    y: 10,
+  })
+  expect(getGlobalCoords({x: 1, y: 1}, {x: 1, y: 1}, 10)).toEqual({
+    x: 11,
+    y: 11,
+  })
+  expect(getGlobalCoords({x: 1, y: 1}, {x: 2, y: 1}, 10)).toEqual({
+    x: 12,
+    y: 11,
+  })
+  expect(getGlobalCoords({x: 1, y: 1}, {x: 1, y: 2}, 10)).toEqual({
+    x: 11,
+    y: 12,
   })
 })

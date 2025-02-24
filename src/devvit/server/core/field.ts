@@ -1,28 +1,45 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
-import {decodeVTT, encodeVTT} from '../../../shared/bitfieldHelpers'
 import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
+  getGlobalCoords,
   getPartitionAndLocalCoords,
   makePartitionKey,
 } from '../../../shared/partition'
+import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {Delta} from '../../../shared/types/field'
-import type {ChallengeCompleteMessage} from '../../../shared/types/message'
+import type {
+  ChallengeCompleteMessage,
+  DialogMessage,
+} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
-import {type ChallengeConfig, challengeConfigGet} from './challenge'
-import {deltasAdd} from './deltas'
+import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {
-  playerStatsCellsClaimedGameOver,
-  playerStatsCellsClaimedIncrementForMember,
-} from './leaderboards/challenge/player.cellsClaimed'
+  type ChallengeConfig,
+  challengeConfigGet,
+  challengeGetCurrentChallengeNumber,
+  challengeMakeNew,
+} from './challenge'
+import {deltasAdd} from './deltas'
 import {
   teamStatsCellsClaimedGet,
   teamStatsCellsClaimedIncrementForMember,
 } from './leaderboards/challenge/team.cellsClaimed'
+import {
+  teamStatsByPlayerCellsClaimedForMember,
+  teamStatsByPlayerCellsClaimedGameOver,
+  teamStatsByPlayerCellsClaimedIncrementForMember,
+} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
+import {levels, makeLevelRedirect} from './levels'
 import {minefieldIsMine} from './minefield'
 import {computeScore} from './score'
+import {
+  userAscendLevel,
+  userDescendLevel,
+  userSetLastPlayedChallenge,
+} from './user'
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
   `challenge:${challengeNumber}:field:${makePartitionKey(partitionXY)}` as const
@@ -133,18 +150,30 @@ export const _fieldClaimCellsSuccess = async ({
 
   // User stats
   if (isGameOverForUser) {
-    await playerStatsCellsClaimedGameOver({
+    console.log(`Game over for ${userId}. Hit a mine!`)
+    await teamStatsByPlayerCellsClaimedGameOver({
       challengeNumber,
       member: userId,
       redis: ctx.redis,
     })
+
+    await userDescendLevel({
+      redis: ctx.redis,
+      userId,
+    })
   } else {
-    await playerStatsCellsClaimedIncrementForMember({
+    await teamStatsByPlayerCellsClaimedIncrementForMember({
       challengeNumber,
       member: userId,
       redis: ctx.redis,
       // Since it's not game over, user gets all the deltas produced
       incrementBy: deltas.length,
+    })
+
+    await userSetLastPlayedChallenge({
+      challengeNumber,
+      redis: ctx.redis,
+      userId,
     })
   }
 
@@ -183,15 +212,11 @@ export const _fieldClaimCellsSuccess = async ({
     // TODO: Increment user stats here or do it somewhere else?
     await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
 
-    await ctx.scheduler.runJob({
-      runAt: new Date(),
-      name: 'ON_CHALLENGE_END',
-      data: {challengeNumber},
-    })
-
-    // TODO: Fire a job to for ascension if the game is over and other post processing like flairs
-
     // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
+    // Make a new game immediately, because yolo
+    await challengeMakeNew({
+      ctx,
+    })
   }
 }
 
@@ -281,15 +306,14 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
 
   // Produce the deltas from the write operation to be stored somewhere
   const deltas: Delta[] = []
-  teamOpsReturn.forEach((value, i) => {
+  teamOpsReturn.forEach((_value, i) => {
     const batchItem = batch[teamWriteOpsBatchIndex[i]!]
-    const {team} = decodeVTT(value)
 
     if (batchItem) {
       deltas.push({
         globalXY: batchItem.globalXY,
         isBan: batchItem.isBan,
-        team,
+        team: teamNumber,
       })
     }
   })
@@ -297,6 +321,102 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   return deltas
 }
 
+/**
+ * Make sure the user has access to:
+ * 1. View the field
+ * 2. Claims cells for the field
+ *
+ * pass: true means the user can claim cells
+ * pass: false means the user cannot claim cells
+ *
+ * On false, you'll be provided a message and a redirectURL
+ * to send the user to.
+ */
+type CanUserClaimCellsResponse =
+  | {
+      pass: true
+    }
+  | ({
+      pass: false
+      redirectURL: string
+    } & Omit<DialogMessage, 'type'>)
+
+export const fieldValidateUserAndAttemptAscend = async ({
+  profile,
+  challengeNumber,
+  ctx,
+}: {
+  profile: Profile
+  challengeNumber: number
+  ctx: Devvit.Context
+}): Promise<CanUserClaimCellsResponse> => {
+  // User has never played before
+  if (
+    profile.lastPlayedChallengeNumberForLevel === 0 &&
+    profile.currentLevel === 0
+  ) {
+    return {pass: true}
+  }
+
+  const level = levels.find(x => x.subredditId === ctx.subredditId)
+  if (!level) {
+    throw new Error(`No level config found for subreddit ${ctx.subredditId}`)
+  }
+
+  if (profile.currentLevel !== level.id) {
+    return {
+      pass: false,
+      message: `You are not on the correct level. You should be at level ${profile.currentLevel}, not ${level.id}.`,
+      redirectURL: makeLevelRedirect(profile.currentLevel),
+      code: 'WrongLevel',
+    }
+  }
+
+  const currentChallengeNumber = await challengeGetCurrentChallengeNumber({
+    redis: ctx.redis,
+  })
+
+  if (profile.lastPlayedChallengeNumberForLevel === currentChallengeNumber) {
+    return {pass: true}
+  }
+
+  const standings = await teamStatsCellsClaimedGet({
+    challengeNumber,
+    redis: ctx.redis,
+  })
+
+  const winningTeam = standings[0]!.member
+  const userTeam = getTeamFromUserId(profile.t2)
+
+  if (winningTeam === userTeam) {
+    const cellsClaimed = await teamStatsByPlayerCellsClaimedForMember({
+      challengeNumber,
+      member: profile.t2,
+      redis: ctx.redis,
+    })
+    if (cellsClaimed && cellsClaimed > 0) {
+      const newLevel = await userAscendLevel({
+        redis: ctx.redis,
+        userId: profile.t2,
+      })
+
+      return {
+        pass: false,
+        message: `You were on the winning team and claimed more than one cell. You have ascended to level ${newLevel}.`,
+        code: 'WrongLevel',
+        redirectURL: makeLevelRedirect(newLevel),
+      }
+    }
+  }
+
+  return {pass: true}
+}
+
+/**
+ * NOTE: Call fieldValidateUserAndAttemptAscend before this function to ensure
+ * the user can claim cells! Separated to make it easier for the client to
+ * handle the failure cases.
+ */
 export const fieldClaimCells = async ({
   coords,
   userId,
@@ -391,9 +511,10 @@ export const fieldClaimCells = async ({
  * way to return all items in a bitfield. At a minimum, we need to the
  * partition a required command so we don't risk sending 10 million bits at once.
  *
- * TODO: I tried to use redis.get, but the problem is that Redis orders the bits
- * differently and I couldn't figure out how to rearrange them. It would also be nice
- * to use redis.getBuffer if it can be added.
+ * TODO: Replace this with redis.getBuffer when it's available.
+ *
+ * @returns Array of numbers (you need to decode with decodeVTT). If the partition
+ * does not yet exist in redis, returns empty array!
  */
 export const fieldGet = async ({
   challengeNumber,
@@ -414,12 +535,10 @@ export const fieldGet = async ({
     )
   }
 
-  const data = await redis.get(
+  const data = await redis.strLen(
     createFieldPartitionKey(challengeNumber, partitionXY),
   )
-  if (data === undefined) {
-    throw new Error('No field data found')
-  }
+  if (data === 0) return []
 
   const commands: BitfieldCommand[] = []
 
@@ -435,4 +554,46 @@ export const fieldGet = async ({
   )
 
   return result
+}
+
+export const fieldGetDeltas = async ({
+  challengeNumber,
+  redis,
+  partitionXY,
+}: {
+  challengeNumber: number
+  redis: Devvit.Context['redis']
+  partitionXY: XY
+}): Promise<Delta[]> => {
+  const meta = await challengeConfigGet({redis, challengeNumber})
+  const fieldData = await fieldGet({challengeNumber, redis, partitionXY})
+
+  if (fieldData.length === 0) return []
+
+  const deltas: Delta[] = []
+
+  for (let i = 0; i < meta.partitionSize * meta.partitionSize; i++) {
+    const {claimed, team} = decodeVTT(fieldData[i]!)
+
+    if (claimed === 0) continue
+
+    const localXY = {
+      x: i % meta.partitionSize,
+      y: Math.floor(i / meta.partitionSize),
+    }
+    const globalXY = getGlobalCoords(partitionXY, localXY, meta.partitionSize)
+
+    deltas.push({
+      globalXY,
+      isBan: minefieldIsMine({
+        seed: meta.seed,
+        coord: globalXY,
+        cols: meta.size,
+        config: {mineDensity: meta.mineDensity},
+      }),
+      team,
+    })
+  }
+
+  return deltas
 }

@@ -4,10 +4,14 @@ import {
   type TemplateResult,
   css,
   html,
+  unsafeCSS,
 } from 'lit'
-import {customElement, property} from 'lit/decorators.js'
-import {type Team, teamName} from '../../shared/team.ts'
+import {customElement} from 'lit/decorators.js'
+import {cssHex, paletteBlack, paletteTerminalGreen} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
+
+import './bf-button.ts'
+import './bf-coords.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -21,21 +25,26 @@ export class BFFooter extends LitElement {
     ${cssReset}
 
     :host {
-      display: flex;
-      background: grey;
-      justify-content: space-between;
+      background-color: ${unsafeCSS(cssHex(paletteBlack))};
+      color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
+      display: block;
+      font-family: 'Departure Mono';
+      text-align: center;
+      padding-block-start: 2px;
+      padding-block-end: 2px;
+    }
+
+    a {
+      color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
     }
   `
 
-  @property({type: Number}) accessor score: number | undefined
-  @property({type: Number}) accessor team: Team | undefined
-
-  override render(): TemplateResult {
-    if (this.score == null || this.team == null) return html`&nbsp;`
+  protected override render(): TemplateResult {
     return html`
-      <span class='score'>${teamName[this.team]}: ${this.score}</span>
-      <span></span>
-      <a href='https://reddit.com/r/gamesonreddit'>r/GamesOnReddit</a>
+      <a
+        href='https://reddit.com/r/gamesonreddit'
+        target="_blank"
+      >r/GamesOnReddit</a>
     `
   }
 }
