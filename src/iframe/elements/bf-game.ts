@@ -8,6 +8,8 @@ import {
   unsafeCSS,
 } from 'lit'
 import {customElement, property, query} from 'lit/decorators.js'
+import {ifDefined} from 'lit/directives/if-defined.js'
+import {teamPascalCase} from '../../shared/team.ts'
 import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import {Game} from '../game/game.ts'
@@ -70,6 +72,8 @@ export class BFGame extends LitElement {
     }
 
     .terminal {
+      display: flex;
+      flex-direction: column;
       height: 100%;
       overflow: hidden;
       border-style: solid;
@@ -82,7 +86,6 @@ export class BFGame extends LitElement {
       margin-inline-end: 5px;
 
       padding-block-start: 8px;
-      padding-block-end: 70px;
       padding-inline-start: 11px;
       padding-inline-end: 11px;
     }
@@ -129,6 +132,8 @@ export class BFGame extends LitElement {
     //   this.#game.team != null && this.#game.teamBoxCounts
     //     ? this.#game.teamBoxCounts[this.#game.team]
     //     : undefined
+    const team =
+      this.#game.team == null ? undefined : teamPascalCase[this.#game.team]
 
     switch (this.ui) {
       case 'Loading':
@@ -154,6 +159,10 @@ export class BFGame extends LitElement {
         </div>
         <bf-control-panel
           @claim='${this.#onClaim}'
+          @toggle-side-panel='${this.#onToggleSidePanel}'
+          @zoom-in='${() => this.#onZoom(1)}'
+          @zoom-out='${() => this.#onZoom(-1)}'
+          team='${ifDefined(team)}'
           x='${this.#game.select.x}'
           y='${this.#game.select.y}'
         ></bf-control-panel>
@@ -165,5 +174,22 @@ export class BFGame extends LitElement {
 
   #onClaim(ev: CustomEvent<XY>): void {
     this.#game.claimBox(ev.detail)
+  }
+
+  #onToggleSidePanel(ev: CustomEvent<XY>): void {
+    // to-do: fill me out.
+  }
+
+  #onZoom(incr: number): void {
+    const center = {
+      x: this.#game.cam.x + this.#game.cam.w / 2,
+      y: this.#game.cam.y + this.#game.cam.h / 2,
+    }
+
+    this.#game.cam.setFieldScaleLevel(
+      this.#game.cam.fieldScaleLevel + incr,
+      center,
+      this.#game.p1?.profile.superuser ?? false,
+    )
   }
 }

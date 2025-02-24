@@ -3,13 +3,14 @@
 import type {T2} from './types/tid'
 
 export type Team = 0 | 1 | 2 | 3
+export type TeamPascalCase = 'Flamingo' | 'JuiceBox' | 'Lasagna' | 'Sunshine'
 
 export const teams: readonly [Team, Team, Team, Team] = [0, 1, 2, 3]
 
-/** Printable team name. */
-export const teamName: {readonly [team in Team]: string} = {
+/** PascalCase team name. */
+export const teamPascalCase: {readonly [team in Team]: TeamPascalCase} = {
   0: 'Flamingo',
-  1: 'Juice Box',
+  1: 'JuiceBox',
   2: 'Lasagna',
   3: 'Sunshine',
 }

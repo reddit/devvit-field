@@ -1,17 +1,15 @@
 import type {WH} from './types/2d.ts'
 
 export const paletteBlack: number = 0x000000ff
-export const paletteJuiceBox: number = 0x7391ebff
-export const paletteFlamingo: number = 0xbc4681ff
-export const paletteLasagna: number = 0xda6939ff
-export const paletteSunshine: number = 0xe2a94dff
+export const paletteFlamingo: number = 0xbc4681ff // oklch(57.17% 0.1632 352.48)
+export const paletteJuiceBox: number = 0x7391ebff // oklch(67.36% 0.1379 268.6)
+export const paletteLasagna: number = 0xda6939ff // oklch(64.8% 0.1549 42.23)
+export const paletteSunshine: number = 0xe2a94dff // oklch(77.11% 0.127 76.74)
+
 export const paletteBanBox: number = 0x7dff00ff
-export const paletteLemonLime: number = 0xc0f754ff
 export const paletteTerminalGreen: number = 0x4cf190ff
 export const palettePending: number = 0x00ffffff
 export const paletteDarkGrey: number = 0x1f2430ff
-export const paletteLightShade: number = 0x00000030
-export const paletteHalfShade: number = 0x00000080
 export const paletteGrid: number = 0x002e00ff
 
 export const spacePx: number = 8

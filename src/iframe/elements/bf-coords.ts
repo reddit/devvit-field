@@ -24,7 +24,7 @@ export class BFCoords extends LitElement {
     :host {
       color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
       display: inline-block;
-      font-family: 'Silkscreen';
+      font-family: 'Departure Mono';
     }
   `
 

@@ -28,8 +28,10 @@ export class BFFooter extends LitElement {
       background-color: ${unsafeCSS(cssHex(paletteBlack))};
       color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
       display: block;
-      font-family: 'Silkscreen';
+      font-family: 'Departure Mono';
       text-align: center;
+      padding-block-start: 2px;
+      padding-block-end: 2px;
     }
 
     a {
@@ -39,7 +41,10 @@ export class BFFooter extends LitElement {
 
   protected override render(): TemplateResult {
     return html`
-      Brought to you by <a href='https://reddit.com/r/gamesonreddit'>r/GamesOnReddit</a>
+      <a
+        href='https://reddit.com/r/gamesonreddit'
+        target="_blank"
+      >r/GamesOnReddit</a>
     `
   }
 }
