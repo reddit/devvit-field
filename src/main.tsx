@@ -23,7 +23,7 @@ import {makeLevelRedirect} from './devvit/server/core/levels.js'
 import {fieldClaimCells} from './devvit/server/core/field.js'
 import {userMakeSuperuser, userSetLevel} from './devvit/server/core/user.js'
 import type {Level} from './shared/types/level.js'
-import type {T2} from './shared/types/tid.js'
+import {T2} from './shared/types/tid.js'
 
 Devvit.configure({redditAPI: true, redis: true, realtime: true})
 
@@ -200,7 +200,8 @@ Devvit.addMenuItem({
   },
 })
 
-const getRandomBetween = (min: number, max: number) => {
+/** Returns whole numbers in [min, max). */
+function getRandomIntBetween(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
@@ -225,8 +226,8 @@ export default class extends Devvit implements Hello {
       redis: ctx.redis,
     })
 
-    const x = getRandomBetween(0, challenge.size)
-    const y = getRandomBetween(0, challenge.size)
+    const x = getRandomIntBetween(0, challenge.size)
+    const y = getRandomIntBetween(0, challenge.size)
 
     if (!ctx.userId) throw new Error('No user id')
     console.log('claiming cell', x, y)
@@ -235,12 +236,9 @@ export default class extends Devvit implements Hello {
       coords: [{x, y}],
       challengeNumber: msg.delayMillis,
       ctx,
-      userId: ctx.userId as T2,
+      userId: T2(ctx.userId),
     })
 
-    // const bouncepotato = await ctx.reddit.getUserByUsername('bouncepotato')
-    // console.log(`${bouncepotato?.username}=${bouncepotato?.id}`)
-    // console.log(`msg=${JSON.stringify(msg)} meta=${JSON.stringify(meta)}`)
     return msg
   }
 }
