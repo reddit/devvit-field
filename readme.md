@@ -38,6 +38,8 @@ cp tools/devvit.template.yaml devvit.dev.yaml
 cp src/devvit/server/core/config.template.json src/devvit/server/core/config.dev.json
 # Edit the T3 and T5 IDs at least.
 
+# Un/comment the imports in src/devvit/server/core/levels.ts.
+
 npx devvit upload --config=devvit.dev.yaml
 ```
 

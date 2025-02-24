@@ -1,4 +1,5 @@
 import type {LevelConfig} from '../../../shared/types/level'
+// import config from './config.dev.json'
 import config from './config.prod.json'
 
 export const levels: readonly Readonly<LevelConfig>[] =
