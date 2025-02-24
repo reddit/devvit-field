@@ -19,8 +19,8 @@ import {
   challengeConfigGet,
   challengeMakeNew,
 } from './devvit/server/core/challenge.js'
-import {makeLevelRedirect} from './devvit/server/core/levels.js'
 import {fieldClaimCells} from './devvit/server/core/field.js'
+import {makeLevelRedirect} from './devvit/server/core/levels.js'
 import {userMakeSuperuser, userSetLevel} from './devvit/server/core/user.js'
 import type {Level} from './shared/types/level.js'
 import {T2} from './shared/types/tid.js'
