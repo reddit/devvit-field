@@ -61,7 +61,7 @@ export class BFControlPanel extends LitElement {
     }
   `
 
-  @property() accessor team: TeamPascalCase = 'Flamingo'
+  @property() accessor team: TeamPascalCase | undefined
   @property({type: Number}) accessor x: number = 0
   @property({type: Number}) accessor y: number = 0
 

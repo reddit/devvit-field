@@ -145,7 +145,10 @@ export class BFGame extends LitElement {
     }
 
     return html`
-      <div class='terminal'>
+      <div
+        class='terminal'
+        style='pointer-events: ${this.ui === 'Loading' ? 'none' : 'initial'}'
+      >
         <div class='canvas-box'>
           <canvas
             @game-debug='${(ev: CustomEvent<string>) => {

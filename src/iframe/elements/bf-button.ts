@@ -7,6 +7,7 @@ import {
   unsafeCSS,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
+import type {TeamPascalCase} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import type {Icon} from './bf-icon.ts'
 import {cssReset} from './css-reset.ts'
@@ -187,12 +188,7 @@ export class BFButton extends LitElement {
     }
   `
 
-  @property() accessor appearance:
-    | 'Flamingo'
-    | 'JuiceBox'
-    | 'Lasagna'
-    | 'Sunshine'
-    | '' = ''
+  @property() accessor appearance: TeamPascalCase | undefined
   @property({type: Boolean}) accessor disabled: boolean = false
   @property() accessor endIcon: Icon | undefined
   @property() accessor icon: Icon | undefined
