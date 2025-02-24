@@ -35,6 +35,9 @@ cp tools/devvit.template.yaml devvit.dev.yaml
 # Edit the name field to be uniquely associated to you such as banfieldfoo; it
 # must be 16 characters or less.
 
+cp src/devvit/server/core/config.template.json src/devvit/server/core/config.dev.json
+# Edit the T3 and T5 IDs at least.
+
 npx devvit upload --config=devvit.dev.yaml
 ```
 

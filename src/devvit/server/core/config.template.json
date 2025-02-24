@@ -1,0 +1,39 @@
+{
+  "levels": [
+    {
+      "id": 0,
+      "subredditId": "t5_",
+      "postId": "t3_",
+      "subredditName": "PlayBanField",
+      "theme": {}
+    },
+    {
+      "id": 1,
+      "subredditId": "t5_",
+      "postId": "t3_",
+      "subredditName": "CantPlayBanField",
+      "theme": {}
+    },
+    {
+      "id": 2,
+      "subredditId": "t5_",
+      "postId": "t3_",
+      "subredditName": "BananaField",
+      "theme": {}
+    },
+    {
+      "id": 3,
+      "subredditId": "t5_",
+      "postId": "t3_",
+      "subredditName": "WhyBanField",
+      "theme": {}
+    },
+    {
+      "id": 4,
+      "subredditId": "t5_",
+      "postId": "t3_",
+      "subredditName": "WhatIsBanField",
+      "theme": {}
+    }
+  ]
+}
