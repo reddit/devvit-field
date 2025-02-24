@@ -15,10 +15,15 @@ import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/contex
 import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {Preview} from './devvit/components/preview.js'
-import {challengeMakeNew} from './devvit/server/core/challenge.js'
+import {
+  challengeConfigGet,
+  challengeMakeNew,
+} from './devvit/server/core/challenge.js'
 import {makeLevelRedirect} from './devvit/server/core/levels.js'
+import {fieldClaimCells} from './devvit/server/core/field.js'
 import {userMakeSuperuser, userSetLevel} from './devvit/server/core/user.js'
 import type {Level} from './shared/types/level.js'
+import {T2} from './shared/types/tid.js'
 
 Devvit.configure({redditAPI: true, redis: true, realtime: true})
 
@@ -195,22 +200,45 @@ Devvit.addMenuItem({
   },
 })
 
+/** Returns whole numbers in [min, max). */
+function getRandomIntBetween(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min) + min)
+}
+
 export default class extends Devvit implements Hello {
   constructor(config: Config) {
     super(config)
     config.provides(HelloDefinition)
   }
 
-  async Ping(_msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+  async Ping(msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+    // We use delay millis as a proxy for challenge number
+    // If not provided, return the message
+    if (!msg.delayMillis) return msg
+
     const ctx = Object.assign(
       makeAPIClients({metadata: meta ?? {}}),
       getContextFromMetadata(meta ?? {}),
     )
-    const bouncepotato = await ctx.reddit.getUserByUsername('bouncepotato')
-    return {
-      delayMillis: 0,
-      message: `${bouncepotato?.username}=${bouncepotato?.id}`,
-      successProbability: 0,
-    }
+
+    const challenge = await challengeConfigGet({
+      challengeNumber: msg.delayMillis,
+      redis: ctx.redis,
+    })
+
+    const x = getRandomIntBetween(0, challenge.size)
+    const y = getRandomIntBetween(0, challenge.size)
+
+    if (!ctx.userId) throw new Error('No user id')
+    console.log('claiming cell', x, y)
+
+    await fieldClaimCells({
+      coords: [{x, y}],
+      challengeNumber: msg.delayMillis,
+      ctx,
+      userId: T2(ctx.userId),
+    })
+
+    return msg
   }
 }
