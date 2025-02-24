@@ -1,26 +1,29 @@
 import type {Devvit} from '@devvit/public-api'
+import {type Team, getTeamFromUserId} from '../../../../../shared/team'
 import type {T2} from '../../../../../shared/types/tid'
 
-const getRedisKey = (challengeNumber: number) =>
-  `challenge:${challengeNumber}:stats:player:cells_claimed` as const
+const getRedisKey = (challengeNumber: number, team: Team) =>
+  `challenge:${challengeNumber}:stats:team:${team}:cells_claimed` as const
 
-export const playerStatsCellsClaimedGet = async ({
+export const teamStatsByPlayerCellsClaimedGet = async ({
   redis,
   challengeNumber,
   sort = 'DESC',
   limit = 10,
+  team,
 }: {
   redis: Devvit.Context['redis']
   challengeNumber: number
   sort?: 'ASC' | 'DESC'
   limit?: number
+  team: Team
 }): Promise<
   {
     member: T2
     score: number
   }[]
 > => {
-  return (await redis.zRange(getRedisKey(challengeNumber), 0, limit, {
+  return (await redis.zRange(getRedisKey(challengeNumber, team), 0, limit, {
     by: 'rank',
     reverse: sort === 'DESC',
   })) as {
@@ -29,7 +32,7 @@ export const playerStatsCellsClaimedGet = async ({
   }[]
 }
 
-export const playerStatsCellsClaimedIncrementForMember = async ({
+export const teamStatsByPlayerCellsClaimedIncrementForMember = async ({
   redis,
   challengeNumber,
   member,
@@ -41,13 +44,13 @@ export const playerStatsCellsClaimedIncrementForMember = async ({
   incrementBy?: number
 }): Promise<void> => {
   await redis.zIncrBy(
-    getRedisKey(challengeNumber),
+    getRedisKey(challengeNumber, getTeamFromUserId(member)),
     member.toString(),
     incrementBy,
   )
 }
 
-export const playerStatsCellsClaimedGameOver = async ({
+export const teamStatsByPlayerCellsClaimedGameOver = async ({
   redis,
   challengeNumber,
   member,
@@ -56,12 +59,12 @@ export const playerStatsCellsClaimedGameOver = async ({
   challengeNumber: number
   member: T2
 }): Promise<void> => {
-  await redis.zRem(getRedisKey(challengeNumber), [member])
-  // Negative one denotes a game over
-  await redis.zAdd(getRedisKey(challengeNumber), {member: member, score: -1})
+  await redis.zRem(getRedisKey(challengeNumber, getTeamFromUserId(member)), [
+    member,
+  ])
 }
 
-export const playerStatsCellsClaimedForMember = async ({
+export const teamStatsByPlayerCellsClaimedForMember = async ({
   redis,
   challengeNumber,
   member,
@@ -69,7 +72,10 @@ export const playerStatsCellsClaimedForMember = async ({
   redis: Devvit.Context['redis']
   challengeNumber: number
   member: T2
-}): Promise<number> => {
-  const result = await redis.zScore(getRedisKey(challengeNumber), member)
-  return result === undefined ? 0 : result
+}): Promise<number | undefined> => {
+  const result = await redis.zScore(
+    getRedisKey(challengeNumber, getTeamFromUserId(member)),
+    member,
+  )
+  return result
 }
