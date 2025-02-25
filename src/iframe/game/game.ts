@@ -410,6 +410,8 @@ export class Game {
               }
         }
 
+        this.cam.x = msg.initialGlobalXY.x
+        this.cam.y = msg.initialGlobalXY.y
         this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
         this.mode = msg.mode
