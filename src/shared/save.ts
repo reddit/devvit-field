@@ -18,6 +18,8 @@ export type Profile = {
    * when paired with currentLevel
    */
   lastPlayedChallengeNumberForLevel: number
+  /** The cells claimed for the last challenge number. Placed here to disperse writes. We also do not need a user level leaderboard per challenge */
+  lastPlayedChallengeNumberCellsClaimed: number
 }
 
 export type Player = {profile: Profile; sid: SID}

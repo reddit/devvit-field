@@ -1,5 +1,6 @@
 import type {User} from '@devvit/public-api'
 import {beforeEach, expect, vi} from 'vitest'
+import type {Profile} from '../../../shared/save'
 import type {T2} from '../../../shared/types/tid'
 import {DevvitTest} from './_utils/DevvitTest'
 import * as userMethods from './user'
@@ -15,10 +16,11 @@ DevvitTest.it('userGetOrSet - return defaults if no user found', async ctx => {
   ).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: 't2_0',
     username: 'anonymous',
     superuser: false,
-  })
+  } satisfies Profile)
 })
 
 DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
@@ -31,29 +33,33 @@ DevvitTest.it('userGetOrSet - return username and cache', async ctx => {
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
-  })
+  } satisfies Profile)
+
   await expect(
     userMethods.userGet({redis: ctx.redis, userId: ctx.userId as T2}),
   ).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
-  })
+  } satisfies Profile)
 
   expect(spy).toHaveBeenCalledTimes(1)
 
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
-  })
+  } satisfies Profile)
   expect(spy).toHaveBeenCalledTimes(1)
 })
 
@@ -67,10 +73,11 @@ DevvitTest.it('userGetOrSet - set superuser', async ctx => {
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: true,
-  })
+  } satisfies Profile)
 })
 
 DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
@@ -83,10 +90,11 @@ DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: false,
-  })
+  } satisfies Profile)
 
   await userMethods.userMakeSuperuser({
     redis: ctx.redis,
@@ -96,8 +104,9 @@ DevvitTest.it('makeSuperuser - sets the user to be a superuser', async ctx => {
   await expect(userMethods.userGetOrSet({ctx})).resolves.toEqual({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
     username: 'foo',
     superuser: true,
-  })
+  } satisfies Profile)
 })

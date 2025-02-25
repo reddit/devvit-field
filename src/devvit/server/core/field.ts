@@ -26,18 +26,12 @@ import {
   teamStatsCellsClaimedGet,
   teamStatsCellsClaimedIncrementForMember,
 } from './leaderboards/challenge/team.cellsClaimed'
-import {
-  teamStatsByPlayerCellsClaimedForMember,
-  teamStatsByPlayerCellsClaimedGameOver,
-  teamStatsByPlayerCellsClaimedIncrementForMember,
-} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
-import {levels, makeLevelRedirect} from './levels'
 import {minefieldIsMine} from './minefield'
 import {computeScore} from './score'
 import {
-  userAscendLevel,
   userDescendLevel,
+  userIncrementLastPlayedChallengeClaimedCells,
   userSetLastPlayedChallenge,
 } from './user'
 
@@ -176,29 +170,23 @@ export const _fieldClaimCellsSuccess = async ({
   // User stats
   if (isGameOverForUser) {
     console.log(`Game over for ${userId}. Hit a mine!`)
-    await teamStatsByPlayerCellsClaimedGameOver({
-      challengeNumber,
-      member: userId,
-      redis: ctx.redis,
-    })
-
     await userDescendLevel({
       redis: ctx.redis,
       userId,
     })
   } else {
-    await teamStatsByPlayerCellsClaimedIncrementForMember({
-      challengeNumber,
-      member: userId,
-      redis: ctx.redis,
-      // Since it's not game over, user gets all the deltas produced
-      incrementBy: deltas.length,
-    })
-
+    // TODO: Use hSetNX when we have it
     await userSetLastPlayedChallenge({
       challengeNumber,
       redis: ctx.redis,
       userId,
+    })
+
+    await userIncrementLastPlayedChallengeClaimedCells({
+      userId,
+      redis: ctx.redis,
+      // Since it's not game over, user gets all the deltas produced
+      incrementBy: deltas.length,
     })
   }
 

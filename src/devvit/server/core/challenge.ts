@@ -249,7 +249,7 @@ function deserializeChallengeConfig(
         return [key, val]
       }
 
-      return [key, val]
+      return [key, value]
     }),
-  ) as unknown as ChallengeConfig
+  ) as ChallengeConfig
 }

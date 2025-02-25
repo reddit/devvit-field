@@ -65,7 +65,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   const partitionKeys = Object.keys(partitionMap) as PartitionKey[]
 
   // This is best effort and we don't retry
-  await Promise.allSettled(
+  await batchAllSettled(
     partitionKeys.map(partitionKey => {
       const deltas = partitionMap[partitionKey]!
       return ctx.realtime.send(partitionKey, {
@@ -85,3 +85,33 @@ Devvit.addSchedulerJob({
   name: 'FIELD_UPDATE',
   onRun,
 })
+
+async function batchAllSettled<T>(
+  promises: Array<Promise<T>>,
+  batchSize: number = 50,
+): Promise<Array<PromiseSettledResult<T>>> {
+  // If the array is empty or batch size is invalid, return empty array or handle accordingly
+  if (!promises.length || batchSize <= 0) {
+    return []
+  }
+
+  // Calculate how many batches we'll need
+  const batchCount = Math.ceil(promises.length / batchSize)
+  const results: Array<PromiseSettledResult<T>> = []
+
+  // Process each batch sequentially
+  for (let i = 0; i < batchCount; i++) {
+    const startIndex = i * batchSize
+    const endIndex = Math.min(startIndex + batchSize, promises.length)
+    const batch = promises.slice(startIndex, endIndex)
+
+    // Process the current batch and add its results to our array
+    const batchResults = await Promise.allSettled(batch)
+    results.push(...batchResults)
+
+    // Add a little delay
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+
+  return results
+}

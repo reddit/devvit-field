@@ -15,6 +15,7 @@ export function noProfile(): Profile {
     superuser: false,
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
   }
 }
 
@@ -27,13 +28,13 @@ export const userMaybeGet = async ({
   redis: Devvit.Context['redis']
   userId: T2
 }): Promise<Profile | undefined> => {
-  const user = await redis.global.get(getUserKey(userId))
+  const user = await redis.global.hGetAll(getUserKey(userId))
 
-  if (!user) {
+  if (Object.keys(user).length === 0) {
     return undefined
   }
 
-  return JSON.parse(user)
+  return deserialize(user)
 }
 
 export const userGet = async (args: {
@@ -56,7 +57,7 @@ export const userSet = async ({
   redis: Devvit.Context['redis']
   user: Profile
 }): Promise<void> => {
-  await redis.global.set(getUserKey(user.t2), JSON.stringify(user))
+  await redis.global.hSet(getUserKey(user.t2), serialize(user))
 }
 
 export const userGetOrSet = async ({
@@ -84,6 +85,7 @@ export const userGetOrSet = async ({
     // this was initially called on.
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
+    lastPlayedChallengeNumberCellsClaimed: 0,
   }
 
   await userSet({
@@ -140,6 +142,7 @@ export const userAscendLevel = async ({
       ...user,
       currentLevel: newLevel as Level,
       lastPlayedChallengeNumberForLevel: 0,
+      lastPlayedChallengeNumberCellsClaimed: 0,
     },
   })
 
@@ -174,6 +177,7 @@ export const userDescendLevel = async ({
       ...user,
       currentLevel: newLevel as Level,
       lastPlayedChallengeNumberForLevel: 0,
+      lastPlayedChallengeNumberCellsClaimed: 0,
     },
   })
 
@@ -201,7 +205,12 @@ export const userSetLevel = async ({
 
   await userSet({
     redis,
-    user: {...user, currentLevel: level, lastPlayedChallengeNumberForLevel: 0},
+    user: {
+      ...user,
+      currentLevel: level,
+      lastPlayedChallengeNumberForLevel: 0,
+      lastPlayedChallengeNumberCellsClaimed: 0,
+    },
   })
 
   return level
@@ -227,6 +236,22 @@ export const userSetLastPlayedChallenge = async ({
   })
 
   return challengeNumber
+}
+
+export const userIncrementLastPlayedChallengeClaimedCells = async ({
+  redis,
+  userId,
+  incrementBy = 1,
+}: {
+  redis: Devvit.Context['redis']
+  userId: T2
+  incrementBy?: number
+}): Promise<number> => {
+  return await redis.global.hIncrBy(
+    getUserKey(userId),
+    'lastPlayedChallengeNumberCellsClaimed' as keyof Profile,
+    incrementBy,
+  )
 }
 
 export const userAttemptToClaimSpecialPointForTeam = async ({
@@ -276,4 +301,41 @@ export const userAttemptToClaimSpecialPointForTeam = async ({
   })
 
   return {success: true}
+}
+
+function serialize(config: Partial<Profile>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(config).map(([key, value]) => {
+      return [key, value.toString()]
+    }),
+  )
+}
+
+function deserialize(config: Record<string, string>): Profile {
+  return Object.fromEntries(
+    Object.entries(config).map(([key, value]) => {
+      let val
+
+      const numberKeys: (keyof Profile)[] = [
+        'currentLevel',
+        'lastPlayedChallengeNumberCellsClaimed',
+        'lastPlayedChallengeNumberForLevel',
+      ]
+      if (numberKeys.includes(key as keyof Profile)) {
+        val = parseFloat(value)
+        if (Number.isNaN(val)) {
+          throw new Error(`Invalid number for key: ${key}`)
+        }
+        return [key, val]
+      }
+
+      const boolKeys: (keyof Profile)[] = ['superuser']
+      if (boolKeys.includes(key as keyof Profile)) {
+        val = value === 'true'
+        return [key, val]
+      }
+
+      return [key, value]
+    }),
+  ) as Profile
 }

@@ -3,11 +3,12 @@ import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import {USER_IDS} from '../../../shared/test-utils'
+import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
 import {parseBitfieldToFlatArray} from './bitfieldHelpers'
-import {type ChallengeConfig, challengeMakeNew} from './challenge'
+import {challengeMakeNew} from './challenge'
 import {deltasGet} from './deltas'
 import {
   FIELD_CELL_BITS,
@@ -17,9 +18,8 @@ import {
   fieldGetDeltas,
 } from './field'
 import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
-import {teamStatsByPlayerCellsClaimedForMember} from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
-import {userSet} from './user'
+import {userGet, userSet} from './user'
 
 // TODO: Tests for the partition level checks
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
@@ -69,6 +69,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -131,6 +132,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -191,6 +193,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
     user: {
       currentLevel: 0,
       lastPlayedChallengeNumberForLevel: 0,
+      lastPlayedChallengeNumberCellsClaimed: 0,
       t2: USER_IDS.TEAM_2_PLAYER_1,
       username: 'foo',
       superuser: false,
@@ -253,6 +256,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -263,6 +267,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_3_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -306,6 +311,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -359,6 +365,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -394,12 +401,13 @@ DevvitTest.it(
     ).resolves.toEqual(deltas)
 
     await expect(
-      teamStatsByPlayerCellsClaimedForMember({
+      userGet({
         redis: ctx.redis,
-        challengeNumber,
-        member: USER_IDS.TEAM_2_PLAYER_1,
+        userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(undefined)
+    ).resolves.toEqual(
+      expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 0}),
+    )
 
     await expect(
       teamStatsCellsClaimedForTeam({
@@ -430,6 +438,7 @@ DevvitTest.it(
       user: {
         currentLevel: 0,
         lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
@@ -466,12 +475,13 @@ DevvitTest.it(
     ).resolves.toEqual(deltas)
 
     await expect(
-      teamStatsByPlayerCellsClaimedForMember({
+      userGet({
         redis: ctx.redis,
-        challengeNumber,
-        member: USER_IDS.TEAM_2_PLAYER_1,
+        userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(3)
+    ).resolves.toEqual(
+      expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 3}),
+    )
 
     await expect(
       teamStatsCellsClaimedForTeam({

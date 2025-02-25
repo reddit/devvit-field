@@ -67,7 +67,7 @@ function deserializeDefaultChallengeConfig(
         return [key, val]
       }
 
-      return [key, val]
+      return [key, value]
     }),
-  ) as unknown as DefaultChallengeConfig
+  ) as DefaultChallengeConfig
 }

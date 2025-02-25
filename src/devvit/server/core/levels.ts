@@ -5,10 +5,9 @@ import type {LevelConfig} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {challengeGetCurrentChallengeNumber} from './challenge'
 import config from './config.dev.json'
-import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
-import {teamStatsByPlayerCellsClaimedForMember} from './leaderboards/challenge/team.cellsClaimedByPlayer'
-import {userAscendLevel} from './user'
 // import config from './config.prod.json'
+import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
+import {userAscendLevel} from './user'
 
 export const levels: readonly Readonly<LevelConfig>[] =
   config.levels as LevelConfig[]
@@ -92,12 +91,7 @@ export const levelsIsUserInRightPlace = async ({
   const userTeam = getTeamFromUserId(profile.t2)
 
   if (winningTeam === userTeam) {
-    const cellsClaimed = await teamStatsByPlayerCellsClaimedForMember({
-      challengeNumber,
-      member: profile.t2,
-      redis: ctx.redis,
-    })
-    if (cellsClaimed && cellsClaimed > 0) {
+    if (profile.lastPlayedChallengeNumberCellsClaimed > 0) {
       const newLevel = await userAscendLevel({
         redis: ctx.redis,
         userId: profile.t2,
