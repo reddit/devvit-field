@@ -59,10 +59,9 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     }),
   ])
 
-  const rnd = new Random(challengeConfig.seed)
   const initialGlobalXY: XY = {
-    x: Math.trunc(rnd.num * challengeConfig.size),
-    y: Math.trunc(rnd.num * challengeConfig.size),
+    x: Math.trunc(Math.random() * challengeConfig.size),
+    y: Math.trunc(Math.random() * challengeConfig.size),
   }
 
   const deltas = await fieldGetDeltas({
