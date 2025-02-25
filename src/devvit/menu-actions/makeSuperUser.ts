@@ -53,7 +53,7 @@ export const superuserFormKey: FormKey = Devvit.createForm(
 export const makeSuperUserMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
   label: '[BanField] Make Superuser',
-  location: 'subreddit',
+  location: ['post', 'subreddit'],
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(superuserFormKey)
   },
