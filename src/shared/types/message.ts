@@ -82,14 +82,12 @@ export type IframeMessage =
        */
       parts: XY[]
     }
-  /** Used on the click for next round, */
+  /** Player has acknowledged the dialog. */
   | {type: 'OnNextChallengeClicked'}
   /** Used when there is a very special point to be claimed */
   | {type: 'ClaimGlobalPointForTeam'}
   /** Player has acknowledged the dialog. */
   | DialogMessage
-  /** Player has acknowledged the dialog. */
-  | ChallengeCompleteMessage
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =

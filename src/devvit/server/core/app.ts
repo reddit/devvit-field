@@ -8,9 +8,9 @@ import {
   challengeGetCurrentChallengeNumber,
   makeSafeChallengeConfig,
 } from './challenge'
-import {fieldGetDeltas, fieldValidateUserAndAttemptAscend} from './field'
+import {fieldGetDeltas} from './field'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
-import {levels} from './levels'
+import {levels, levelsIsUserInRightPlace} from './levels'
 import {userGetOrSet} from './user'
 
 export type AppState =
@@ -37,7 +37,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     challengeGetCurrentChallengeNumber({redis: ctx.redis}),
   ])
 
-  const result = await fieldValidateUserAndAttemptAscend({
+  const result = await levelsIsUserInRightPlace({
     challengeNumber,
     ctx,
     profile,

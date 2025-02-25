@@ -145,9 +145,9 @@ export class BFGame extends LitElement {
               @click='${() => {
                 if (this.#msg?.type !== 'ChallengeComplete')
                   throw Error('no challenge message')
-                this.#game.postMessage(this.#msg)
+                this.#game.postMessage({type: 'OnNextChallengeClicked'})
               }}'
-            >Go to a better place</bf-button>
+            >Next</bf-button>
           </bf-dialog>
         `
         break
