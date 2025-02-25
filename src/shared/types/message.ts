@@ -19,8 +19,6 @@ export type DevvitMessage =
   | ClaimBoxesResponse
   | RealtimeMessage
   | DialogMessage
-  /** @deprecated The web view doesn't do anything with this. */
-  | {type: 'ContinueToNextChallenge'}
 
 export type InitDevvitMessage = {
   challenge: number
