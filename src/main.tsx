@@ -27,36 +27,42 @@ Devvit.configure({ redditAPI: true, redis: true, realtime: true });
 
 Devvit.addCustomPostType({ name: "", height: "tall", render: App });
 
-const formKey = Devvit.createForm(
-  {
-    title: "New BanField Post",
-    description:
-      "Used for development purposes only! In production, there will only be one banfield post per subreddit.",
-    fields: [
-      {
-        type: "number",
-        name: "size",
-        label: "Size",
-        defaultValue: 10,
-        helpText:
-          "The size of one size of the field. All fields must be a perfect square. For example, put in 10 if you want a 10x10 field (100 cells).",
-      },
-      {
-        type: "number",
-        name: "partitionSize",
-        label: "Partition Size",
-        defaultValue: 5,
-        helpText:
-          "Must be perfectly divisible by the size given. For example, if you have a 10x10 field, you can put in 2 to have a 5x5 partition.",
-      },
-      {
-        type: "number",
-        name: "mineDensity",
-        label: "Mine Density",
-        defaultValue: 2,
-        helpText: "Number between 0 and 100. 0:No mines. 100:Only mines.",
-      },
-    ],
+const newPostFormKey = Devvit.createForm(
+  (data: {
+    currentDefaultSize?: number;
+    currentDefaultPartitionSize?: number;
+    currentDefaultMineDensity?: number;
+  }) => {
+    return {
+      title: "New BanField Post",
+      description:
+        "Used for development purposes only! In production, there will only be one banfield post per subreddit.",
+      fields: [
+        {
+          type: "number",
+          name: "size",
+          label: "Size",
+          defaultValue: data.currentDefaultSize || 10,
+          helpText:
+            "The size of one side of the field. All fields must be a perfect square. For example, put in 10 if you want a 10x10 field (100 cells).",
+        },
+        {
+          type: "number",
+          name: "partitionSize",
+          label: "Partition Size",
+          defaultValue: data.currentDefaultPartitionSize || 5,
+          helpText:
+            "Must be perfectly divisible by the size given. For example, if you have a 10x10 field, you can put in 2 to have a 5x5 partition.",
+        },
+        {
+          type: "number",
+          name: "mineDensity",
+          label: "Mine Density",
+          defaultValue: data.currentDefaultMineDensity || 2,
+          helpText: "Number between 0 and 100. 0:No mines. 100:Only mines.",
+        },
+      ],
+    };
   },
   async ({ values: config }, ctx) => {
     try {
@@ -84,8 +90,21 @@ Devvit.addMenuItem({
   forUserType: ["moderator"],
   label: "[BanField] New Post",
   location: "subreddit",
-  onPress: (_ev, ctx) => {
-    ctx.ui.showForm(formKey);
+  onPress: async (_ev, ctx) => {
+    try {
+      const currentDefaultConfig = await defaultChallengeConfigGet({
+        redis: ctx.redis,
+      });
+
+      ctx.ui.showForm(newPostFormKey, {
+        currentDefaultSize: currentDefaultConfig.size,
+        currentDefaultPartitionSize: currentDefaultConfig.partitionSize,
+        currentDefaultMineDensity: currentDefaultConfig.mineDensity,
+      });
+    } catch (error) {
+      console.error("Error fetching default config:", error);
+      ctx.ui.showForm(newPostFormKey);
+    }
   },
 });
 

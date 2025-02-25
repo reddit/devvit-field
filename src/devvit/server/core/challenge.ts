@@ -1,15 +1,15 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
-import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
-import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 import {
-  createChallengeConfigKey,
-  currentChallengeNumberKey,
   type ChallengeConfig,
   type DefaultChallengeConfig,
+  createChallengeConfigKey,
+  currentChallengeNumberKey,
 } from '../../../shared/types/challenge-config'
 import {defaultChallengeConfigGet} from './defaultChallengeConfig'
+import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
 const makeDefaultChallengeConfig = (): ChallengeConfig => ({
   size: 10,
@@ -113,7 +113,6 @@ export const challengeSetCurrentChallengeNumber = async ({
   await redis.set(currentChallengeNumberKey, challengeNumber.toString())
 }
 
-// Modified function to use default challenge config
 export const challengeMakeNew = async ({
   ctx,
   config: configParams,
@@ -129,24 +128,39 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  // Try to get default config
-  let defaultConfig: DefaultChallengeConfig = makeDefaultChallengeConfig()
+  // Get hardcoded default config first
+  let baseConfig: ChallengeConfig = makeDefaultChallengeConfig()
+
+  // Try to get admin-set default config
   try {
-    defaultConfig = await defaultChallengeConfigGet({
-      redis: ctx.redis,
-    })
-    console.log(`Using default config: ${JSON.stringify(defaultConfig)}`)
+    const defaultConfig: DefaultChallengeConfig =
+      await defaultChallengeConfigGet({
+        redis: ctx.redis,
+      })
+    console.log(`Found default config: ${JSON.stringify(defaultConfig)}`)
+
+    // Apply admin-set default config over hardcoded defaults
+    baseConfig = {
+      ...baseConfig,
+      ...defaultConfig,
+    }
   } catch (error) {
-    // If no default config exists, use the default hardcoded values
-    console.log('No default config found, using hardcoded defaults')
+    console.log('No custom default config found, using hardcoded defaults')
   }
 
-  // Combine defaults with any provided overrides
+  // Always generate a new seed for each challenge
+  baseConfig.seed = makeRandomSeed()
+
+  // Apply mod-provided config parameters (from the form) with highest priority
+  // This ensures form values override both hardcoded and admin-set defaults
+  if (configParams && Object.keys(configParams).length > 0) {
+    console.log(
+      `Using mod-entered form values: ${JSON.stringify(configParams)}`,
+    )
+  }
+
   const config = {
-    ...defaultConfig,
-    // Always generate a new seed for each challenge
-    seed: makeRandomSeed(),
-    // Allow explicit overrides from the function call
+    ...baseConfig,
     ...configParams,
   }
 

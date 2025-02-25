@@ -7,6 +7,7 @@ export const getDefaultConfigMenuAction = (): MenuItem => ({
   location: 'subreddit',
   onPress: async (_ev, ctx) => {
     const defaultConfig = await defaultChallengeConfigGet({redis: ctx.redis})
+    ctx.ui.showToast(`Default Config: ${JSON.stringify(defaultConfig)}`)
     console.log(`Default Config: ${JSON.stringify(defaultConfig)}`)
   },
 })
