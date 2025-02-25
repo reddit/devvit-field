@@ -15,6 +15,8 @@ import { getContextFromMetadata } from "@devvit/public-api/devvit/internals/cont
 import type { Config } from "@devvit/shared-types/Config.js";
 import { App } from "./devvit/components/app.js";
 import { Preview } from "./devvit/components/preview.js";
+import { endCurrentChallengeMenuAction } from "./devvit/menu-actions/endCurrentChallenge.js";
+import { getDefaultConfigMenuAction } from "./devvit/menu-actions/getDefaultConfig.js";
 import { makeSuperUserMenuAction } from "./devvit/menu-actions/makeSuperUser.js";
 import { setDefaultConfigMenuAction } from "./devvit/menu-actions/setDefaultConfig.js";
 import { setUserLevelMenuAction } from "./devvit/menu-actions/setUserLevel.js";
@@ -90,16 +92,8 @@ Devvit.addMenuItem({
 Devvit.addMenuItem(makeSuperUserMenuAction());
 Devvit.addMenuItem(setUserLevelMenuAction());
 Devvit.addMenuItem(setDefaultConfigMenuAction());
-
-Devvit.addMenuItem({
-  forUserType: ["moderator"],
-  label: "[BanField] Get Default Config",
-  location: "subreddit",
-  onPress: async (_ev, ctx) => {
-    const defaultConfig = await defaultChallengeConfigGet({ redis: ctx.redis });
-    console.log(`Default Config: ${JSON.stringify(defaultConfig)}`);
-  },
-});
+Devvit.addMenuItem(getDefaultConfigMenuAction());
+Devvit.addMenuItem(endCurrentChallengeMenuAction());
 
 export default class extends Devvit implements Hello {
   constructor(config: Config) {

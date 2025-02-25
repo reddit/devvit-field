@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import {Devvit, type JobContext} from '@devvit/public-api'
+import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
@@ -7,7 +7,9 @@ import {
   createChallengeConfigKey,
   currentChallengeNumberKey,
   type ChallengeConfig,
+  type DefaultChallengeConfig,
 } from '../../../shared/types/challenge-config'
+import {defaultChallengeConfigGet} from './defaultChallengeConfig'
 
 const makeDefaultChallengeConfig = (): ChallengeConfig => ({
   size: 10,
@@ -111,11 +113,12 @@ export const challengeSetCurrentChallengeNumber = async ({
   await redis.set(currentChallengeNumberKey, challengeNumber.toString())
 }
 
+// Modified function to use default challenge config
 export const challengeMakeNew = async ({
   ctx,
   config: configParams,
 }: {
-  ctx: Devvit.Context | JobContext
+  ctx: Devvit.Context
   config?: Partial<ChallengeConfig>
 }): Promise<{challengeNumber: number}> => {
   if (!ctx.subredditName) {
@@ -126,8 +129,24 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
+  // Try to get default config
+  let defaultConfig: DefaultChallengeConfig = makeDefaultChallengeConfig()
+  try {
+    defaultConfig = await defaultChallengeConfigGet({
+      redis: ctx.redis,
+    })
+    console.log(`Using default config: ${JSON.stringify(defaultConfig)}`)
+  } catch (error) {
+    // If no default config exists, use the default hardcoded values
+    console.log('No default config found, using hardcoded defaults')
+  }
+
+  // Combine defaults with any provided overrides
   const config = {
-    ...makeDefaultChallengeConfig(),
+    ...defaultConfig,
+    // Always generate a new seed for each challenge
+    seed: makeRandomSeed(),
+    // Allow explicit overrides from the function call
     ...configParams,
   }
 

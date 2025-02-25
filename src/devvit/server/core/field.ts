@@ -6,8 +6,9 @@ import {
   makePartitionKey,
 } from '../../../shared/partition'
 import type {Profile} from '../../../shared/save'
-import {getTeamFromUserId} from '../../../shared/team'
+import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
+import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
 import type {
   ChallengeCompleteMessage,
@@ -16,7 +17,6 @@ import type {
 import type {T2} from '../../../shared/types/tid'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {
-  type ChallengeConfig,
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
   challengeMakeNew,
@@ -118,6 +118,29 @@ const produceValidBatch = ({
   return validCoords
 }
 
+export const fieldEndGame = async (
+  ctx: Devvit.Context,
+  challengeNumber: number,
+  standings: {
+    member: Team
+    score: number
+  }[],
+): Promise<void> => {
+  const msg: ChallengeCompleteMessage = {
+    challengeNumber,
+    standings,
+    type: 'ChallengeComplete',
+  }
+  // TODO: Increment user stats here or do it somewhere else?
+  await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
+
+  // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
+  // Make a new game immediately, because yolo
+  await challengeMakeNew({
+    ctx,
+  })
+}
+
 /**
  * @internal
  *
@@ -204,19 +227,7 @@ export const _fieldClaimCellsSuccess = async ({
   })
 
   if (isOver) {
-    const msg: ChallengeCompleteMessage = {
-      challengeNumber,
-      standings,
-      type: 'ChallengeComplete',
-    }
-    // TODO: Increment user stats here or do it somewhere else?
-    await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
-
-    // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
-    // Make a new game immediately, because yolo
-    await challengeMakeNew({
-      ctx,
-    })
+    await fieldEndGame(ctx, challengeNumber, standings)
   }
 }
 
