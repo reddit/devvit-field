@@ -114,6 +114,13 @@ export class Game {
     this.zoo = new Zoo()
   }
 
+  centerBox(xy: Readonly<XY>): void {
+    this.cam.x =
+      xy.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2 + 0.5
+    this.cam.y =
+      xy.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2 + 0.5
+  }
+
   claimBox(xy: Readonly<XY>): void {
     if (!this.fieldConfig) return
     let i = fieldArrayIndex(this.fieldConfig, xy)
@@ -136,12 +143,8 @@ export class Game {
 
     // to-do: do a proper hit detection with the viewport. It's possible for
     //        select to be off screen.
-    if (select.x < xy.x) {
-      this.cam.x =
-        select.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2
-      this.cam.y =
-        select.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2
-    } else this.cam.x++
+    if (select.x < xy.x) this.centerBox(select)
+    else this.cam.x++
   }
 
   selectBox(xy: Readonly<XY>): void {
@@ -410,8 +413,8 @@ export class Game {
               }
         }
 
-        this.cam.x = msg.initialGlobalXY.x
-        this.cam.y = msg.initialGlobalXY.y
+        this.selectBox(msg.initialGlobalXY)
+        this.centerBox(msg.initialGlobalXY)
         this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
         this.mode = msg.mode
