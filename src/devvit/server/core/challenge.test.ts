@@ -1,13 +1,15 @@
 import {expect} from 'vitest'
+import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import {DevvitTest} from './_utils/DevvitTest'
 import {
-  type ChallengeConfig,
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
   challengeIncrementCurrentChallengeNumber,
   challengeMakeNew,
   challengeOnInstall,
+  fallbackDefaultChallengeConfig,
 } from './challenge'
+import {defaultChallengeConfigSet} from './defaultChallengeConfig'
 
 DevvitTest.it(
   'current challenge number starts at 0 and increments',
@@ -46,5 +48,94 @@ DevvitTest.it(
       mineDensity: 59,
       seed: expect.any(Number),
     } satisfies ChallengeConfig)
+  },
+)
+
+DevvitTest.it(
+  'challengeMakeNew - uses default config when available',
+  async ctx => {
+    await challengeOnInstall({redis: ctx.redis})
+
+    const defaultConfig = {
+      size: 20,
+      partitionSize: 4,
+      mineDensity: 10,
+    }
+    await defaultChallengeConfigSet({
+      redis: ctx.redis,
+      config: defaultConfig,
+    })
+
+    const {challengeNumber} = await challengeMakeNew({ctx})
+
+    const challengeConfig = await challengeConfigGet({
+      redis: ctx.redis,
+      challengeNumber,
+    })
+
+    expect(challengeConfig.size).toEqual(defaultConfig.size)
+    expect(challengeConfig.partitionSize).toEqual(defaultConfig.partitionSize)
+    expect(challengeConfig.mineDensity).toEqual(defaultConfig.mineDensity)
+
+    expect(challengeConfig.seed).toBeDefined()
+  },
+)
+
+DevvitTest.it(
+  'challengeMakeNew - uses hardcoded defaults when no default config available',
+  async ctx => {
+    await challengeOnInstall({redis: ctx.redis})
+
+    const {challengeNumber} = await challengeMakeNew({ctx})
+    const challengeConfig = await challengeConfigGet({
+      redis: ctx.redis,
+      challengeNumber,
+    })
+
+    expect(challengeConfig.size).toEqual(fallbackDefaultChallengeConfig.size)
+    expect(challengeConfig.partitionSize).toEqual(
+      fallbackDefaultChallengeConfig.partitionSize,
+    )
+    expect(challengeConfig.mineDensity).toEqual(
+      fallbackDefaultChallengeConfig.mineDensity,
+    )
+    expect(challengeConfig.seed).toBeDefined()
+  },
+)
+
+DevvitTest.it(
+  'challengeMakeNew - mod-entered form values override default config values',
+  async ctx => {
+    await challengeOnInstall({redis: ctx.redis})
+
+    const defaultConfig = {
+      size: 20,
+      partitionSize: 4,
+      mineDensity: 10,
+    }
+    await defaultChallengeConfigSet({
+      redis: ctx.redis,
+      config: defaultConfig,
+    })
+
+    const modConfig = {
+      size: 30,
+      partitionSize: 6,
+      mineDensity: 5,
+    }
+
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: modConfig,
+    })
+    const challengeConfig = await challengeConfigGet({
+      redis: ctx.redis,
+      challengeNumber,
+    })
+
+    expect(challengeConfig.size).toEqual(modConfig.size)
+    expect(challengeConfig.partitionSize).toEqual(modConfig.partitionSize)
+    expect(challengeConfig.mineDensity).toEqual(modConfig.mineDensity)
+    expect(challengeConfig.seed).toBeDefined()
   },
 )
