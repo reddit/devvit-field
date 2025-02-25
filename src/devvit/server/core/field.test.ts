@@ -405,9 +405,14 @@ DevvitTest.it(
         redis: ctx.redis,
         userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(
-      expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 0}),
-    )
+    ).resolves.toEqual({
+      currentLevel: 1,
+      lastPlayedChallengeNumberForLevel: 0,
+      lastPlayedChallengeNumberCellsClaimed: 0,
+      superuser: false,
+      t2: 't2_4cgfmlvzgq',
+      username: 'foo',
+    })
 
     await expect(
       teamStatsCellsClaimedForTeam({
