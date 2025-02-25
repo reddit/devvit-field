@@ -231,6 +231,7 @@ export class Game {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
       fieldArraySetTeam(this.field, i, team)
       fieldArraySetBan(this.field, i, isBan)
+      fieldArraySetPending(this.field, i, false)
       fieldArraySetVisible(this.field, i, true)
       // to-do: it may be faster to send the entire array for many changes.
       this.renderer.setBox(globalXY, this.field[i]!)
