@@ -300,6 +300,7 @@ export class Game {
           field,
           mode: 'PopOut',
           p1,
+          p1BoxCount: Math.trunc(Math.random() * (visible + 1)),
           players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
           sub,

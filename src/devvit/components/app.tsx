@@ -134,6 +134,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       },
       mode: mounted ? 'PopOut' : 'PopIn',
       p1,
+      p1BoxCount: 0, //to-do: fill me out.
       players: 0, // to-do: fill me out. useChannel2()?
       sub: ctx.subredditName ?? '',
       team: getTeamFromUserId(profile.t2),

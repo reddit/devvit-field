@@ -206,6 +206,7 @@ export const _fieldClaimCellsSuccess = async ({
   if (isOver) {
     const msg: ChallengeCompleteMessage = {
       challengeNumber,
+      p1BoxCount: 0, // to-do: fill me out.
       standings,
       type: 'ChallengeComplete',
     }
