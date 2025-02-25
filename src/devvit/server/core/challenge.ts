@@ -1,55 +1,23 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import {Devvit, type JobContext} from '@devvit/public-api'
+import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
-import type {Seed} from '../../../shared/types/random'
+import {
+  type ChallengeConfig,
+  type DefaultChallengeConfig,
+  createChallengeConfigKey,
+  currentChallengeNumberKey,
+} from '../../../shared/types/challenge-config'
+import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
-const currentChallengeNumberKey = 'current_challenge_number'
-
-export type ChallengeConfig = {
-  /** The length of a side of the field. We assume it is always a perfect square. */
-  size: number
-  /**
-   * The length of a size of a partition. Must be perfectly divisible into the size of the field.
-   *
-   * Set the partition size to the same number as the size to have no partition.
-   */
-  partitionSize: number
-  /**
-   * DO NOT EXPOSE THIS TO THE CLIENT. THIS IS BACKEND ONLY!!
-   *
-   * A random number that determines key aspects of the game like which cells are mines.
-   */
-  seed: Seed
-  /**
-   * DO NOT EXPOSE THIS TO THE CLIENT. THIS IS BACKEND ONLY!!
-   *
-   * Number between 0 and 100.
-   *
-   * 0: No mines
-   * 100: Only mines
-   *
-   * Why an int over a float? Because things like incrBy are only for ints. At the moment,
-   * I don't think we want to dynamically change the density of the field, but who's to
-   * say it wouldn't be a fun feature if needed.
-   */
-  mineDensity: number
-
-  // TODO: Theme variables and other config that we want to change per sub?
-
-  // TODO: Add a debug flag here
-}
-
-const createChallengeConfigKey = (challengeNumber: number) =>
-  `challenge:${challengeNumber}:config` as const
-
-const makeDefaultChallengeConfig = (): ChallengeConfig => ({
+/* Fallback config to be used if no default has been set through the subreddit menu action */
+export const fallbackDefaultChallengeConfig: ChallengeConfig = {
   size: 10,
   partitionSize: 5,
   seed: makeRandomSeed(),
   mineDensity: 2,
-})
+}
 
 export const challengeConfigGet = async ({
   redis,
@@ -150,7 +118,7 @@ export const challengeMakeNew = async ({
   ctx,
   config: configParams,
 }: {
-  ctx: Devvit.Context | JobContext
+  ctx: Devvit.Context
   config?: Partial<ChallengeConfig>
 }): Promise<{challengeNumber: number}> => {
   if (!ctx.subredditName) {
@@ -161,8 +129,33 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
+  let baseConfig: ChallengeConfig = fallbackDefaultChallengeConfig
+
+  // Try to get admin-set default config
+  try {
+    const defaultConfig: DefaultChallengeConfig | undefined =
+      await defaultChallengeConfigMaybeGet({
+        redis: ctx.redis,
+      })
+    console.log(`Found default config: ${JSON.stringify(defaultConfig)}`)
+
+    // Prioritize admin-set config over saved default
+    baseConfig = {
+      ...baseConfig,
+      ...defaultConfig,
+    }
+  } catch (error) {
+    console.log('No custom default config found, using hardcoded defaults')
+  }
+
+  if (configParams && Object.keys(configParams).length > 0) {
+    console.log(
+      `Using mod-entered form values: ${JSON.stringify(configParams)}`,
+    )
+  }
+
   const config = {
-    ...makeDefaultChallengeConfig(),
+    ...baseConfig,
     ...configParams,
   }
 
