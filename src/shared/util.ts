@@ -1,3 +1,6 @@
+/**
+ * NOTE: Not built to handle duplicate values in the array
+ */
 export function diffArrays<T extends string | number>(
   oldList: T[],
   newList: T[],

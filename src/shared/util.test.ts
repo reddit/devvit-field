@@ -93,19 +93,6 @@ describe('diffArrays', () => {
     })
   })
 
-  it('should handle arrays with duplicate values', () => {
-    const oldList = [1, 2, 2, 3]
-    const newList = [2, 3, 3, 4]
-
-    const result = diffArrays(oldList, newList)
-
-    expect(result).toEqual({
-      duplicates: [2, 2, 3], // Note: filter with includes will keep duplicates
-      toUnsubscribe: [1],
-      toSubscribe: [3, 4],
-    })
-  })
-
   it('should work with mixed string and number arrays', () => {
     const oldList = ['1', 2, '3', 4]
     const newList = [2, '3', 4, '5']
@@ -120,8 +107,8 @@ describe('diffArrays', () => {
   })
 
   it('should handle arrays with falsy values correctly', () => {
-    const oldList = ['', 0] as const
-    const newList = [0, ''] as const
+    const oldList = ['', 0]
+    const newList = [0, '']
 
     const result = diffArrays(oldList, newList)
 

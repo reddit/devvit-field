@@ -172,7 +172,7 @@ export class BFGame extends LitElement {
     this.#game.claimBox(ev.detail)
   }
 
-  #onToggleSidePanel(ev: CustomEvent<XY>): void {
+  #onToggleSidePanel(_ev: CustomEvent<XY>): void {
     // to-do: fill me out.
   }
 

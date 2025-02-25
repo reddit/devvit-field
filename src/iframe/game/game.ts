@@ -451,6 +451,14 @@ export class Game {
         if (!this.p1) return
         // to-do: implement.
         break
+      case 'Dialog':
+        if (!this.p1) return
+        // to-do: implement.
+        break
+      case 'ContinueToNextChallenge':
+        if (!this.p1) return
+        // to-do: implement.
+        break
       default:
         msg satisfies never
     }
