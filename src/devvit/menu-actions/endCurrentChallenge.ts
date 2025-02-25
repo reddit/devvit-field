@@ -32,8 +32,9 @@ export const endGameFormKey: FormKey = Devvit.createForm(
         challengeNumber,
         redis: ctx.redis,
       })
+      const p1BoxCount = 0 // to-do: figure this out
 
-      await fieldEndGame(ctx, challengeNumber, standings)
+      await fieldEndGame(ctx, challengeNumber, standings, p1BoxCount)
 
       ctx.ui.showToast(`Challenge #${challengeNumber} has been ended.`)
     } catch (error) {

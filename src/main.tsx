@@ -15,15 +15,15 @@ import { getContextFromMetadata } from "@devvit/public-api/devvit/internals/cont
 import type { Config } from "@devvit/shared-types/Config.js";
 import { App } from "./devvit/components/app.js";
 import { Preview } from "./devvit/components/preview.js";
-import {
-  challengeConfigGet,
-  endCurrentChallengeMenuAction,
-} from "./devvit/menu-actions/endCurrentChallenge.js";
+import { endCurrentChallengeMenuAction } from "./devvit/menu-actions/endCurrentChallenge.js";
 import { getDefaultConfigMenuAction } from "./devvit/menu-actions/getDefaultConfig.js";
 import { makeSuperUserMenuAction } from "./devvit/menu-actions/makeSuperUser.js";
 import { setDefaultConfigMenuAction } from "./devvit/menu-actions/setDefaultConfig.js";
 import { setUserLevelMenuAction } from "./devvit/menu-actions/setUserLevel.js";
-import { challengeMakeNew } from "./devvit/server/core/challenge.js";
+import {
+  challengeConfigGet,
+  challengeMakeNew,
+} from "./devvit/server/core/challenge.js";
 import { defaultChallengeConfigGet } from "./devvit/server/core/defaultChallengeConfig.js";
 import { fieldClaimCells } from "./devvit/server/core/field.js";
 import { T2 } from "./shared/types/tid.js";
@@ -142,11 +142,25 @@ export default class extends Devvit implements Hello {
       makeAPIClients({ metadata: meta ?? {} }),
       getContextFromMetadata(meta ?? {})
     );
-    const bouncepotato = await ctx.reddit.getUserByUsername("bouncepotato");
-    return {
-      delayMillis: 0,
-      message: `${bouncepotato?.username}=${bouncepotato?.id}`,
-      successProbability: 0,
-    };
+
+    const challenge = await challengeConfigGet({
+      challengeNumber: msg.delayMillis,
+      redis: ctx.redis,
+    });
+
+    const x = getRandomIntBetween(0, challenge.size);
+    const y = getRandomIntBetween(0, challenge.size);
+
+    if (!ctx.userId) throw new Error("No user id");
+    console.log("claiming cell", x, y);
+
+    await fieldClaimCells({
+      coords: [{ x, y }],
+      challengeNumber: msg.delayMillis,
+      ctx,
+      userId: T2(ctx.userId),
+    });
+
+    return msg;
   }
 }
