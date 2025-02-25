@@ -450,10 +450,16 @@ export class Game {
         if (!this.p1) return
         // to-do: implement.
         break
-      case 'ChallengeComplete':
+      case 'ChallengeComplete': {
         if (!this.p1) return
-        // to-do: implement.
+        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'NextLevel', msg}))
         break
+      }
+      case 'Dialog':
+        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'Barred', msg}))
+        break
+      case 'ContinueToNextChallenge':
+        throw Error('unsupported message ContinueToNextChallenge')
       default:
         msg satisfies never
     }

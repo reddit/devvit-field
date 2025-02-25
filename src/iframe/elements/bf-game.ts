@@ -4,24 +4,30 @@ import {
   type TemplateResult,
   css,
   html,
-  unsafeCSS,
 } from 'lit'
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {teamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteDarkGrey} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
+import type {
+  ChallengeCompleteMessage,
+  DialogMessage,
+} from '../../shared/types/message.ts'
 import {Game} from '../game/game.ts'
-import {cssReset} from './css-reset.ts'
 import type {BFTerminal} from './bf-terminal.ts'
+import {cssReset} from './css-reset.ts'
 
+import './bf-dialog.ts'
 import './bf-footer.ts'
 import './bf-terminal.ts'
 
 declare global {
   interface HTMLElementEventMap {
     'game-debug': CustomEvent<string>
-    'game-ui': CustomEvent<UI>
+    'game-ui': CustomEvent<{
+      ui: UI
+      msg: DialogMessage | ChallengeCompleteMessage
+    }>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>
   }
@@ -32,12 +38,11 @@ declare global {
 
 // to-do: fill out the remaining states.
 export type UI =
-  | 'Banned' // to-do: rename DialogMessage?
+  | 'Barred' // to-do: rename DialogMessage?
   | 'Loading'
+  /** Promoted, replaying / stuck, or demoted. */
+  | 'NextLevel' // to-do: rename ChallengeCompleteMessage?
   | 'Playing'
-  | 'Promoted' // to-do: rename ChallengeCompleteMessage?
-  | 'Replaying' // to-do: rename ChallengeCompleteMessage?
-  | 'Demoted' // to-do: rename ChallengeCompleteMessage?
   | 'Scored'
 
 /**
@@ -53,7 +58,6 @@ export class BFGame extends LitElement {
       display: flex;
       flex-direction: column;
       height: 100%;
-      background-color: ${unsafeCSS(cssHex(paletteDarkGrey))};
     }
 
     pre {
@@ -65,6 +69,7 @@ export class BFGame extends LitElement {
 
   @property({reflect: true}) accessor ui: UI = 'Loading'
   @queryAsync('bf-terminal') accessor _terminal!: Promise<BFTerminal>
+  #msg: DialogMessage | ChallengeCompleteMessage | undefined
 
   #dbgLog: string = ''
   #game: Game = new Game(this)
@@ -100,22 +105,70 @@ export class BFGame extends LitElement {
     const team =
       this.#game.team == null ? undefined : teamPascalCase[this.#game.team]
 
+    let dialog
     switch (this.ui) {
       case 'Loading':
+        // to-do: no background, no nothing.
         break
       case 'Playing':
         break
+      case 'Barred':
+        if (this.#msg?.type !== 'Dialog') throw Error('no dialog message')
+        dialog = html`
+          <bf-dialog open>
+            <h2>Woah, you're not allowed here.</h2>
+            <p>${this.#msg.message}</p>
+            <bf-button
+              @click='${() => {
+                if (this.#msg?.type !== 'Dialog')
+                  throw Error('no dialog message')
+                this.#game.postMessage(this.#msg)
+                // to-do: clear this.#msg.
+              }}'
+            >Go to a better place</bf-button>
+          </bf-dialog>
+        `
+        break
+      case 'NextLevel': {
+        if (this.#msg?.type !== 'ChallengeComplete')
+          throw Error('no challenge message')
+        const max = Math.max(
+          ...this.#msg.standings.map(standing => standing.score),
+        )
+        const winners = this.#msg.standings
+          .filter(standing => standing.score === max)
+          .map(standing => standing.member)
+        dialog = html`
+          <bf-dialog open>
+            <h2>The board has been claimed by ${winners.join(' and ')}.</h2>
+            <bf-button
+              @click='${() => {
+                if (this.#msg?.type !== 'ChallengeComplete')
+                  throw Error('no challenge message')
+                this.#game.postMessage(this.#msg)
+              }}'
+            >Go to a better place</bf-button>
+          </bf-dialog>
+        `
+        break
+      }
+      case 'Scored':
+        return html`to-do: fix me.`
       default:
         this.ui satisfies never
     }
 
     return html`
+      ${dialog}
       <bf-terminal
         @game-debug='${(ev: CustomEvent<string>) => {
           this.#dbgLog += `\n${ev.detail}`
           this.requestUpdate()
         }}'
-        @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
+        @game-ui='${(ev: CustomEvent<{ui: UI; msg: DialogMessage}>) => {
+          this.ui = ev.detail.ui
+          this.#msg = ev.detail.msg
+        }}'
         @game-update='${() => this.requestUpdate()}'
         @claim='${this.#onClaim}'
         @toggle-side-panel='${this.#onToggleSidePanel}'

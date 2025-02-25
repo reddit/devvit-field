@@ -19,6 +19,7 @@ export type DevvitMessage =
   | ClaimBoxesResponse
   | RealtimeMessage
   | DialogMessage
+  /** @deprecated The web view doesn't do anything with this. */
   | {type: 'ContinueToNextChallenge'}
 
 export type InitDevvitMessage = {
@@ -85,6 +86,10 @@ export type IframeMessage =
   | {type: 'OnNextChallengeClicked'}
   /** Used when there is a very special point to be claimed */
   | {type: 'ClaimGlobalPointForTeam'}
+  /** Player has acknowledged the dialog. */
+  | DialogMessage
+  /** Player has acknowledged the dialog. */
+  | ChallengeCompleteMessage
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =

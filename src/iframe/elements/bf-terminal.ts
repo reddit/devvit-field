@@ -9,7 +9,7 @@ import {
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteBlack} from '../../shared/theme.ts'
+import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-control-panel.ts'
@@ -26,6 +26,7 @@ export class BFTerminal extends LitElement {
     ${cssReset}
 
     :host {
+      background-color: ${unsafeCSS(cssHex(paletteDarkGrey))};
       display: block;
       height: 100%;
     }
