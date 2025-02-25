@@ -6,15 +6,15 @@ export const getDefaultConfigMenuAction = (): MenuItem => ({
   label: '[BanField] Get Default Config',
   location: 'subreddit',
   onPress: async (_ev, ctx) => {
-    try {
-      const defaultConfig = await defaultChallengeConfigMaybeGet({
-        redis: ctx.redis,
-      })
-      ctx.ui.showToast(`Default Config: ${JSON.stringify(defaultConfig)}`)
-      console.log(`Default Config: ${JSON.stringify(defaultConfig)}`)
-    } catch (error) {
-      ctx.ui.showToast(`${error}`)
-      console.error(error)
+    const defaultConfig = await defaultChallengeConfigMaybeGet({
+      redis: ctx.redis,
+    })
+
+    if (!defaultConfig) {
+      ctx.ui.showToast('No default config found')
+      return
     }
+    ctx.ui.showToast(`Default Config: ${JSON.stringify(defaultConfig)}`)
+    console.log(`Default Config: ${JSON.stringify(defaultConfig)}`)
   },
 })
