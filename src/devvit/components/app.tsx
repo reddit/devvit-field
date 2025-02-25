@@ -24,6 +24,7 @@ import type {
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
+import {diffArrays} from '../../shared/util.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {type AppState, appInitState} from '../server/core/app.js'
@@ -38,14 +39,6 @@ import {
 } from '../server/core/user.js'
 import {Title} from './title.tsx'
 
-function diffArrays<T>(oldList: T[], newList: T[]) {
-  return {
-    duplicates: oldList.filter(item => newList.includes(item)),
-    toUnsubscribe: oldList.filter(item => !newList.includes(item)),
-    toSubscribe: newList.filter(item => !oldList.includes(item)),
-  }
-}
-
 export function App(ctx: Devvit.Context): JSX.Element {
   const session = useSession(ctx)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
@@ -55,7 +48,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   useAsync<Delta[]>(
     async () => {
-      if (appState.pass === false) return []
+      if (appState.pass === false || activeConnections.length === 0) return []
 
       const deltas = await Promise.all(
         activeConnections.map(key =>
@@ -70,7 +63,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
       return deltas.flat()
     },
     {
-      depends: activeConnections,
+      // Depends is a JSON.stringify check so order matters!
+      depends: activeConnections.sort(),
       finally(data, error) {
         if (error) {
           console.error('useAsync get deltas error:', error)
@@ -202,7 +196,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           ),
         )
 
-        const {duplicates, toUnsubscribe, toSubscribe} = diffArrays(
+        const {toUnsubscribe, toSubscribe} = diffArrays(
           activeConnections,
           newConnections,
         )
@@ -227,7 +221,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         // Note, I don't circuit break here because I think it may slow the experience
         // for the user. Instead, I set state and use `useAsync` to get the current
         // state of the partitions since realtime is only the deltas
-        setActiveConnections([...duplicates, ...toSubscribe])
+        setActiveConnections(newConnections.sort())
 
         break
       }
