@@ -3,7 +3,6 @@ import {getPartitionCoords} from '../../../shared/partition'
 import type {XY} from '../../../shared/types/2d'
 import type {LevelConfig} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
-import {Random} from '../../../shared/types/random'
 import {
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
@@ -59,10 +58,9 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     }),
   ])
 
-  const rnd = new Random(challengeConfig.seed)
   const initialGlobalXY: XY = {
-    x: Math.trunc(rnd.num * challengeConfig.size),
-    y: Math.trunc(rnd.num * challengeConfig.size),
+    x: Math.trunc(Math.random() * challengeConfig.size),
+    y: Math.trunc(Math.random() * challengeConfig.size),
   }
 
   const deltas = await fieldGetDeltas({

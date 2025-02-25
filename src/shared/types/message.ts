@@ -33,6 +33,8 @@ export type InitDevvitMessage = {
   field: FieldConfig
   mode: IframeMode
   p1: Player
+  /** Number of boxes claimed by the player in the current level. */
+  p1BoxCount: number
   /** Number of players online including p1; 0 when offline. */
   players: number
   seed?: Seed
@@ -105,6 +107,11 @@ export type FieldBroadcast = {type: 'Field'; url: string}
 export type ChallengeCompleteMessage = {
   type: 'ChallengeComplete'
   challengeNumber: number
+  /**
+   * Number of boxes claimed by the player in the current level. If zero,
+   * player does not ascend with their team.
+   */
+  p1BoxCount: number
   standings: {member: Team; score: number}[]
 }
 

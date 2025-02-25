@@ -43,6 +43,8 @@ cp src/devvit/server/core/config.template.json src/devvit/server/core/config.dev
 npx devvit upload --config=devvit.dev.yaml
 ```
 
+Requires global Redis.
+
 Now playtest whenever wanted.
 
 ```

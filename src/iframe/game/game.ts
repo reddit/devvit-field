@@ -114,6 +114,13 @@ export class Game {
     this.zoo = new Zoo()
   }
 
+  centerBox(xy: Readonly<XY>): void {
+    this.cam.x =
+      xy.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2 + 0.5
+    this.cam.y =
+      xy.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2 + 0.5
+  }
+
   claimBox(xy: Readonly<XY>): void {
     if (!this.fieldConfig) return
     let i = fieldArrayIndex(this.fieldConfig, xy)
@@ -136,12 +143,8 @@ export class Game {
 
     // to-do: do a proper hit detection with the viewport. It's possible for
     //        select to be off screen.
-    if (select.x < xy.x) {
-      this.cam.x =
-        select.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2
-      this.cam.y =
-        select.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2
-    } else this.cam.x++
+    if (select.x < xy.x) this.centerBox(select)
+    else this.cam.x++
   }
 
   selectBox(xy: Readonly<XY>): void {
@@ -162,13 +165,22 @@ export class Game {
     }
   }
 
-  async start(canvas: HTMLCanvasElement): Promise<void> {
-    this.canvas = canvas
-    this.ctrl = new Input(this.cam, canvas)
+  async start(): Promise<void> {
+    // The native apps do not support messages before load. Await in parallel
+    // with assets.
+    const [, assets] = await Promise.all([
+      new Promise(resolve => addEventListener('load', resolve)),
+      AssetMap(),
+      // Wait for canvas.
+      this.ui.updateComplete,
+    ])
+
+    this.canvas = this.ui.canvas
+    this.ctrl = new Input(this.cam, this.canvas)
     this.ctrl.mapDefault()
 
-    this.renderer = new Renderer(canvas)
-    this.looper = new Looper(canvas, this.cam, this.ctrl, this.renderer)
+    this.renderer = new Renderer(this.canvas)
+    this.looper = new Looper(this.canvas, this.cam, this.ctrl, this.renderer)
 
     addEventListener('message', this.#onMsg)
     this.postMessage({type: 'Registered'})
@@ -185,8 +197,6 @@ export class Game {
     this.#onLoop()
 
     const lvl = new FieldLevel(this)
-
-    const assets = await AssetMap()
 
     this.audio = await Audio(assets)
     this.img = assets.img
@@ -205,6 +215,8 @@ export class Game {
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
 
+    if (this.mode === 'PopOut') this.ui.ui = 'Playing'
+
     this.postMessage({type: 'Loaded'})
     console.log('loaded')
   }
@@ -222,6 +234,7 @@ export class Game {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
       fieldArraySetTeam(this.field, i, team)
       fieldArraySetBan(this.field, i, isBan)
+      fieldArraySetPending(this.field, i, false)
       fieldArraySetVisible(this.field, i, true)
       // to-do: it may be faster to send the entire array for many changes.
       this.renderer.setBox(globalXY, this.field[i]!)
@@ -287,6 +300,7 @@ export class Game {
           field,
           mode: 'PopOut',
           p1,
+          p1BoxCount: Math.trunc(Math.random() * (visible + 1)),
           players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
           sub,
@@ -356,8 +370,11 @@ export class Game {
     // Filter any unknown messages.
     if (ev.data.type !== 'devvit-message') return
 
-    // Hack: DX-8860 events are untrusted on Android.
-    if (ev.isTrusted === devMode && !/Android/i.test(navigator.userAgent))
+    // Hack: events are untrusted on Android and iOS native apps.
+    if (
+      ev.isTrusted === devMode &&
+      !/Android|iPad|iPhone|iPod/i.test(navigator.userAgent)
+    )
       return
 
     const msg = ev.data.data.message
@@ -397,6 +414,8 @@ export class Game {
               }
         }
 
+        this.selectBox(msg.initialGlobalXY)
+        this.centerBox(msg.initialGlobalXY)
         this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
         this.mode = msg.mode

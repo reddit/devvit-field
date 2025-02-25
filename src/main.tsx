@@ -15,13 +15,18 @@ import { getContextFromMetadata } from "@devvit/public-api/devvit/internals/cont
 import type { Config } from "@devvit/shared-types/Config.js";
 import { App } from "./devvit/components/app.js";
 import { Preview } from "./devvit/components/preview.js";
-import { endCurrentChallengeMenuAction } from "./devvit/menu-actions/endCurrentChallenge.js";
+import {
+  challengeConfigGet,
+  endCurrentChallengeMenuAction,
+} from "./devvit/menu-actions/endCurrentChallenge.js";
 import { getDefaultConfigMenuAction } from "./devvit/menu-actions/getDefaultConfig.js";
 import { makeSuperUserMenuAction } from "./devvit/menu-actions/makeSuperUser.js";
 import { setDefaultConfigMenuAction } from "./devvit/menu-actions/setDefaultConfig.js";
 import { setUserLevelMenuAction } from "./devvit/menu-actions/setUserLevel.js";
 import { challengeMakeNew } from "./devvit/server/core/challenge.js";
 import { defaultChallengeConfigGet } from "./devvit/server/core/defaultChallengeConfig.js";
+import { fieldClaimCells } from "./devvit/server/core/field.js";
+import { T2 } from "./shared/types/tid.js";
 
 Devvit.configure({ redditAPI: true, redis: true, realtime: true });
 
@@ -96,15 +101,18 @@ Devvit.addMenuItem({
         redis: ctx.redis,
       });
 
-      ctx.ui.showForm(newPostFormKey, {
-        currentDefaultSize: currentDefaultConfig.size,
-        currentDefaultPartitionSize: currentDefaultConfig.partitionSize,
-        currentDefaultMineDensity: currentDefaultConfig.mineDensity,
-      });
+      if (currentDefaultConfig) {
+        ctx.ui.showForm(newPostFormKey, {
+          currentDefaultSize: currentDefaultConfig?.size,
+          currentDefaultPartitionSize: currentDefaultConfig?.partitionSize,
+          currentDefaultMineDensity: currentDefaultConfig?.mineDensity,
+        });
+        return;
+      }
     } catch (error) {
       console.error("Error fetching default config:", error);
-      ctx.ui.showForm(newPostFormKey);
     }
+    ctx.ui.showForm(newPostFormKey);
   },
 });
 
@@ -114,13 +122,22 @@ Devvit.addMenuItem(setDefaultConfigMenuAction());
 Devvit.addMenuItem(getDefaultConfigMenuAction());
 Devvit.addMenuItem(endCurrentChallengeMenuAction());
 
+/** Returns whole numbers in [min, max). */
+function getRandomIntBetween(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 export default class extends Devvit implements Hello {
   constructor(config: Config) {
     super(config);
     config.provides(HelloDefinition);
   }
 
-  async Ping(_msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+  async Ping(msg: PingMessage, meta?: Metadata): Promise<PingMessage> {
+    // We use delay millis as a proxy for challenge number
+    // If not provided, return the message
+    if (!msg.delayMillis) return msg;
+
     const ctx = Object.assign(
       makeAPIClients({ metadata: meta ?? {} }),
       getContextFromMetadata(meta ?? {})

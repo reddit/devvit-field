@@ -125,11 +125,13 @@ export const fieldEndGame = async (
     member: Team
     score: number
   }[],
+  p1BoxCount: number,
 ): Promise<void> => {
   const msg: ChallengeCompleteMessage = {
     challengeNumber,
     standings,
     type: 'ChallengeComplete',
+    p1BoxCount,
   }
   // TODO: Increment user stats here or do it somewhere else?
   await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
@@ -227,7 +229,8 @@ export const _fieldClaimCellsSuccess = async ({
   })
 
   if (isOver) {
-    await fieldEndGame(ctx, challengeNumber, standings)
+    const p1BoxCount = 0 // to-do: fill me out.
+    await fieldEndGame(ctx, challengeNumber, standings, p1BoxCount)
   }
 }
 

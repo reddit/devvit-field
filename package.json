@@ -35,7 +35,8 @@
     "test": "npm run test:format && npm run test:types && npm run test:unit",
     "test:format": "npm run formatter",
     "test:types": "tsc --build",
-    "test:unit": "NODE_OPTIONS=\"--no-warnings=ExperimentalWarning ${NODE_OPTIONS}\" vitest run"
+    "test:unit": "NODE_OPTIONS=\"--no-warnings=ExperimentalWarning ${NODE_OPTIONS}\" vitest run",
+    "test:unit:coverage": "NODE_OPTIONS=\"--no-warnings=ExperimentalWarning ${NODE_OPTIONS}\" vitest run --coverage"
   },
   "type": "module",
   "version": "0.0.0"
