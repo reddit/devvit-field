@@ -5,41 +5,27 @@ import {
   getPartitionAndLocalCoords,
   makePartitionKey,
 } from '../../../shared/partition'
-import type {Profile} from '../../../shared/save'
 import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
-import type {
-  ChallengeCompleteMessage,
-  DialogMessage,
-} from '../../../shared/types/message'
+import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
-import {
-  challengeConfigGet,
-  challengeGetCurrentChallengeNumber,
-  challengeMakeNew,
-} from './challenge'
+import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {deltasAdd} from './deltas'
 import {
   teamStatsCellsClaimedGet,
   teamStatsCellsClaimedIncrementForMember,
 } from './leaderboards/challenge/team.cellsClaimed'
 import {
-  teamStatsByPlayerCellsClaimedForMember,
   teamStatsByPlayerCellsClaimedGameOver,
   teamStatsByPlayerCellsClaimedIncrementForMember,
 } from './leaderboards/challenge/team.cellsClaimedByPlayer'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
-import {levels, makeLevelRedirect} from './levels'
 import {minefieldIsMine} from './minefield'
 import {computeScore} from './score'
-import {
-  userAscendLevel,
-  userDescendLevel,
-  userSetLastPlayedChallenge,
-} from './user'
+import {userDescendLevel, userSetLastPlayedChallenge} from './user'
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
   `challenge:${challengeNumber}:field:${makePartitionKey(partitionXY)}` as const

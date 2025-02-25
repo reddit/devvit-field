@@ -29,8 +29,8 @@ DevvitTest.it(
 DevvitTest.it(
   'defaultChallengeConfigMaybeGet - returns undefined when no config exists',
   async ctx => {
-    await expect(
-      defaultChallengeConfigMaybeGet({
+    expect(
+      await defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       }),
     ).toBe(undefined)

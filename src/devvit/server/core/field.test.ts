@@ -3,11 +3,12 @@ import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import {USER_IDS} from '../../../shared/test-utils'
+import type {ChallengeConfig} from '../../../shared/types/challenge-config.js'
 import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
 import {parseBitfieldToFlatArray} from './bitfieldHelpers'
-import {type ChallengeConfig, challengeMakeNew} from './challenge'
+import {challengeMakeNew} from './challenge'
 import {deltasGet} from './deltas'
 import {
   FIELD_CELL_BITS,
