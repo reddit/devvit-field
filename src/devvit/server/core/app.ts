@@ -3,7 +3,6 @@ import {getPartitionCoords} from '../../../shared/partition'
 import type {XY} from '../../../shared/types/2d'
 import type {LevelConfig} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
-import {Random} from '../../../shared/types/random'
 import {
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
