@@ -12,7 +12,7 @@ export const getDefaultConfigMenuAction = (): MenuItem => ({
       console.log(`Default Config: ${JSON.stringify(defaultConfig)}`)
     } catch (error) {
       ctx.ui.showToast(`${error}`)
-      console.log(`${error}`)
+      console.error(error)
     }
   },
 })
