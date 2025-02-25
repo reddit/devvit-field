@@ -6,16 +6,17 @@ import {
   html,
   unsafeCSS,
 } from 'lit'
-import {customElement, property, query} from 'lit/decorators.js'
+import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {teamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
+import {cssHex, paletteDarkGrey} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import {Game} from '../game/game.ts'
 import {cssReset} from './css-reset.ts'
+import type {BFTerminal} from './bf-terminal.ts'
 
-import './bf-control-panel.ts'
 import './bf-footer.ts'
+import './bf-terminal.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -31,11 +32,13 @@ declare global {
 
 // to-do: fill out the remaining states.
 export type UI =
-  // | 'Banned'
-  'Loading' | 'Playing'
-// | 'Promoted'
-// | 'Replaying'
-// | 'Scored'
+  | 'Banned' // to-do: rename DialogMessage?
+  | 'Loading'
+  | 'Playing'
+  | 'Promoted' // to-do: rename ChallengeCompleteMessage?
+  | 'Replaying' // to-do: rename ChallengeCompleteMessage?
+  | 'Demoted' // to-do: rename ChallengeCompleteMessage?
+  | 'Scored'
 
 /**
  * Game canvas wrapper and DOM UI. Pass primitive properties to children so
@@ -53,42 +56,6 @@ export class BFGame extends LitElement {
       background-color: ${unsafeCSS(cssHex(paletteDarkGrey))};
     }
 
-    canvas {
-      /* cursor: none; Cursor provided by app. */
-      display: none;
-      image-rendering: pixelated;
-      /* Update on each pointermove *touch* Event like *mouse* Events. */
-      touch-action: none;
-      outline: none; /* Disable focus outline. */
-      border-style: solid;
-      border-width: 1px;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      border-radius: 1px;
-    }
-
-    .canvas-box {
-      height: 100%;
-    }
-
-    .terminal {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      border-style: solid;
-      border-radius: 2px;
-      border-width: 2px;
-      border-bottom-width: 0;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      margin-block-start: 8px;
-      margin-inline-start: 5px;
-      margin-inline-end: 5px;
-
-      padding-block-start: 8px;
-      padding-inline-start: 11px;
-      padding-inline-end: 11px;
-    }
-
     pre {
       height: 100px;
       overflow: auto;
@@ -96,12 +63,17 @@ export class BFGame extends LitElement {
     }
   `
 
-  // to-do: pass to game.
-  @query('canvas') accessor canvas!: HTMLCanvasElement
   @property({reflect: true}) accessor ui: UI = 'Loading'
+  @queryAsync('bf-terminal') accessor _terminal!: Promise<BFTerminal>
 
-  #dbgLogs: string[] = []
+  #dbgLog: string = ''
   #game: Game = new Game(this)
+
+  // to-do: pass to game.
+  async canvas(): Promise<HTMLCanvasElement> {
+    const terminal = await this._terminal
+    return await terminal.canvas
+  }
 
   override connectedCallback(): void {
     super.connectedCallback()
@@ -138,33 +110,24 @@ export class BFGame extends LitElement {
     }
 
     return html`
-      <div
-        class='terminal'
-        style='pointer-events: ${this.ui === 'Loading' ? 'none' : 'initial'}'
-      >
-        <div class='canvas-box'>
-          <canvas
-            @game-debug='${(ev: CustomEvent<string>) => {
-              this.#dbgLogs.push(ev.detail)
-              this.requestUpdate()
-            }}'
-            @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
-            @game-update='${() => this.requestUpdate()}'
-            tabIndex='0'
-          ></canvas> <!--- Set tabIndex to propagate key events. -->
-        </div>
-        <bf-control-panel
-          @claim='${this.#onClaim}'
-          @toggle-side-panel='${this.#onToggleSidePanel}'
-          @zoom-in='${() => this.#onZoom(1)}'
-          @zoom-out='${() => this.#onZoom(-1)}'
-          team='${ifDefined(team)}'
-          x='${this.#game.select.x}'
-          y='${this.#game.select.y}'
-        ></bf-control-panel>
-      </div>
+      <bf-terminal
+        @game-debug='${(ev: CustomEvent<string>) => {
+          this.#dbgLog += `\n${ev.detail}`
+          this.requestUpdate()
+        }}'
+        @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
+        @game-update='${() => this.requestUpdate()}'
+        @claim='${this.#onClaim}'
+        @toggle-side-panel='${this.#onToggleSidePanel}'
+        @zoom-in='${() => this.#onZoom(1)}'
+        @zoom-out='${() => this.#onZoom(-1)}'
+        ?loading='${this.ui === 'Loading'}'
+        team='${ifDefined(team)}'
+        x='${this.#game.select.x}'
+        y='${this.#game.select.y}'
+      ></bf-terminal>
       <bf-footer></bf-footer>
-      ${this.#dbgLogs.length ? html`<pre>${this.#dbgLogs.join('\n')}</pre>` : ''}
+      ${this.#dbgLog ? html`<pre>${this.#dbgLog}</pre>` : ''}
     `
   }
 
