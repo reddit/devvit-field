@@ -30,7 +30,7 @@ export const defaultChallengeConfigGet = async ({
 }): Promise<DefaultChallengeConfig> => {
   const config = await redis.hGetAll(defaultChallengeConfigKey)
   if (Object.keys(config).length === 0) {
-    throw new Error('No default challenge config')
+    throw new Error('No default challenge config has been set')
   }
   return deserializeDefaultChallengeConfig(config)
 }
