@@ -13,7 +13,7 @@ export type Session = {
   /** Whether "app" is in the devvitdebug query parameter. */
   debug: boolean
   /** True if executing locally on device, false if remotely on server. */
-  local: boolean
+  local: boolean // to-do: fix me. This can't be in state.
   // to-do: type colorScheme to ColorScheme; move under Context.ui.
   scheme: ColorScheme | undefined
   sid: SID
