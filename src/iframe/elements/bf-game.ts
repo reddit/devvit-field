@@ -4,23 +4,30 @@ import {
   type TemplateResult,
   css,
   html,
-  unsafeCSS,
 } from 'lit'
-import {customElement, property, query} from 'lit/decorators.js'
+import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {teamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
+import type {
+  ChallengeCompleteMessage,
+  DialogMessage,
+} from '../../shared/types/message.ts'
 import {Game} from '../game/game.ts'
+import type {BFTerminal} from './bf-terminal.ts'
 import {cssReset} from './css-reset.ts'
 
-import './bf-control-panel.ts'
+import './bf-dialog.ts'
 import './bf-footer.ts'
+import './bf-terminal.ts'
 
 declare global {
   interface HTMLElementEventMap {
     'game-debug': CustomEvent<string>
-    'game-ui': CustomEvent<UI>
+    'game-ui': CustomEvent<{
+      ui: UI
+      msg: DialogMessage | ChallengeCompleteMessage
+    }>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>
   }
@@ -31,11 +38,12 @@ declare global {
 
 // to-do: fill out the remaining states.
 export type UI =
-  // | 'Banned'
-  'Loading' | 'Playing'
-// | 'Promoted'
-// | 'Replaying'
-// | 'Scored'
+  | 'Barred' // to-do: rename DialogMessage?
+  | 'Loading'
+  /** Promoted, replaying / stuck, or demoted. */
+  | 'NextLevel' // to-do: rename ChallengeCompleteMessage?
+  | 'Playing'
+  | 'Scored'
 
 /**
  * Game canvas wrapper and DOM UI. Pass primitive properties to children so
@@ -50,43 +58,6 @@ export class BFGame extends LitElement {
       display: flex;
       flex-direction: column;
       height: 100%;
-      background-color: ${unsafeCSS(cssHex(paletteDarkGrey))};
-    }
-
-    canvas {
-      /* cursor: none; Cursor provided by app. */
-      display: none;
-      image-rendering: pixelated;
-      /* Update on each pointermove *touch* Event like *mouse* Events. */
-      touch-action: none;
-      outline: none; /* Disable focus outline. */
-      border-style: solid;
-      border-width: 1px;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      border-radius: 1px;
-    }
-
-    .canvas-box {
-      height: 100%;
-    }
-
-    .terminal {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      border-style: solid;
-      border-radius: 2px;
-      border-width: 2px;
-      border-bottom-width: 0;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      margin-block-start: 8px;
-      margin-inline-start: 5px;
-      margin-inline-end: 5px;
-
-      padding-block-start: 8px;
-      padding-inline-start: 11px;
-      padding-inline-end: 11px;
     }
 
     pre {
@@ -96,12 +67,18 @@ export class BFGame extends LitElement {
     }
   `
 
-  // to-do: pass to game.
-  @query('canvas') accessor canvas!: HTMLCanvasElement
   @property({reflect: true}) accessor ui: UI = 'Loading'
+  @queryAsync('bf-terminal') accessor _terminal!: Promise<BFTerminal>
+  #msg: DialogMessage | ChallengeCompleteMessage | undefined
 
-  #dbgLogs: string[] = []
+  #dbgLog: string = ''
   #game: Game = new Game(this)
+
+  // to-do: pass to game.
+  async canvas(): Promise<HTMLCanvasElement> {
+    const terminal = await this._terminal
+    return await terminal.canvas
+  }
 
   override connectedCallback(): void {
     super.connectedCallback()
@@ -128,43 +105,82 @@ export class BFGame extends LitElement {
     const team =
       this.#game.team == null ? undefined : teamPascalCase[this.#game.team]
 
+    let dialog
     switch (this.ui) {
       case 'Loading':
+        // to-do: no background, no nothing.
         break
       case 'Playing':
         break
+      case 'Barred':
+        if (this.#msg?.type !== 'Dialog') throw Error('no dialog message')
+        dialog = html`
+          <bf-dialog open>
+            <h2>Woah, you're not allowed here.</h2>
+            <p>${this.#msg.message}</p>
+            <bf-button
+              @click='${() => {
+                if (this.#msg?.type !== 'Dialog')
+                  throw Error('no dialog message')
+                this.#game.postMessage(this.#msg)
+                // to-do: clear this.#msg.
+              }}'
+            >Go to a better place</bf-button>
+          </bf-dialog>
+        `
+        break
+      case 'NextLevel': {
+        if (this.#msg?.type !== 'ChallengeComplete')
+          throw Error('no challenge message')
+        const max = Math.max(
+          ...this.#msg.standings.map(standing => standing.score),
+        )
+        const winners = this.#msg.standings
+          .filter(standing => standing.score === max)
+          .map(standing => standing.member)
+        dialog = html`
+          <bf-dialog open>
+            <h2>The board has been claimed by ${winners.join(' and ')}.</h2>
+            <bf-button
+              @click='${() => {
+                if (this.#msg?.type !== 'ChallengeComplete')
+                  throw Error('no challenge message')
+                this.#game.postMessage(this.#msg)
+              }}'
+            >Go to a better place</bf-button>
+          </bf-dialog>
+        `
+        break
+      }
+      case 'Scored':
+        return html`to-do: fix me.`
       default:
         this.ui satisfies never
     }
 
     return html`
-      <div
-        class='terminal'
-        style='pointer-events: ${this.ui === 'Loading' ? 'none' : 'initial'}'
-      >
-        <div class='canvas-box'>
-          <canvas
-            @game-debug='${(ev: CustomEvent<string>) => {
-              this.#dbgLogs.push(ev.detail)
-              this.requestUpdate()
-            }}'
-            @game-ui='${(ev: CustomEvent<UI>) => (this.ui = ev.detail)}'
-            @game-update='${() => this.requestUpdate()}'
-            tabIndex='0'
-          ></canvas> <!--- Set tabIndex to propagate key events. -->
-        </div>
-        <bf-control-panel
-          @claim='${this.#onClaim}'
-          @toggle-side-panel='${this.#onToggleSidePanel}'
-          @zoom-in='${() => this.#onZoom(1)}'
-          @zoom-out='${() => this.#onZoom(-1)}'
-          team='${ifDefined(team)}'
-          x='${this.#game.select.x}'
-          y='${this.#game.select.y}'
-        ></bf-control-panel>
-      </div>
+      ${dialog}
+      <bf-terminal
+        @game-debug='${(ev: CustomEvent<string>) => {
+          this.#dbgLog += `\n${ev.detail}`
+          this.requestUpdate()
+        }}'
+        @game-ui='${(ev: CustomEvent<{ui: UI; msg: DialogMessage}>) => {
+          this.ui = ev.detail.ui
+          this.#msg = ev.detail.msg
+        }}'
+        @game-update='${() => this.requestUpdate()}'
+        @claim='${this.#onClaim}'
+        @toggle-side-panel='${this.#onToggleSidePanel}'
+        @zoom-in='${() => this.#onZoom(1)}'
+        @zoom-out='${() => this.#onZoom(-1)}'
+        ?loading='${this.ui === 'Loading'}'
+        team='${ifDefined(team)}'
+        x='${this.#game.select.x}'
+        y='${this.#game.select.y}'
+      ></bf-terminal>
       <bf-footer></bf-footer>
-      ${this.#dbgLogs.length ? html`<pre>${this.#dbgLogs.join('\n')}</pre>` : ''}
+      ${this.#dbgLog ? html`<pre>${this.#dbgLog}</pre>` : ''}
     `
   }
 
@@ -172,7 +188,7 @@ export class BFGame extends LitElement {
     this.#game.claimBox(ev.detail)
   }
 
-  #onToggleSidePanel(ev: CustomEvent<XY>): void {
+  #onToggleSidePanel(_ev: CustomEvent<XY>): void {
     // to-do: fill me out.
   }
 

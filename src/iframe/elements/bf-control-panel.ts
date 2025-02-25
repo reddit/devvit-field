@@ -7,6 +7,8 @@ import {
   unsafeCSS,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
+import {ifDefined} from 'lit/directives/if-defined.js'
+import type {TeamPascalCase} from '../../shared/team.ts'
 import {cssHex, paletteDarkGrey} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import {Bubble} from './bubble.ts'
@@ -14,7 +16,6 @@ import {cssReset} from './css-reset.ts'
 
 import './bf-button.ts'
 import './bf-coords.ts'
-import type {TeamPascalCase} from '../../shared/team.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -71,24 +72,24 @@ export class BFControlPanel extends LitElement {
       <div class='panel'>
         <bf-button
           @click='${() => this.dispatchEvent(Bubble('toggle-side-panel', undefined))}'
-          appearance='${this.team}'
+          appearance='${ifDefined(this.team)}'
           icon='menu'
         ></bf-button>
         <bf-button
         @click='${() => this.dispatchEvent(Bubble('claim', {x: this.x, y: this.y}))}'
-          appearance='${this.team}'
+          appearance='${ifDefined(this.team)}'
           label='CLAIM'
           style='--width: 255px;'
         ></bf-button>
         <div class='zoom'>
           <bf-button
             @click='${() => this.dispatchEvent(Bubble('zoom-in', undefined))}'
-            appearance='${this.team}'
+            appearance='${ifDefined(this.team)}'
             icon='zoom-in'
           ></bf-button>
           <bf-button
             @click='${() => this.dispatchEvent(Bubble('zoom-out', undefined))}'
-            appearance='${this.team}'
+            appearance='${ifDefined(this.team)}'
             icon='zoom-out'
           ></bf-button>
         </div>

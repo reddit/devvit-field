@@ -175,7 +175,7 @@ export class Game {
       this.ui.updateComplete,
     ])
 
-    this.canvas = this.ui.canvas
+    this.canvas = await this.ui.canvas()
     this.ctrl = new Input(this.cam, this.canvas)
     this.ctrl.mapDefault()
 
@@ -215,6 +215,8 @@ export class Game {
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
 
+    // to-do: do everything with dispatch or everything with direct interactions
+    //        since a reference to BFGame is had.
     if (this.mode === 'PopOut') this.ui.ui = 'Playing'
 
     this.postMessage({type: 'Loaded'})
@@ -324,6 +326,7 @@ export class Game {
   #onConnect(): void {
     if (this.debug) console.log('connected')
     this.connected = true
+    // to-do: show connection status somewhere.
   }
 
   #onDevMsg(msg: Readonly<DevvitMessage>): void {
@@ -447,10 +450,16 @@ export class Game {
         if (!this.p1) return
         // to-do: implement.
         break
-      case 'ChallengeComplete':
+      case 'ChallengeComplete': {
         if (!this.p1) return
-        // to-do: implement.
+        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'NextLevel', msg}))
         break
+      }
+      case 'Dialog':
+        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'Barred', msg}))
+        break
+      case 'ContinueToNextChallenge':
+        throw Error('unsupported message ContinueToNextChallenge')
       default:
         msg satisfies never
     }
