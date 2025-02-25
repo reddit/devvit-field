@@ -26,7 +26,7 @@ declare global {
     'game-debug': CustomEvent<string>
     'game-ui': CustomEvent<{
       ui: UI
-      msg: DialogMessage | ChallengeCompleteMessage
+      msg: DialogMessage | ChallengeCompleteMessage | undefined
     }>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>

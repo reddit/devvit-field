@@ -56,6 +56,7 @@ export class Game {
   // to-do: SavableGame for LocalStorage savable state.
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
   ac: AudioContext
+  assets: AssetMap | undefined
   atlas: Atlas<Tag>
   audio?: AudioBufferByName
   bmps: BmpAttribBuffer
@@ -73,6 +74,7 @@ export class Game {
   img?: AssetMap['img']
   init: Promise<void>
   looper!: Looper
+  lvl: FieldLevel
   mode?: IframeMode
   now: UTCMillis
   p1?: Player
@@ -107,6 +109,7 @@ export class Game {
     this.eid = new EIDFactory()
     this.field = new Uint8Array()
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
+    this.lvl = new FieldLevel(this)
     this.now = 0 as UTCMillis
     this.players = 0
     this.select = {x: 0, y: 0}
@@ -174,6 +177,7 @@ export class Game {
       // Wait for canvas.
       this.ui.updateComplete,
     ])
+    this.assets = assets
 
     this.canvas = await this.ui.canvas()
     this.ctrl = new Input(this.cam, this.canvas)
@@ -196,8 +200,6 @@ export class Game {
     this.looper.onResume = this.#onResume
     this.#onLoop()
 
-    const lvl = new FieldLevel(this)
-
     this.audio = await Audio(assets)
     this.img = assets.img
 
@@ -209,7 +211,7 @@ export class Game {
       this.fieldConfig,
     )
 
-    lvl.init(this)
+    this.lvl.init(this)
 
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
@@ -397,6 +399,23 @@ export class Game {
         this.visible = msg.visible
         this.fieldConfig = msg.field
 
+        if (msg.reinit) {
+          console.log('reinit')
+          this.ac = new AudioContext()
+          if (!this.assets) throw Error('no assets')
+          this.renderer.load(
+            this.atlas,
+            this.assets.img.atlas,
+            this.field,
+            this.fieldConfig,
+          )
+          this.zoo.clear()
+          this.lvl.init(this)
+          this.canvas.dispatchEvent(
+            Bubble('game-ui', {ui: 'Playing', msg: undefined}),
+          )
+        }
+
         if (devMode) {
           const rnd = new Random(this.seed)
           let visible = 0
@@ -458,8 +477,6 @@ export class Game {
       case 'Dialog':
         this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'Barred', msg}))
         break
-      case 'ContinueToNextChallenge':
-        throw Error('unsupported message ContinueToNextChallenge')
       default:
         msg satisfies never
     }

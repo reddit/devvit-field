@@ -22,14 +22,13 @@ export class FieldLevel implements LevelEnt {
     game.zoo.add(this, new CursorEnt(game))
 
     if (!game.audio) throw Error('no audio')
-    if (game.sub === ('BananaField' satisfies FieldSub))
+    if (game.sub?.includes('BananaField' satisfies FieldSub))
       audioPlay(
         game.ac,
         game.audio['16ItemsInThe15OrLessAtA60sGroceryStore'],
         true,
         true,
       )
-
     this.#rtConnector.update(game)
   }
 

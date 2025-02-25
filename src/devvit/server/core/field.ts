@@ -5,22 +5,14 @@ import {
   getPartitionAndLocalCoords,
   makePartitionKey,
 } from '../../../shared/partition'
-import type {Profile} from '../../../shared/save'
 import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
-import type {
-  ChallengeCompleteMessage,
-  DialogMessage,
-} from '../../../shared/types/message'
+import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
-import {
-  challengeConfigGet,
-  challengeGetCurrentChallengeNumber,
-  challengeMakeNew,
-} from './challenge'
+import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {deltasAdd} from './deltas'
 import {
   teamStatsCellsClaimedGet,
