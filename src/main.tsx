@@ -25,6 +25,23 @@ import {userMakeSuperuser, userSetLevel} from './devvit/server/core/user.js'
 import type {Level} from './shared/types/level.js'
 import {T2} from './shared/types/tid.js'
 
+Devvit.addSettings([
+  {
+    type: 'string',
+    label: 'AWS Access Key',
+    isSecret: true,
+    scope: 'app',
+    name: 'aws-access-key',
+  },
+  {
+    type: 'string',
+    label: 'AWS Secret',
+    isSecret: true,
+    scope: 'app',
+    name: 'aws-secret',
+  },
+])
+
 Devvit.configure({redditAPI: true, redis: true, realtime: true})
 
 Devvit.addCustomPostType({name: '', height: 'tall', render: App})
