@@ -1,14 +1,10 @@
-import {beforeEach, expect} from 'vitest'
+import {expect} from 'vitest'
 import type {DefaultChallengeConfig} from '../../../shared/types/challenge-config'
 import {DevvitTest} from './_utils/DevvitTest'
 import {
-  defaultChallengeConfigGet,
+  defaultChallengeConfigMaybeGet,
   defaultChallengeConfigSet,
 } from './defaultChallengeConfig'
-
-beforeEach(() => {
-  DevvitTest.resetRedis()
-})
 
 DevvitTest.it(
   'defaultChallengeConfigSet/Get - sets and gets a default challenge config',
@@ -23,7 +19,7 @@ DevvitTest.it(
       config,
     })
 
-    const retrievedConfig = await defaultChallengeConfigGet({
+    const retrievedConfig = await defaultChallengeConfigMaybeGet({
       redis: ctx.redis,
     })
     expect(retrievedConfig).toEqual(config)
@@ -31,10 +27,10 @@ DevvitTest.it(
 )
 
 DevvitTest.it(
-  'defaultChallengeConfigGet - throws an error when no config exists',
+  'defaultChallengeConfigMaybeGet - throws an error when no config exists',
   async ctx => {
     await expect(
-      defaultChallengeConfigGet({
+      defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       }),
     ).rejects.toThrow('No default challenge config')
@@ -60,7 +56,7 @@ DevvitTest.it(
       config: initialConfig,
     })
     await expect(
-      defaultChallengeConfigGet({
+      defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       }),
     ).resolves.toEqual(initialConfig)
@@ -70,7 +66,7 @@ DevvitTest.it(
       config: updatedConfig,
     })
     await expect(
-      defaultChallengeConfigGet({
+      defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       }),
     ).resolves.toEqual(updatedConfig)

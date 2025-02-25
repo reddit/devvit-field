@@ -7,17 +7,17 @@ import {
   createChallengeConfigKey,
   currentChallengeNumberKey,
 } from '../../../shared/types/challenge-config'
-import {defaultChallengeConfigGet} from './defaultChallengeConfig'
+import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
-/* Default config - fallback to be used if none has been set through the subreddit menu action */
-const makeDefaultChallengeConfig = (): ChallengeConfig => ({
+/* Fallback config to be used if no default has been set through the subreddit menu action */
+export const fallbackDefaultChallengeConfig: ChallengeConfig = {
   size: 10,
   partitionSize: 5,
   seed: makeRandomSeed(),
   mineDensity: 2,
-})
+}
 
 export const challengeConfigGet = async ({
   redis,
@@ -129,12 +129,12 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  let baseConfig: ChallengeConfig = makeDefaultChallengeConfig()
+  let baseConfig: ChallengeConfig = fallbackDefaultChallengeConfig
 
   // Try to get admin-set default config
   try {
-    const defaultConfig: DefaultChallengeConfig =
-      await defaultChallengeConfigGet({
+    const defaultConfig: DefaultChallengeConfig | undefined =
+      await defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       })
     console.log(`Found default config: ${JSON.stringify(defaultConfig)}`)
@@ -147,8 +147,6 @@ export const challengeMakeNew = async ({
   } catch (error) {
     console.log('No custom default config found, using hardcoded defaults')
   }
-
-  baseConfig.seed = makeRandomSeed()
 
   if (configParams && Object.keys(configParams).length > 0) {
     console.log(

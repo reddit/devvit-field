@@ -23,14 +23,15 @@ export const defaultChallengeConfigSet = async ({
 }
 
 /** Get default challenge config (scoped per subreddit, not global) */
-export const defaultChallengeConfigGet = async ({
+export const defaultChallengeConfigMaybeGet = async ({
   redis,
 }: {
   redis: Devvit.Context['redis']
-}): Promise<DefaultChallengeConfig> => {
+}): Promise<DefaultChallengeConfig | undefined> => {
   const config = await redis.hGetAll(defaultChallengeConfigKey)
   if (Object.keys(config).length === 0) {
-    throw new Error('No default challenge config has been set')
+    console.log('No default challenge config found')
+    return undefined
   }
   return deserializeDefaultChallengeConfig(config)
 }

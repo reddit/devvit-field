@@ -24,7 +24,7 @@ import {
   challengeConfigGet,
   challengeMakeNew,
 } from "./devvit/server/core/challenge.js";
-import { defaultChallengeConfigGet } from "./devvit/server/core/defaultChallengeConfig.js";
+import { defaultChallengeConfigMaybeGet } from "./devvit/server/core/defaultChallengeConfig.js";
 import { fieldClaimCells } from "./devvit/server/core/field.js";
 import { T2 } from "./shared/types/tid.js";
 
@@ -97,7 +97,7 @@ Devvit.addMenuItem({
   location: "subreddit",
   onPress: async (_ev, ctx) => {
     try {
-      const currentDefaultConfig = await defaultChallengeConfigGet({
+      const currentDefaultConfig = await defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       });
 

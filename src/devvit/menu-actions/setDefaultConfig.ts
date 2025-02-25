@@ -1,6 +1,6 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
 import {
-  defaultChallengeConfigGet,
+  defaultChallengeConfigMaybeGet,
   defaultChallengeConfigSet,
 } from '../server/core/defaultChallengeConfig'
 
@@ -59,18 +59,20 @@ export const setDefaultConfigMenuAction = (): MenuItem => ({
   location: 'subreddit',
   onPress: async (_ev, ctx) => {
     try {
-      const currentDefaultConfig = await defaultChallengeConfigGet({
+      const currentDefaultConfig = await defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       })
-
-      ctx.ui.showForm(setDefaultConfigFormKey, {
-        currentDefaultSize: currentDefaultConfig.size,
-        currentDefaultPartitionSize: currentDefaultConfig.partitionSize,
-        currentDefaultMineDensity: currentDefaultConfig.mineDensity,
-      })
+      if (currentDefaultConfig) {
+        ctx.ui.showForm(setDefaultConfigFormKey, {
+          currentDefaultSize: currentDefaultConfig.size,
+          currentDefaultPartitionSize: currentDefaultConfig.partitionSize,
+          currentDefaultMineDensity: currentDefaultConfig.mineDensity,
+        })
+      }
+      return
     } catch (error) {
       console.error('Error fetching default config:', error)
-      ctx.ui.showForm(setDefaultConfigFormKey)
     }
+    ctx.ui.showForm(setDefaultConfigFormKey)
   },
 })
