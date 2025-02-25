@@ -11,6 +11,7 @@ import {defaultChallengeConfigGet} from './defaultChallengeConfig'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
+/* Default config - fallback to be used if none has been set through the subreddit menu action */
 const makeDefaultChallengeConfig = (): ChallengeConfig => ({
   size: 10,
   partitionSize: 5,
@@ -128,7 +129,6 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  // Get hardcoded default config first
   let baseConfig: ChallengeConfig = makeDefaultChallengeConfig()
 
   // Try to get admin-set default config
@@ -139,7 +139,7 @@ export const challengeMakeNew = async ({
       })
     console.log(`Found default config: ${JSON.stringify(defaultConfig)}`)
 
-    // Apply admin-set default config over hardcoded defaults
+    // Prioritize admin-set config over saved default
     baseConfig = {
       ...baseConfig,
       ...defaultConfig,
@@ -148,11 +148,8 @@ export const challengeMakeNew = async ({
     console.log('No custom default config found, using hardcoded defaults')
   }
 
-  // Always generate a new seed for each challenge
   baseConfig.seed = makeRandomSeed()
 
-  // Apply mod-provided config parameters (from the form) with highest priority
-  // This ensures form values override both hardcoded and admin-set defaults
   if (configParams && Object.keys(configParams).length > 0) {
     console.log(
       `Using mod-entered form values: ${JSON.stringify(configParams)}`,
