@@ -1,7 +1,7 @@
 import {expect} from 'vitest'
+import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import {DevvitTest} from './_utils/DevvitTest'
 import {
-  type ChallengeConfig,
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
   challengeIncrementCurrentChallengeNumber,
