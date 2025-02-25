@@ -12,12 +12,12 @@ import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClai
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
 /* Fallback config to be used if no default has been set through the subreddit menu action */
-export const fallbackDefaultChallengeConfig: ChallengeConfig = {
+export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => ({
   size: 10,
   partitionSize: 5,
   seed: makeRandomSeed(),
   mineDensity: 2,
-}
+})
 
 export const challengeConfigGet = async ({
   redis,
@@ -129,7 +129,7 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
   })
 
-  let baseConfig: ChallengeConfig = fallbackDefaultChallengeConfig
+  let baseConfig: ChallengeConfig = makeFallbackDefaultChallengeConfig()
 
   // Try to get admin-set default config
   try {
