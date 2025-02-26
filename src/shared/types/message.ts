@@ -82,8 +82,6 @@ export type IframeMessage =
     }
   /** Player has acknowledged the dialog. */
   | {type: 'OnNextChallengeClicked'}
-  /** Used when there is a very special point to be claimed */
-  | {type: 'ClaimGlobalPointForTeam'}
   /** Player has acknowledged the dialog. */
   | DialogMessage
 

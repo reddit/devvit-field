@@ -29,7 +29,11 @@ import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
-import {levelsIsUserInRightPlace} from '../server/core/levels.js'
+import {
+  levels,
+  levelsIsUserInRightPlace,
+  makeLevelRedirect,
+} from '../server/core/levels.js'
 import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
@@ -241,6 +245,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
           iframe.postMessage({type: 'Dialog', ...rest})
           return
         }
+
+        const profile = await userGet({
+          redis: ctx.redis,
+          userId: appState.profile.t2,
+        })
+
         const result = await levelsIsUserInRightPlace({
           challengeNumber: appState.challengeNumber,
           ctx,
@@ -249,11 +259,27 @@ export function App(ctx: Devvit.Context): JSX.Element {
           // 1. User claims a mine
           // 2. User tries to click again before we show
           //    the game over dialog
-          profile: await userGet({
-            redis: ctx.redis,
-            userId: appState.profile.t2,
-          }),
+          profile,
         })
+
+        const lastLevel = levels[levels.length - 1]!
+
+        // Attempt to claim a global point if on the last level
+        if (lastLevel.id === profile.currentLevel) {
+          const {success} = await userAttemptToClaimSpecialPointForTeam({
+            ctx,
+            userId: profile.t2,
+          })
+
+          if (success) {
+            ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
+            ctx.ui.navigateTo(makeLevelRedirect(0))
+          } else {
+            ctx.ui.showToast('Global claim fail, try again.')
+          }
+
+          return
+        }
 
         if (result.pass === false) {
           const {pass: _pass, ...rest} = result
@@ -296,20 +322,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
           console.log('user ascended, redirecting', newAppState)
           ctx.ui.navigateTo(newAppState.redirectURL)
         }
-
-        break
-      }
-      case 'ClaimGlobalPointForTeam': {
-        if (appState.pass === false) {
-          const {pass: _pass, ...rest} = appState
-          iframe.postMessage({type: 'Dialog', ...rest})
-          break
-        }
-
-        await userAttemptToClaimSpecialPointForTeam({
-          ctx,
-          userId: appState.profile.t2,
-        })
 
         break
       }
