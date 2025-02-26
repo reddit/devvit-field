@@ -3,11 +3,12 @@ import {expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import {USER_IDS} from '../../../shared/test-utils'
+import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
 import {parseBitfieldToFlatArray} from './bitfieldHelpers'
-import {type ChallengeConfig, challengeMakeNew} from './challenge'
+import {challengeMakeNew} from './challenge'
 import {deltasGet} from './deltas'
 import {
   FIELD_CELL_BITS,
@@ -561,5 +562,31 @@ DevvitTest.it(
 
     // Fails because the function returns this: [0,4,3,0]
     expect(parseBitfieldToFlatArray(buffer!, cols, rows)).toEqual([7, 0, 0, 7])
+  },
+)
+
+DevvitTest.it(
+  'should throw an error if the field size is too large',
+  async ctx => {
+    const invalidChallengeConfig: ChallengeConfig = {
+      size: 100,
+      seed: makeRandomSeed(),
+      partitionSize: 50,
+      mineDensity: 2,
+    }
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: invalidChallengeConfig,
+    })
+
+    await expect(
+      fieldGet({
+        challengeNumber,
+        redis: ctx.redis,
+        partitionXY: {x: 0, y: 0},
+      }),
+    ).rejects.toThrowError(
+      `Challenge size too large! This is only for testing right now until we find a more efficient way to return all items in a bitfield. At a minimum, we need to the partition a required command so we don't risk sending 10 million bits at once.`,
+    )
   },
 )

@@ -15,6 +15,7 @@ import type {
   DialogMessage,
 } from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
+import {validateFieldArea} from '../../../shared/validateFieldArea'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {
   challengeConfigGet,
@@ -540,13 +541,10 @@ export const fieldGet = async ({
   partitionXY: XY
 }): Promise<number[]> => {
   const meta = await challengeConfigGet({redis, challengeNumber})
-
-  const area = meta.size * meta.size
-
-  if (area > 5_000) {
-    throw new Error(
-      `Challenge size too large! This is only for testing right now until we find a more efficient way to return all items in a bitfield. At a minimum, we need to the partition a required command so we don't risk sending 10 million bits at once.`,
-    )
+  try {
+    validateFieldArea(meta.size)
+  } catch (error) {
+    throw new Error(`${error}`)
   }
 
   const data = await redis.strLen(
