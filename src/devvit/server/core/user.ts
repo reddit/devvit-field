@@ -188,7 +188,7 @@ export const userSetLevel = async ({
   redis: Devvit.Context['redis']
   userId: T2
   level: Level
-}): Promise<number> => {
+}): Promise<Level> => {
   const user = await userGet({redis, userId})
 
   const levelExists = levels.find(x => x.id === level)

@@ -26,7 +26,7 @@ declare global {
     'game-debug': CustomEvent<string>
     'game-ui': CustomEvent<{
       ui: UI
-      msg: DialogMessage | ChallengeCompleteMessage
+      msg: DialogMessage | ChallengeCompleteMessage | undefined
     }>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>
@@ -145,9 +145,9 @@ export class BFGame extends LitElement {
               @click='${() => {
                 if (this.#msg?.type !== 'ChallengeComplete')
                   throw Error('no challenge message')
-                this.#game.postMessage(this.#msg)
+                this.#game.postMessage({type: 'OnNextChallengeClicked'})
               }}'
-            >Go to a better place</bf-button>
+            >Next</bf-button>
           </bf-dialog>
         `
         break

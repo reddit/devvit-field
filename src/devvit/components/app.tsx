@@ -28,11 +28,8 @@ import {diffArrays} from '../../shared/util.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {type AppState, appInitState} from '../server/core/app.js'
-import {
-  fieldClaimCells,
-  fieldGetDeltas,
-  fieldValidateUserAndAttemptAscend,
-} from '../server/core/field.js'
+import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
+import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
@@ -244,7 +241,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           iframe.postMessage({type: 'Dialog', ...rest})
           return
         }
-        const result = await fieldValidateUserAndAttemptAscend({
+        const result = await levelsIsUserInRightPlace({
           challengeNumber: appState.challengeNumber,
           ctx,
           // You need to call this instead of the appState since
@@ -291,9 +288,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
         // TODO: Do I also need to set loaded back to false here?
 
         if (newAppState.pass) {
+          console.log('user did not ascend, reiniting iframe')
+
           // User did not ascend, close dialog and continue
           sendInitToIframe(appState, {reinit: true})
         } else {
+          console.log('user ascended, redirecting', newAppState)
           ctx.ui.navigateTo(newAppState.redirectURL)
         }
 
@@ -313,6 +313,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
         break
       }
+      case 'Dialog':
+        ctx.ui.navigateTo(msg.redirectURL)
+        break
 
       default:
         msg satisfies never

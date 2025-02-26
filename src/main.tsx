@@ -109,7 +109,7 @@ const newPostFormKey = Devvit.createForm(
 Devvit.addMenuItem({
   forUserType: ["moderator"],
   label: "[BanField] New Post",
-  location: "subreddit",
+  location: ["post", "subreddit"],
   onPress: async (_ev, ctx) => {
     try {
       const currentDefaultConfig = await defaultChallengeConfigMaybeGet({
