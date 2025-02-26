@@ -18,13 +18,9 @@ export const defaultChallengeConfigSet = async ({
   redis: Devvit.Context['redis']
   config: DefaultChallengeConfig
 }): Promise<void> => {
-  try {
-    validateChallengeConfig(config)
-    validateFieldArea(config.size)
-  } catch (error) {
-    console.error(error)
-    throw error
-  }
+  validateChallengeConfig(config)
+  validateFieldArea(config.size)
+
   await redis.hSet(
     defaultChallengeConfigKey,
     serializeDefaultChallengeConfig(config),

@@ -23,6 +23,7 @@ import { setUserLevelMenuAction } from "./devvit/menu-actions/setUserLevel.js";
 import {
   challengeConfigGet,
   challengeMakeNew,
+  makeFallbackDefaultChallengeConfig,
 } from "./devvit/server/core/challenge.js";
 import { defaultChallengeConfigMaybeGet } from "./devvit/server/core/defaultChallengeConfig.js";
 import { fieldClaimCells } from "./devvit/server/core/field.js";
@@ -40,6 +41,7 @@ const newPostFormKey = Devvit.createForm(
     currentDefaultPartitionSize?: number;
     currentDefaultMineDensity?: number;
   }) => {
+    const defaults = makeFallbackDefaultChallengeConfig();
     return {
       title: "New BanField Post",
       description:
@@ -49,7 +51,7 @@ const newPostFormKey = Devvit.createForm(
           type: "number",
           name: "size",
           label: "Size",
-          defaultValue: data.currentDefaultSize || 10,
+          defaultValue: data.currentDefaultSize || defaults.size,
           helpText:
             "The size of one side of the field. All fields must be a perfect square. For example, put in 10 if you want a 10x10 field (100 cells).",
         },
@@ -57,7 +59,9 @@ const newPostFormKey = Devvit.createForm(
           type: "number",
           name: "partitionSize",
           label: "Partition Size",
-          defaultValue: data.currentDefaultPartitionSize || 5,
+          defaultValue:
+            data.currentDefaultPartitionSize || defaults.partitionSize,
+
           helpText:
             "Must be perfectly divisible by the size given. For example, if you have a 10x10 field, you can put in 2 to have a 5x5 partition.",
         },
@@ -65,28 +69,32 @@ const newPostFormKey = Devvit.createForm(
           type: "number",
           name: "mineDensity",
           label: "Mine Density",
-          defaultValue: data.currentDefaultMineDensity || 2,
+          defaultValue: data.currentDefaultMineDensity || defaults.mineDensity,
           helpText: "Number between 0 and 100. 0:No mines. 100:Only mines.",
         },
       ],
     };
   },
-  async ({ values: config }, ctx) => {
+  async ({ values }, ctx) => {
+    const config = {
+      size: values.size,
+      partitionSize: values.partitionSize,
+      mineDensity: values.mineDensity,
+    };
+    try {
+      validateChallengeConfig({
+        size: config.size,
+        partitionSize: config.partitionSize,
+        mineDensity: config.mineDensity,
+      });
+      validateFieldArea(config.size);
+    } catch (error) {
+      ctx.ui.showToast(`${error}`);
+      console.error(error);
+      return;
+    }
     try {
       const { challengeNumber } = await challengeMakeNew({ ctx, config });
-
-      try {
-        validateChallengeConfig({
-          size: config.size,
-          partitionSize: config.partitionSize,
-          mineDensity: config.mineDensity,
-        });
-        validateFieldArea(config.size);
-      } catch (error) {
-        ctx.ui.showToast(`${error}`);
-        console.error(error);
-        return;
-      }
 
       if (!ctx.subredditName) throw Error("no sub name");
       const post = await ctx.reddit.submitPost({

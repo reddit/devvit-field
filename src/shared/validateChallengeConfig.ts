@@ -12,17 +12,6 @@ import type {
 export function validateChallengeConfig(
   config: ChallengeConfig | DefaultChallengeConfig,
 ): void {
-  console.log('config.size', config.size, typeof config.size)
-  console.log(
-    'config.partitionSize',
-    config.partitionSize,
-    typeof config.partitionSize,
-  )
-  console.log(
-    'config.mineDensity',
-    config.mineDensity,
-    typeof config.mineDensity,
-  )
   if (
     !Number.isInteger(config.size) ||
     !Number.isInteger(config.partitionSize) ||

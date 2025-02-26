@@ -106,25 +106,25 @@ DevvitTest.it(
       mineDensity: 2,
     }
 
-    await expect(
+    await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,
         config: invalidSize,
       }),
     ).rejects.toThrow('Size must be greater than 1')
-    await expect(
+    await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,
         config: invalidPartitionSize,
       }),
     ).rejects.toThrow('Partition size must be greater than 0')
-    await expect(
+    await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,
         config: partitionSizeTooLarge,
       }),
     ).rejects.toThrow('Partition size must be less than or equal to size')
-    await expect(
+    await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,
         config: partitionSizeNotDivisible,
@@ -132,13 +132,13 @@ DevvitTest.it(
     ).rejects.toThrow(
       `Size ${partitionSizeNotDivisible.size} must be divisible by partitionSize ${partitionSizeNotDivisible.partitionSize}`,
     )
-    await expect(
+    await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,
         config: invalidMineDensity,
       }),
     ).rejects.toThrow('Mine density must be between 0 and 100')
-    await expect(
+    await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,
         config: fieldAreaTooLarge,

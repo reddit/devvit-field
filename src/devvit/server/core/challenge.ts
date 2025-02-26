@@ -126,41 +126,18 @@ export const challengeMakeNew = async ({
     throw new Error('No subreddit name')
   }
 
-  const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
-    redis: ctx.redis,
-  })
-
-  let baseConfig: ChallengeConfig = makeFallbackDefaultChallengeConfig()
-
-  // Try to get admin-set default config
-  try {
-    const defaultConfig: DefaultChallengeConfig | undefined =
-      await defaultChallengeConfigMaybeGet({
-        redis: ctx.redis,
-      })
-    console.log(`Found default config: ${JSON.stringify(defaultConfig)}`)
-
-    // Prioritize admin-set config over saved default
-    baseConfig = {
-      ...baseConfig,
-      ...defaultConfig,
-    }
-  } catch (error) {
-    console.log('No custom default config found, using hardcoded defaults')
-  }
-
-  if (configParams && Object.keys(configParams).length > 0) {
-    console.log(
-      `Using mod-entered form values: ${JSON.stringify(configParams)}`,
-    )
-  }
-
-  const config = {
-    ...baseConfig,
+  const config: ChallengeConfig = {
+    ...makeFallbackDefaultChallengeConfig(),
+    ...(await defaultChallengeConfigMaybeGet({
+      redis: ctx.redis,
+    })),
     ...configParams,
   }
 
   validateChallengeConfig(config)
+  const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
+    redis: ctx.redis,
+  })
 
   await _challengeConfigSet({
     redis: ctx.redis,
