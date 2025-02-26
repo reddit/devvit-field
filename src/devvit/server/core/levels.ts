@@ -83,8 +83,9 @@ export const levelsIsUserInRightPlace = async ({
   }
 
   const standings = await teamStatsCellsClaimedGet({
-    challengeNumber,
+    challengeNumber: profile.lastPlayedChallengeNumberForLevel,
     redis: ctx.redis,
+    sort: 'DESC',
   })
 
   const winningTeam = standings[0]!.member

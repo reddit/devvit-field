@@ -262,6 +262,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
           profile,
         })
 
+        if (result.pass === false) {
+          const {pass: _pass, ...rest} = result
+          iframe.postMessage({type: 'Dialog', ...rest})
+          return
+        }
+
         const lastLevel = levels[levels.length - 1]!
 
         // Attempt to claim a global point if on the last level
@@ -278,12 +284,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
             ctx.ui.showToast('Global claim fail, try again.')
           }
 
-          return
-        }
-
-        if (result.pass === false) {
-          const {pass: _pass, ...rest} = result
-          iframe.postMessage({type: 'Dialog', ...rest})
           return
         }
 
@@ -341,12 +341,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
         console.log(
           `${appState.pass ? appState.profile.username : 'app state no pass'} Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
-
-      if (msg.type === 'ChallengeComplete') {
-        // TODO: Unsubscribe listeners? Or, let them continue to flow knowing that we'll get the
-        // deltas when we reinit the app?
-        ctx.ui.showToast('Challenge Complete. Devs please do something!')
-      }
 
       iframe.postMessage(msg)
     },
