@@ -3,7 +3,6 @@ import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
 import {
   type ChallengeConfig,
-  type DefaultChallengeConfig,
   createChallengeConfigKey,
   currentChallengeNumberKey,
 } from '../../../shared/types/challenge-config'

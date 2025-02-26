@@ -252,7 +252,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
         })
 
         const result = await levelsIsUserInRightPlace({
-          challengeNumber: appState.challengeNumber,
           ctx,
           // You need to call this instead of the appState since
           // app state can be stale. Use case where you hit this:

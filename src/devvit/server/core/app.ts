@@ -38,7 +38,6 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   ])
 
   const result = await levelsIsUserInRightPlace({
-    challengeNumber,
     ctx,
     profile,
   })

@@ -45,11 +45,9 @@ type LevelsIsUserInRightPlaceResponse =
 
 export const levelsIsUserInRightPlace = async ({
   profile,
-  challengeNumber,
   ctx,
 }: {
   profile: Profile
-  challengeNumber: number
   ctx: Devvit.Context
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
   // User can only descend on level 0 so they always pass
