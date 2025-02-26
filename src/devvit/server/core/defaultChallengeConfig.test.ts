@@ -29,11 +29,10 @@ DevvitTest.it(
 DevvitTest.it(
   'defaultChallengeConfigMaybeGet - returns undefined when no config exists',
   async ctx => {
-    await expect(
-      defaultChallengeConfigMaybeGet({
-        redis: ctx.redis,
-      }),
-    ).toBe(undefined)
+    const result = await defaultChallengeConfigMaybeGet({
+      redis: ctx.redis,
+    })
+    expect(result).toBeUndefined()
   },
 )
 
@@ -70,5 +69,82 @@ DevvitTest.it(
         redis: ctx.redis,
       }),
     ).resolves.toEqual(updatedConfig)
+  },
+)
+
+DevvitTest.it(
+  'validates form values before saving default config',
+  async ctx => {
+    const invalidSize: DefaultChallengeConfig = {
+      size: 1,
+      partitionSize: 1,
+      mineDensity: 2,
+    }
+    const invalidPartitionSize: DefaultChallengeConfig = {
+      size: 10,
+      partitionSize: 0,
+      mineDensity: 2,
+    }
+    const invalidMineDensity: DefaultChallengeConfig = {
+      size: 10,
+      partitionSize: 2,
+      mineDensity: 500,
+    }
+    const partitionSizeTooLarge: DefaultChallengeConfig = {
+      size: 10,
+      partitionSize: 20,
+      mineDensity: 2,
+    }
+    const partitionSizeNotDivisible: DefaultChallengeConfig = {
+      size: 10,
+      partitionSize: 7,
+      mineDensity: 2,
+    }
+    const fieldAreaTooLarge: DefaultChallengeConfig = {
+      size: 100,
+      partitionSize: 5,
+      mineDensity: 2,
+    }
+
+    await expect(
+      defaultChallengeConfigSet({
+        redis: ctx.redis,
+        config: invalidSize,
+      }),
+    ).rejects.toThrow('Size must be greater than 1')
+    await expect(
+      defaultChallengeConfigSet({
+        redis: ctx.redis,
+        config: invalidPartitionSize,
+      }),
+    ).rejects.toThrow('Partition size must be greater than 0')
+    await expect(
+      defaultChallengeConfigSet({
+        redis: ctx.redis,
+        config: partitionSizeTooLarge,
+      }),
+    ).rejects.toThrow('Partition size must be less than or equal to size')
+    await expect(
+      defaultChallengeConfigSet({
+        redis: ctx.redis,
+        config: partitionSizeNotDivisible,
+      }),
+    ).rejects.toThrow(
+      `Size ${partitionSizeNotDivisible.size} must be divisible by partitionSize ${partitionSizeNotDivisible.partitionSize}`,
+    )
+    await expect(
+      defaultChallengeConfigSet({
+        redis: ctx.redis,
+        config: invalidMineDensity,
+      }),
+    ).rejects.toThrow('Mine density must be between 0 and 100')
+    await expect(
+      defaultChallengeConfigSet({
+        redis: ctx.redis,
+        config: fieldAreaTooLarge,
+      }),
+    ).rejects.toThrow(
+      `Challenge size too large! This is only for testing right now until we find a more efficient way to return all items in a bitfield. At a minimum, we need to the partition a required command so we don't risk sending 10 million bits at once.`,
+    )
   },
 )

@@ -5,6 +5,8 @@ import {
   type DefaultChallengeConfig,
   defaultChallengeConfigKey,
 } from '../../../shared/types/challenge-config'
+import {validateChallengeConfig} from '../../../shared/validateChallengeConfig'
+import {validateFieldArea} from '../../../shared/validateFieldArea'
 
 /**
  * Save default challenge config to redis (scoped per subreddit, not global)
@@ -16,6 +18,13 @@ export const defaultChallengeConfigSet = async ({
   redis: Devvit.Context['redis']
   config: DefaultChallengeConfig
 }): Promise<void> => {
+  try {
+    validateChallengeConfig(config)
+    validateFieldArea(config.size)
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
   await redis.hSet(
     defaultChallengeConfigKey,
     serializeDefaultChallengeConfig(config),
