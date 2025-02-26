@@ -135,6 +135,7 @@ export const challengeMakeNew = async ({
   }
 
   validateChallengeConfig(config)
+
   const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
     redis: ctx.redis,
   })

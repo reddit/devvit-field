@@ -50,15 +50,18 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
     }
   },
   async ({values}, ctx) => {
-    const defaultConfig = {
-      size: values.size,
-      partitionSize: values.partitionSize,
-      mineDensity: values.mineDensity,
-    }
-
     try {
+      const defaultConfig = {
+        size: values.size,
+        partitionSize: values.partitionSize,
+        mineDensity: values.mineDensity,
+      }
+
       validateChallengeConfig(defaultConfig)
       validateFieldArea(defaultConfig.size)
+
+      await defaultChallengeConfigSet({redis: ctx.redis, config: defaultConfig})
+      ctx.ui.showToast('Default config updated successfully!')
     } catch (error) {
       if (error instanceof Error) {
         console.error(error.message)
@@ -67,11 +70,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
         console.error('Unknown error:', error)
         ctx.ui.showToast('Unable to validate config values. Please try again.')
       }
-      return
     }
-
-    await defaultChallengeConfigSet({redis: ctx.redis, config: defaultConfig})
-    ctx.ui.showToast('Default config updated successfully!')
   },
 )
 
