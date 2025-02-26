@@ -1,4 +1,6 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
+import {validateChallengeConfig} from '../../shared/validateChallengeConfig'
+import {validateFieldArea} from '../../shared/validateFieldArea'
 import {
   defaultChallengeConfigMaybeGet,
   defaultChallengeConfigSet,
@@ -22,6 +24,8 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           defaultValue: data.currentDefaultSize || 10,
           helpText:
             'The size of one side of the field. All fields must be a perfect square. For example, put in 10 if you want a 10x10 field (100 cells).',
+          required: true,
+          min: 2,
         },
         {
           type: 'number',
@@ -30,6 +34,8 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           defaultValue: data.currentDefaultPartitionSize || 5,
           helpText:
             'Must be perfectly divisible by the size given. For example, if you have a 10x10 field, you can put in 2 to have a 5x5 partition.',
+          required: true,
+          min: 1,
         },
         {
           type: 'number',
@@ -37,6 +43,9 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           label: 'Mine Density',
           defaultValue: data.currentDefaultMineDensity || 2,
           helpText: 'Number between 0 and 100. 0:No mines. 100:Only mines.',
+          required: true,
+          min: 1,
+          max: 100,
         },
       ],
     }
@@ -48,6 +57,16 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
       mineDensity: values.mineDensity,
     }
     console.log('defaultConfig', defaultConfig)
+
+    try {
+      validateChallengeConfig(defaultConfig)
+      validateFieldArea(defaultConfig.size)
+    } catch (error) {
+      ctx.ui.showToast(`${error}`)
+      console.error(error)
+      return
+    }
+
     await defaultChallengeConfigSet({redis: ctx.redis, config: defaultConfig})
     ctx.ui.showToast('Default config updated successfully!')
   },

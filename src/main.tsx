@@ -27,6 +27,8 @@ import {
 import { defaultChallengeConfigMaybeGet } from "./devvit/server/core/defaultChallengeConfig.js";
 import { fieldClaimCells } from "./devvit/server/core/field.js";
 import { T2 } from "./shared/types/tid.js";
+import { validateChallengeConfig } from "./shared/validateChallengeConfig.js";
+import { validateFieldArea } from "./shared/validateFieldArea.js";
 
 Devvit.configure({ redditAPI: true, redis: true, realtime: true });
 
@@ -72,6 +74,19 @@ const newPostFormKey = Devvit.createForm(
   async ({ values: config }, ctx) => {
     try {
       const { challengeNumber } = await challengeMakeNew({ ctx, config });
+
+      try {
+        validateChallengeConfig({
+          size: config.size,
+          partitionSize: config.partitionSize,
+          mineDensity: config.mineDensity,
+        });
+        validateFieldArea(config.size);
+      } catch (error) {
+        ctx.ui.showToast(`${error}`);
+        console.error(error);
+        return;
+      }
 
       if (!ctx.subredditName) throw Error("no sub name");
       const post = await ctx.reddit.submitPost({
