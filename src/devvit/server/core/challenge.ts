@@ -7,17 +7,18 @@ import {
   createChallengeConfigKey,
   currentChallengeNumberKey,
 } from '../../../shared/types/challenge-config'
+import {validateChallengeConfig} from '../../../shared/validateChallengeConfig'
 import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 
 /* Fallback config to be used if no default has been set through the subreddit menu action */
-export const fallbackDefaultChallengeConfig: ChallengeConfig = {
+export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => ({
   size: 10,
   partitionSize: 5,
   seed: makeRandomSeed(),
   mineDensity: 2,
-}
+})
 
 export const challengeConfigGet = async ({
   redis,
@@ -125,69 +126,19 @@ export const challengeMakeNew = async ({
     throw new Error('No subreddit name')
   }
 
-  const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
-    redis: ctx.redis,
-  })
-
-  let baseConfig: ChallengeConfig = fallbackDefaultChallengeConfig
-
-  // Try to get admin-set default config
-  try {
-    const defaultConfig: DefaultChallengeConfig | undefined =
-      await defaultChallengeConfigMaybeGet({
-        redis: ctx.redis,
-      })
-    console.log(`Found default config: ${JSON.stringify(defaultConfig)}`)
-
-    // Prioritize admin-set config over saved default
-    baseConfig = {
-      ...baseConfig,
-      ...defaultConfig,
-    }
-  } catch (error) {
-    console.log('No custom default config found, using hardcoded defaults')
-  }
-
-  if (configParams && Object.keys(configParams).length > 0) {
-    console.log(
-      `Using mod-entered form values: ${JSON.stringify(configParams)}`,
-    )
-  }
-
-  const config = {
-    ...baseConfig,
+  const config: ChallengeConfig = {
+    ...makeFallbackDefaultChallengeConfig(),
+    ...(await defaultChallengeConfigMaybeGet({
+      redis: ctx.redis,
+    })),
     ...configParams,
   }
 
-  if (
-    !Number.isInteger(config.size) ||
-    !Number.isInteger(config.partitionSize) ||
-    !Number.isInteger(config.mineDensity)
-  ) {
-    throw new Error('Size, partitionSize, and mineDensity must be integers')
-  }
+  validateChallengeConfig(config)
 
-  if (config.size < 2) {
-    throw new Error('Size must be greater than 1')
-  }
-
-  if (config.partitionSize < 1) {
-    throw new Error('Partition size must be greater than 0')
-  }
-
-  if (config.partitionSize > config.size) {
-    throw new Error('Partition size must be less than or equal to size')
-  }
-
-  if (config.mineDensity < 0 || config.mineDensity > 100) {
-    throw new Error('Mine density must be between 0 and 100')
-  }
-
-  if (config.size % config.partitionSize !== 0) {
-    throw new Error(
-      `Size ${config.size} must be divisible by partitionSize ${config.partitionSize}`,
-    )
-  }
+  const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
+    redis: ctx.redis,
+  })
 
   await _challengeConfigSet({
     redis: ctx.redis,
