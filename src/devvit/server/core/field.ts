@@ -435,7 +435,6 @@ export const fieldGet = async ({
   partitionXY: XY
 }): Promise<number[]> => {
   const meta = await challengeConfigGet({redis, challengeNumber})
-
   const area = meta.size * meta.size
 
   if (area > 5_000) {

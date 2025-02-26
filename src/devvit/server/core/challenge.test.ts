@@ -7,7 +7,7 @@ import {
   challengeIncrementCurrentChallengeNumber,
   challengeMakeNew,
   challengeOnInstall,
-  fallbackDefaultChallengeConfig,
+  makeFallbackDefaultChallengeConfig,
 } from './challenge'
 import {defaultChallengeConfigSet} from './defaultChallengeConfig'
 
@@ -92,12 +92,14 @@ DevvitTest.it(
       challengeNumber,
     })
 
-    expect(challengeConfig.size).toEqual(fallbackDefaultChallengeConfig.size)
+    expect(challengeConfig.size).toEqual(
+      makeFallbackDefaultChallengeConfig().size,
+    )
     expect(challengeConfig.partitionSize).toEqual(
-      fallbackDefaultChallengeConfig.partitionSize,
+      makeFallbackDefaultChallengeConfig().partitionSize,
     )
     expect(challengeConfig.mineDensity).toEqual(
-      fallbackDefaultChallengeConfig.mineDensity,
+      makeFallbackDefaultChallengeConfig().mineDensity,
     )
     expect(challengeConfig.seed).toBeDefined()
   },
