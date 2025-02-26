@@ -25,7 +25,6 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           helpText:
             'The size of one side of the field. All fields must be a perfect square. For example, put in 10 if you want a 10x10 field (100 cells).',
           required: true,
-          min: 2,
         },
         {
           type: 'number',
@@ -35,7 +34,6 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           helpText:
             'Must be perfectly divisible by the size given. For example, if you have a 10x10 field, you can put in 2 to have a 5x5 partition.',
           required: true,
-          min: 1,
         },
         {
           type: 'number',
@@ -44,8 +42,6 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           defaultValue: data.currentDefaultMineDensity || 2,
           helpText: 'Number between 0 and 100. 0:No mines. 100:Only mines.',
           required: true,
-          min: 1,
-          max: 100,
         },
       ],
     }
