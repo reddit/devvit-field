@@ -35,7 +35,6 @@ export const defaultChallengeConfigMaybeGet = async ({
 }): Promise<DefaultChallengeConfig | undefined> => {
   const config = await redis.hGetAll(defaultChallengeConfigKey)
   if (Object.keys(config).length === 0) {
-    console.log('No default challenge config found')
     return undefined
   }
   return deserializeDefaultChallengeConfig(config)

@@ -52,7 +52,7 @@ export const levelsIsUserInRightPlace = async ({
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
   // User can only descend on level 0 so they always pass
   if (
-    // profile.lastPlayedChallengeNumberForLevel === 0 &&
+    profile.lastPlayedChallengeNumberForLevel === 0 &&
     profile.currentLevel === 0
   ) {
     return {pass: true}
@@ -85,6 +85,11 @@ export const levelsIsUserInRightPlace = async ({
     redis: ctx.redis,
     sort: 'DESC',
   })
+
+  // If there are no standings for some reason, just pass
+  if (standings.length === 0) {
+    return {pass: true}
+  }
 
   const winningTeam = standings[0]!.member
   const userTeam = getTeamFromUserId(profile.t2)
