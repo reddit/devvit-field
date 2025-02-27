@@ -78,10 +78,13 @@ launches [local iframe development](#local-iframe-development).
   publishing runs through this command.
 - `run test:unit`: run the unit tests. Pass `--update` to update all test
   snapshots.
+- `run devvit:install:dev`: install `@next` to all dev subs specified in
+  `src/devvit/server/core/config.dev.json`.
+- `run devvit:install:prod`: build, upload, and install a new version to prod
+  subs.
 - `run format`: apply lint fixes automatically where available.
 - `run build`: compile source inputs to artifacts under `dist/` and `webroot/`.
 - `run build:atlas`: compile Aseprite assets into atlas (requires `aseprite`).
-- `run devvit:install`: build, upload, and install a new version to prod subs.
 
 💡 Add `--` to pass arguments to the script command. For example,
 `npm run test:unit -- --update` to update snapshots.

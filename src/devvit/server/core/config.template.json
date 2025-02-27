@@ -1,4 +1,5 @@
 {
+  "devvitConfig": "devvit.dev.yaml",
   "levels": [
     {
       "id": 0,
