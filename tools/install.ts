@@ -38,7 +38,7 @@ await Promise.all([
 function spawnAsync(cmd: string, args: readonly string[]): Promise<void> {
   const child = spawn(cmd, args, {stdio: 'inherit'})
   return new Promise((fulfil, reject) => {
-    child.on('error', reject)
+    child.on('error', err => reject(err))
     child.on('exit', code => {
       if (code) reject(Error(`exit ${code}`))
       else fulfil()
