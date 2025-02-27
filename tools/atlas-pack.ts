@@ -3,14 +3,11 @@
 //
 // atlas-pack.ts config.json
 
-import {execFile} from 'node:child_process'
+import {execFileSync} from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
-import util from 'node:util'
 import type {Config} from '../src/iframe/types/config.js'
 import {parseAtlas} from './atlas-parser.ts'
-
-const execFileAsync = util.promisify(execFile)
 
 const configFilename = process.argv
   .slice(2)
@@ -27,24 +24,22 @@ const aseFilenames = fs
   .readdirSync(aseDirname)
   .filter(name => name.endsWith('.aseprite'))
   .map(name => path.resolve(aseDirname, name))
-const json = await ase(
-  '--batch',
-  // '--color-mode=indexed',
-  '--filename-format={title}--{tag}--{frame}',
-  '--list-slices',
-  '--list-tags',
-  '--merge-duplicates',
-  `--sheet=${atlasImageFilename}`,
-  '--sheet-pack',
-  '--tagname-format={title}--{tag}',
-  ...aseFilenames,
+const json = execFileSync(
+  'aseprite',
+  [
+    '--batch',
+    // '--color-mode=indexed',
+    '--filename-format={title}--{tag}--{frame}',
+    '--list-slices',
+    '--list-tags',
+    '--merge-duplicates',
+    `--sheet=${atlasImageFilename}`,
+    '--sheet-pack',
+    '--tagname-format={title}--{tag}',
+    ...aseFilenames,
+  ],
+  {encoding: 'utf8'},
 )
 
 const atlas = parseAtlas(JSON.parse(json), config.tags)
 fs.writeFileSync(atlasJSONFilename, JSON.stringify(atlas, undefined, 2))
-
-async function ase(...args: readonly string[]): Promise<string> {
-  const {stderr, stdout} = await execFileAsync('aseprite', args)
-  process.stderr.write(stderr)
-  return stdout
-}
