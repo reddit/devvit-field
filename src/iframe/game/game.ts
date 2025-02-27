@@ -342,9 +342,9 @@ export class Game {
   }
 
   #onLoop = (): void => {
-    this.cam.minWH.w = this.canvas.parentElement!.clientWidth * devicePixelRatio
-    this.cam.minWH.h =
-      this.canvas.parentElement!.clientHeight * devicePixelRatio
+    const parent = this.canvas.parentElement!
+    this.cam.minWH.w = parent.clientWidth * devicePixelRatio
+    this.cam.minWH.h = parent.clientHeight * devicePixelRatio
 
     // Suppress all input when pre-init.
     if (this.ui.ui !== 'Playing') this.ctrl.handled = true

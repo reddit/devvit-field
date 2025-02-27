@@ -5,7 +5,12 @@
   "tags": {
     "background--Black": {},
     "background--Checkerboard": {},
-    "background--Fade": {},
-    "background--White": {}
+    "background--White": {},
+    "box--Ban": {},
+    "box--Reticle": {},
+    "box--Flamingo": {},
+    "box--JuiceBox": {},
+    "box--Lasagna": {},
+    "box--Sunshine": {}
   }
 }
