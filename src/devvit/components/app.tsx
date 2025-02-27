@@ -24,11 +24,7 @@ import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
-import {
-  levels,
-  levelsIsUserInRightPlace,
-  makeLevelRedirect,
-} from '../server/core/levels.js'
+import {levels, levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
@@ -252,7 +248,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
           if (success) {
             ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
-            ctx.ui.navigateTo(makeLevelRedirect(0))
+            ctx.ui.navigateTo(levels[0]!.url)
           } else {
             ctx.ui.showToast('Global claim fail, try again.')
           }

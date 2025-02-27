@@ -12,17 +12,6 @@ import {userAscendLevel} from './user'
 export const levels: readonly Readonly<LevelConfig>[] =
   config.levels as LevelConfig[]
 
-export const makeLevelRedirect = (levelNumber: number) => {
-  const level = levels.find(x => x.id === levelNumber)
-
-  if (!level) {
-    throw new Error(`Level ${levelNumber} not found`)
-  }
-
-  // TODO: I notice this redirects on the client, could save some time by using the EXACT url
-  return `https://www.reddit.com/r/${level.subredditName}/comments/${level.postId}`
-}
-
 /**
  * Make sure the user has access to:
  * 1. View the field
@@ -50,24 +39,19 @@ export const levelsIsUserInRightPlace = async ({
   profile: Profile
   ctx: Devvit.Context
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
-  // User can only descend on level 0 so they always pass
-  if (
-    profile.lastPlayedChallengeNumberForLevel === 0 &&
-    profile.currentLevel === 0
-  ) {
-    return {pass: true}
-  }
-
+  // Make sure the level config exists for the subreddit before anything
   const level = levels.find(x => x.subredditId === ctx.subredditId)
   if (!level) {
-    throw new Error(`No level config found for subreddit ${ctx.subredditId}`)
+    throw new Error(
+      `No level config found for subreddit ${ctx.subredditId}. Please make sure you are using the right config.{env}.json (or update it for the new sub you installed this app to)!`,
+    )
   }
 
   if (profile.currentLevel !== level.id) {
     return {
       pass: false,
       message: `You are not on the correct level. You should be at level ${profile.currentLevel}, not ${level.id}.`,
-      redirectURL: makeLevelRedirect(profile.currentLevel),
+      redirectURL: level.url,
       code: 'WrongLevel',
     }
   }
@@ -94,26 +78,29 @@ export const levelsIsUserInRightPlace = async ({
   const winningTeam = standings[0]!.member
   const userTeam = getTeamFromUserId(profile.t2)
 
-  if (winningTeam === userTeam) {
-    if (profile.lastPlayedChallengeNumberCellsClaimed > 0) {
-      const newLevel = await userAscendLevel({
-        redis: ctx.redis,
-        userId: profile.t2,
-      })
+  if (
+    winningTeam === userTeam &&
+    profile.lastPlayedChallengeNumberCellsClaimed > 0
+  ) {
+    const newLevelForUser = await userAscendLevel({
+      redis: ctx.redis,
+      userId: profile.t2,
+    })
 
-      const firstLevel = levels[0]!.id
-      if (newLevel === firstLevel) {
-        return {
-          pass: true,
-        }
-      }
-
+    const firstLevel = levels[0]!.id
+    if (level.id === firstLevel) {
       return {
-        pass: false,
-        message: `You were on the winning team and claimed more than one cell. You have ascended to level ${newLevel}.`,
-        code: 'WrongLevel',
-        redirectURL: makeLevelRedirect(newLevel),
+        pass: true,
       }
+    }
+
+    const newLevelForUserConfig = levels.find(x => x.id === newLevelForUser)!
+
+    return {
+      pass: false,
+      message: `You were on the winning team and claimed more than one cell. You have ascended to level ${newLevelForUser}.`,
+      code: 'WrongLevel',
+      redirectURL: newLevelForUserConfig.url,
     }
   }
 

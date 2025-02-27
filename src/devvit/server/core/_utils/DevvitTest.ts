@@ -108,6 +108,15 @@ export namespace DevvitTest {
         const val = await con.get(makeKey(key))
         return val === null ? undefined : val
       },
+      async getBuffer(key) {
+        return (await con.getBuffer(makeKey(key))) ?? undefined
+      },
+      async exists(...keys) {
+        return await con.exists(...keys.map(makeKey))
+      },
+      async rename(key, newKey) {
+        return await con.rename(makeKey(key), makeKey(newKey))
+      },
       async getRange(key, start, end) {
         return await con.getrange(makeKey(key), start, end)
       },
@@ -183,6 +192,9 @@ export namespace DevvitTest {
       },
       async hSet(key, fieldValues) {
         return await con.hset(makeKey(key), fieldValues)
+      },
+      async hSetNX(key, field, value) {
+        return await con.hsetnx(makeKey(key), field, value)
       },
       async hset(key, fieldValues) {
         return await this.hSet(key, fieldValues)
@@ -396,7 +408,7 @@ export namespace DevvitTest {
       scheduler: {
         runJob: vi.fn(),
         cancelJob: vi.fn(),
-        listJobs: vi.fn(),
+        listJobs: vi.fn(async () => []),
       },
       reddit: {
         getUserById(_id) {

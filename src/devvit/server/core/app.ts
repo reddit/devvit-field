@@ -71,17 +71,14 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     ),
   })
 
-  const level = levels.find(x => x.id === profile.currentLevel)
-  if (!level) {
-    throw new Error(`No level found for ${profile.currentLevel}`)
-  }
+  const level = levels.find(x => x.id === profile.currentLevel)!
 
   const totalCellsForField = challengeConfig.size * challengeConfig.size
   const totalCellsClaimed = initialCellsClaimed.reduce(
     (acc, {score}) => acc + score,
     0,
   )
-  const visible = totalCellsClaimed - totalCellsForField
+  const visible = totalCellsForField - totalCellsClaimed
 
   return {
     pass: true,

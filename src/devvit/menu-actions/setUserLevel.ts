@@ -1,6 +1,6 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
 import type {Level} from '../../shared/types/level'
-import {makeLevelRedirect} from '../server/core/levels'
+import {levels} from '../server/core/levels'
 import {userSetLevel} from '../server/core/user'
 
 export const setUserLevelFormKey: FormKey = Devvit.createForm(
@@ -40,7 +40,13 @@ export const setUserLevelFormKey: FormKey = Devvit.createForm(
       userId: user.id,
     })
 
-    ctx.ui.navigateTo(makeLevelRedirect(newLevel))
+    const newLevelConfig = levels.find(x => x.id === newLevel)
+    if (!newLevelConfig) {
+      ctx.ui.showToast(`Level ${newLevel} not found`)
+      return
+    }
+
+    ctx.ui.navigateTo(newLevelConfig.url)
   },
 )
 

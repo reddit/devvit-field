@@ -15,6 +15,7 @@
     "incrby",
     "Millis",
     "playtest",
+    "protos",
     "reinit",
     "snoovatar",
     "webroot"

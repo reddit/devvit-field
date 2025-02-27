@@ -4,35 +4,35 @@
     {
       "id": 0,
       "subredditId": "t5_",
-      "postId": "t3_",
+      "url": "https://reddit.com/",
       "subredditName": "PlayBanField",
       "theme": {}
     },
     {
       "id": 1,
       "subredditId": "t5_",
-      "postId": "t3_",
+      "url": "https://reddit.com/",
       "subredditName": "CantPlayBanField",
       "theme": {}
     },
     {
       "id": 2,
       "subredditId": "t5_",
-      "postId": "t3_",
+      "url": "https://reddit.com/",
       "subredditName": "BananaField",
       "theme": {}
     },
     {
       "id": 3,
       "subredditId": "t5_",
-      "postId": "t3_",
+      "url": "https://reddit.com/",
       "subredditName": "WhyBanField",
       "theme": {}
     },
     {
       "id": 4,
       "subredditId": "t5_",
-      "postId": "t3_",
+      "url": "https://reddit.com/",
       "subredditName": "WhatIsBanField",
       "theme": {}
     }
