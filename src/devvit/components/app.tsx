@@ -1,10 +1,5 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {
-  Devvit,
-  type JSONValue,
-  type UseChannelResult,
-  useAsync,
-} from '@devvit/public-api'
+import {Devvit, type UseChannelResult, useAsync} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
@@ -80,26 +75,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     },
   )
 
-  let [loaded, setLoaded] = useState2(false)
-  // to-do: move to UseWebViewResult.mounted.
-  let [mounted, setMounted] = useState2(false)
-  const iframe = useWebView<IframeMessage, DevvitMessage>({
-    onMessage: onMsg,
-    onUnmount() {
-      setLoaded((loaded = false))
-      setMounted((mounted = false))
-    },
-  })
-  // to-do: support three mount states from hook.
-  if (!mounted)
-    iframe.postMessage = (msg: DevvitMessage) => ctx.ui.webView.postMessage(msg)
-
-  function popOut(): void {
-    setLoaded((loaded = false))
-    setMounted((mounted = true))
-    mounted = true
-    iframe.mount()
-  }
+  const iframe = useWebView<IframeMessage, DevvitMessage>({onMessage: onMsg})
 
   function sendInitToIframe(
     state: AppState,
@@ -127,7 +103,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
         partSize: challengeConfig.partitionSize,
         wh: {w: challengeConfig.size, h: challengeConfig.size},
       },
-      mode: mounted ? 'PopOut' : 'PopIn',
       p1,
       p1BoxCount: 0, //to-do: fill me out.
       players: 0, // to-do: fill me out. useChannel2()?
@@ -227,7 +202,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
         break
       }
       case 'Loaded':
-        setLoaded((loaded = true))
         break
       case 'Registered': {
         if (appState.pass === false) {
@@ -349,27 +323,14 @@ export function App(ctx: Devvit.Context): JSX.Element {
   chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
 
   return (
-    // Hack: turning off the loading animation changes the DOM which causes the
-    //       web view to be loaded, discarded, and loaded again. No webview in
-    //       the tree during pop-out mode but just let it forever spin when put
-    //       in.
-    <Title loaded={mounted && loaded}>
-      {!mounted && (
-        <webview
-          grow
-          height='100%'
-          onMessage={onMsg as (message: JSONValue) => Promise<void>}
-          url='index.html'
-          width='100%'
-        />
-      )}
+    <Title>
       {/* biome-ignore lint/a11y/useButtonType: */}
       <button
         appearance='secondary'
         size='large'
         minWidth={`${playButtonWidth}px`}
         icon='play-outline'
-        onPress={popOut}
+        onPress={() => iframe.mount()}
       >
         Enter the BanField
       </button>

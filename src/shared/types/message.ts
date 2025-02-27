@@ -30,7 +30,6 @@ export type InitDevvitMessage = {
    */
   debug: boolean
   field: FieldConfig
-  mode: IframeMode
   p1: Player
   /** Number of boxes claimed by the player in the current level. */
   p1BoxCount: number
@@ -129,9 +128,6 @@ export type RealtimeSystemMessage = {
   /** Message schema version. */
   version: number
 }
-
-/** Whether the iframe is hosted in the post (pop-in) or a dialog (pop-out). */
-export type IframeMode = 'PopIn' | 'PopOut'
 
 /**
  * Team scores in boxes for a given field. This is different than the score for

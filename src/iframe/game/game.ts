@@ -8,7 +8,6 @@ import type {
   DevvitMessage,
   DevvitSystemMessage,
   IframeMessage,
-  IframeMode,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
 import {Random, type Seed} from '../../shared/types/random.ts'
@@ -75,7 +74,6 @@ export class Game {
   init: Promise<void>
   looper!: Looper
   lvl: FieldLevel
-  mode?: IframeMode
   now: UTCMillis
   p1?: Player
   /** Number of players online including p1; 0 when offline. */
@@ -219,7 +217,7 @@ export class Game {
 
     // to-do: do everything with dispatch or everything with direct interactions
     //        since a reference to BFGame is had.
-    if (this.mode === 'PopOut') this.ui.ui = 'Playing'
+    this.ui.ui = 'Playing'
 
     this.postMessage({type: 'Loaded'})
     console.log('loaded')
@@ -302,7 +300,6 @@ export class Game {
           connected: true,
           debug: true,
           field,
-          mode: 'PopOut',
           p1,
           p1BoxCount: Math.trunc(Math.random() * (visible + 1)),
           players: Math.trunc(rnd.num * 99_999_999),
@@ -349,18 +346,13 @@ export class Game {
     this.cam.minWH.h =
       this.canvas.parentElement!.clientHeight * devicePixelRatio
 
-    // Suppress all input when popped in and pre-init.
-    if (this.mode !== 'PopOut' || this.ui.ui !== 'Playing')
-      this.ctrl.handled = true
+    // Suppress all input when pre-init.
+    if (this.ui.ui !== 'Playing') this.ctrl.handled = true
 
     this.bmps.size = 0
 
     // Don't await; this can hang.
-    if (
-      this.mode === 'PopOut' &&
-      this.ctrl.gestured &&
-      this.ac.state !== 'running'
-    )
+    if (this.ctrl.gestured && this.ac.state !== 'running')
       void this.ac.resume().catch(console.warn)
 
     this.now = utcMillisNow()
@@ -440,7 +432,6 @@ export class Game {
         this.centerBox(msg.initialGlobalXY)
         this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
-        this.mode = msg.mode
         if (this.debug) console.log('init')
         this.#fulfil()
         // Init this.connected.
