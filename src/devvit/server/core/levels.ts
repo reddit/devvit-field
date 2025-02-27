@@ -40,18 +40,19 @@ export const levelsIsUserInRightPlace = async ({
   ctx: Devvit.Context
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
   // Make sure the level config exists for the subreddit before anything
-  const level = levels.find(x => x.subredditId === ctx.subredditId)
-  if (!level) {
+  const subredditLevel = levels.find(x => x.subredditId === ctx.subredditId)
+  if (!subredditLevel) {
     throw new Error(
       `No level config found for subreddit ${ctx.subredditId}. Please make sure you are using the right config.{env}.json (or update it for the new sub you installed this app to)!`,
     )
   }
+  const userLevel = levels.find(x => x.id === profile.currentLevel)!
 
-  if (profile.currentLevel !== level.id) {
+  if (profile.currentLevel !== subredditLevel.id) {
     return {
       pass: false,
-      message: `You are not on the correct level. You should be at level ${profile.currentLevel}, not ${level.id}.`,
-      redirectURL: level.url,
+      message: `You are not on the correct level. You should be at level ${profile.currentLevel}, not ${subredditLevel.id}.`,
+      redirectURL: userLevel.url,
       code: 'WrongLevel',
     }
   }
@@ -88,7 +89,7 @@ export const levelsIsUserInRightPlace = async ({
     })
 
     const firstLevel = levels[0]!.id
-    if (level.id === firstLevel) {
+    if (subredditLevel.id === firstLevel) {
       return {
         pass: true,
       }
