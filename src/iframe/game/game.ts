@@ -124,7 +124,7 @@ export class Game {
 
   claimBox(xy: Readonly<XY>): void {
     if (!this.fieldConfig) return
-    let i = fieldArrayIndex(this.fieldConfig, xy)
+    const i = fieldArrayIndex(this.fieldConfig, xy)
     if (
       !fieldArrayGetPending(this.field, i) &&
       !fieldArrayGetVisible(this.field, i)
@@ -134,18 +134,6 @@ export class Game {
       // to-do: aggregate.
       this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
     }
-
-    i = (i + 1) % this.field.length
-    const select = {
-      x: i % this.fieldConfig.wh.w,
-      y: Math.trunc(i / this.fieldConfig.wh.w) % this.fieldConfig.wh.h,
-    }
-    this.selectBox(select)
-
-    // to-do: do a proper hit detection with the viewport. It's possible for
-    //        select to be off screen.
-    if (select.x < xy.x) this.centerBox(select)
-    else this.cam.x++
   }
 
   selectBox(xy: Readonly<XY>): void {
