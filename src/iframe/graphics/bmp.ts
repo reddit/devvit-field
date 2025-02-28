@@ -6,7 +6,7 @@ export type Bmp = {
   readonly _xy: number
   /** w: u12, h: u12 */
   readonly _wh: number
-  /** id+cel: u15, flipX: b1, flipY: b1, zend: b1, z: u3 */
+  /** id+cel: u15; 16 cels, flipX: b1, flipY: b1, zend: b1, z: u3 .*/
   readonly _iffzz: number
 }
 

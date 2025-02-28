@@ -39,9 +39,8 @@ export class Renderer {
 
   initGL(): void {
     const gl = this.#canvas.getContext('webgl2', {
+      alpha: false,
       antialias: false,
-      // desynchonized: true, breaks framerate
-      // powerPreference: 'high-performance',
     })
     if (!gl) throw Error('WebGL v2 unsupported')
     this.#gl = gl
@@ -66,8 +65,14 @@ export class Renderer {
       ? SpriteShader(gl, this.#atlasImage, this.#cels)
       : undefined
     this.#fieldShader =
-      this.#field && this.#fieldConfig
-        ? FieldShader(gl, this.#field, this.#fieldConfig)
+      this.#atlasImage && this.#field && this.#fieldConfig
+        ? FieldShader(
+            gl,
+            this.#atlasImage,
+            this.#cels,
+            this.#field,
+            this.#fieldConfig,
+          )
         : undefined
   }
 
@@ -102,46 +107,95 @@ export class Renderer {
     this.#resize(cam)
     this.#gl.clear(this.#gl.COLOR_BUFFER_BIT | this.#gl.DEPTH_BUFFER_BIT)
 
-    if (this.#field && this.#fieldConfig && this.#fieldShader) {
-      this.#gl.useProgram(this.#fieldShader.pgm)
-      this.#gl.bindVertexArray(this.#fieldShader.vao)
+    this.#renderField(cam, frame, fieldScale)
+    this.#renderSprites(cam, frame, bmps)
+  }
 
-      this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, fieldScale)
-      this.#gl.uniform4f(
-        this.#fieldShader.uniforms.uCam!,
-        cam.x,
-        cam.y,
-        cam.w,
-        cam.h,
-      )
-      this.#gl.uniform1i(this.#fieldShader.uniforms.uTex!, 0)
+  setBox(xy: Readonly<XY>, val: number): void {
+    if (!this.#fieldShader || !this.#gl) return
+    this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[2]!)
+    this.#gl.texSubImage2D(
+      this.#gl.TEXTURE_2D,
+      0,
+      xy.x,
+      xy.y,
+      1,
+      1,
+      this.#gl.RED_INTEGER,
+      this.#gl.UNSIGNED_BYTE,
+      new Uint8Array([val]),
+    )
+    this.#gl.bindTexture(this.#gl.TEXTURE_2D, null)
+  }
 
-      this.#gl.uniform2ui(
-        this.#fieldShader.uniforms.uFieldWH!,
-        this.#fieldConfig.wh.w,
-        this.#fieldConfig.wh.h,
-      )
+  #renderField(cam: Readonly<Cam>, frame: number, fieldScale: number): void {
+    if (
+      !this.#atlasImage ||
+      !this.#gl ||
+      !this.#field ||
+      !this.#fieldConfig ||
+      !this.#fieldShader
+    )
+      return
 
-      this.#gl.activeTexture(this.#gl.TEXTURE0)
-      this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[0]!)
+    this.#gl.useProgram(this.#fieldShader.pgm)
 
-      this.#gl.drawArrays(
-        this.#gl.TRIANGLE_STRIP,
-        0,
-        uv.length / 2, // d
-      )
-    }
+    this.#gl.uniform1i(this.#fieldShader.uniforms.uTex!, 0)
+    this.#gl.uniform1i(this.#fieldShader.uniforms.uCels!, 1)
+    this.#gl.uniform1i(this.#fieldShader.uniforms.uBoxes!, 2)
+    this.#gl.uniform2ui(
+      this.#fieldShader.uniforms.uTexWH!,
+      this.#atlasImage.naturalWidth,
+      this.#atlasImage.naturalHeight,
+    )
+    this.#gl.uniform4f(
+      this.#fieldShader.uniforms.uCam!,
+      cam.x,
+      cam.y,
+      cam.w,
+      cam.h,
+    )
+    this.#gl.uniform1ui(this.#fieldShader.uniforms.uFrame!, frame)
 
-    this.#gl.bindVertexArray(null)
+    this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, fieldScale)
+    this.#gl.uniform4f(
+      this.#fieldShader.uniforms.uCam!,
+      cam.x,
+      cam.y,
+      cam.w,
+      cam.h,
+    )
 
-    if (!this.#atlasImage || !this.#spriteShader) return
+    this.#gl.uniform2ui(
+      this.#fieldShader.uniforms.uFieldWH!,
+      this.#fieldConfig.wh.w,
+      this.#fieldConfig.wh.h,
+    )
 
-    this.#gl.useProgram(this.#spriteShader.pgm)
-
-    for (const [i, tex] of this.#spriteShader.textures.entries()) {
+    for (const [i, tex] of this.#fieldShader.textures.entries()) {
       this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
       this.#gl.bindTexture(this.#gl.TEXTURE_2D, tex)
     }
+
+    this.#gl.bindVertexArray(this.#fieldShader.vao)
+
+    this.#gl.drawArrays(
+      this.#gl.TRIANGLE_STRIP,
+      0,
+      uv.length / 2, // d
+    )
+
+    this.#gl.bindVertexArray(null)
+  }
+
+  #renderSprites(
+    cam: Readonly<Cam>,
+    frame: number,
+    bmps: Readonly<AttribBuffer>,
+  ): void {
+    if (!this.#gl || !this.#atlasImage || !this.#spriteShader) return
+
+    this.#gl.useProgram(this.#spriteShader.pgm)
 
     this.#gl.uniform1i(this.#spriteShader.uniforms.uTex!, 0)
     this.#gl.uniform1i(this.#spriteShader.uniforms.uCels!, 1)
@@ -159,8 +213,6 @@ export class Renderer {
     )
     this.#gl.uniform1ui(this.#spriteShader.uniforms.uFrame!, frame)
 
-    this.#gl.bindVertexArray(this.#spriteShader.vao)
-
     this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, this.#spriteShader.buf)
     this.#gl.bufferData(
       this.#gl.ARRAY_BUFFER,
@@ -169,6 +221,12 @@ export class Renderer {
     )
     this.#gl.bindBuffer(this.#gl.ARRAY_BUFFER, null)
 
+    for (const [i, tex] of this.#spriteShader.textures.entries()) {
+      this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
+      this.#gl.bindTexture(this.#gl.TEXTURE_2D, tex)
+    }
+
+    this.#gl.bindVertexArray(this.#spriteShader.vao)
     this.#gl.drawArraysInstanced(
       this.#gl.TRIANGLE_STRIP,
       0,
@@ -177,23 +235,6 @@ export class Renderer {
     )
 
     this.#gl.bindVertexArray(null)
-  }
-
-  setBox(xy: Readonly<XY>, val: number): void {
-    if (!this.#fieldShader || !this.#gl) return
-    this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[0]!)
-    this.#gl.texSubImage2D(
-      this.#gl.TEXTURE_2D,
-      0,
-      xy.x,
-      xy.y,
-      1,
-      1,
-      this.#gl.RED_INTEGER,
-      this.#gl.UNSIGNED_BYTE,
-      new Uint8Array([val]),
-    )
-    this.#gl.bindTexture(this.#gl.TEXTURE_2D, null)
   }
 
   #resize(cam: Readonly<Cam>): void {
@@ -289,10 +330,16 @@ function SpriteShader(
 
 function FieldShader(
   gl: GL,
+  atlasImage: HTMLImageElement,
+  cels: Readonly<Uint16Array>,
   field: Uint8Array,
   config: Readonly<FieldConfig>,
 ): Shader {
-  const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [gl.createTexture()])
+  const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [
+    gl.createTexture(),
+    gl.createTexture(),
+    gl.createTexture(),
+  ]) // to-do: share textures.
 
   gl.bindVertexArray(shader.vao)
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
@@ -302,8 +349,37 @@ function FieldShader(
   gl.bindVertexArray(null)
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
   gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    atlasImage,
+  )
+  gl.bindTexture(gl.TEXTURE_2D, null)
+
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[1]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA16UI,
+    1,
+    cels.length / 4, // 4 u8s per row
+    0,
+    gl.RGBA_INTEGER,
+    gl.UNSIGNED_SHORT,
+    cels,
+  )
+  gl.bindTexture(gl.TEXTURE_2D, null)
+
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[2]!)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
   gl.texImage2D(
