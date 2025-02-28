@@ -184,6 +184,9 @@ export class Input<T extends string> {
   }
 
   poll(tick: number): void {
+    this.#gamepad.poll()
+    this.#pointer.poll()
+
     this.handled = false
     this.#duration += this.#prevTick
     this.#prevTick = tick
@@ -192,8 +195,6 @@ export class Input<T extends string> {
 
     this.gestured ||= !!this.#bits
 
-    this.#gamepad.poll()
-    this.#pointer.poll()
     if (
       this.#duration > this.maxInterval &&
       (this.#bits === 0 || this.#bits !== this.#prevBits[1])

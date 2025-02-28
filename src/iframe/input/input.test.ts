@@ -60,6 +60,28 @@ test('pressed buttons are active and triggered', () => {
   input.register('remove')
 })
 
+test('buttons are triggered for one frame only', () => {
+  const input = new Input(cam, canvas)
+  input.mapDefault()
+  input.register('add')
+  dispatchKeyEvent('keydown', 'ArrowUp')
+  input.poll(16)
+  expect(input.isOn('U')).toBe(true)
+  expect(input.isOnStart('U')).toBe(true)
+  expect(input.isHeld()).toBe(false)
+  expect(input.isOffStart('U')).toBe(false)
+  expect(input.isCombo(['U'])).toBe(true)
+  expect(input.isComboStart(['U'])).toBe(true)
+  input.poll(16)
+  expect(input.isOn('U')).toBe(true)
+  expect(input.isOnStart('U')).toBe(false)
+  expect(input.isHeld()).toBe(false)
+  expect(input.isOffStart('U')).toBe(false)
+  expect(input.isCombo(['U'])).toBe(true)
+  expect(input.isComboStart(['U'])).toBe(false)
+  input.register('remove')
+})
+
 test('held buttons are active but not triggered', () => {
   const input = new Input(cam, canvas)
   input.mapDefault()
