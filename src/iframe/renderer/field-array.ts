@@ -3,11 +3,10 @@ import type {XY} from '../../shared/types/2d.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 
 /**
- * -spu vbtt
+ * --sp vbtt
  *
  *  s: Select overlay.
  *  p: Pending overlay.
- *  u: User overlay.
  *  v: Visible / hidden.
  *  b: Ban overlay.
  * tt: Background color; 0-3 team.
@@ -15,15 +14,11 @@ import type {FieldConfig} from '../../shared/types/field-config.ts'
 export const fieldArraySelectMask: number = 0b0000_0001
 export const fieldArraySelectOn: number = 0b0000_0001
 export const fieldArraySelectOff: number = 0b0000_0000
-export const fieldArraySelectShift: number = 6
+export const fieldArraySelectShift: number = 5
 export const fieldArrayPendMask: number = 0b0000_0001
 export const fieldArrayPendOn: number = 0b0000_0001
 export const fieldArrayPendOff: number = 0b0000_0000
-export const fieldArrayPendShift: number = 5
-export const fieldArrayUserMask: number = 0b0000_0001
-export const fieldArrayUserOn: number = 0b0000_0001
-export const fieldArrayUserOff: number = 0b0000_0000
-export const fieldArrayUserShift: number = 4
+export const fieldArrayPendShift: number = 4
 export const fieldArrayVisibleMask: number = 0b0000_0001
 export const fieldArrayVisibleOn: number = 0b0000_0001
 export const fieldArrayVisibleOff: number = 0b0000_0000
@@ -68,16 +63,6 @@ export function fieldArraySetPending(
   field[i] =
     (field[i]! & ~(fieldArrayPendMask << fieldArrayPendShift)) |
     ((pend ? fieldArrayPendOn : fieldArrayPendOff) << fieldArrayPendShift)
-}
-
-export function fieldArraySetUser(
-  field: Uint8Array,
-  i: number,
-  user: boolean,
-): void {
-  field[i] =
-    (field[i]! & ~(fieldArrayUserMask << fieldArrayUserShift)) |
-    ((user ? fieldArrayUserOn : fieldArrayUserOff) << fieldArrayUserShift)
 }
 
 export function fieldArrayGetVisible(field: Uint8Array, i: number): boolean {

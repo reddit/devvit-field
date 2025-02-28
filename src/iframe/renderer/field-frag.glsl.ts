@@ -39,7 +39,6 @@ void main() {
   lowp uint box = texelFetch(uTex, ivec2(xy), 0).r;
   bool select = ((box >> ${fieldArraySelectShift}) & ${fieldArraySelectMask}u) == ${fieldArraySelectOn}u;
   bool pend = ((box >> ${fieldArrayPendShift}) & ${fieldArrayPendMask}u) == ${fieldArrayPendOn}u;
-  bool user = ((box >> ${fieldArrayUserShift}) & ${fieldArrayUserMask}u) == ${fieldArrayUserOn}u;
   bool visible = ((box >> ${fieldArrayVisibleShift}) & ${fieldArrayVisibleMask}u) == ${fieldArrayVisibleOn}u;
   bool ban = ((box >> ${fieldArrayBanShift}) & ${fieldArrayBanMask}u) == ${fieldArrayBanOn}u;
   lowp uint team = ((box >> ${fieldArrayTeamShift}) & ${fieldArrayTeamMask}u);
@@ -62,8 +61,6 @@ void main() {
     oFrag = ${rgbaVec4(palettePending)};
     return;
   }
-
-  // to-do: user.
 
   if (!visible) {
     oFrag = ${rgbaVec4(paletteBlack)};
@@ -96,9 +93,6 @@ import {
   fieldArraySelectShift,
   fieldArrayTeamMask,
   fieldArrayTeamShift,
-  fieldArrayUserMask,
-  fieldArrayUserOn,
-  fieldArrayUserShift,
   fieldArrayVisibleMask,
   fieldArrayVisibleOn,
   fieldArrayVisibleShift,
