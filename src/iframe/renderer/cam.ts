@@ -133,11 +133,8 @@ export class Cam {
     this.scale = camScale(canvas, this.minWH, this.minScale, zoomOut, this.mode)
 
     const native = camNativeWH(canvas)
-    const w = Math.ceil(native.w / this.scale)
-    const h = Math.ceil(native.h / this.scale)
-    if (w === this.w && h === this.h) return
-    this.w = w
-    this.h = h
+    this.w = Math.ceil(native.w / this.scale)
+    this.h = Math.ceil(native.h / this.scale)
   }
 
   /** Independent zoom for the field (doesn't impact UI). */
