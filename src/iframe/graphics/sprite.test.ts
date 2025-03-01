@@ -4,6 +4,7 @@ import {Sprite} from './sprite.js'
 
 test('bits', () => {
   const anim: Anim = {
+    cels: 1,
     id: 0x7ff0,
     w: 1,
     h: 2,
@@ -77,6 +78,7 @@ test('bits', () => {
 
 test('hits', () => {
   const anim: Anim = {
+    cels: 1,
     id: 0x7ff0,
     w: 3,
     h: 4,

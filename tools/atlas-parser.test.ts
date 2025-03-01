@@ -1,4 +1,5 @@
 import {describe, expect, test} from 'vitest'
+import type {Anim, Atlas} from '../src/iframe/graphics/atlas.js'
 import type {AsepriteTagSpan} from './aseprite.ts'
 import {parseAnim, parseAtlas, parseCel, parseHitboxes} from './atlas-parser.ts'
 
@@ -88,6 +89,7 @@ describe('parseAtlas()', () => {
     ).toStrictEqual({
       anim: {
         'scenery--Cloud': {
+          cels: 1,
           id: 0x00,
           tag: 'scenery--Cloud',
           w: 16,
@@ -102,6 +104,7 @@ describe('parseAtlas()', () => {
           },
         },
         'palette--red': {
+          cels: 1,
           id: 0x10,
           tag: 'palette--red',
           w: 16,
@@ -116,6 +119,7 @@ describe('parseAtlas()', () => {
           },
         },
         'scenery--Conifer': {
+          cels: 1,
           id: 0x20,
           tag: 'scenery--Conifer',
           w: 16,
@@ -130,6 +134,7 @@ describe('parseAtlas()', () => {
           },
         },
         'scenery--ConiferShadow': {
+          cels: 1,
           id: 0x30,
           tag: 'scenery--ConiferShadow',
           w: 16,
@@ -150,7 +155,7 @@ describe('parseAtlas()', () => {
         ...Array(16).fill([73, 55, 16, 16]),
         ...Array(16).fill([55, 55, 16, 16]),
       ].flat(),
-    })
+    } satisfies Atlas<unknown>)
   })
 
   test('Throws Error on duplicate FrameTag.', () => {
@@ -227,6 +232,7 @@ describe('parseAnim()', async () => {
       },
     ]
     expect(parseAnim(16, frameTag, frames, slices, {})).toStrictEqual({
+      cels: 1,
       id: 16,
       w: 16,
       h: 16,
@@ -239,7 +245,7 @@ describe('parseAnim()', async () => {
         11: {x: 0, y: 0},
       },
       tag: 'cloud--s',
-    })
+    } satisfies Anim<unknown>)
   })
 
   test('throws error when no frame is associated with tag', () => {

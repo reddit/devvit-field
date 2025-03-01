@@ -51,6 +51,7 @@ export function parseAnim(
   if (!frame) throw Error('no atlas animation frame')
   const {hitbox, hurtbox} = parseHitboxes(span, slices)
   return {
+    cels: span.to - span.from + 1,
     h: frame.sourceSize.h,
     hitbox,
     hurtbox,
@@ -76,7 +77,7 @@ function* parseAnimFrames(
     if (!frame) throw Error(`no atlas frame "${frameTag}"`)
     yield frame
   }
-  // Pad remaining.
+  // Pad remaining by looping back.
   for (let i = span.to + 1; i < span.from + maxAnimCels; i++) {
     const frameTag =
       `${span.name}--${span.from + (i % (span.to + 1 - span.from))}` as AsepriteFrameTag

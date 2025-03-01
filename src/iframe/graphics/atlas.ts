@@ -10,11 +10,16 @@ export type Atlas<T> = {
 }
 
 export type Anim<T = unknown> = {
+  /** The number of cels in the original animation (no wrapping). */
+  readonly cels: number
   /** Outgoing collision rectangle (red / blue). */
   readonly hitbox?: Readonly<Box> | undefined
   /** Incoming collision rectangle (green / blue). */
   readonly hurtbox?: Readonly<Box> | undefined
-  /** Atlas.cels index, a multiple of 16 (maxAnimCels). */
+  /**
+   * Atlas.cels index, a multiple of 16 (maxAnimCels). Each cel is shown for
+   * ~67 millis.
+   */
   readonly id: number
   readonly offset: AnimOffset
   readonly tag: T & TagFormat

@@ -1,6 +1,7 @@
 {
   "anim": {
     "background--Checkerboard": {
+      "cels": 1,
       "h": 2,
       "id": 0,
       "offset": {
@@ -25,6 +26,7 @@
       "w": 2
     },
     "background--Black": {
+      "cels": 1,
       "h": 2,
       "id": 16,
       "offset": {
@@ -49,6 +51,7 @@
       "w": 2
     },
     "background--White": {
+      "cels": 1,
       "h": 2,
       "id": 32,
       "offset": {
@@ -73,6 +76,7 @@
       "w": 2
     },
     "box--Ban": {
+      "cels": 1,
       "h": 24,
       "id": 48,
       "offset": {
@@ -97,6 +101,7 @@
       "w": 24
     },
     "box--Reticle": {
+      "cels": 1,
       "h": 24,
       "id": 64,
       "offset": {
@@ -121,6 +126,7 @@
       "w": 24
     },
     "box--Flamingo": {
+      "cels": 1,
       "h": 24,
       "id": 80,
       "offset": {
@@ -145,6 +151,7 @@
       "w": 24
     },
     "box--JuiceBox": {
+      "cels": 1,
       "h": 24,
       "id": 96,
       "offset": {
@@ -169,6 +176,7 @@
       "w": 24
     },
     "box--Lasagna": {
+      "cels": 1,
       "h": 24,
       "id": 112,
       "offset": {
@@ -193,6 +201,7 @@
       "w": 24
     },
     "box--Sunshine": {
+      "cels": 1,
       "h": 24,
       "id": 128,
       "offset": {
