@@ -41,11 +41,12 @@ export class FieldLevel implements LevelEnt {
   #updatePick(game: Game): void {
     const {cam, ctrl, fieldConfig} = game
 
+    // Use floor, not trunc. when out of bounds, do truncate back to inbounds.
     const select = {
-      x: Math.trunc(
+      x: Math.floor(
         cam.x / cam.scale + ctrl.screenPoint.x / cam.scale / cam.fieldScale,
       ),
-      y: Math.trunc(
+      y: Math.floor(
         cam.y / cam.scale + ctrl.screenPoint.y / cam.scale / cam.fieldScale,
       ),
     }
