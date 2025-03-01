@@ -18,7 +18,7 @@ export class Looper {
   readonly #canvas: HTMLCanvasElement
   readonly #cam: Cam
   readonly #ctrl: Input<string>
-  #frame: number | undefined // to-do: expose this in GameState.
+  #frame: number | undefined
   #loop: (() => void) | undefined
   readonly #renderer: Renderer
 

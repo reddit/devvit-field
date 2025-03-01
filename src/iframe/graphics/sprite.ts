@@ -1,4 +1,5 @@
 import {type Box, type WH, type XY, boxHits} from '../../shared/types/2d.js'
+import type {Game} from '../game/game.js'
 import type {Anim, AnimOffset, Atlas, TagFormat} from './atlas.js'
 import type {Bmp} from './bmp.js'
 
@@ -42,7 +43,7 @@ export class Sprite<T> implements Bmp, Box {
     return sprite
   }
 
-  _iffzz: number = 0
+  _isffzz: number = 0
   _xy: number = 0
   _wh: number = 0
 
@@ -72,12 +73,17 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get cel(): number {
-    return (this._iffzz >> 6) & 0xf // to-do: should this be an unsigned shift?
+    return (this._isffzz >> 7) & 0xf // to-do: should this be an unsigned shift?
   }
 
-  /** Set to Looper.frame to start at the beginning. */
+  /** Set to Looper.frame / 4 to start at the beginning. */
   set cel(cel: number) {
-    this._iffzz = (this._iffzz & 0xfffffc3f) | ((cel & 0xf) << 6)
+    this._isffzz = (this._isffzz & 0xfffff87f) | ((cel & 0xf) << 7)
+  }
+
+  /** The number of cels in the original animation (no wrapping). */
+  get cels(): number {
+    return this.#anim.cels
   }
 
   /** test if either bitmap overlaps box or sprite (bitmap). */
@@ -86,7 +92,7 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get flipX(): boolean {
-    return !!(this._iffzz & 0x20)
+    return !!(this._isffzz & 0x20)
   }
 
   set flipX(flip: boolean) {
@@ -101,11 +107,11 @@ export class Sprite<T> implements Bmp, Box {
       ]
     this.x += -old.x + offset.x
     this.y += -old.y + offset.y
-    this._iffzz = flip ? this._iffzz | 0x20 : this._iffzz & 0xffffffdf
+    this._isffzz = flip ? this._isffzz | 0x20 : this._isffzz & 0xffffffdf
   }
 
   get flipY(): boolean {
-    return !!(this._iffzz & 0x10)
+    return !!(this._isffzz & 0x10)
   }
 
   set flipY(flip: boolean) {
@@ -120,7 +126,7 @@ export class Sprite<T> implements Bmp, Box {
       ]
     this.x += -old.x + offset.x
     this.y += -old.y + offset.y
-    this._iffzz = flip ? this._iffzz | 0x10 : this._iffzz & 0xffffffef
+    this._isffzz = flip ? this._isffzz | 0x10 : this._isffzz & 0xffffffef
   }
 
   get h(): number {
@@ -160,6 +166,22 @@ export class Sprite<T> implements Bmp, Box {
     }
   }
 
+  // to-do: this is truncating by 1/60th of the last frame.
+  /** True if the animation has played. Resets on second loop. */
+  isLooped(game: Readonly<Game>): boolean {
+    return ((game.looper.frame - this.cel * 4) & 0x3f) >= 4 * this.cels - 1
+  }
+
+  get stretch(): boolean {
+    return !!(this._isffzz & 0x40)
+  }
+
+  /** Scale to width and height. */
+  set stretch(scale: boolean) {
+    if (scale) this._isffzz |= 0x40
+    else this._isffzz &= 0xffffffbf
+  }
+
   get tag(): T {
     return this.#anim.tag
   }
@@ -176,7 +198,7 @@ export class Sprite<T> implements Bmp, Box {
     this.y += -old.y + offset.y
     this.w = this.#anim.w
     this.h = this.#anim.h
-    this._iffzz = (this._iffzz & 0xfffe0003f) | (this.#anim.id << 6)
+    this._isffzz = (this._isffzz & 0xfffc0007f) | (this.#anim.id << 7)
   }
 
   toString(): string {
@@ -215,21 +237,21 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get z(): number {
-    return this._iffzz & 0x7
+    return this._isffzz & 0x7
   }
 
-  /** Greater is further. */
+  /** Greater is further. Warning: the default is 0 (closest). */
   set z(z: number) {
-    this._iffzz = (this._iffzz & 0xfffffff8) | (z & 0x7)
+    this._isffzz = (this._isffzz & 0xfffffff8) | (z & 0x7)
   }
 
   get zend(): boolean {
-    return !!(this._iffzz & 0x8)
+    return !!(this._isffzz & 0x8)
   }
 
   /** Z-order by top (default) or bottom of rectangle. */
   set zend(end: boolean) {
-    if (end) this._iffzz |= 0x8
-    else this._iffzz &= 0xfffffff7
+    if (end) this._isffzz |= 0x8
+    else this._isffzz &= 0xfffffff7
   }
 }

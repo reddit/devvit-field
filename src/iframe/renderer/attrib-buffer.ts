@@ -16,7 +16,7 @@ export class BmpAttribBuffer implements AttribBuffer {
         throw Error('bmp attribute overflow')
       this.buffer[this.size * 3] = bmp._xy
       this.buffer[this.size * 3 + 1] = bmp._wh
-      this.buffer[this.size * 3 + 2] = bmp._iffzz
+      this.buffer[this.size * 3 + 2] = bmp._isffzz
       this.size++
     }
   }

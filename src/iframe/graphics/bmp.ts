@@ -6,8 +6,8 @@ export type Bmp = {
   readonly _xy: number
   /** w: u12, h: u12 */
   readonly _wh: number
-  /** id+cel: u15; 16 cels, flipX: b1, flipY: b1, zend: b1, z: u3 .*/
-  readonly _iffzz: number
+  /** id+cel: u15; 16 cels, stretch: b1, flipX: b1, flipY: b1, zend: b1, z: u3 .*/
+  readonly _isffzz: number
 }
 
 // I could allocate this all in a big array. transfer the full array every frame regardless of screen position. hold a reference in sprite. no copying then

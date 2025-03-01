@@ -19,32 +19,37 @@ test('bits', () => {
     tag: 'file--Tag',
   }
   const sprite = new Sprite({anim: {'file--Tag': anim}, cels: []}, 'file--Tag')
-  expect(sprite._iffzz).toBe(0b111111111110000_0_0_0_000)
+  expect(sprite._isffzz).toBe(0b111111111110000_0_0_0_0_000)
 
   expect(sprite.flipX).toBe(false)
   sprite.flipX = true
   expect(sprite.flipX).toBe(true)
-  expect(sprite._iffzz).toBe(0b111111111110000_1_0_0_000)
+  expect(sprite._isffzz).toBe(0b111111111110000_0_1_0_0_000)
 
   expect(sprite.flipY).toBe(false)
   sprite.flipY = true
   expect(sprite.flipY).toBe(true)
-  expect(sprite._iffzz).toBe(0b111111111110000_1_1_0_000)
+  expect(sprite._isffzz).toBe(0b111111111110000_0_1_1_0_000)
 
   expect(sprite.cel).toBe(0)
   sprite.cel = 0xf
   expect(sprite.cel).toBe(0xf)
-  expect(sprite._iffzz).toBe(0b111111111111111_1_1_0_000)
+  expect(sprite._isffzz).toBe(0b111111111111111_0_1_1_0_000)
+
+  expect(sprite.stretch).toBe(false)
+  sprite.stretch = true
+  expect(sprite.stretch).toBe(true)
+  expect(sprite._isffzz).toBe(0b111111111111111_1_1_1_0_000)
 
   expect(sprite.zend).toBe(false)
   sprite.zend = true
   expect(sprite.zend).toBe(true)
-  expect(sprite._iffzz).toBe(0b111111111111111_1_1_1_000)
+  expect(sprite._isffzz).toBe(0b111111111111111_1_1_1_1_000)
 
   expect(sprite.z).toBe(0)
   sprite.z = 7
   expect(sprite.z).toBe(7)
-  expect(sprite._iffzz).toBe(0b111111111111111_1_1_1_111)
+  expect(sprite._isffzz).toBe(0b111111111111111_1_1_1_1_111)
 
   expect(sprite.x).toBe(0)
   sprite.x = 1
@@ -74,6 +79,12 @@ test('bits', () => {
     sprite.y = y
     expect(sprite.y).toBe(y)
   }
+
+  sprite.w = 1234
+  expect(sprite.w).toBe(1234)
+  sprite.h = 4095
+  expect(sprite.h).toBe(4095)
+  expect(sprite._wh >>> 0).toBe(0b010011010010_111111111111)
 })
 
 test('hits', () => {

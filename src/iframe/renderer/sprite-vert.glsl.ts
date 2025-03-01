@@ -7,10 +7,12 @@ uniform highp uint uFrame;
 layout (location=0) in lowp ivec2 iUV;
 layout (location=1) in highp uint iXY;
 layout (location=2) in highp uint iWH;
-layout (location=3) in highp uint iIFFZZ;
+layout (location=3) in highp uint iISFFZZ;
 
 flat out highp ivec4 vTexXYWH;
 out highp vec2 vDstWH;
+flat out highp ivec2 vDstWHFixed;
+flat out uint vStretch;
 
 const mediump int maxY = 0x1000;
 const lowp int maxZ = 8;
@@ -19,23 +21,23 @@ const mediump int maxDepth = maxY * maxZ;
 void main() {
   mediump int x = int(iXY) >> 19;
   mediump int y = int(iXY << 16) >> 19;
-  lowp int z = int(iIFFZZ & 0x7u);
-  bool zend = bool(iIFFZZ & 0x8u);
-  bool flipX = bool(iIFFZZ & 0x20u);
-  bool flipY = bool(iIFFZZ & 0x10u);
-  mediump int id = int((iIFFZZ >> 6) & 0x7ff0u);
-  lowp int cel = int((iIFFZZ >> 6) & 0xfu);
+  lowp int z = int(iISFFZZ & 0x7u);
+  bool zend = bool(iISFFZZ & 0x8u);
+  bool flipX = bool(iISFFZZ & 0x20u);
+  bool flipY = bool(iISFFZZ & 0x10u);
+  bool stretch = bool(iISFFZZ & 0x40u);
+  mediump int id = int((iISFFZZ >> 7) & 0x7ff0u);
+  lowp int cel = int((iISFFZZ >> 7) & 0xfu);
   mediump int w = int((iWH >> 12) & 0xfffu);
   mediump int h = int(iWH & 0xfffu);
 
-  lowp int frame = ((int(uFrame) - cel) / 4) & 0xf;
+  lowp int frame = (int(uFrame) / 4 - cel) & 0xf;
   mediump uvec4 texXYWH = texelFetch(uCels, ivec2(0, id + frame), 0);
 
   // https://www.patternsgameprog.com/opengl-2d-facade-25-get-the-z-of-a-pixel
   highp float depth = float((z + 1) * maxY - (y + (zend ? 0 : h))) / float(maxDepth);
 
   highp ivec2 targetWH = ivec2(iUV) * ivec2(w, h);
-  highp ivec2 origWH = ivec2(iUV) * ivec2(texXYWH.zw);
 
   highp vec2 end = vec2(x + targetWH.x, y + targetWH.y);
   // Cursor and UI layers are always given in screen coordinates.
@@ -43,5 +45,7 @@ void main() {
   highp vec2 clip =  ((-2. * camXY  + 2. * end) / uCam.zw - 1.) * vec2(1, -1);
   gl_Position = vec4(clip, depth, 1);
   vTexXYWH = ivec4(texXYWH);
+  vDstWHFixed = ivec2(w, h) * ivec2(flipX ? -1 : 1, flipY ? -1 : 1);
   vDstWH = vec2(targetWH * ivec2(flipX ? -1 : 1, flipY ? -1 : 1));
+  vStretch = stretch ? 1u : 0u;
 }`
