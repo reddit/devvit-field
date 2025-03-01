@@ -412,6 +412,7 @@ export class Game {
                     Math.trunc(rnd.num * 4) as Team,
                   )
                   fieldArraySetVisible(this.field, i, true)
+                  if (rnd.num < 0.2) fieldArraySetBan(this.field, i, true)
                 }
               }
         }
