@@ -3,6 +3,14 @@ import type {XY} from '../../shared/types/2d.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 
 /**
+ * to-do: move select overlay to sprite and update to 3 bits:
+ *
+ * ---- -ccc
+ *
+ * ccc: Background color; 0 hidden, 1 ban, 2-5 team, 6 pending (for state only).
+ */
+
+/**
  * --sp vbtt
  *
  *  s: Select overlay.
