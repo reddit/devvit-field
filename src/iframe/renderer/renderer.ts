@@ -41,6 +41,7 @@ export class Renderer {
     const gl = this.#canvas.getContext('webgl2', {
       alpha: false,
       antialias: false,
+      ...(devMode && {powerPreference: 'low-power'}),
     })
     if (!gl) throw Error('WebGL v2 unsupported')
     this.#gl = gl
