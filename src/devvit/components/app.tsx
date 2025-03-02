@@ -93,6 +93,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
     iframe.postMessage({
       challenge: challengeNumber,
+      cooldownMillis: 2_000, // to-do: make me configurable.
       connected: chan.status === ChannelStatus.Connected,
       debug: session.debug,
       field: {

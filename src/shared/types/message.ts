@@ -23,6 +23,8 @@ export type DevvitMessage =
 
 export type InitDevvitMessage = {
   challenge: number
+  /** The minimum number of milliseconds between claims. */
+  cooldownMillis: number
   /** Connected may be sent before Registered. Reinit status. */
   connected: boolean
   /**

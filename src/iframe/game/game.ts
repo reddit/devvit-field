@@ -65,6 +65,7 @@ export class Game {
   challenge: number | undefined
   /** Most recent claim timestamp. */
   claimed: UTCMillis = 0 as UTCMillis
+  cooldownMillis: number = 2_000
   connected: boolean
   ctrl!: Input<DefaultButton>
   debug: boolean
@@ -151,7 +152,7 @@ export class Game {
   }
 
   isCooldown(): boolean {
-    return this.now - this.claimed < 2_000 // to-do: make configurable.
+    return this.now - this.claimed < this.cooldownMillis
   }
 
   selectBox(xy: Readonly<XY>): void {
@@ -305,6 +306,7 @@ export class Game {
       () => {
         this.#onDevMsg({
           challenge: Math.trunc(rnd.num * 10_000),
+          cooldownMillis: 2_000,
           connected: true,
           debug: true,
           field,
@@ -390,6 +392,7 @@ export class Game {
     switch (msg.type) {
       case 'Init': {
         this.challenge = msg.challenge
+        this.cooldownMillis = msg.cooldownMillis
         this.debug = msg.debug
         this.players = msg.players
         this.seed = msg.seed ?? (0 as Seed)
