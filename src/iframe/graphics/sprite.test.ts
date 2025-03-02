@@ -56,20 +56,26 @@ test('bits', () => {
   expect(sprite.x).toBe(1)
   sprite.x = 5
   expect(sprite.x).toBe(5)
-  expect(sprite._xy >>> 0).toBe(0b0000000000101000_0000000000000000)
+  expect(sprite._x >>> 0).toBe(0b0000000000000000_0000000000101000)
   sprite.x = -1
   expect(sprite.x).toBe(-1)
-  expect(sprite._xy >>> 0).toBe(0b1111111111111000_0000000000000000)
+  expect(sprite._x >>> 0).toBe(0b1111111111111111_1111111111111000)
   sprite.x = -2
   expect(sprite.x).toBe(-2)
-  expect(sprite._xy >>> 0).toBe(0b1111111111110000_0000000000000000)
+  expect(sprite._x >>> 0).toBe(0b1111111111111111_1111111111110000)
 
   expect(sprite.y).toBe(0)
   sprite.y = 1
   expect(sprite.y).toBe(1)
+  sprite.y = 5
+  expect(sprite.y).toBe(5)
+  expect(sprite._y >>> 0).toBe(0b0000000000000000_0000000000101000)
   sprite.y = -1
   expect(sprite.y).toBe(-1)
-  expect(sprite._xy >>> 0).toBe(0b1111111111110000_1111111111111000)
+  expect(sprite._y >>> 0).toBe(0b1111111111111111_1111111111111000)
+  sprite.y = -2
+  expect(sprite.y).toBe(-2)
+  expect(sprite._y >>> 0).toBe(0b1111111111111111_1111111111110000)
 
   for (let x = -4096; x <= 4095; x += 0.125) {
     sprite.x = x

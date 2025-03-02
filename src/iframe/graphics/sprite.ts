@@ -44,7 +44,8 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   _isffzz: number = 0
-  _xy: number = 0
+  _x: number = 0
+  _y: number = 0
   _wh: number = 0
 
   // to-do: do i need this? it's readonly?
@@ -73,7 +74,7 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get cel(): number {
-    return (this._isffzz >> 7) & 0xf // to-do: should this be an unsigned shift?
+    return (this._isffzz >>> 7) & 0xf
   }
 
   /** Set to Looper.frame / 4 to start at the beginning. */
@@ -208,7 +209,7 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get w(): number {
-    return (this._wh >> 12) & 0xfff
+    return (this._wh >>> 12) & 0xfff
   }
 
   set w(w: number) {
@@ -216,12 +217,12 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get x(): number {
-    return (this._xy >> 16) / 8
+    return (this._x >> 0) / 8
   }
 
   set x(x: number) {
     if (x === this.x) return
-    this._xy = (this._xy & 0x0000ffff) | (((8 * x) & 0xffff) << 16)
+    this._x = (this._x & 0x00000000) | (((8 * x) & 0xffffffff) << 0)
   }
 
   set xy(xy: Readonly<XY>) {
@@ -230,12 +231,12 @@ export class Sprite<T> implements Bmp, Box {
   }
 
   get y(): number {
-    return ((this._xy << 16) >> 16) / 8
+    return ((this._y << 0) >> 0) / 8
   }
 
   set y(y: number) {
     if (y === this.y) return
-    this._xy = (this._xy & 0xffff0000) | ((8 * y) & 0xffff)
+    this._y = (this._y & 0x00000000) | ((8 * y) & 0xffffffff)
   }
 
   get z(): number {

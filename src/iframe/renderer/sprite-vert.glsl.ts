@@ -5,9 +5,10 @@ uniform lowp usampler2D uCels;
 uniform highp uint uFrame;
 
 layout (location=0) in lowp ivec2 iUV;
-layout (location=1) in highp uint iXY;
-layout (location=2) in highp uint iWH;
-layout (location=3) in highp uint iISFFZZ;
+layout (location=1) in highp uint iX;
+layout (location=2) in highp uint iY;
+layout (location=3) in highp uint iWH;
+layout (location=4) in highp uint iISFFZZ;
 
 flat out highp ivec4 vTexXYWH;
 out highp vec2 vDstWH;
@@ -19,8 +20,8 @@ const lowp int maxZ = 8;
 const mediump int maxDepth = maxY * maxZ;
 
 void main() {
-  mediump int x = int(iXY) >> 19;
-  mediump int y = int(iXY << 16) >> 19;
+  highp int x = int(iX) >> 3;
+  highp int y = int(iY << 0) >> 3;
   lowp int z = int(iISFFZZ & 0x7u);
   bool zend = bool(iISFFZZ & 0x8u);
   bool flipX = bool(iISFFZZ & 0x20u);

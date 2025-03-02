@@ -2,8 +2,10 @@
 // 32b sign bit was cumbersome?
 // to-do: will levels support negative XY?
 export type Bmp = {
-  /** 8x fixed-point XY; 8x: i16, 8y: i16; 1b sign, 12b int, 3b fraction. */
-  readonly _xy: number
+  /** x: i32; 8x fixed-point, 1b sign, 28b int, 3b fraction. */
+  readonly _x: number
+  /** y: i32; 8x fixed-point, 1b sign, 28b int, 3b fraction. */
+  readonly _y: number
   /** w: u12, h: u12 */
   readonly _wh: number
   /** id+cel: u15; 16 cels, stretch: b1, flipX: b1, flipY: b1, zend: b1, z: u3 .*/
