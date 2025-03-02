@@ -99,6 +99,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         partSize: challengeConfig.partitionSize,
         wh: {w: challengeConfig.size, h: challengeConfig.size},
       },
+      lvl: state.level.id,
       p1,
       p1BoxCount: 0, //to-do: fill me out.
       players: 0, // to-do: fill me out. useChannel2()?

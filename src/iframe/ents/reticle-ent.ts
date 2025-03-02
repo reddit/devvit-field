@@ -1,3 +1,4 @@
+import {type Level, levelWord} from '../../shared/types/level.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
 import {Layer} from '../graphics/layer.js'
@@ -9,9 +10,10 @@ export class ReticleEnt implements Ent {
   readonly eid: EID
   readonly #sprite: Sprite<Tag>
 
-  constructor(game: Game) {
+  constructor(game: Game, lvl: Level) {
     this.eid = game.eid.new()
-    this.#sprite = new Sprite(game.atlas, 'box--Reticle') // to-do: theme.
+    const pascalLvl = levelWord[lvl]
+    this.#sprite = new Sprite(game.atlas, `box--Reticle${pascalLvl}`)
     this.#sprite.z = Layer.UIFore
     this.#sprite.stretch = true
     this.#sprite.cel = game.looper.frame / 4

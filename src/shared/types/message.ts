@@ -3,6 +3,7 @@ import type {Team} from '../team.ts'
 import type {XY} from './2d.ts'
 import type {FieldConfig} from './field-config.ts'
 import type {Delta, FieldSub} from './field.ts'
+import type {Level} from './level.ts'
 import type {Seed} from './random.ts'
 
 /**
@@ -30,6 +31,7 @@ export type InitDevvitMessage = {
    */
   debug: boolean
   field: FieldConfig
+  lvl: Level
   p1: Player
   /** Number of boxes claimed by the player in the current level. */
   p1BoxCount: number

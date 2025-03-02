@@ -1,5 +1,6 @@
 import type {XY} from '../../shared/types/2d.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
+import {type Level, levelWord} from '../../shared/types/level.js'
 import type {Tag} from '../game/config.js'
 import type {Atlas} from '../graphics/atlas.js'
 import type {AttribBuffer} from './attrib-buffer.js'
@@ -92,20 +93,24 @@ export class Renderer {
     atlasImage: HTMLImageElement,
     field: Readonly<Uint8Array> | undefined,
     fieldConfig: Readonly<FieldConfig> | undefined,
+    lvl: Level | undefined,
   ): void {
     this.#atlasImage = atlasImage
     this.#cels = new Uint16Array(atlas.cels)
     this.#field = field
     this.#fieldConfig = fieldConfig
-    this.#idByColor = new Uint32Array([
-      0, // Hidden, unused.
-      atlas.anim['box--Ban'].id,
-      atlas.anim['box--Flamingo'].id,
-      atlas.anim['box--JuiceBox'].id,
-      atlas.anim['box--Lasagna'].id,
-      atlas.anim['box--Sunshine'].id,
-      0, // Pending, unused.
-    ])
+    if (lvl != null) {
+      const pascalLvl = levelWord[lvl]
+      this.#idByColor = new Uint32Array([
+        0, // Hidden, unused.
+        atlas.anim[`box--Ban${pascalLvl}`].id,
+        atlas.anim['box--Flamingo'].id,
+        atlas.anim['box--JuiceBox'].id,
+        atlas.anim['box--Lasagna'].id,
+        atlas.anim['box--Sunshine'].id,
+        0, // Pending, unused.
+      ])
+    }
     this.initGL()
   }
 

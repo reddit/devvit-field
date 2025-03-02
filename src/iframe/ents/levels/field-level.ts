@@ -19,8 +19,9 @@ export class FieldLevel implements LevelEnt {
   }
 
   init(game: Game): void {
+    if (game.subLvl == null) throw Error('no sub level')
     game.zoo.clear()
-    game.zoo.add(this, new CursorEnt(game), new ReticleEnt(game))
+    game.zoo.add(this, new CursorEnt(game), new ReticleEnt(game, game.subLvl))
 
     if (!game.audio) throw Error('no audio')
     if (game.sub?.includes('BananaField' satisfies FieldSub))

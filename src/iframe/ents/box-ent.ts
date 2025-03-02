@@ -1,5 +1,6 @@
 import {type Team, teamPascalCase} from '../../shared/team.js'
 import type {XY} from '../../shared/types/2d.js'
+import {type Level, levelWord} from '../../shared/types/level.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
 import {Layer} from '../graphics/layer.js'
@@ -30,12 +31,13 @@ export class BoxEnt implements Ent {
     game.bmps.push(this.#sprite)
   }
 
-  resolve(ban: boolean, team: Team): void {
-    const pascal = teamPascalCase[team]
+  resolve(ban: boolean, team: Team, lvl: Level): void {
+    const pascalTeam = teamPascalCase[team]
+    const pascalLvl = levelWord[lvl]
     // to-do: PascalCase basename in script.
     this.#seq.push(
-      `box--${pascal}Grow`,
-      ban ? 'box--BanFill' : `box--${pascal}Fill`,
+      `box--${pascalTeam}Grow`,
+      ban ? `box--BanFill${pascalLvl}` : `box--${pascalTeam}Fill`,
       'Die',
     )
   }

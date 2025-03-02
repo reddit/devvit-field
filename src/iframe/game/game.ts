@@ -4,6 +4,7 @@ import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import {type XY, xyEq} from '../../shared/types/2d.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta, FieldSub} from '../../shared/types/field.ts'
+import type {Level} from '../../shared/types/level.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
@@ -88,6 +89,7 @@ export class Game {
    * when not in a dev sub.
    */
   sub?: FieldSub | string
+  subLvl?: Level
   team: Team | undefined
   teamBoxCounts: TeamBoxCounts | undefined
   ui: BFGame
@@ -210,6 +212,7 @@ export class Game {
       assets.img.atlas,
       this.field,
       this.fieldConfig,
+      this.subLvl,
     )
 
     this.lvl.init(this)
@@ -234,12 +237,12 @@ export class Game {
   }
 
   #applyDeltas(deltas: Delta[]): void {
-    if (!this.fieldConfig) return
+    if (!this.fieldConfig || this.subLvl == null) return
     for (const {globalXY, isBan, team} of deltas) {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
       if (fieldArrayGetPending(this.field, i)) {
         const box = this.#pending.find(pend => xyEq(pend.fieldXY, globalXY))
-        if (box) box.resolve(isBan, team)
+        if (box) box.resolve(isBan, team, this.subLvl)
       }
       if (isBan) fieldArraySetBan(this.field, i)
       else fieldArraySetTeam(this.field, i, team)
@@ -305,6 +308,7 @@ export class Game {
           connected: true,
           debug: true,
           field,
+          lvl: Math.trunc(rnd.num * 5) as Level,
           p1,
           p1BoxCount: Math.trunc(Math.random() * (visible + 1)),
           players: Math.trunc(rnd.num * 99_999_999),
@@ -390,6 +394,7 @@ export class Game {
         this.players = msg.players
         this.seed = msg.seed ?? (0 as Seed)
         this.sub = msg.sub
+        this.subLvl = msg.lvl
         this.team = msg.team
         this.teamBoxCounts = msg.teamBoxCounts
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
@@ -405,6 +410,7 @@ export class Game {
             this.assets.img.atlas,
             this.field,
             this.fieldConfig,
+            this.subLvl,
           )
           this.zoo.clear()
           this.lvl.init(this)
