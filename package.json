@@ -26,7 +26,8 @@
   "scripts": {
     "build": "tools/build.ts --minify",
     "build:atlas": "tools/atlas-pack.ts src/iframe/game/config.json",
-    "clean": "rm -rf dist src/iframe/game/atlas.json webroot/assets/atlas.webp webroot/index.js*",
+    "clean": "rm -rf dist webroot/index.js*",
+    "clobber": "npm run clean && rm -rf src/iframe/game/atlas.json webroot/assets/atlas.webp",
     "devvit:install:prod": "npm run clean && npm run build:atlas && npm run format && npm run build && devvit upload --config=devvit.prod.yaml --employee-update && tools/install.ts src/devvit/server/core/config.prod.json",
     "devvit:install:dev": "tools/install.ts src/devvit/server/core/config.dev.json",
     "devvit:playtest": "sh -c 'devvit playtest --config=devvit.dev.yaml --log-runtime \"$@\"|grep --invert --line-buffered \"\\[api\\]\"' --",
