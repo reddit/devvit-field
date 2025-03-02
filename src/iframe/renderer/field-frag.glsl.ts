@@ -24,7 +24,7 @@ void main() {
     discard;
 
   vec2 fracXY = fract(xy);
-  float borderW = 0.02;
+  float borderW = 0.05;
   if (
     uScale >= 10. &&
     (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
@@ -40,7 +40,9 @@ void main() {
 
   uint id = uIDByColor[box];
   mediump uvec4 texXYWH = texelFetch(uCels, ivec2(0, id), 0);
-  highp vec2 px = vec2(texXYWH.xy) + mod(xy * vec2(texXYWH.zw), vec2(texXYWH.zw));
+  // Hack: trim transparent one pixel off the border to be flush with grid.
+  vec2 wh = vec2(texXYWH.z - 2u, texXYWH.w - 2u);
+  highp vec2 px = vec2(texXYWH.x + 1u, texXYWH.y + 1u) + mod(xy * wh, wh);
   oFrag = texture(uTex, px / vec2(uTexWH));
 }`
 
