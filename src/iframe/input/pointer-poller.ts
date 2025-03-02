@@ -99,8 +99,11 @@ export class PointerPoller {
     this.#canvas[fn]('wheel', this.#onWheel as EventListener, opts)
     this.#canvas[fn]('contextmenu', this.#onContextMenu, {capture: true})
 
-    // Disable long press vibration.
-    this.#canvas[fn]('touchstart', this.#onContextMenu, {capture: true})
+    // Disable long press vibration. Non-passive must be explicit for touchstart.
+    this.#canvas[fn]('touchstart', this.#onContextMenu, {
+      capture: true,
+      passive: false,
+    })
   }
 
   reset = (): void => {

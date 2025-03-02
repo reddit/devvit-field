@@ -56,6 +56,8 @@ export class Input<T extends string> {
     return !this.pinch && this.#pointer.drag
   }
 
+  // to-do: allow EndsWith with flag to allow repeated double clicks? unclear
+  //        how not to trigger two double clicks for three clicks.
   /**
    * Combos are interpreted exactly both in buttons pressed per tick (eg, up
    * will not match up and down the way `isOn('Up')` will) and sequence (order
