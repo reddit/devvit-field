@@ -51,8 +51,8 @@ export class FieldLevel implements LevelEnt {
       //   this.#anims.splice(i, 1)
       //   continue
       // }
-      anim.sprite.x = (-cam.x + anim.xy.x) * cam.scale * cam.fieldScale + cam.x
-      anim.sprite.y = (-cam.y + anim.xy.y) * cam.scale * cam.fieldScale + cam.y
+      anim.sprite.x = (-cam.x + anim.xy.x) * cam.scale * cam.fieldScale
+      anim.sprite.y = (-cam.y + anim.xy.y) * cam.scale * cam.fieldScale
       anim.sprite.w = anim.sprite.h = cam.fieldScale
     }
   }
@@ -89,7 +89,7 @@ export class FieldLevel implements LevelEnt {
         game.isClaimable(select)
       ) {
         const sprite = new Sprite(atlas, 'box--FlamingoPend')
-        sprite.z = Layer.Default
+        sprite.z = Layer.UIFore
         sprite.stretch = true
         sprite.cel = game.looper.frame / 4
         this.#anims.push({xy: {...select}, sprite})
