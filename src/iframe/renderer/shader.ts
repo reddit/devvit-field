@@ -40,7 +40,8 @@ function getUniformLocations(gl: GL, pgm: GLProgram | null): GLUniforms {
     if (uniform == null) throw Error(`no shader uniform at index ${i}`)
     const location = gl.getUniformLocation(pgm, uniform.name)
     if (!location) throw Error(`no shader uniform named "${uniform.name}"`)
-    locations[uniform.name] = location
+    const name = uniform.name.replace('[0]', '') // Arrays.
+    locations[name] = location
   }
   return locations
 }

@@ -12,9 +12,18 @@
     "box--Flamingo": {},
     "box--FlamingoFill": {},
     "box--FlamingoGrow": {},
-    "box--FlamingoPend": {},
+    "box--FlamingoPending": {},
     "box--JuiceBox": {},
+    "box--JuiceBoxFill": {},
+    "box--JuiceBoxGrow": {},
+    "box--JuiceBoxPending": {},
     "box--Lasagna": {},
-    "box--Sunshine": {}
+    "box--LasagnaFill": {},
+    "box--LasagnaGrow": {},
+    "box--LasagnaPending": {},
+    "box--Sunshine": {},
+    "box--SunshineFill": {},
+    "box--SunshineGrow": {},
+    "box--SunshinePending": {}
   }
 }

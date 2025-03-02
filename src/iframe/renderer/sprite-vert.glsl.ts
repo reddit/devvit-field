@@ -1,5 +1,7 @@
 export const spriteVertGLSL: string = `#version 300 es
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices#essl300_minimum_requirements_webgl_2
+// https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices#understand_system_limits
+// https://web3dsurvey.com/webgl2
 uniform mediump vec4 uCam;
 uniform lowp usampler2D uCels;
 uniform highp uint uFrame;

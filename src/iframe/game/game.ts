@@ -1,7 +1,7 @@
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
-import type {XY} from '../../shared/types/2d.ts'
+import {type XY, xyEq} from '../../shared/types/2d.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta, FieldSub} from '../../shared/types/field.ts'
 import type {
@@ -18,6 +18,7 @@ import {Audio, type AudioBufferByName} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
 import type {BFGame} from '../elements/bf-game.ts'
 import {Bubble} from '../elements/bubble.ts'
+import {BoxEnt} from '../ents/box-ent.ts'
 import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
@@ -31,9 +32,7 @@ import {
   fieldArrayIndex,
   fieldArraySetBan,
   fieldArraySetPending,
-  fieldArraySetSelected,
   fieldArraySetTeam,
-  fieldArraySetVisible,
 } from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
 import atlas from './atlas.json' with {type: 'json'}
@@ -63,6 +62,7 @@ export class Game {
   canvas!: HTMLCanvasElement
   /** The match number. */
   challenge: number | undefined
+  /** Most recent claim timestamp. */
   claimed: UTCMillis = 0 as UTCMillis
   connected: boolean
   ctrl!: Input<DefaultButton>
@@ -94,6 +94,8 @@ export class Game {
   /** Number of boxes in the field visible; [0, field size]. */
   visible: number | undefined
   zoo: Zoo
+
+  readonly #pending: BoxEnt[] = []
 
   #fulfil!: () => void
 
@@ -128,9 +130,13 @@ export class Game {
     if (this.isCooldown() || !this.isClaimable(xy)) return
     this.claimed = this.now
     const i = fieldArrayIndex(this.fieldConfig, xy)
-    fieldArraySetPending(this.field, i, true)
+    fieldArraySetPending(this.field, i)
     this.renderer.setBox(xy, this.field[i]!)
     this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
+
+    const box = new BoxEnt(this, xy)
+    this.#pending.push(box)
+    this.zoo.add(box)
   }
 
   isClaimable(xy: Readonly<XY>): boolean {
@@ -152,14 +158,13 @@ export class Game {
     // //     how state changes.
     {
       const i = fieldArrayIndex(this.fieldConfig, this.select)
-      fieldArraySetSelected(this.field, i, false)
       this.renderer.setBox(this.select, this.field[i]!)
     }
-    this.select = xy
+    this.select.x = xy.x
+    this.select.y = xy.y
     this.canvas.dispatchEvent(Bubble('game-update', undefined))
     {
       const i = fieldArrayIndex(this.fieldConfig, this.select)
-      fieldArraySetSelected(this.field, i, true)
       this.renderer.setBox(this.select, this.field[i]!)
     }
   }
@@ -232,10 +237,12 @@ export class Game {
     if (!this.fieldConfig) return
     for (const {globalXY, isBan, team} of deltas) {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
-      fieldArraySetTeam(this.field, i, team)
-      fieldArraySetBan(this.field, i, isBan)
-      fieldArraySetPending(this.field, i, false)
-      fieldArraySetVisible(this.field, i, true)
+      if (fieldArrayGetPending(this.field, i)) {
+        const box = this.#pending.find(pend => xyEq(pend.fieldXY, globalXY))
+        if (box) box.resolve(isBan, team)
+      }
+      if (isBan) fieldArraySetBan(this.field, i)
+      else fieldArraySetTeam(this.field, i, team)
       // to-do: it may be faster to send the entire array for many changes.
       this.renderer.setBox(globalXY, this.field[i]!)
     }
@@ -416,13 +423,13 @@ export class Game {
                 if (rnd.num < 0.2) {
                   visible++
                   const i = fieldArrayIndex(this.fieldConfig, {x, y})
-                  fieldArraySetTeam(
-                    this.field,
-                    i,
-                    Math.trunc(rnd.num * 4) as Team,
-                  )
-                  fieldArraySetVisible(this.field, i, true)
-                  if (rnd.num < 0.2) fieldArraySetBan(this.field, i, true)
+                  if (rnd.num < 0.2) fieldArraySetBan(this.field, i)
+                  else
+                    fieldArraySetTeam(
+                      this.field,
+                      i,
+                      Math.trunc(rnd.num * 4) as Team,
+                    )
                 }
               }
         }

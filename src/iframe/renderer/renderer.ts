@@ -1,5 +1,6 @@
 import type {XY} from '../../shared/types/2d.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
+import type {Tag} from '../game/config.js'
 import type {Atlas} from '../graphics/atlas.js'
 import type {AttribBuffer} from './attrib-buffer.js'
 import type {Cam} from './cam.js'
@@ -22,6 +23,7 @@ export class Renderer {
   #gl?: GL
   #loseContext: WEBGL_lose_context | null = null
   #spriteShader: Shader | undefined
+  #idByColor: Uint32Array = new Uint32Array()
 
   constructor(canvas: HTMLCanvasElement) {
     this.#canvas = canvas
@@ -86,7 +88,7 @@ export class Renderer {
   }
 
   load(
-    atlas: Atlas<unknown>,
+    atlas: Atlas<Tag>,
     atlasImage: HTMLImageElement,
     field: Readonly<Uint8Array> | undefined,
     fieldConfig: Readonly<FieldConfig> | undefined,
@@ -95,6 +97,15 @@ export class Renderer {
     this.#cels = new Uint16Array(atlas.cels)
     this.#field = field
     this.#fieldConfig = fieldConfig
+    this.#idByColor = new Uint32Array([
+      0, // Hidden, unused.
+      atlas.anim['box--Ban'].id,
+      atlas.anim['box--Flamingo'].id,
+      atlas.anim['box--JuiceBox'].id,
+      atlas.anim['box--Lasagna'].id,
+      atlas.anim['box--Sunshine'].id,
+      0, // Pending, unused.
+    ])
     this.initGL()
   }
 
@@ -162,6 +173,10 @@ export class Renderer {
       this.#fieldShader.uniforms.uFieldWH!,
       this.#fieldConfig.wh.w,
       this.#fieldConfig.wh.h,
+    )
+    this.#gl.uniform1uiv(
+      this.#fieldShader.uniforms.uIDByColor!,
+      this.#idByColor,
     )
 
     for (const [i, tex] of this.#fieldShader.textures.entries()) {

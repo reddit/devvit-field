@@ -1,19 +1,16 @@
-import {type XY, boxHits} from '../../../shared/types/2d.ts'
+import {boxHits} from '../../../shared/types/2d.ts'
 import type {FieldSub} from '../../../shared/types/field.ts'
 import {audioPlay} from '../../audio.ts'
-import type {Tag} from '../../game/config.ts'
 import type {Game} from '../../game/game.ts'
-import {Layer} from '../../graphics/layer.ts'
-import {Sprite} from '../../graphics/sprite.ts'
 import {RealtimeConnector} from '../../realtime-connector.ts'
 import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
+import {ReticleEnt} from '../reticle-ent.ts'
 import type {LevelEnt} from './level-ent.ts'
 
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
-  #anims: {xy: XY; sprite: Sprite<Tag>}[] = []
-  #rtConnector: RealtimeConnector = new RealtimeConnector()
+  readonly #rtConnector: RealtimeConnector = new RealtimeConnector()
   #zoomLvl: number
 
   constructor(game: Game) {
@@ -23,7 +20,7 @@ export class FieldLevel implements LevelEnt {
 
   init(game: Game): void {
     game.zoo.clear()
-    game.zoo.add(this, new CursorEnt(game))
+    game.zoo.add(this, new CursorEnt(game), new ReticleEnt(game))
 
     if (!game.audio) throw Error('no audio')
     if (game.sub?.includes('BananaField' satisfies FieldSub))
@@ -36,29 +33,14 @@ export class FieldLevel implements LevelEnt {
     this.#rtConnector.update(game)
   }
 
-  draw(game: Readonly<Game>): void {
-    game.bmps.push(...this.#anims.map(anim => anim.sprite))
-  }
-
   update(game: Game): void {
     this.#updatePosition(game)
     this.#updateZoom(game)
     this.#updatePick(game)
-
-    const {cam} = game
-    for (const [_i, anim] of this.#anims.entries()) {
-      // if (anim.sprite.isLooped(game)) {
-      //   this.#anims.splice(i, 1)
-      //   continue
-      // }
-      anim.sprite.x = (-cam.x + anim.xy.x) * cam.scale * cam.fieldScale
-      anim.sprite.y = (-cam.y + anim.xy.y) * cam.scale * cam.fieldScale
-      anim.sprite.w = anim.sprite.h = cam.fieldScale
-    }
   }
 
   #updatePick(game: Game): void {
-    const {atlas, cam, ctrl, fieldConfig} = game
+    const {cam, ctrl, fieldConfig} = game
 
     // Use floor, not trunc. when out of bounds, do truncate back to inbounds.
     const select = {
@@ -82,19 +64,6 @@ export class FieldLevel implements LevelEnt {
       //        cycle. This was an issue when trying to use isOffStart().
       ctrl.handled = true
       game.selectBox(select)
-
-      if (
-        ctrl.isComboStart(['A'], ['A']) &&
-        !game.isCooldown() &&
-        game.isClaimable(select)
-      ) {
-        const sprite = new Sprite(atlas, 'box--FlamingoPend')
-        sprite.z = Layer.UIFore
-        sprite.stretch = true
-        sprite.cel = game.looper.frame / 4
-        this.#anims.push({xy: {...select}, sprite})
-        game.claimBox(select)
-      }
     }
   }
 
