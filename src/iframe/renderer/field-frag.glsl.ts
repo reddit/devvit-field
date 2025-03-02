@@ -6,8 +6,8 @@ uniform lowp usampler2D uCels;
 uniform highp uint uFrame;
 uniform uvec2 uFieldWH;
 uniform mediump sampler2D uTex;
-uniform highp usampler2D uBoxes;
 uniform mediump uvec2 uTexWH;
+uniform highp usampler2D uField;
 uniform float uScale;
 
 in vec2 vUV;
@@ -40,7 +40,7 @@ void main() {
     return;
   }
 
-  lowp uint box = texelFetch(uBoxes, ivec2(xy), 0).r;
+  lowp uint box = texelFetch(uField, ivec2(xy), 0).r;
   bool select = ((box >> ${fieldArraySelectShift}) & ${fieldArraySelectMask}u) == ${fieldArraySelectOn}u;
   bool pend = ((box >> ${fieldArrayPendShift}) & ${fieldArrayPendMask}u) == ${fieldArrayPendOn}u;
   bool visible = ((box >> ${fieldArrayVisibleShift}) & ${fieldArrayVisibleMask}u) == ${fieldArrayVisibleOn}u;
@@ -57,12 +57,11 @@ void main() {
   }
 
   if (ban) {
-    int id = 48;
+    int id = 64;
     int frame = 0;
     mediump uvec4 texXYWH = texelFetch(uCels, ivec2(0, id + frame), 0);
-    highp vec2 px = vec2(texXYWH.xy* uvec2(24, 24)) + mod(xy* vec2(24, 24), vec2(texXYWH.zw));
-    oFrag = texture(uTex, (px) / vec2(uTexWH));
-
+    highp vec2 px = vec2(texXYWH.xy) + mod(xy * vec2(texXYWH.zw), vec2(texXYWH.zw));
+    oFrag = texture(uTex, px / vec2(uTexWH));
     return;
   }
 

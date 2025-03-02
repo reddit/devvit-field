@@ -44,7 +44,17 @@ export class FieldLevel implements LevelEnt {
     this.#updatePosition(game)
     this.#updateZoom(game)
     this.#updatePick(game)
-    this.#anims = this.#anims.filter(anim => !anim.sprite.isLooped(game))
+
+    const {cam} = game
+    for (const [_i, anim] of this.#anims.entries()) {
+      // if (anim.sprite.isLooped(game)) {
+      //   this.#anims.splice(i, 1)
+      //   continue
+      // }
+      anim.sprite.x = (-cam.x + anim.xy.x) * cam.scale * cam.fieldScale + cam.x
+      anim.sprite.y = (-cam.y + anim.xy.y) * cam.scale * cam.fieldScale + cam.y
+      anim.sprite.w = anim.sprite.h = cam.fieldScale
+    }
   }
 
   #updatePick(game: Game): void {
@@ -72,18 +82,19 @@ export class FieldLevel implements LevelEnt {
       //        cycle. This was an issue when trying to use isOffStart().
       ctrl.handled = true
       game.selectBox(select)
-      const sprite = new Sprite(atlas, 'box--Flamingo')
-      sprite.z = Layer.Default
-      sprite.w = cam.fieldScale
-      sprite.h = cam.fieldScale
-      sprite.stretch = true
-      sprite.cel = game.looper.frame / 4
-      this.#anims.push({xy: {...select}, sprite})
-    }
 
-    for (const anim of this.#anims) {
-      anim.sprite.x = (-cam.x + anim.xy.x) * cam.scale * cam.fieldScale + cam.x
-      anim.sprite.y = (-cam.y + anim.xy.y) * cam.scale * cam.fieldScale + cam.y
+      if (
+        ctrl.isComboStart(['A'], ['A']) &&
+        !game.isCooldown() &&
+        game.isClaimable(select)
+      ) {
+        const sprite = new Sprite(atlas, 'box--FlamingoPend')
+        sprite.z = Layer.Default
+        sprite.stretch = true
+        sprite.cel = game.looper.frame / 4
+        this.#anims.push({xy: {...select}, sprite})
+        game.claimBox(select)
+      }
     }
   }
 

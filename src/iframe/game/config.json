@@ -7,8 +7,12 @@
     "background--Checkerboard": {},
     "background--White": {},
     "box--Ban": {},
+    "box--BanFill": {},
     "box--Reticle": {},
     "box--Flamingo": {},
+    "box--FlamingoFill": {},
+    "box--FlamingoGrow": {},
+    "box--FlamingoPend": {},
     "box--JuiceBox": {},
     "box--Lasagna": {},
     "box--Sunshine": {}

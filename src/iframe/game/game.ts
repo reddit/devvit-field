@@ -63,6 +63,7 @@ export class Game {
   canvas!: HTMLCanvasElement
   /** The match number. */
   challenge: number | undefined
+  claimed: UTCMillis = 0 as UTCMillis
   connected: boolean
   ctrl!: Input<DefaultButton>
   debug: boolean
@@ -99,7 +100,7 @@ export class Game {
   constructor(ui: BFGame) {
     this.ac = new AudioContext()
     this.atlas = atlas as Atlas<Tag>
-    this.bmps = new BmpAttribBuffer(100)
+    this.bmps = new BmpAttribBuffer(1000)
     this.cam = new Cam()
     this.connected = false
     this.debug = devMode
@@ -124,16 +125,25 @@ export class Game {
 
   claimBox(xy: Readonly<XY>): void {
     if (!this.fieldConfig) return
+    if (this.isCooldown() || !this.isClaimable(xy)) return
+    this.claimed = this.now
     const i = fieldArrayIndex(this.fieldConfig, xy)
-    if (
+    fieldArraySetPending(this.field, i, true)
+    this.renderer.setBox(xy, this.field[i]!)
+    this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
+  }
+
+  isClaimable(xy: Readonly<XY>): boolean {
+    if (!this.fieldConfig) return false
+    const i = fieldArrayIndex(this.fieldConfig, xy)
+    return (
       !fieldArrayGetPending(this.field, i) &&
       !fieldArrayGetVisible(this.field, i)
-    ) {
-      fieldArraySetPending(this.field, i, true)
-      this.renderer.setBox(xy, this.field[i]!)
-      // to-do: aggregate.
-      this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
-    }
+    )
+  }
+
+  isCooldown(): boolean {
+    return this.now - this.claimed < 2_000 // to-do: make configurable.
   }
 
   selectBox(xy: Readonly<XY>): void {

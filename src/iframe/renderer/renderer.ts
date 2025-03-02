@@ -142,7 +142,7 @@ export class Renderer {
 
     this.#gl.uniform1i(this.#fieldShader.uniforms.uTex!, 0)
     this.#gl.uniform1i(this.#fieldShader.uniforms.uCels!, 1)
-    this.#gl.uniform1i(this.#fieldShader.uniforms.uBoxes!, 2)
+    this.#gl.uniform1i(this.#fieldShader.uniforms.uField!, 2)
     this.#gl.uniform2ui(
       this.#fieldShader.uniforms.uTexWH!,
       this.#atlasImage.naturalWidth,
@@ -156,16 +156,7 @@ export class Renderer {
       cam.h,
     )
     this.#gl.uniform1ui(this.#fieldShader.uniforms.uFrame!, frame)
-
     this.#gl.uniform1f(this.#fieldShader.uniforms.uScale!, fieldScale)
-    this.#gl.uniform4f(
-      this.#fieldShader.uniforms.uCam!,
-      cam.x,
-      cam.y,
-      cam.w,
-      cam.h,
-    )
-
     this.#gl.uniform2ui(
       this.#fieldShader.uniforms.uFieldWH!,
       this.#fieldConfig.wh.w,
@@ -178,13 +169,11 @@ export class Renderer {
     }
 
     this.#gl.bindVertexArray(this.#fieldShader.vao)
-
     this.#gl.drawArrays(
       this.#gl.TRIANGLE_STRIP,
       0,
       uv.length / 2, // d
     )
-
     this.#gl.bindVertexArray(null)
   }
 
@@ -233,7 +222,6 @@ export class Renderer {
       uv.length / 2, // d
       bmps.size,
     )
-
     this.#gl.bindVertexArray(null)
   }
 
@@ -266,13 +254,85 @@ export class Renderer {
   }
 }
 
+function FieldShader(
+  gl: GL,
+  atlasImage: HTMLImageElement,
+  cels: Readonly<Uint16Array>,
+  field: Uint8Array,
+  config: Readonly<FieldConfig>,
+): Shader {
+  const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [
+    gl.createTexture(),
+    gl.createTexture(),
+    gl.createTexture(),
+  ]) // to-do: share textures.
+
+  gl.bindVertexArray(shader.vao)
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
+  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW)
+  gl.enableVertexAttribArray(0)
+  gl.vertexAttribIPointer(0, 2, gl.BYTE, 0, 0)
+  gl.bindVertexArray(null)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    atlasImage,
+  )
+  gl.bindTexture(gl.TEXTURE_2D, null)
+
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[1]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA16UI,
+    1,
+    cels.length / 4, // 4 u16s per row
+    0,
+    gl.RGBA_INTEGER,
+    gl.UNSIGNED_SHORT,
+    cels,
+  )
+
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[2]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.R8UI,
+    config.wh.w,
+    config.wh.h,
+    0,
+    gl.RED_INTEGER,
+    gl.UNSIGNED_BYTE,
+    field,
+  )
+  gl.bindTexture(gl.TEXTURE_2D, null)
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
+
+  return shader
+}
+
 function SpriteShader(
   gl: GL,
   atlasImage: HTMLImageElement,
   cels: Readonly<Uint16Array>,
 ): Shader {
-  const tex = [gl.createTexture(), gl.createTexture()]
-  const shader = Shader(gl, spriteVertGLSL, spriteFragGLSL, tex)
+  const shader = Shader(gl, spriteVertGLSL, spriteFragGLSL, [
+    gl.createTexture(),
+    gl.createTexture(),
+  ])
 
   gl.bindVertexArray(shader.vao)
 
@@ -317,84 +377,13 @@ function SpriteShader(
     0,
     gl.RGBA16UI,
     1,
-    cels.length / 4, // 4 u8s per row
+    cels.length / 4, // 4 u16s per row
     0,
     gl.RGBA_INTEGER,
     gl.UNSIGNED_SHORT,
     cels,
   )
   gl.bindTexture(gl.TEXTURE_2D, null)
-
-  return shader
-}
-
-function FieldShader(
-  gl: GL,
-  atlasImage: HTMLImageElement,
-  cels: Readonly<Uint16Array>,
-  field: Uint8Array,
-  config: Readonly<FieldConfig>,
-): Shader {
-  const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [
-    gl.createTexture(),
-    gl.createTexture(),
-    gl.createTexture(),
-  ]) // to-do: share textures.
-
-  gl.bindVertexArray(shader.vao)
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
-  gl.enableVertexAttribArray(0)
-  gl.vertexAttribIPointer(0, 2, gl.BYTE, 0, 0)
-  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW)
-  gl.bindVertexArray(null)
-  gl.bindBuffer(gl.ARRAY_BUFFER, null)
-
-  gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA,
-    gl.RGBA,
-    gl.UNSIGNED_BYTE,
-    atlasImage,
-  )
-  gl.bindTexture(gl.TEXTURE_2D, null)
-
-  gl.bindTexture(gl.TEXTURE_2D, shader.textures[1]!)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA16UI,
-    1,
-    cels.length / 4, // 4 u8s per row
-    0,
-    gl.RGBA_INTEGER,
-    gl.UNSIGNED_SHORT,
-    cels,
-  )
-  gl.bindTexture(gl.TEXTURE_2D, null)
-
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
-  gl.bindTexture(gl.TEXTURE_2D, shader.textures[2]!)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.R8UI,
-    config.wh.w,
-    config.wh.h,
-    0,
-    gl.RED_INTEGER,
-    gl.UNSIGNED_BYTE,
-    field,
-  )
-  gl.bindTexture(gl.TEXTURE_2D, null)
-  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
 
   return shader
 }

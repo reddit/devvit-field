@@ -166,6 +166,8 @@ export class Sprite<T> implements Bmp, Box {
     }
   }
 
+  // to-do: is this any better than doing CPI side for finite animations if it
+  //        must be checked every frame?
   // to-do: this is truncating by 1/60th of the last frame.
   /** True if the animation has played. Resets on second loop. */
   isLooped(game: Readonly<Game>): boolean {
