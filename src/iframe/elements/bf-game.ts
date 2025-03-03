@@ -170,7 +170,7 @@ export class BFGame extends LitElement {
         }}'
         @game-update='${() => this.requestUpdate()}'
         @claim='${this.#onClaim}'
-        @open-leaderboard='${() => open('https://www.reddit.com/r/gamesonreddit', '_blank')}'
+        @open-leaderboard='${() => this.#game.postMessage({type: 'OpenLeaderboard'})}'
         ?cooldown='${this.#game.isCooldown()}'
         level='${ifDefined(this.#game.subLvl)}'
         ?loading='${this.ui === 'Loading'}'

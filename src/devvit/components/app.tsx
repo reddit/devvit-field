@@ -296,6 +296,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
         break
       }
+      case 'OpenLeaderboard':
+        // to-do: PascalCase URL once it doesn't redirect.
+        ctx.ui.navigateTo('https://www.reddit.com/r/gamesonreddit')
+        break
       case 'Dialog':
         ctx.ui.navigateTo(msg.redirectURL)
         break

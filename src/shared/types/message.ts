@@ -87,6 +87,8 @@ export type IframeMessage =
   | {type: 'OnNextChallengeClicked'}
   /** Player has acknowledged the dialog. */
   | DialogMessage
+  /** Player has tapped the r/GamesOnReddit leaderboard open button. */
+  | {type: 'OpenLeaderboard'}
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
