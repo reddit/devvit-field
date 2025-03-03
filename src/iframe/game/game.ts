@@ -139,7 +139,9 @@ export class Game {
     this.canvas.dispatchEvent(Bubble('game-update', undefined))
     setTimeout(
       () => this.canvas.dispatchEvent(Bubble('game-update', undefined)),
-      this.cooldownMillis + 100, // Hack: ensure this.now >= cooldownMillis.
+      // Hack: ensure this.now >= cooldownMillis. Also, add some wiggle to
+      //       increase liveliness.
+      this.cooldownMillis + 100 + Math.random() * 800,
     )
 
     const box = new BoxEnt(this, xy)
