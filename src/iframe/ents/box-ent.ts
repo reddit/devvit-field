@@ -1,6 +1,7 @@
 import {type Team, teamPascalCase} from '../../shared/team.js'
 import type {XY} from '../../shared/types/2d.js'
 import {type Level, levelWord} from '../../shared/types/level.js'
+import {audioPlay} from '../audio.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
 import {Layer} from '../graphics/layer.js'
@@ -13,7 +14,7 @@ import type {Ent} from './ent.js'
 export class BoxEnt implements Ent {
   readonly eid: EID
   readonly fieldXY: Readonly<XY>
-  readonly #seq: (Tag | 'Die')[] = []
+  readonly #seq: (Tag | 'Banned' | 'Claimed' | 'Lost')[] = []
   readonly #sprite: Sprite<Tag>
 
   constructor(game: Game, fieldXY: Readonly<XY>) {
@@ -31,14 +32,14 @@ export class BoxEnt implements Ent {
     game.bmps.push(this.#sprite)
   }
 
-  resolve(ban: boolean, team: Team, lvl: Level): void {
+  resolve(game: Game, ban: boolean, team: Team, lvl: Level): void {
     const pascalTeam = teamPascalCase[team]
     const pascalLvl = levelWord[lvl]
     // to-do: PascalCase basename in script.
     this.#seq.push(
       `box--${pascalTeam}Grow`,
       ban ? `box--BanFill${pascalLvl}` : `box--${pascalTeam}Fill`,
-      'Die',
+      ban ? 'Banned' : game.team === team ? 'Claimed' : 'Lost',
     )
   }
 
@@ -47,7 +48,9 @@ export class BoxEnt implements Ent {
 
     if (this.#seq.length && this.#sprite.isLooped(game)) {
       const next = this.#seq.shift()!
-      if (next === 'Die') {
+      if (next === 'Banned' || next === 'Claimed' || next === 'Lost') {
+        if (game.audio && next === 'Claimed')
+          audioPlay(game.ac, game.audio.claimed)
         game.zoo.remove(this)
         return
       }

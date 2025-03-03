@@ -15,7 +15,7 @@ import {Random, type Seed} from '../../shared/types/random.ts'
 import {SID} from '../../shared/types/sid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
-import {Audio, type AudioBufferByName} from '../audio.ts'
+import {Audio, type AudioBufferByName, audioPlay} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
 import type {BFGame} from '../elements/bf-game.ts'
 import {Bubble} from '../elements/bubble.ts'
@@ -129,8 +129,12 @@ export class Game {
   }
 
   claimBox(xy: Readonly<XY>): void {
-    if (!this.fieldConfig) return
+    if (!this.audio || !this.fieldConfig) return
+    audioPlay(this.ac, this.audio.claim)
     if (this.isCooldown() || !this.isClaimable(xy)) return
+    // Delay until claim sound completes.
+    // to-do: this is overlapping with claimed.
+    // audioPlay(this.ac, this.audio.cool, 600)
     this.claimed = this.now
     const i = fieldArrayIndex(this.fieldConfig, xy)
     fieldArraySetPending(this.field, i)
@@ -250,7 +254,7 @@ export class Game {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
       if (fieldArrayGetPending(this.field, i)) {
         const box = this.#pending.find(pend => xyEq(pend.fieldXY, globalXY))
-        if (box) box.resolve(isBan, team, this.subLvl)
+        if (box) box.resolve(this, isBan, team, this.subLvl)
       }
       if (isBan) fieldArraySetBan(this.field, i)
       else fieldArraySetTeam(this.field, i, team)

@@ -1,6 +1,6 @@
 import {boxHits} from '../../../shared/types/2d.ts'
 import type {FieldSub} from '../../../shared/types/field.ts'
-import {audioPlay} from '../../audio.ts'
+import {audioPlayMusic} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
 import {RealtimeConnector} from '../../realtime-connector.ts'
 import {CursorEnt} from '../cursor-ent.ts'
@@ -25,7 +25,7 @@ export class FieldLevel implements LevelEnt {
 
     if (!game.audio) throw Error('no audio')
     if (game.sub?.includes('BananaField' satisfies FieldSub))
-      audioPlay(
+      audioPlayMusic(
         game.ac,
         game.audio['16ItemsInThe15OrLessAtA60sGroceryStore'],
         true,

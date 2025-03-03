@@ -2,21 +2,34 @@ import type {AssetMap} from './asset-map.ts'
 
 export type Audio = AudioBufferByName & {ctx: AudioContext}
 export type AudioBufferByName = {
-  '16ItemsInThe15OrLessAtA60sGroceryStore': AudioBuffer
+  [name in
+    | '16ItemsInThe15OrLessAtA60sGroceryStore'
+    | 'claim'
+    | 'claimed'
+    | 'cool']: AudioBuffer
 }
 
 export async function Audio(assets: Readonly<AssetMap>): Promise<Audio> {
   const ctx = new AudioContext()
-  const [items] = await Promise.all([
+  const [items, claim, claimed, cool] = await Promise.all([
     ctx.decodeAudioData(assets.audio['16ItemsInThe15OrLessAtA60sGroceryStore']),
+    ctx.decodeAudioData(assets.audio.claim),
+    ctx.decodeAudioData(assets.audio.claimed),
+    ctx.decodeAudioData(assets.audio.cool),
   ])
-  return {ctx, '16ItemsInThe15OrLessAtA60sGroceryStore': items}
+  return {
+    ctx,
+    '16ItemsInThe15OrLessAtA60sGroceryStore': items,
+    claim,
+    claimed,
+    cool,
+  }
 }
 
-export function audioPlay(
+export function audioPlayMusic(
   ctx: AudioContext,
   buf: AudioBuffer,
-  queue: boolean = false,
+  queue: boolean = true,
   loop: boolean = false,
 ): void {
   if (!queue && ctx.state !== 'running') return
@@ -34,4 +47,23 @@ export function audioPlay(
 
   gain.connect(ctx.destination)
   src.start()
+}
+
+export function audioPlay(
+  ctx: AudioContext,
+  buf: AudioBuffer,
+  delayMillis: number = 0,
+  queue: boolean = false,
+): void {
+  if (!queue && ctx.state !== 'running') return
+
+  const src = ctx.createBufferSource()
+  src.buffer = buf
+
+  const gain = ctx.createGain()
+  gain.gain.setValueAtTime(0.25, ctx.currentTime)
+  src.connect(gain)
+
+  gain.connect(ctx.destination)
+  src.start(ctx.currentTime + delayMillis / 1000)
 }
