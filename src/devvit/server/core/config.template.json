@@ -6,35 +6,40 @@
       "subredditId": "t5_",
       "url": "https://reddit.com/",
       "subredditName": "PlayBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Denial"
     },
     {
       "id": 1,
       "subredditId": "t5_",
       "url": "https://reddit.com/",
       "subredditName": "CantPlayBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Anger"
     },
     {
       "id": 2,
       "subredditId": "t5_",
       "url": "https://reddit.com/",
       "subredditName": "BananaField",
-      "theme": {}
+      "theme": {},
+      "title": "Bargaining"
     },
     {
       "id": 3,
       "subredditId": "t5_",
       "url": "https://reddit.com/",
       "subredditName": "WhyBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Depression"
     },
     {
       "id": 4,
       "subredditId": "t5_",
       "url": "https://reddit.com/",
       "subredditName": "WhatIsBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Acceptance"
     }
   ]
 }

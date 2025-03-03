@@ -24,6 +24,8 @@ export type LevelConfig = {
   subredditName: string
   subredditId: T5
   theme: Record<string, string>
+  /** Post title. */
+  title: string
 }
 
 /** PascalCase level name. */

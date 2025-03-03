@@ -27,6 +27,7 @@ import {
 } from './devvit/server/core/challenge.js'
 import {defaultChallengeConfigMaybeGet} from './devvit/server/core/defaultChallengeConfig.js'
 import {fieldClaimCells} from './devvit/server/core/field.js'
+import {levels} from './devvit/server/core/levels.js'
 import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
@@ -90,13 +91,17 @@ const newPostFormKey = Devvit.createForm(
       })
       validateFieldArea(config.size)
 
-      const {challengeNumber} = await challengeMakeNew({ctx, config})
+      await challengeMakeNew({ctx, config})
 
       if (!ctx.subredditName) throw Error('no sub name')
+
+      const lvl = levels.find(lvl => lvl.subredditName === ctx.subredditName)
+      if (!lvl) throw Error('no level')
+
       const post = await ctx.reddit.submitPost({
         preview: <Preview />,
         subredditName: ctx.subredditName,
-        title: `BanField #${challengeNumber}`,
+        title: lvl.title,
       })
 
       ctx.ui.navigateTo(post.url)

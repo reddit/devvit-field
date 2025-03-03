@@ -6,35 +6,40 @@
       "subredditId": "t5_dkz0bh",
       "url": "https://www.reddit.com/r/PlayBanField/comments/1iy38v5/banfield_13/",
       "subredditName": "PlayBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Denial"
     },
     {
       "id": 1,
       "subredditId": "t5_dkz0gv",
       "url": "https://www.reddit.com/r/CantPlayBanField/comments/1ix3t89/banfield_1/",
       "subredditName": "CantPlayBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Anger"
     },
     {
       "id": 2,
       "subredditId": "t5_dkz0k9",
       "url": "https://www.reddit.com/r/BananaField/comments/1ix3tky/banfield_1/",
       "subredditName": "BananaField",
-      "theme": {}
+      "theme": {},
+      "title": "Bargaining"
     },
     {
       "id": 3,
       "subredditId": "t5_dkz0qm",
       "url": "https://www.reddit.com/r/WhyBanField/comments/1ix3tuy/banfield_1/",
       "subredditName": "WhyBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Depression"
     },
     {
       "id": 4,
       "subredditId": "t5_dkz0tb",
       "url": "https://www.reddit.com/r/WhatIsBanField/comments/1ix3u9l/banfield_1/",
       "subredditName": "WhatIsBanField",
-      "theme": {}
+      "theme": {},
+      "title": "Acceptance"
     }
   ]
 }
