@@ -9,7 +9,13 @@ import {
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteBlack, paletteDarkGrey} from '../../shared/theme.ts'
+import {
+  cssHex,
+  paletteBlack,
+  paletteConsole,
+  radiusPx,
+  spacePx,
+} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-control-panel.ts'
@@ -26,9 +32,13 @@ export class BFTerminal extends LitElement {
     ${cssReset}
 
     :host {
-      background-color: ${unsafeCSS(cssHex(paletteDarkGrey))};
       display: block;
       height: 100%;
+      border-radius: 16px;
+      border-width: 3px;
+      border-color: ${unsafeCSS(cssHex(paletteConsole))};
+      border-style: ridge;
+      overflow: hidden;
     }
 
     canvas {
@@ -41,7 +51,7 @@ export class BFTerminal extends LitElement {
       border-style: solid;
       border-width: 1px;
       border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      border-radius: 1px;
+      border-radius: ${radiusPx}px;
     }
 
     .canvas-box {
@@ -58,18 +68,17 @@ export class BFTerminal extends LitElement {
       flex-direction: column;
       height: 100%;
       overflow: hidden;
-      border-style: solid;
-      border-radius: 2px;
-      border-width: 2px;
-      border-bottom-width: 0;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      margin-block-start: 8px;
-      margin-inline-start: 5px;
-      margin-inline-end: 5px;
+      background-image: linear-gradient(
+        to bottom,
+        ${unsafeCSS(cssHex(paletteConsole))} 0,
+        ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 48px),
+        ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 48px)
+      ); 
 
-      padding-block-start: 8px;
-      padding-inline-start: 11px;
-      padding-inline-end: 11px;
+      padding-block-start: ${spacePx}px;
+      padding-block-end: ${spacePx * 2}px;
+      padding-inline-start: ${spacePx}px;
+      padding-inline-end: ${spacePx}px;
     }
   `
 

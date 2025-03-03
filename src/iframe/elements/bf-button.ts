@@ -8,7 +8,7 @@ import {
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteBlack} from '../../shared/theme.ts'
+import {cssHex, paletteBlack, radiusPx} from '../../shared/theme.ts'
 import type {Icon} from './bf-icon.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -44,16 +44,18 @@ export class BFButton extends LitElement {
       border-width: 2px;
       border-style: solid;
       border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
       margin-bottom: 3px;
       text-transform: inherit;
 
+      /* Gleam. */
       background-image: linear-gradient(
         to bottom,
-        #0000 .5px,
-        #fff .5px,
-        #fff 2.5px,
-        #0000 2.5px
+        #0000 1px,
+        #fff 1px,
+        #fff 3px,
+        #0000 3px
       );
       background-position: 2px 0;
       background-size: calc(100% - 4px) 100%;
@@ -84,19 +86,20 @@ export class BFButton extends LitElement {
       display: block;
       content: '';
       width: 100%;
-      height: 7px;
-      background: var(--color-grey);
+      height: 9px;
+      background-color: var(--color-grey);
       position: absolute;
-      bottom: -7px;
+      bottom: -9px;
       border-color: ${unsafeCSS(cssHex(paletteBlack))};
       border-width: 2px;
       border-inline-start-width: 0;
       border-inline-end-width: 0;
+      border-radius: ${radiusPx}px;
       border-style: solid;
     }
 
     button:active {
-      transform: translateY(2px);
+      transform: translateY(4px);
       box-shadow: 0 3px #000;
     }
 

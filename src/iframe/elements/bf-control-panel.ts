@@ -8,6 +8,7 @@ import {
 import {customElement, property} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
+import {spacePx} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
@@ -30,8 +31,10 @@ export class BFControlPanel extends LitElement {
     ${cssReset}
 
     :host {
-      display: block;
+      display: flex;
+      justify-content: center;
       width: 100%;
+      padding: ${spacePx}px;
     }
 
     bf-coords {
@@ -42,15 +45,10 @@ export class BFControlPanel extends LitElement {
     }
 
     .claim-button {
+      margin: ${spacePx}px;
       text-transform: uppercase;
     }
 
-    .panel {
-      align-items: center;
-      display: flex;
-      justify-content: space-between;
-      height: 60px;
-    }
   `
 
   @property({type: Boolean}) accessor cooldown: boolean = false
@@ -65,16 +63,14 @@ export class BFControlPanel extends LitElement {
       : 'Claim'
     return html`
       <bf-coords x='${this.x}' y='${this.y}'></bf-coords>
-      <div class='panel'>
-        <bf-button
-          @click='${() => this.dispatchEvent(Bubble('claim', {x: this.x, y: this.y}))}'
-          appearance='${ifDefined(this.team)}'
-          class='claim-button'
-          label='${claim}'
-          ?disabled='${!this.team || this.cooldown}'
-          style='--width: 256px;'
-        ></bf-button>
-      </div>
+      <bf-button
+        @click='${() => this.dispatchEvent(Bubble('claim', {x: this.x, y: this.y}))}'
+        appearance='${ifDefined(this.team)}'
+        class='claim-button'
+        label='${claim}'
+        ?disabled='${!this.team || this.cooldown}'
+        style='--width: 256px;'
+      ></bf-button>
     `
   }
 }

@@ -1,6 +1,7 @@
 import type {WH} from './types/2d.ts'
 
 export const paletteBlack: number = 0x000000ff
+export const paletteConsole: number = 0x1f2430ff
 export const paletteFlamingo: number = 0xbc4681ff // oklch(57.17% 0.1632 352.48)
 export const paletteJuiceBox: number = 0x7391ebff // oklch(67.36% 0.1379 268.6)
 export const paletteLasagna: number = 0xda6939ff // oklch(64.8% 0.1549 42.23)
@@ -22,7 +23,7 @@ export const playButtonWidth: number = 240
 
 export const thinStroke: number = 2 // to-do: fix.
 
-export const radiusPx: number = spacePx / 4
+export const radiusPx: number = spacePx / 2
 
 export const peerDisconnectIntervalMillis: number = 1_000
 export const peerDefaultDisconnectMillis: number = 5_000
