@@ -46,6 +46,11 @@ export class BFTerminal extends LitElement {
 
     .canvas-box {
       height: 100%;
+      overflow: hidden;
+    }
+
+    .leaderboard-button {
+      text-transform: uppercase;
     }
 
     .terminal {
@@ -70,6 +75,7 @@ export class BFTerminal extends LitElement {
 
   @queryAsync('canvas') accessor canvas!: Promise<HTMLCanvasElement>
 
+  @property({type: Boolean}) accessor cooldown: boolean = false
   @property({type: Boolean}) accessor loading: boolean = false
   @property() accessor team: TeamPascalCase | undefined
   @property({type: Number}) accessor x: number = 0
@@ -86,10 +92,17 @@ export class BFTerminal extends LitElement {
           <canvas tabIndex='0'></canvas>
         </div>
         <bf-control-panel
+          ?cooldown='${this.cooldown}'
           team='${ifDefined(this.team)}'
           x='${this.x}'
           y='${this.y}'
         ></bf-control-panel>
+        <bf-button
+          class='leaderboard-button'
+          style='--width: 100%;'
+        >
+          View leaderboard at r/GamesOnReddit
+        </bf-button>
       </div>
     `
   }

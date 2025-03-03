@@ -10,7 +10,7 @@ import {customElement, property} from 'lit/decorators.js'
 import {styleMap} from 'lit/directives/style-map.js'
 import {cssReset} from './css-reset.ts'
 
-export type Icon = 'menu' | 'zoom-in' | 'zoom-out'
+export type Icon = 'menu'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -44,7 +44,7 @@ export class BFIcon extends LitElement {
   protected override render(): TemplateResult | typeof nothing {
     if (!this.icon) return html``
     const style = {
-      backgroundImage: `url(assets/icon/${this.icon}.svg)`,
+      backgroundImage: `url(assets/icon/${this.icon}-icon.svg)`,
       color: this.color,
       fill: this.color,
     }

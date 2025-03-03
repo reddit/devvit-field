@@ -26,9 +26,9 @@ export class BFButton extends LitElement {
     ${cssReset}
 
     :host {
-      --width: unset;
+      --width: fit-content;
       display: inline-block;
-      width: fit-content;
+      width: var(--width);
     }
 
     button {
@@ -46,6 +46,7 @@ export class BFButton extends LitElement {
       border-color: ${unsafeCSS(cssHex(paletteBlack))};
       box-shadow: 0 5px #000;
       margin-bottom: 3px;
+      text-transform: inherit;
 
       background-image: linear-gradient(
         to bottom,
@@ -67,7 +68,7 @@ export class BFButton extends LitElement {
       padding-right: 16px;
       padding-bottom: 3px;
       padding-left: 16px;
-      font-size: 20px;
+      font-size: 16px;
       font-style: normal;
       font-weight: 600;
       line-height: 26px;

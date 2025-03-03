@@ -136,6 +136,11 @@ export class Game {
     fieldArraySetPending(this.field, i)
     this.renderer.setBox(xy, this.field[i]!)
     this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
+    this.canvas.dispatchEvent(Bubble('game-update', undefined))
+    setTimeout(
+      () => this.canvas.dispatchEvent(Bubble('game-update', undefined)),
+      this.cooldownMillis + 100, // Hack: ensure this.now >= cooldownMillis.
+    )
 
     const box = new BoxEnt(this, xy)
     this.#pending.push(box)
@@ -224,7 +229,7 @@ export class Game {
 
     // to-do: do everything with dispatch or everything with direct interactions
     //        since a reference to BFGame is had.
-    this.ui.ui = 'Playing'
+    if (this.ui.ui === 'Loading') this.ui.ui = 'Playing'
 
     this.postMessage({type: 'Loaded'})
     console.log('loaded')

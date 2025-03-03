@@ -39,7 +39,7 @@ export const cssReset: CSSResult = css`
     --color-sunshine-dark: #c18a28;
     --color-sunshine-light: #ffc96f;
 
-    font-family: 'Edit Undo BRK';
+    font-family: 'Departure Mono';
     /* All fonts are pixelated. */
     font-smooth: never;
     -webkit-font-smoothing : none;

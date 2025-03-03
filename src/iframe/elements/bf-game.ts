@@ -18,7 +18,6 @@ import type {BFTerminal} from './bf-terminal.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-dialog.ts'
-import './bf-footer.ts'
 import './bf-terminal.ts'
 
 declare global {
@@ -116,7 +115,7 @@ export class BFGame extends LitElement {
         if (this.#msg?.type !== 'Dialog') throw Error('no dialog message')
         dialog = html`
           <bf-dialog open>
-            <h2>Woah, you're not allowed here.</h2>
+            <h2>Whoa, you're not allowed here.</h2>
             <p>${this.#msg.message}</p>
             <bf-button
               @click='${() => {
@@ -171,37 +170,17 @@ export class BFGame extends LitElement {
         }}'
         @game-update='${() => this.requestUpdate()}'
         @claim='${this.#onClaim}'
-        @toggle-side-panel='${this.#onToggleSidePanel}'
-        @zoom-in='${() => this.#onZoom(1)}'
-        @zoom-out='${() => this.#onZoom(-1)}'
+        ?cooldown='${this.#game.isCooldown()}'
         ?loading='${this.ui === 'Loading'}'
         team='${ifDefined(team)}'
         x='${this.#game.select.x}'
         y='${this.#game.select.y}'
       ></bf-terminal>
-      <bf-footer></bf-footer>
       ${this.#dbgLog ? html`<pre>${this.#dbgLog}</pre>` : ''}
     `
   }
 
   #onClaim(ev: CustomEvent<XY>): void {
     this.#game.claimBox(ev.detail)
-  }
-
-  #onToggleSidePanel(_ev: CustomEvent<XY>): void {
-    // to-do: fill me out.
-  }
-
-  #onZoom(incr: number): void {
-    const center = {
-      x: this.#game.cam.x + this.#game.cam.w / 2,
-      y: this.#game.cam.y + this.#game.cam.h / 2,
-    }
-
-    this.#game.cam.setFieldScaleLevel(
-      this.#game.cam.fieldScaleLevel + incr,
-      center,
-      this.#game.p1?.profile.superuser ?? false,
-    )
   }
 }

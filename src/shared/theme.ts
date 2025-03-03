@@ -8,9 +8,7 @@ export const paletteSunshine: number = 0xe2a94dff // oklch(77.11% 0.127 76.74)
 export const paletteHalfShade: number = 0x00000080
 export const paletteLightShade: number = 0x00000030
 
-export const paletteBanBox: number = 0x7dff00ff
 export const paletteTerminalGreen: number = 0x4cf190ff
-export const palettePending: number = 0x00ffffff
 export const paletteDarkGrey: number = 0x1f2430ff
 export const paletteGrid: number = 0x002e00ff
 
