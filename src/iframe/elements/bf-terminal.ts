@@ -16,11 +16,17 @@ import {
   radiusPx,
   spacePx,
 } from '../../shared/theme.ts'
+import type {Level} from '../../shared/types/level.ts'
+import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
 
+import './bf-button.ts'
 import './bf-control-panel.ts'
 
 declare global {
+  interface HTMLElementEventMap {
+    'open-leaderboard': CustomEvent<undefined>
+  }
   interface HTMLElementTagNameMap {
     'bf-terminal': BFTerminal
   }
@@ -71,12 +77,12 @@ export class BFTerminal extends LitElement {
       background-image: linear-gradient(
         to bottom,
         ${unsafeCSS(cssHex(paletteConsole))} 0,
-        ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 48px),
-        ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 48px)
+        ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 40px),
+        ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 40px)
       ); 
 
       padding-block-start: ${spacePx}px;
-      padding-block-end: ${spacePx * 2}px;
+      padding-block-end: ${spacePx}px;
       padding-inline-start: ${spacePx}px;
       padding-inline-end: ${spacePx}px;
     }
@@ -85,6 +91,7 @@ export class BFTerminal extends LitElement {
   @queryAsync('canvas') accessor canvas!: Promise<HTMLCanvasElement>
 
   @property({type: Boolean}) accessor cooldown: boolean = false
+  @property({type: Number}) accessor level: Level | undefined
   @property({type: Boolean}) accessor loading: boolean = false
   @property() accessor team: TeamPascalCase | undefined
   @property({type: Number}) accessor x: number = 0
@@ -107,6 +114,8 @@ export class BFTerminal extends LitElement {
           y='${this.y}'
         ></bf-control-panel>
         <bf-button
+          @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
+          appearance='${ifDefined(this.level)}'
           class='leaderboard-button'
           style='--width: 100%;'
         >

@@ -8,11 +8,18 @@ import {
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {cssHex, paletteBlack, radiusPx} from '../../shared/theme.ts'
+import {
+  cssHex,
+  paletteBlack,
+  paletteHalfShade,
+  paletteTint75,
+  radiusPx,
+} from '../../shared/theme.ts'
 import type {Icon} from './bf-icon.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-icon.ts'
+import type {Level} from '../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -53,8 +60,8 @@ export class BFButton extends LitElement {
       background-image: linear-gradient(
         to bottom,
         #0000 1px,
-        #fff 1px,
-        #fff 3px,
+        ${unsafeCSS(cssHex(paletteTint75))} 1px,
+        ${unsafeCSS(cssHex(paletteTint75))} 3px,
         #0000 3px
       );
       background-position: 2px 0;
@@ -96,17 +103,19 @@ export class BFButton extends LitElement {
       border-inline-end-width: 0;
       border-radius: ${radiusPx}px;
       border-style: solid;
+      box-shadow: 0 4px ${unsafeCSS(cssHex(paletteHalfShade))};
     }
 
     button:active {
       transform: translateY(4px);
-      box-shadow: 0 3px #000;
+      box-shadow: 0 3px ${unsafeCSS(cssHex(paletteBlack))};
     }
 
     button:active::after {
       border-width: 0;
       height: 1px;
       bottom: -3px;
+      box-shadow: 0 3px ${unsafeCSS(cssHex(paletteHalfShade))};
     }
 
     button:disabled {
@@ -190,9 +199,94 @@ export class BFButton extends LitElement {
     :host([appearance='Sunshine']) button:disabled {
       background-color: var(--color-grey);
     }
+
+    /* Appearance: Field. */
+    :host([appearance='0']) button {
+      background-color: var(--color-field-light);
+    }
+    :host([appearance='0']:hover) button {
+      background-color: var(--color-field);
+    }
+    :host([appearance='0']:active) button {
+      background-color: var(--color-field);
+    }
+    :host([appearance='0']) button:disabled {
+      background-color: var(--color-grey);
+    }
+    :host([appearance='0']) button::after {
+      background-color: var(--color-field-dark);
+    }
+
+    /* Appearance: BannedField.  */
+    :host([appearance='1']) button {
+      background-color: var(--color-banned-field-light);
+    }
+    :host([appearance='1']:hover) button {
+      background-color: var(--color-banned-field);
+    }
+    :host([appearance='1']:active) button {
+      background-color: var(--color-banned-field);
+    }
+    :host([appearance='1']) button:disabled {
+      background-color: var(--color-grey);
+    }
+    :host([appearance='1']) button::after {
+      background-color: var(--color-banned-field-dark);
+    }
+
+    /* Appearance: VeryBannedField.  */
+    :host([appearance='2']) button {
+      background-color: var(--color-very-banned-field-light);
+    }
+    :host([appearance='2']:hover) button {
+      background-color: var(--color-very-banned-field);
+    }
+    :host([appearance='2']:active) button {
+      background-color: var(--color-very-banned-field);
+    }
+    :host([appearance='2']) button:disabled {
+      background-color: var(--color-grey);
+    }
+    :host([appearance='2']) button::after {
+      background-color: var(--color-very-banned-field-dark);
+    }
+
+    /* Appearance: BananaField.  */
+    :host([appearance='3']) button {
+      background-color: var(--color-banana-field-light);
+    }
+    :host([appearance='3']:hover) button {
+      background-color: var(--color-banana-field);
+    }
+    :host([appearance='3']:active) button {
+      background-color: var(--color-banana-field);
+    }
+    :host([appearance='3']) button:disabled {
+      background-color: var(--color-grey);
+    }
+    :host([appearance='3']) button::after {
+      background-color: var(--color-banana-field-dark);
+    }
+
+    /* Appearance: WhatIsField.  */
+    :host([appearance='4']) button {
+      background-color: var(--color-what-is-field-light);
+    }
+    :host([appearance='4']:hover) button {
+      background-color: var(--color-what-is-field);
+    }
+    :host([appearance='4']:active) button {
+      background-color: var(--color-what-is-field);
+    }
+    :host([appearance='4']) button:disabled {
+      background-color: var(--color-grey);
+    }
+    :host([appearance='4']) button::after {
+      background-color: var(--color-what-is-field-dark);
+    }
   `
 
-  @property() accessor appearance: TeamPascalCase | undefined
+  @property() accessor appearance: TeamPascalCase | Level | undefined
   @property({type: Boolean}) accessor disabled: boolean = false
   @property() accessor endIcon: Icon | undefined
   @property() accessor icon: Icon | undefined
