@@ -61,7 +61,7 @@ export function audioPlay(
   src.buffer = buf
 
   const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.25, ctx.currentTime)
+  gain.gain.setValueAtTime(0.075, ctx.currentTime)
   src.connect(gain)
 
   gain.connect(ctx.destination)
