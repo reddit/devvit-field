@@ -4,18 +4,10 @@ import {
   type TemplateResult,
   css,
   html,
-  unsafeCSS,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {
-  cssHex,
-  paletteBlack,
-  paletteShade50,
-  paletteTint75,
-  radiusPx,
-  spacePx,
-} from '../../shared/theme.ts'
+import {radiusPx, spacePx} from '../../shared/theme.ts'
 import type {Icon} from './bf-icon.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -51,7 +43,7 @@ export class BFButton extends LitElement {
       justify-content: center;
       border-width: 2px;
       border-style: solid;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      border-color: var(--color-black);
       border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
       margin-block-start: ${spacePx / 2}px;
@@ -62,8 +54,8 @@ export class BFButton extends LitElement {
       background-image: linear-gradient(
         to bottom,
         #0000 1px,
-        ${unsafeCSS(cssHex(paletteTint75))} 1px,
-        ${unsafeCSS(cssHex(paletteTint75))} 3px,
+        var(--color-tint-75) 1px,
+        var(--color-tint-75) 3px,
         #0000 3px
       );
       background-position: 2px 0;
@@ -99,25 +91,25 @@ export class BFButton extends LitElement {
       background-color: var(--color-grey);
       position: absolute;
       bottom: -9px;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      border-color: var(--color-black);
       border-width: 2px;
       border-inline-start-width: 0;
       border-inline-end-width: 0;
       border-radius: ${radiusPx}px;
       border-style: solid;
-      box-shadow: 0 4px ${unsafeCSS(cssHex(paletteShade50))};
+      box-shadow: 0 4px var(--color-shade-50);
     }
 
     button:active {
       transform: translateY(4px);
-      box-shadow: 0 3px ${unsafeCSS(cssHex(paletteBlack))};
+      box-shadow: 0 3px var(--color-black);
     }
 
     button:active::after {
       border-width: 0;
       height: 1px;
       bottom: -3px;
-      box-shadow: 0 3px ${unsafeCSS(cssHex(paletteShade50))};
+      box-shadow: 0 3px var(--color-shade-50);
     }
 
     button:disabled {

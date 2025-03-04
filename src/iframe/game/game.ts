@@ -80,6 +80,7 @@ export class Game {
   lvl: FieldLevel
   now: UTCMillis
   p1?: Player
+  p1BoxCount: number = 0
   /** Number of players online including p1; 0 when offline. */
   players: number
   renderer!: Renderer
@@ -408,6 +409,7 @@ export class Game {
         this.challenge = msg.challenge
         this.cooldownMillis = msg.cooldownMillis
         this.debug = msg.debug
+        this.p1BoxCount = msg.p1BoxCount
         this.players = msg.players
         this.seed = msg.seed ?? (0 as Seed)
         this.sub = msg.sub

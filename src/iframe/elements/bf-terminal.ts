@@ -4,20 +4,11 @@ import {
   type TemplateResult,
   css,
   html,
-  unsafeCSS,
 } from 'lit'
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {
-  cssHex,
-  paletteBlack,
-  paletteConsole,
-  paletteShade60,
-  paletteTerminalGreen,
-  radiusPx,
-  spacePx,
-} from '../../shared/theme.ts'
+import {fontMSize, radiusPx, spacePx} from '../../shared/theme.ts'
 import {fontSSize} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import type {Level} from '../../shared/types/level.ts'
@@ -47,7 +38,7 @@ export class BFTerminal extends LitElement {
       height: 100%;
       border-radius: 16px;
       border-width: 3px;
-      border-color: ${unsafeCSS(cssHex(paletteConsole))};
+      border-color: var(--color-console);
       border-style: ridge;
       overflow: hidden;
     }
@@ -67,12 +58,48 @@ export class BFTerminal extends LitElement {
       overflow: hidden;
       border-style: solid;
       border-width: 2px;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      border-color: var(--color-black);
       border-radius: ${radiusPx}px;
     }
 
     .claim-button {
       text-transform: uppercase;
+    }
+
+    .header {
+      display: flex;
+      flex-direction: column;
+      background-color: var(--color-black);
+      padding-block-start: ${spacePx / 2}px;
+      padding-block-end: ${spacePx / 2}px;
+      padding-inline-start: ${spacePx / 2}px;
+      padding-inline-end: ${spacePx / 2}px;
+      position: relative;
+      width: 100%;
+    }
+    .header-top {
+      display: flex;
+      width: 100%;
+    }
+    .title {flex-grow:1; color: var(--color-terminal-green);}
+    .challenge {color: var(--color-white);}
+    .header-bottom {
+      display: flex;
+      width: 100%;
+    }
+    .status {color: var(--color-grey); font-size: ${fontMSize}px; flex-grow: 1;}
+    .your-boxes-title {
+      color: var(--color-bland-blue);
+      text-transform: uppercase;
+      text-decoration: underline;
+    }
+    .your-boxes-num {color: var(--color-bland-blue);}
+    .coords {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      color: var(--color-terminal-green);
     }
 
     .leaderboard-button {
@@ -87,7 +114,7 @@ export class BFTerminal extends LitElement {
       padding-block-end: ${spacePx / 2}px;
       padding-inline-start: ${spacePx / 2}px;
       padding-inline-end: ${spacePx / 2}px;
-      background-color: ${unsafeCSS(cssHex(paletteShade60))};
+      background-color: var(--color-shade-60);
       border-radius: ${radiusPx}px;
     }
 
@@ -98,7 +125,7 @@ export class BFTerminal extends LitElement {
 
       margin-inline-start: ${spacePx / 2}px;
       white-space: nowrap;
-      color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
+      color: var(--color-terminal-green);
     }
     .stats .num {
       text-align: end;
@@ -112,9 +139,9 @@ export class BFTerminal extends LitElement {
       overflow: hidden;
       background-image: linear-gradient(
         to bottom,
-        ${unsafeCSS(cssHex(paletteConsole))} 0,
-        ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 48px),
-        ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 48px)
+        var(--color-console) 0,
+        var(--color-console) calc(100% - 48px),
+        var(--color-black) calc(100% - 48px)
       );
       padding-block-start: ${spacePx}px;
       padding-block-end: ${spacePx}px;
@@ -126,10 +153,10 @@ export class BFTerminal extends LitElement {
   @queryAsync('canvas') accessor canvas!: Promise<HTMLCanvasElement>
 
   @property({type: Number}) accessor bannedPlayers: number = 0
-  @property({type: Number}) accessor bans: number = 0
-  @property({type: Number}) accessor boxes: number = 0
   @property({type: Boolean}) accessor cooldown: boolean = false
-  @property({type: Number}) accessor challenge: number = 0
+  @property({type: Number}) accessor challenge: number | undefined
+  @property({type: Number}) accessor fieldBans: number = 0
+  @property({type: Number}) accessor fieldBoxes: number = 0
   /** Boxes scored. */
   @property({type: Number}) accessor flamingo: number = 0
   @property({type: Number}) accessor juiceBox: number = 0
@@ -137,7 +164,10 @@ export class BFTerminal extends LitElement {
   @property({type: Number}) accessor sunshine: number = 0
   @property({type: Number}) accessor level: Level | undefined
   @property({type: Boolean}) accessor loading: boolean = false
+  @property({type: Boolean}) accessor online: boolean = false
+  @property({type: Number}) accessor p1Boxes: number = 0
   @property({type: Number}) accessor players: number = 0
+  @property() accessor sub: string | undefined
   @property() accessor team: TeamPascalCase | undefined
   @property({type: Number}) accessor x: number = 0
   @property({type: Number}) accessor y: number = 0
@@ -152,10 +182,17 @@ export class BFTerminal extends LitElement {
         class='terminal'
         style='pointer-events: ${this.loading ? 'none' : 'initial'}'
       >
-        ${
-          this.challenge
-          //to-do: heading.
-        }
+        <div class='header'>
+          <div class='header-top'>
+            <h2 class='title'>${this.sub}&nbsp;${this.challenge == null ? '' : html`<span class='challenge'>#${this.challenge}</span>`}</h2>
+            <div class='your-boxes-title'>your boxes</div>
+          </div>
+          <div class='header-bottom'>
+            <div class='status'>${this.online ? html`&nbsp;` : '• Offline'}</div>
+            <div class='your-boxes-num'>${this.p1Boxes}</div>
+          </div>
+          <div class='coords'>(${this.x.toString().padStart(4, '0')}, ${this.y.toString().padStart(4, '0')})</div>
+        </div>
         <div class='canvas-box'>
           <!--- Set tabIndex to propagate key events. -->
           <canvas tabIndex='0'></canvas>
@@ -170,8 +207,8 @@ export class BFTerminal extends LitElement {
         ></bf-button>
         <div class='panel'>
           <bf-leaderboard
-            bans='${this.bans}'
-            boxes='${this.boxes}'
+            bans='${this.fieldBans}'
+            boxes='${this.fieldBoxes}'
             flamingo='${this.flamingo}'
             juiceBox='${this.juiceBox}'
             lasagna='${this.lasagna}'

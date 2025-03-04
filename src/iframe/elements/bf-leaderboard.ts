@@ -4,19 +4,9 @@ import {
   type TemplateResult,
   css,
   html,
-  unsafeCSS,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {
-  cssHex,
-  fontSSize,
-  paletteFlamingo,
-  paletteJuiceBox,
-  paletteLasagna,
-  paletteSunshine,
-  radiusPx,
-  spacePx,
-} from '../../shared/theme.ts'
+import {fontSSize, radiusPx, spacePx} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -64,21 +54,21 @@ export class BFLeaderboard extends LitElement {
       padding-inline-end: ${spacePx}px;
     }
 
-    .flamingo { color: ${unsafeCSS(cssHex(paletteFlamingo))}; }
+    .flamingo { color: var(--color-flamingo); }
     .flamingo .bar > div {
-      background-color: ${unsafeCSS(cssHex(paletteFlamingo))};
+      background-color: var(--color-flamingo);
     }
-    .juice-box { color: ${unsafeCSS(cssHex(paletteJuiceBox))}; }
+    .juice-box { color: var(--color-juice-box); }
     .juice-box .bar > div {
-      background-color: ${unsafeCSS(cssHex(paletteJuiceBox))};
+      background-color: var(--color-juice-box);
     }
-    .lasagna { color: ${unsafeCSS(cssHex(paletteLasagna))}; }
+    .lasagna { color: var(--color-lasagna); }
     .lasagna .bar > div {
-      background-color: ${unsafeCSS(cssHex(paletteLasagna))};
+      background-color: var(--color-lasagna);
     }
-    .sunshine { color: ${unsafeCSS(cssHex(paletteSunshine))}; }
+    .sunshine { color: var(--color-sunshine); }
     .sunshine .bar > div {
-      background-color: ${unsafeCSS(cssHex(paletteSunshine))};
+      background-color: var(--color-sunshine);
     }
   `
 

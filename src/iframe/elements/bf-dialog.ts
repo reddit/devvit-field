@@ -5,11 +5,9 @@ import {
   type TemplateResult,
   css,
   html,
-  unsafeCSS,
 } from 'lit'
 import {customElement, property, query} from 'lit/decorators.js'
-import {paletteShade50, radiusPx, spacePx} from '../../shared/theme.ts'
-import {cssHex, paletteLightShade} from '../../shared/theme.ts'
+import {radiusPx, spacePx} from '../../shared/theme.ts'
 import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -35,11 +33,11 @@ export class BFDialog extends LitElement {
       padding: ${spacePx}px;
       border-radius: ${radiusPx}px;
       border-style: none;
-      box-shadow: 0 ${spacePx / 4}px ${spacePx}px ${unsafeCSS(cssHex(paletteLightShade))};
+      box-shadow: 0 ${spacePx / 4}px ${spacePx}px var(--color-shade-19);
     }
 
     dialog::backdrop {
-      background-color: ${unsafeCSS(cssHex(paletteShade50))};
+      background-color: var(--color-shade-50);
     }
   `
 
