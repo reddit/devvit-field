@@ -46,7 +46,11 @@ DevvitTest.it(
     })
 
     await expect(
-      challengeConfigGet({redis: ctx.redis, challengeNumber}),
+      challengeConfigGet({
+        redis: ctx.redis,
+        challengeNumber,
+        subredditId: 't5_0',
+      }),
     ).resolves.toEqual({
       size: expect.any(Number),
       partitionSize: expect.any(Number),
