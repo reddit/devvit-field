@@ -1,10 +1,9 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, type UseChannelResult, useAsync} from '@devvit/public-api'
+import {Devvit, useAsync} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
 import {
-  generatePartitionKeys,
   getPartitionCoords,
   makePartitionKey,
   parsePartitionXY,
@@ -16,10 +15,10 @@ import type {Delta} from '../../shared/types/field.ts'
 import type {
   DevvitMessage,
   IframeMessage,
+  PartitionUpdate,
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
-import {diffArrays} from '../../shared/util.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {type AppState, appInitState} from '../server/core/app.js'
@@ -38,6 +37,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     [],
   )
 
+  // TODO: Remove this once the webview can get this from S3
   useAsync<Delta[]>(
     async () => {
       if (appState.pass === false || activeConnections.length === 0) return []
@@ -119,42 +119,16 @@ export function App(ctx: Devvit.Context): JSX.Element {
     })
   }
 
-  const partitionKeys: PartitionKey[] =
-    appState.pass === true
-      ? generatePartitionKeys(
-          appState.challengeConfig.size,
-          appState.challengeConfig.partitionSize,
-        )
-      : []
-
-  const channelMap: Record<
-    PartitionKey,
-    UseChannelResult<{deltas: Delta[]}>
-  > = {}
-
-  /**
-   * Partition keys should ALWAYS BE STATIC AND THE SAME no matter how many
-   * times the functions are called. We're putting hooks in a for loop because
-   * I don't know how to conditionally register them in our current model. We
-   * store all of them in memory in a look up map and ONLY subscribe once the
-   * iframe tells us explicitly.
-   *
-   * I don't see anything too expensive to doing this inside the hook since we
-   * aren't subscribing. I'd love to hear of a better way. Since we're relying on
-   * postmessage I think a nonhooks version of this would be nice.
-   */
-  for (const key of partitionKeys) {
-    channelMap[key] = useChannel({
-      name: key,
-      onMessage(msg) {
-        iframe.postMessage({
-          type: 'Box',
-          deltas: msg.deltas,
-        })
-      },
-      // TODO: Does the iframe really want to know about all of these subscribe events?
-    })
-  }
+  const partitionUpdateChannel = useChannel<Omit<PartitionUpdate, 'type'>>({
+    name: 'partition_update',
+    onMessage(msg) {
+      iframe.postMessage({
+        type: 'PartitionUpdate',
+        ...msg,
+      })
+    },
+  })
+  partitionUpdateChannel.subscribe()
 
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
@@ -171,28 +145,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
             getPartitionCoords(part, appState.challengeConfig.partitionSize),
           ),
         )
-
-        const {toUnsubscribe, toSubscribe} = diffArrays(
-          activeConnections,
-          newConnections,
-        )
-
-        for (const key of toSubscribe) {
-          const channel = channelMap[key]
-          if (!channel) {
-            console.error(`channel subscribe: channel ${key} not found`)
-            continue
-          }
-          channel.subscribe()
-        }
-        for (const key of toUnsubscribe) {
-          const channel = channelMap[key]
-          if (!channel) {
-            console.error(`channel unsubscribe: channel ${key} not found`)
-            continue
-          }
-          channel.unsubscribe()
-        }
 
         // Note, I don't circuit break here because I think it may slow the experience
         // for the user. Instead, I set state and use `useAsync` to get the current

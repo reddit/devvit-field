@@ -472,9 +472,7 @@ export class Game {
         break
       }
       case 'Box':
-        // to-do: implement.
         if (!this.p1) return
-        // to-do: implement teams
         this.#applyDeltas(msg.deltas)
         break
       case 'Connected':
@@ -496,6 +494,10 @@ export class Game {
       }
       case 'Dialog':
         this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'Barred', msg}))
+        break
+      case 'PartitionUpdate':
+        if (!this.p1) return
+        this.#applyDeltas(msg.deltas)
         break
       default:
         msg satisfies never

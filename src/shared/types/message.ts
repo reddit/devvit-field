@@ -1,6 +1,6 @@
 import type {Player} from '../save.ts'
 import type {Team} from '../team.ts'
-import type {XY} from './2d.ts'
+import type {PartitionKey, XY} from './2d.ts'
 import type {FieldConfig} from './field-config.ts'
 import type {Delta, FieldSub} from './field.ts'
 import type {Level} from './level.ts'
@@ -97,9 +97,17 @@ export type RealtimeMessage =
   | BoxRealtimeMessage
   | FieldBroadcast
   | ChallengeCompleteMessage
+  | PartitionUpdate
 
 type ClaimBoxesResponse = {
   type: 'Box'
+  deltas: Delta[]
+}
+
+export type PartitionUpdate = {
+  type: 'PartitionUpdate'
+  partitionKey: PartitionKey
+  sequenceNumber: number
   deltas: Delta[]
 }
 

@@ -6,6 +6,7 @@ import {
 import {getPartitionCoords, makePartitionKey} from '../../../shared/partition'
 import type {PartitionKey} from '../../../shared/types/2d'
 import type {Delta} from '../../../shared/types/field'
+import type {PartitionUpdate} from '../../../shared/types/message'
 import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
 import {challengeConfigGet} from '../core/challenge'
 import {deltasClear, deltasGet} from '../core/deltas'
@@ -68,10 +69,13 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   await batchAllSettled(
     partitionKeys.map(partitionKey => {
       const deltas = partitionMap[partitionKey]!
-      return ctx.realtime.send(partitionKey, {
+      const message: Omit<PartitionUpdate, 'type'> = {
+        partitionKey,
+        sequenceNumber: 0,
         // TODO: Encode in a fancy way
         deltas,
-      })
+      }
+      return ctx.realtime.send('partition_update', message)
     }),
   )
 
