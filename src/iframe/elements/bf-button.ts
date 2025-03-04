@@ -11,7 +11,7 @@ import type {TeamPascalCase} from '../../shared/team.ts'
 import {
   cssHex,
   paletteBlack,
-  paletteHalfShade,
+  paletteShade50,
   paletteTint75,
   radiusPx,
   spacePx,
@@ -105,7 +105,7 @@ export class BFButton extends LitElement {
       border-inline-end-width: 0;
       border-radius: ${radiusPx}px;
       border-style: solid;
-      box-shadow: 0 4px ${unsafeCSS(cssHex(paletteHalfShade))};
+      box-shadow: 0 4px ${unsafeCSS(cssHex(paletteShade50))};
     }
 
     button:active {
@@ -117,7 +117,7 @@ export class BFButton extends LitElement {
       border-width: 0;
       height: 1px;
       bottom: -3px;
-      box-shadow: 0 3px ${unsafeCSS(cssHex(paletteHalfShade))};
+      box-shadow: 0 3px ${unsafeCSS(cssHex(paletteShade50))};
     }
 
     button:disabled {

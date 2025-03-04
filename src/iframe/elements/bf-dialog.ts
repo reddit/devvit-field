@@ -8,7 +8,7 @@ import {
   unsafeCSS,
 } from 'lit'
 import {customElement, property, query} from 'lit/decorators.js'
-import {paletteHalfShade, radiusPx, spacePx} from '../../shared/theme.ts'
+import {paletteShade50, radiusPx, spacePx} from '../../shared/theme.ts'
 import {cssHex, paletteLightShade} from '../../shared/theme.ts'
 import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
@@ -24,24 +24,23 @@ declare global {
 
 @customElement('bf-dialog')
 export class BFDialog extends LitElement {
-  static override readonly styles: CSSResultGroup =
-    css`                                           
-    ${cssReset}                                                                                    
-                                                                                                   
-    :host {                                                                                        
-      max-width: 320px;                                                                            
-    }                                                                                              
-                                                                                                   
-    dialog {                                                                                       
-      padding: ${spacePx}px;                                                                       
-      border-radius: ${radiusPx}px;                                                                
-      border-style: none;                                                                          
-      box-shadow: 0 ${spacePx / 4}px ${spacePx}px ${unsafeCSS(cssHex(paletteLightShade))};         
-    }                                                                                              
-                                                                                                   
-    dialog::backdrop {                                                                             
-      background-color: ${unsafeCSS(cssHex(paletteHalfShade))};                                    
-    }                                                                                              
+  static override readonly styles: CSSResultGroup = css`
+    ${cssReset}
+
+    :host {
+      max-width: 320px;
+    }
+
+    dialog {
+      padding: ${spacePx}px;
+      border-radius: ${radiusPx}px;
+      border-style: none;
+      box-shadow: 0 ${spacePx / 4}px ${spacePx}px ${unsafeCSS(cssHex(paletteLightShade))};
+    }
+
+    dialog::backdrop {
+      background-color: ${unsafeCSS(cssHex(paletteShade50))};
+    }
   `
 
   @property({type: Boolean, reflect: true}) accessor open: boolean = false
@@ -55,10 +54,10 @@ export class BFDialog extends LitElement {
   }
 
   protected override render(): TemplateResult {
-    return html`                                                                                   
-      <dialog @close="${this.#onClose}">                                                           
-        <slot></slot>                                                                              
-      </dialog>                                                                                    
+    return html`
+      <dialog @close="${this.#onClose}">
+        <slot></slot>
+      </dialog>
     `
   }
 

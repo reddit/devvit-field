@@ -6,7 +6,8 @@ export const paletteFlamingo: number = 0xbc4681ff // oklch(57.17% 0.1632 352.48)
 export const paletteJuiceBox: number = 0x7391ebff // oklch(67.36% 0.1379 268.6)
 export const paletteLasagna: number = 0xda6939ff // oklch(64.8% 0.1549 42.23)
 export const paletteSunshine: number = 0xe2a94dff // oklch(77.11% 0.127 76.74)
-export const paletteHalfShade: number = 0x00000080
+export const paletteShade50: number = 0x00000080
+export const paletteShade60: number = 0x00000099
 export const paletteLightShade: number = 0x00000030
 export const paletteTint75: number = 0xffffffb0
 

@@ -22,6 +22,7 @@ import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-button.ts'
+import './bf-leaderboard.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -86,7 +87,7 @@ export class BFTerminal extends LitElement {
         ${unsafeCSS(cssHex(paletteConsole))} 0,
         ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 48px),
         ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 48px)
-      ); 
+      );
       padding-block-start: ${spacePx}px;
       padding-block-end: ${spacePx}px;
       padding-inline-start: ${spacePx}px;
@@ -97,6 +98,12 @@ export class BFTerminal extends LitElement {
   @queryAsync('canvas') accessor canvas!: Promise<HTMLCanvasElement>
 
   @property({type: Boolean}) accessor cooldown: boolean = false
+  @property({type: Number}) accessor challenge: number = 0
+  /** Boxes scored. */
+  @property({type: Number}) accessor flamingo: number = 0
+  @property({type: Number}) accessor juiceBox: number = 0
+  @property({type: Number}) accessor lasagna: number = 0
+  @property({type: Number}) accessor sunshine: number = 0
   @property({type: Number}) accessor level: Level | undefined
   @property({type: Boolean}) accessor loading: boolean = false
   @property() accessor team: TeamPascalCase | undefined
@@ -113,6 +120,10 @@ export class BFTerminal extends LitElement {
         class='terminal'
         style='pointer-events: ${this.loading ? 'none' : 'initial'}'
       >
+        ${
+          this.challenge
+          //to-do: heading.
+        }
         <div class='canvas-box'>
           <!--- Set tabIndex to propagate key events. -->
           <canvas tabIndex='0'></canvas>
@@ -125,6 +136,12 @@ export class BFTerminal extends LitElement {
           ?disabled='${!this.team || this.cooldown}'
           style='--width: 256px;'
         ></bf-button>
+        <bf-leaderboard
+          flamingo='${this.flamingo}'
+          juiceBox='${this.juiceBox}'
+          lasagna='${this.lasagna}'
+          sunshine='${this.sunshine}'
+        ></bf-leaderboard>
         <bf-button
           @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
           appearance='${ifDefined(this.level)}'
