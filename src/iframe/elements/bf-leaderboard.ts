@@ -43,7 +43,11 @@ export class BFLeaderboard extends LitElement {
 
     .bar {
       height: 7.5px;
-      border-start-start-radius: ${radiusPx}px;
+      width: 100%;
+    }
+    .bar > div {
+      height: 100%;
+      border-end-end-radius: ${radiusPx}px;
       border-start-end-radius: ${radiusPx}px;
       transition-property: width;
       transition-duration: 0.3s;
@@ -57,24 +61,31 @@ export class BFLeaderboard extends LitElement {
       padding-block-end: 0;
     }
 
+    .percent {
+      font-size: 7px;
+      text-align: end;
+      width: auto;
+    }
+
     .flamingo { color: ${unsafeCSS(cssHex(paletteFlamingo))}; }
-    .flamingo > .bar {
+    .flamingo .bar > div {
       background-color: ${unsafeCSS(cssHex(paletteFlamingo))};
     }
     .juice-box { color: ${unsafeCSS(cssHex(paletteJuiceBox))}; }
-    .juice-box > .bar {
+    .juice-box .bar > div {
       background-color: ${unsafeCSS(cssHex(paletteJuiceBox))};
     }
     .lasagna { color: ${unsafeCSS(cssHex(paletteLasagna))}; }
-    .lasagna > .bar {
+    .lasagna .bar > div {
       background-color: ${unsafeCSS(cssHex(paletteLasagna))};
     }
     .sunshine { color: ${unsafeCSS(cssHex(paletteSunshine))}; }
-    .sunshine > .bar {
+    .sunshine .bar > div {
       background-color: ${unsafeCSS(cssHex(paletteSunshine))};
     }
   `
 
+  @property({type: Number}) accessor boxes: number = 0
   /** Boxes scored. */
   @property({type: Number}) accessor flamingo: number = 0
   @property({type: Number}) accessor juiceBox: number = 0
@@ -82,29 +93,28 @@ export class BFLeaderboard extends LitElement {
   @property({type: Number}) accessor sunshine: number = 0
 
   protected override render(): TemplateResult {
-    const total =
-      this.flamingo + this.juiceBox + this.lasagna + this.sunshine || 1
-    const flamingo = (this.flamingo / total) * 100
-    const juiceBox = (this.juiceBox / total) * 100
-    const lasagna = (this.lasagna / total) * 100
-    const sunshine = (this.sunshine / total) * 100
+    const boxes = this.boxes || 1
+    const flamingo = (this.flamingo / boxes) * 100
+    const juiceBox = (this.juiceBox / boxes) * 100
+    const lasagna = (this.lasagna / boxes) * 100
+    const sunshine = (this.sunshine / boxes) * 100
     return html`
-      <table>
+      <table class='chart'>
         <tr class='flamingo'>
           <td class='percent'>${flamingo.toFixed(1)}%</td>
-          <td class='bar' style='width: ${flamingo}%;'>a</td>
+          <td class='bar'><div style='width: ${flamingo}%;'></div></td>
         </tr>
         <tr class='juice-box'>
           <td class='percent'>${juiceBox.toFixed(1)}%</td>
-          <td class='bar' style='width: ${juiceBox}%;'>a</td>
+          <td class='bar'><div style='width: ${juiceBox}%;'></div></td>
         </tr>
         <tr class='lasagna'>
           <td class='percent'>${lasagna.toFixed(1)}%</td>
-          <td class='bar' style='width: ${lasagna}%;'>a</td>
+          <td class='bar'><div style='width: ${lasagna}%;'></div></td>
         </tr>
         <tr class='sunshine'>
           <td class='percent'>${sunshine.toFixed(1)}%</td>
-          <td class='bar' style='width: ${sunshine}%;'>a</td>
+          <td class='bar'><div style='width: ${sunshine}%;'></div></td>
         </tr>
       </table>
     `

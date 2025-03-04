@@ -157,6 +157,9 @@ export class BFGame extends LitElement {
         this.ui satisfies never
     }
 
+    const boxes = this.#game.fieldConfig
+      ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h
+      : 0
     return html`
       ${dialog}
       <bf-terminal
@@ -171,6 +174,7 @@ export class BFGame extends LitElement {
         @game-update='${() => this.requestUpdate()}'
         @claim='${this.#onClaim}'
         @open-leaderboard='${() => this.#game.postMessage({type: 'OpenLeaderboard'})}'
+        boxes='${boxes}'
         challenge='${ifDefined(this.#game.challenge)}'
         ?cooldown='${this.#game.isCooldown()}'
         level='${ifDefined(this.#game.subLvl)}'
