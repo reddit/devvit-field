@@ -14,6 +14,7 @@ import {
   paletteHalfShade,
   paletteTint75,
   radiusPx,
+  spacePx,
 } from '../../shared/theme.ts'
 import type {Icon} from './bf-icon.ts'
 import {cssReset} from './css-reset.ts'
@@ -53,7 +54,8 @@ export class BFButton extends LitElement {
       border-color: ${unsafeCSS(cssHex(paletteBlack))};
       border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
-      margin-bottom: 3px;
+      margin-block-start: ${spacePx / 2}px;
+      margin-block-end: ${5 + spacePx / 2}px;
       text-transform: inherit;
 
       /* Gleam. */

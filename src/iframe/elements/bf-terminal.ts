@@ -16,15 +16,16 @@ import {
   radiusPx,
   spacePx,
 } from '../../shared/theme.ts'
+import type {XY} from '../../shared/types/2d.ts'
 import type {Level} from '../../shared/types/level.ts'
 import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
 
 import './bf-button.ts'
-import './bf-control-panel.ts'
 
 declare global {
   interface HTMLElementEventMap {
+    claim: CustomEvent<XY>
     'open-leaderboard': CustomEvent<undefined>
   }
   interface HTMLElementTagNameMap {
@@ -54,15 +55,20 @@ export class BFTerminal extends LitElement {
       /* Update on each pointermove *touch* Event like *mouse* Events. */
       touch-action: none;
       outline: none; /* Disable focus outline. */
-      border-style: solid;
-      border-width: 1px;
-      border-color: ${unsafeCSS(cssHex(paletteBlack))};
-      border-radius: ${radiusPx}px;
     }
 
     .canvas-box {
       height: 100%;
+      width: 100%;
       overflow: hidden;
+      border-style: solid;
+      border-width: 2px;
+      border-color: ${unsafeCSS(cssHex(paletteBlack))};
+      border-radius: ${radiusPx}px;
+    }
+
+    .claim-button {
+      text-transform: uppercase;
     }
 
     .leaderboard-button {
@@ -72,15 +78,15 @@ export class BFTerminal extends LitElement {
     .terminal {
       display: flex;
       flex-direction: column;
+      align-items: center;
       height: 100%;
       overflow: hidden;
       background-image: linear-gradient(
         to bottom,
         ${unsafeCSS(cssHex(paletteConsole))} 0,
-        ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 40px),
-        ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 40px)
+        ${unsafeCSS(cssHex(paletteConsole))} calc(100% - 48px),
+        ${unsafeCSS(cssHex(paletteBlack))} calc(100% - 48px)
       ); 
-
       padding-block-start: ${spacePx}px;
       padding-block-end: ${spacePx}px;
       padding-inline-start: ${spacePx}px;
@@ -98,6 +104,10 @@ export class BFTerminal extends LitElement {
   @property({type: Number}) accessor y: number = 0
 
   protected override render(): TemplateResult {
+    // to-do: fix PascalCase team.
+    const claim = this.team
+      ? `${this.cooldown ? 'Claiming' : 'Claim'} for ${this.team}`
+      : 'Claim'
     return html`
       <div
         class='terminal'
@@ -107,12 +117,14 @@ export class BFTerminal extends LitElement {
           <!--- Set tabIndex to propagate key events. -->
           <canvas tabIndex='0'></canvas>
         </div>
-        <bf-control-panel
-          ?cooldown='${this.cooldown}'
-          team='${ifDefined(this.team)}'
-          x='${this.x}'
-          y='${this.y}'
-        ></bf-control-panel>
+        <bf-button
+          @click='${() => this.dispatchEvent(Bubble('claim', {x: this.x, y: this.y}))}'
+          appearance='${ifDefined(this.team)}'
+          class='claim-button'
+          label='${claim}'
+          ?disabled='${!this.team || this.cooldown}'
+          style='--width: 256px;'
+        ></bf-button>
         <bf-button
           @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
           appearance='${ifDefined(this.level)}'
