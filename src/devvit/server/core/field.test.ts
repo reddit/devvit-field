@@ -394,6 +394,7 @@ DevvitTest.it(
       seed: makeRandomSeed(),
       mineDensity: 0,
       partitionSize: 2,
+      totalNumberOfMines: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,
@@ -474,6 +475,7 @@ DevvitTest.it(
       seed: makeRandomSeed(),
       mineDensity: 0,
       partitionSize: 2,
+      totalNumberOfMines: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,
@@ -535,6 +537,7 @@ DevvitTest.it(
       seed: makeRandomSeed(),
       mineDensity: 0,
       partitionSize: 2,
+      totalNumberOfMines: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,

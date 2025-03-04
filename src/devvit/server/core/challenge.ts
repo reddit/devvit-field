@@ -10,14 +10,24 @@ import {validateChallengeConfig} from '../../../shared/validateChallengeConfig'
 import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
 import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
+import {minefieldGetTotalMineCount} from './minefield'
 
 /* Fallback config to be used if no default has been set through the subreddit menu action */
-export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => ({
-  size: 10,
-  partitionSize: 5,
-  seed: makeRandomSeed(),
-  mineDensity: 2,
-})
+export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => {
+  const seed = makeRandomSeed()
+  const size = 10
+  return {
+    size,
+    partitionSize: 5,
+    seed: makeRandomSeed(),
+    mineDensity: 2,
+    totalNumberOfMines: minefieldGetTotalMineCount({
+      seed,
+      cols: size,
+      rows: size,
+    }),
+  }
+}
 
 // While it's a little inappropriate to be storing and reading things outside
 // of the request context, this prevents a barrage of requests to redis for the
@@ -64,11 +74,12 @@ export const challengeConfigClearCache = async (): Promise<void> => {
  */
 export const makeSafeChallengeConfig = (
   config: ChallengeConfig,
-): Pick<ChallengeConfig, 'size' | 'partitionSize'> => {
+): Pick<ChallengeConfig, 'size' | 'partitionSize' | 'totalNumberOfMines'> => {
   return {
     // DO NOT ADD SEED HERE
     size: config.size,
     partitionSize: config.partitionSize,
+    totalNumberOfMines: config.totalNumberOfMines,
   }
 }
 
@@ -157,6 +168,13 @@ export const challengeMakeNew = async ({
     ...configParams,
   }
 
+  // Get the total number of mines after merging the configs
+  config.totalNumberOfMines = minefieldGetTotalMineCount({
+    seed: config.seed,
+    cols: config.size,
+    rows: config.size,
+  })
+
   validateChallengeConfig(config)
 
   const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
@@ -218,6 +236,7 @@ function deserializeChallengeConfig(
         'mineDensity',
         'partitionSize',
         'seed',
+        'totalNumberOfMines',
       ]
       if (numberKeys.includes(key as keyof ChallengeConfig)) {
         val = parseFloat(value)

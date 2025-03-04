@@ -56,6 +56,7 @@ DevvitTest.it(
       partitionSize: expect.any(Number),
       mineDensity: 59,
       seed: expect.any(Number),
+      totalNumberOfMines: expect.any(Number),
     } satisfies ChallengeConfig)
   },
 )

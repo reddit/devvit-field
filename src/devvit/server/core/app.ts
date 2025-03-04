@@ -10,6 +10,7 @@ import {
 } from './challenge'
 import {fieldGetDeltas} from './field'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
 import {levels, levelsIsUserInRightPlace} from './levels'
 import {userGetOrSet} from './user'
 
@@ -24,6 +25,7 @@ export type AppState =
       profile: Awaited<ReturnType<typeof userGetOrSet>>
       initialDeltas: Awaited<ReturnType<typeof fieldGetDeltas>>
       initialCellsClaimed: Awaited<ReturnType<typeof teamStatsCellsClaimedGet>>
+      minesHitByTeam: Awaited<ReturnType<typeof teamStatsMinesHitGet>>
       initialGlobalXY: XY
       visible: number
       level: LevelConfig
@@ -64,18 +66,24 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     return {status: 'dialog', ...rest}
   }
 
-  const [challengeConfig, initialCellsClaimed] = await Promise.all([
-    challengeConfigGet({
-      redis: ctx.redis,
-      subredditId: ctx.subredditId,
-      challengeNumber,
-    }),
-    teamStatsCellsClaimedGet({
-      challengeNumber,
-      redis: ctx.redis,
-      sort: 'DESC',
-    }),
-  ])
+  const [challengeConfig, initialCellsClaimed, minesHitByTeam] =
+    await Promise.all([
+      challengeConfigGet({
+        redis: ctx.redis,
+        subredditId: ctx.subredditId,
+        challengeNumber,
+      }),
+      teamStatsCellsClaimedGet({
+        challengeNumber,
+        redis: ctx.redis,
+        sort: 'DESC',
+      }),
+      teamStatsMinesHitGet({
+        challengeNumber,
+        redis: ctx.redis,
+        sort: 'DESC',
+      }),
+    ])
 
   const initialGlobalXY: XY = {
     x: Math.trunc(Math.random() * challengeConfig.size),
@@ -112,5 +120,6 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     initialCellsClaimed,
     visible,
     level,
+    minesHitByTeam,
   }
 }

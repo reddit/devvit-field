@@ -1,6 +1,10 @@
 import {expect, it} from 'vitest'
 import type {Seed} from '../../../shared/types/random'
-import {type MinefieldConfig, minefieldIsMine} from './minefield'
+import {
+  type MinefieldConfig,
+  minefieldGetTotalMineCount,
+  minefieldIsMine,
+} from './minefield'
 
 it('returns a boolean consistently for a given seed, x, and y', () => {
   const seed = 111 as Seed
@@ -84,4 +88,18 @@ it('generates at least some mines under normal conditions', () => {
   }
 
   expect(mineCount).toBeGreaterThanOrEqual(0) // trivially true but checks it runs
+})
+
+it('counts the total number of mines for a given seed', () => {
+  const seed = 111 as Seed
+  const config: MinefieldConfig = {mineDensity: 15}
+
+  expect(
+    minefieldGetTotalMineCount({
+      seed,
+      cols: 10,
+      rows: 10,
+      config,
+    }),
+  ).toBe(13) // should be deterministic based on the seed
 })

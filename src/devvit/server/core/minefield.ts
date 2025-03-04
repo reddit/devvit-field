@@ -44,3 +44,30 @@ export function minefieldIsMine({
 function createSeedFromCoords(seed: Seed, coord: XY, cols: number): Seed {
   return Math.trunc(seed + coord.y * cols + coord.x) as Seed
 }
+
+/**
+ * Goes through an entire minefield and counts the number of mines. Since we use
+ * a seed based RND we need to walk the entire field to get the total number of
+ * mines.
+ */
+export function minefieldGetTotalMineCount({
+  seed,
+  cols,
+  rows,
+  config = DEFAULT_CONFIG,
+}: {
+  seed: Seed
+  cols: number
+  rows: number
+  config?: MinefieldConfig
+}): number {
+  let total = 0
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      if (minefieldIsMine({seed, coord: {x, y}, cols, config})) {
+        total++
+      }
+    }
+  }
+  return total
+}

@@ -113,24 +113,25 @@ export function App(ctx: Devvit.Context): JSX.Element {
       initialGlobalXY,
       initialCellsClaimed,
       visible,
+      minesHitByTeam,
     } = state
 
     const p1 = {profile, sid: session.sid}
 
     iframe.postMessage({
-      bannedPlayers: 0, // to-do: fill me out.
+      bannedPlayers: minesHitByTeam.reduce((acc, v) => acc + v.score, 0),
       challenge: challengeNumber,
       cooldownMillis: 2_000, // to-do: make me configurable.
       connected: chan.status === ChannelStatus.Connected,
       debug: session.debug,
       field: {
-        bans: 0.2 * challengeConfig.size * challengeConfig.size, // to-do: fix me!
+        bans: challengeConfig.totalNumberOfMines,
         partSize: challengeConfig.partitionSize,
         wh: {w: challengeConfig.size, h: challengeConfig.size},
       },
       lvl: state.level.id,
       p1,
-      p1BoxCount: 0, // to-do: fill me out.
+      p1BoxCount: profile.lastPlayedChallengeNumberCellsClaimed,
       players: 0, // to-do: fill me out. useChannel2()?
       sub: ctx.subredditName ?? '',
       team: getTeamFromUserId(profile.t2),
