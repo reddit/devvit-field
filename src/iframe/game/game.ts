@@ -1,3 +1,4 @@
+import {defaultCooldownMillis} from '../../shared/config.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
@@ -66,7 +67,7 @@ export class Game {
   challenge: number | undefined
   /** Most recent claim timestamp. */
   claimed: UTCMillis = 0 as UTCMillis
-  cooldownMillis: number = 2_000
+  cooldownMillis: number = defaultCooldownMillis
   connected: boolean
   ctrl!: Input<DefaultButton>
   debug: boolean
@@ -320,7 +321,7 @@ export class Game {
         this.#onDevMsg({
           bannedPlayers: Math.trunc(rnd.num * 5_000_000),
           challenge: Math.trunc(rnd.num * 10_000),
-          cooldownMillis: 2_000,
+          cooldownMillis: defaultCooldownMillis,
           connected: true,
           debug: true,
           field,

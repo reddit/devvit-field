@@ -2,6 +2,7 @@
 import {Devvit, useAsync} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
+import {defaultCooldownMillis} from '../../shared/config.ts'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
 import {
   getPartitionCoords,
@@ -121,7 +122,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     iframe.postMessage({
       bannedPlayers: minesHitByTeam.reduce((acc, v) => acc + v.score, 0),
       challenge: challengeNumber,
-      cooldownMillis: 2_000, // to-do: make me configurable.
+      cooldownMillis: defaultCooldownMillis, // to-do: make me configurable.
       connected: chan.status === ChannelStatus.Connected,
       debug: session.debug,
       field: {
