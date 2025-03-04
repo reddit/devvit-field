@@ -9,10 +9,10 @@ import {
 import {customElement, property} from 'lit/decorators.js'
 import {
   cssHex,
+  fontSSize,
   paletteFlamingo,
   paletteJuiceBox,
   paletteLasagna,
-  paletteShade60,
   paletteSunshine,
   radiusPx,
   spacePx,
@@ -34,15 +34,10 @@ export class BFLeaderboard extends LitElement {
       display: flex;
       flex-direction: column;
       width: 100%;
-      gap: ${spacePx / 2}px;
-      padding-inline-start: ${spacePx / 2}px;
-      padding-inline-end: ${spacePx / 2}px;
-      background-color: ${unsafeCSS(cssHex(paletteShade60))};
-      border-radius: ${radiusPx}px;
     }
 
     .bar {
-      height: 10px;
+      height: ${fontSSize}px;
       width: 100%;
     }
     .bar > div {
@@ -63,7 +58,7 @@ export class BFLeaderboard extends LitElement {
     }
 
     .percent {
-      font-size: 10px;
+      font-size: ${fontSSize}px;
       text-align: end;
       width: auto;
       padding-inline-end: ${spacePx}px;

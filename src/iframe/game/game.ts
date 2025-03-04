@@ -58,6 +58,7 @@ export class Game {
   assets: AssetMap | undefined
   atlas: Atlas<Tag>
   audio?: AudioBufferByName
+  bannedPlayers: number = 0
   bmps: BmpAttribBuffer
   cam: Cam
   canvas!: HTMLCanvasElement
@@ -143,9 +144,8 @@ export class Game {
     this.canvas.dispatchEvent(Bubble('game-update', undefined))
     setTimeout(
       () => this.canvas.dispatchEvent(Bubble('game-update', undefined)),
-      // Hack: ensure this.now >= cooldownMillis. Also, add some wiggle to
-      //       increase liveliness.
-      this.cooldownMillis + 100 + Math.random() * 800,
+      // Hack: ensure this.now >= cooldownMillis.
+      this.cooldownMillis + 100,
     )
 
     const box = new BoxEnt(this, xy)
@@ -317,6 +317,7 @@ export class Game {
     setTimeout(
       () => {
         this.#onDevMsg({
+          bannedPlayers: Math.trunc(rnd.num * 5_000_000),
           challenge: Math.trunc(rnd.num * 10_000),
           cooldownMillis: 2_000,
           connected: true,
@@ -403,6 +404,7 @@ export class Game {
 
     switch (msg.type) {
       case 'Init': {
+        this.bannedPlayers = msg.bannedPlayers
         this.challenge = msg.challenge
         this.cooldownMillis = msg.cooldownMillis
         this.debug = msg.debug

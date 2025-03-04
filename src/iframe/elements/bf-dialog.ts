@@ -55,7 +55,7 @@ export class BFDialog extends LitElement {
 
   protected override render(): TemplateResult {
     return html`
-      <dialog @close="${this.#onClose}">
+      <dialog @close='${this.#onClose}'>
         <slot></slot>
       </dialog>
     `

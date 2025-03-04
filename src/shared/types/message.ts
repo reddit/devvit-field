@@ -22,6 +22,8 @@ export type DevvitMessage =
   | DialogMessage
 
 export type InitDevvitMessage = {
+  /** Number of players banned. */
+  bannedPlayers: number
   challenge: number
   /** The minimum number of milliseconds between claims. */
   cooldownMillis: number

@@ -13,9 +13,12 @@ import {
   cssHex,
   paletteBlack,
   paletteConsole,
+  paletteShade60,
+  paletteTerminalGreen,
   radiusPx,
   spacePx,
 } from '../../shared/theme.ts'
+import {fontSSize} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import type {Level} from '../../shared/types/level.ts'
 import {Bubble} from './bubble.ts'
@@ -76,6 +79,31 @@ export class BFTerminal extends LitElement {
       text-transform: uppercase;
     }
 
+    .panel {
+      display: flex;
+      font-size: ${fontSSize}px;
+      width: 100%;
+      padding-block-start: ${spacePx / 2}px;
+      padding-block-end: ${spacePx / 2}px;
+      padding-inline-start: ${spacePx / 2}px;
+      padding-inline-end: ${spacePx / 2}px;
+      background-color: ${unsafeCSS(cssHex(paletteShade60))};
+      border-radius: ${radiusPx}px;
+    }
+
+    .stats {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      margin-inline-start: ${spacePx / 2}px;
+      white-space: nowrap;
+      color: ${unsafeCSS(cssHex(paletteTerminalGreen))};
+    }
+    .stats .num {
+      text-align: end;
+    }
+
     .terminal {
       display: flex;
       flex-direction: column;
@@ -97,6 +125,7 @@ export class BFTerminal extends LitElement {
 
   @queryAsync('canvas') accessor canvas!: Promise<HTMLCanvasElement>
 
+  @property({type: Number}) accessor bannedPlayers: number = 0
   @property({type: Number}) accessor bans: number = 0
   @property({type: Number}) accessor boxes: number = 0
   @property({type: Boolean}) accessor cooldown: boolean = false
@@ -108,6 +137,7 @@ export class BFTerminal extends LitElement {
   @property({type: Number}) accessor sunshine: number = 0
   @property({type: Number}) accessor level: Level | undefined
   @property({type: Boolean}) accessor loading: boolean = false
+  @property({type: Number}) accessor players: number = 0
   @property() accessor team: TeamPascalCase | undefined
   @property({type: Number}) accessor x: number = 0
   @property({type: Number}) accessor y: number = 0
@@ -138,14 +168,26 @@ export class BFTerminal extends LitElement {
           ?disabled='${!this.team || this.cooldown}'
           style='--width: 256px;'
         ></bf-button>
-        <bf-leaderboard
-          bans='${this.bans}'
-          boxes='${this.boxes}'
-          flamingo='${this.flamingo}'
-          juiceBox='${this.juiceBox}'
-          lasagna='${this.lasagna}'
-          sunshine='${this.sunshine}'
-        ></bf-leaderboard>
+        <div class='panel'>
+          <bf-leaderboard
+            bans='${this.bans}'
+            boxes='${this.boxes}'
+            flamingo='${this.flamingo}'
+            juiceBox='${this.juiceBox}'
+            lasagna='${this.lasagna}'
+            sunshine='${this.sunshine}'
+          ></bf-leaderboard>
+          <table class='stats'>
+            <tr>
+              <td class='label'>Banned</td>
+              <td class='num'>${this.bannedPlayers}</td>
+            </tr>
+            <tr>
+              <td class='label'>Online</td>
+              <td class='num'>${this.players}</td>
+            </tr>
+          </table>
+        </div>
         <bf-button
           @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
           appearance='${ifDefined(this.level)}'
