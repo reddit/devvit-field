@@ -21,6 +21,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
     const profile = await userGet({
@@ -57,6 +58,7 @@ DevvitTest.it('should pass if user have never played on level 0', async ctx => {
       t2: USER_IDS.TEAM_2_PLAYER_1,
       username: 'foo',
       superuser: false,
+      hasVerifiedEmail: true,
     },
   })
   const profile = await userGet({
@@ -94,6 +96,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -140,6 +143,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -153,6 +157,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_2,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -241,6 +246,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -254,6 +260,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_1_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -342,6 +349,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -411,6 +419,7 @@ DevvitTest.it('should not pass if user is on the wrong level', async ctx => {
       t2: USER_IDS.TEAM_2_PLAYER_1,
       username: 'foo',
       superuser: false,
+      hasVerifiedEmail: true,
     },
   })
 
@@ -450,6 +459,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -463,6 +473,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_2,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 

@@ -17,6 +17,7 @@ DevvitTest.it(
       username: 'foo',
       id: ctx.userId as T2,
       isAdmin: false,
+      hasVerifiedEmail: true,
     } as User)
 
     await initialize(ctx)
@@ -26,6 +27,7 @@ DevvitTest.it(
     })
 
     await expect(appInitState(ctx)).resolves.toEqual({
+      status: 'pass',
       challengeConfig: {
         partitionSize: 5,
         size: 10,
@@ -55,9 +57,9 @@ DevvitTest.it(
         y: expect.any(Number),
       },
       level: levels[0],
-      pass: true,
       profile: {
         currentLevel: 0,
+        hasVerifiedEmail: true,
         lastPlayedChallengeNumberCellsClaimed: 0,
         lastPlayedChallengeNumberForLevel: 0,
         superuser: false,
@@ -76,6 +78,7 @@ DevvitTest.it('app state should throw if level is not found', async ctx => {
     username: 'foo',
     id: ctx.userId as T2,
     isAdmin: false,
+    hasVerifiedEmail: true,
   } as User)
 
   await initialize(ctx)
@@ -96,6 +99,7 @@ DevvitTest.it(
       username: 'foo',
       id: ctx.userId as T2,
       isAdmin: false,
+      hasVerifiedEmail: true,
     } as User)
 
     await initialize(ctx)
@@ -108,9 +112,8 @@ DevvitTest.it(
       code: 'WrongLevel',
       message:
         'You are not on the correct level. You should be at level 0, not 1.',
-      pass: false,
-      redirectURL:
-        'https://www.reddit.com/r/CantPlayBanField/comments/1ix3t89/banfield_1/',
+      status: 'dialog',
+      redirectURL: expect.any(String),
     })
   },
 )

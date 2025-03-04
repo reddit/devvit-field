@@ -16,12 +16,13 @@ export function noProfile(): Profile {
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
     lastPlayedChallengeNumberCellsClaimed: 0,
+    hasVerifiedEmail: true,
   }
 }
 
 // 2 because I switch this over to a hash and we don't have a way
 // to truncate redis for an app at the moment
-const getUserKey = (userId: T2) => `user2:${userId}` as const
+const getUserKey = (userId: T2) => `user3:${userId}` as const
 
 export const userMaybeGet = async ({
   redis,
@@ -57,6 +58,7 @@ export const userSet = async ({
   user,
 }: {
   redis: Devvit.Context['redis']
+  // TODO: Shouldn't need to submit the entire user anymore since we're using a hash
   user: Profile
 }): Promise<void> => {
   await redis.global.hSet(getUserKey(user.t2), serialize(user))
@@ -88,6 +90,7 @@ export const userGetOrSet = async ({
     currentLevel: 0,
     lastPlayedChallengeNumberForLevel: 0,
     lastPlayedChallengeNumberCellsClaimed: 0,
+    hasVerifiedEmail: userProfile.hasVerifiedEmail,
   }
 
   await userSet({
@@ -256,6 +259,33 @@ export const userIncrementLastPlayedChallengeClaimedCells = async ({
   )
 }
 
+export const userBlock = async ({
+  redis,
+  userId,
+}: {
+  redis: Devvit.Context['redis']
+  userId: T2
+}): Promise<void> => {
+  const user = await userGet({redis, userId})
+
+  await userSet({
+    redis,
+    user: {...user, blocked: new Date().toISOString()},
+  })
+}
+
+export const userUnblock = async ({
+  redis,
+  userId,
+}: {
+  redis: Devvit.Context['redis']
+  userId: T2
+}): Promise<void> => {
+  await redis.global.hDel(getUserKey(userId), [
+    'blocked',
+  ] satisfies (keyof Profile)[])
+}
+
 export const userAttemptToClaimSpecialPointForTeam = async ({
   ctx,
   userId,
@@ -308,6 +338,9 @@ export const userAttemptToClaimSpecialPointForTeam = async ({
 function serialize(config: Partial<Profile>): Record<string, string> {
   return Object.fromEntries(
     Object.entries(config).map(([key, value]) => {
+      if (value === undefined) {
+        return [key, '']
+      }
       return [key, value.toString()]
     }),
   )
@@ -331,7 +364,7 @@ function deserialize(config: Record<string, string>): Profile {
         return [key, val]
       }
 
-      const boolKeys: (keyof Profile)[] = ['superuser']
+      const boolKeys: (keyof Profile)[] = ['superuser', 'hasVerifiedEmail']
       if (boolKeys.includes(key as keyof Profile)) {
         val = value === 'true'
         return [key, val]

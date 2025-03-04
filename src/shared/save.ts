@@ -20,6 +20,10 @@ export type Profile = {
   lastPlayedChallengeNumberForLevel: number
   /** The cells claimed for the last challenge number. Placed here to disperse writes. We also do not need a user level leaderboard per challenge */
   lastPlayedChallengeNumberCellsClaimed: number
+  /** Does the user have a verified email  */
+  hasVerifiedEmail: boolean
+  /** Is the user blocked. Will be a UTC date string if defined of the time they've been banned */
+  blocked?: string
 }
 
 export type Player = {profile: Profile; sid: SID}

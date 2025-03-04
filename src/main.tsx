@@ -15,11 +15,13 @@ import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/contex
 import type {Config} from '@devvit/shared-types/Config.js'
 import {App} from './devvit/components/app.js'
 import {Preview} from './devvit/components/preview.js'
+import {blockUsersMenuAction} from './devvit/menu-actions/blockUsers.js'
 import {endCurrentChallengeMenuAction} from './devvit/menu-actions/endCurrentChallenge.js'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
 import {makeSuperUserMenuAction} from './devvit/menu-actions/makeSuperUser.js'
 import {setDefaultConfigMenuAction} from './devvit/menu-actions/setDefaultConfig.js'
 import {setUserLevelMenuAction} from './devvit/menu-actions/setUserLevel.js'
+import {unblockUsersMenuAction} from './devvit/menu-actions/unblockUsers.js'
 import {
   challengeConfigGet,
   challengeMakeNew,
@@ -145,6 +147,8 @@ Devvit.addMenuItem(setUserLevelMenuAction())
 Devvit.addMenuItem(setDefaultConfigMenuAction())
 Devvit.addMenuItem(getDefaultConfigMenuAction())
 Devvit.addMenuItem(endCurrentChallengeMenuAction())
+Devvit.addMenuItem(blockUsersMenuAction())
+Devvit.addMenuItem(unblockUsersMenuAction())
 
 /** Returns whole numbers in [min, max). */
 function getRandomIntBetween(min: number, max: number): number {

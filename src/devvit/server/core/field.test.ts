@@ -1,6 +1,6 @@
 import type {BitfieldCommand} from '@devvit/public-api'
 import {beforeEach, expect} from 'vitest'
-import {makeRandomSeed} from '../../../shared/save'
+import {type Profile, makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import {USER_IDS} from '../../../shared/test-utils'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config.js'
@@ -77,6 +77,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -142,6 +143,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -205,6 +207,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
       t2: USER_IDS.TEAM_2_PLAYER_1,
       username: 'foo',
       superuser: false,
+      hasVerifiedEmail: true,
     },
   })
 
@@ -270,6 +273,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
     await userSet({
@@ -281,6 +285,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_3_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -325,6 +330,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -379,6 +385,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 
@@ -422,7 +429,8 @@ DevvitTest.it(
       superuser: false,
       t2: 't2_4cgfmlvzgq',
       username: 'foo',
-    })
+      hasVerifiedEmail: true,
+    } satisfies Profile)
 
     await expect(
       teamStatsCellsClaimedForTeam({
@@ -457,6 +465,7 @@ DevvitTest.it(
         t2: USER_IDS.TEAM_2_PLAYER_1,
         username: 'foo',
         superuser: false,
+        hasVerifiedEmail: true,
       },
     })
 

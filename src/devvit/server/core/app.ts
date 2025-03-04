@@ -14,8 +14,9 @@ import {levels, levelsIsUserInRightPlace} from './levels'
 import {userGetOrSet} from './user'
 
 export type AppState =
+  /** Continue rendering the app as usual */
   | {
-      pass: true
+      status: 'pass'
       challengeNumber: Awaited<
         ReturnType<typeof challengeGetCurrentChallengeNumber>
       >
@@ -27,9 +28,18 @@ export type AppState =
       visible: number
       level: LevelConfig
     }
+  /** Show a dialog inside of the webview */
   | ({
-      pass: false
+      status: 'dialog'
     } & Omit<DialogMessage, 'type'>)
+  /** User has to verify email  */
+  | {
+      status: 'needsToVerifyEmail'
+    }
+  /** User is not allowed to see the page */
+  | {
+      status: 'notAllowed'
+    }
 
 export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   const [profile, challengeNumber] = await Promise.all([
@@ -37,12 +47,21 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     challengeGetCurrentChallengeNumber({redis: ctx.redis}),
   ])
 
+  if (profile.blocked) {
+    return {status: 'notAllowed'}
+  }
+
+  if (profile.hasVerifiedEmail === false) {
+    return {status: 'needsToVerifyEmail'}
+  }
+
   const result = await levelsIsUserInRightPlace({
     ctx,
     profile,
   })
   if (result.pass === false) {
-    return result
+    const {pass: _pass, ...rest} = result
+    return {status: 'dialog', ...rest}
   }
 
   const [challengeConfig, initialCellsClaimed] = await Promise.all([
@@ -83,7 +102,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   const visible = totalCellsForField - totalCellsClaimed
 
   return {
-    pass: true,
+    status: 'pass',
     challengeNumber,
     profile,
     // DO NOT RETURN THE SEED

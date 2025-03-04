@@ -197,6 +197,10 @@ function serializeChallengeConfig(
 ): Record<string, string> {
   return Object.fromEntries(
     Object.entries(config).map(([key, value]) => {
+      if (value === undefined) {
+        return [key, '']
+      }
+
       return [key, value.toString()]
     }),
   )

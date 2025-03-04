@@ -37,10 +37,35 @@ export function App(ctx: Devvit.Context): JSX.Element {
     [],
   )
 
+  if (appState.status === 'needsToVerifyEmail') {
+    return (
+      <vstack alignment='center middle'>
+        <text>You need to verify your email before playing</text>
+        {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+        <button
+          onPress={async () => {
+            console.log('do something')
+          }}
+        >
+          Check status
+        </button>
+      </vstack>
+    )
+  }
+
+  if (appState.status === 'notAllowed') {
+    return (
+      <vstack alignment='center middle'>
+        <text>Sorry, you can't access this post</text>
+      </vstack>
+    )
+  }
+
   // TODO: Remove this once the webview can get this from S3
   useAsync<Delta[]>(
     async () => {
-      if (appState.pass === false || activeConnections.length === 0) return []
+      if (appState.status !== 'pass' || activeConnections.length === 0)
+        return []
 
       const deltas = await Promise.all(
         activeConnections.map(key =>
@@ -78,7 +103,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     state: AppState,
     {reinit}: {reinit: boolean} = {reinit: false},
   ): void {
-    if (!state.pass) return
+    if (state.status !== 'pass') return
 
     const {
       profile,
@@ -134,12 +159,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
       console.log(
-        `${appState.pass ? appState.profile.username : 'app state no pass'} Devvit ← iframe msg=${JSON.stringify(msg)}`,
+        `${appState.status === 'pass' ? appState.profile.username : 'app state no pass'} Devvit ← iframe msg=${JSON.stringify(msg)}`,
       )
 
     switch (msg.type) {
       case 'ConnectPartitions': {
-        if (appState.pass === false) return
+        if (appState.status !== 'pass') return
 
         const newConnections = msg.parts.map(part =>
           makePartitionKey(
@@ -157,78 +182,88 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'Loaded':
         break
       case 'Registered': {
-        if (appState.pass === false) {
-          const {pass: _pass, ...rest} = appState
+        if (appState.status === 'dialog') {
+          const {status: _status, ...rest} = appState
           iframe.postMessage({type: 'Dialog', ...rest})
-          break
+        } else if (appState.status === 'pass') {
+          sendInitToIframe(appState)
         }
-        sendInitToIframe(appState)
 
         break
       }
       case 'ClaimBoxes': {
-        if (appState.pass === false) {
-          const {pass: _pass, ...rest} = appState
+        if (appState.status === 'dialog') {
+          const {status: _status, ...rest} = appState
           iframe.postMessage({type: 'Dialog', ...rest})
-          return
-        }
-
-        const profile = await userGet({
-          redis: ctx.redis,
-          userId: appState.profile.t2,
-        })
-
-        const result = await levelsIsUserInRightPlace({
-          ctx,
-          // You need to call this instead of the appState since
-          // app state can be stale. Use case where you hit this:
-          // 1. User claims a mine
-          // 2. User tries to click again before we show
-          //    the game over dialog
-          profile,
-        })
-
-        if (result.pass === false) {
-          const {pass: _pass, ...rest} = result
-          iframe.postMessage({type: 'Dialog', ...rest})
-          return
-        }
-
-        const lastLevel = levels[levels.length - 1]!
-
-        // Attempt to claim a global point if on the last level
-        if (lastLevel.id === profile.currentLevel) {
-          const {success} = await userAttemptToClaimSpecialPointForTeam({
-            ctx,
-            userId: profile.t2,
+        } else if (appState.status === 'pass') {
+          // Get a fresh profile in case something has changed!
+          const profile = await userGet({
+            redis: ctx.redis,
+            userId: appState.profile.t2,
           })
 
-          if (success) {
-            ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
-            ctx.ui.navigateTo(levels[0]!.url)
-          } else {
-            ctx.ui.showToast('Global claim fail, try again.')
+          if (profile.blocked) {
+            console.warn('Cannot claim boxes, user is not allowed to play.')
+            return
           }
 
-          return
+          if (!profile.hasVerifiedEmail) {
+            console.warn('Cannot claim boxes, user needs to verify email.')
+            return
+          }
+
+          const result = await levelsIsUserInRightPlace({
+            ctx,
+            // You need to call this instead of the appState since
+            // app state can be stale. Use case where you hit this:
+            // 1. User claims a mine
+            // 2. User tries to click again before we show
+            //    the game over dialog
+            profile,
+          })
+
+          if (result.pass === false) {
+            const {pass: _pass, ...rest} = result
+            iframe.postMessage({type: 'Dialog', ...rest})
+            return
+          }
+
+          const lastLevel = levels[levels.length - 1]!
+
+          // Attempt to claim a global point if on the last level
+          if (lastLevel.id === profile.currentLevel) {
+            const {success} = await userAttemptToClaimSpecialPointForTeam({
+              ctx,
+              userId: profile.t2,
+            })
+
+            if (success) {
+              ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
+              ctx.ui.navigateTo(levels[0]!.url)
+            } else {
+              ctx.ui.showToast('Global claim fail, try again.')
+            }
+
+            return
+          }
+
+          const {deltas} = await fieldClaimCells({
+            challengeNumber: appState.challengeNumber,
+            coords: msg.boxes,
+            ctx,
+            userId: appState.profile.t2,
+          })
+
+          iframe.postMessage({
+            type: 'Box',
+            deltas,
+          })
         }
-
-        const {deltas} = await fieldClaimCells({
-          challengeNumber: appState.challengeNumber,
-          coords: msg.boxes,
-          ctx,
-          userId: appState.profile.t2,
-        })
-
-        iframe.postMessage({
-          type: 'Box',
-          deltas,
-        })
 
         break
       }
       case 'OnNextChallengeClicked': {
-        if (appState.pass === false) break
+        if (appState.status !== 'pass') break
 
         // This handles ascension! Keep in mind that if
         // we get here all of the state in the app is now
@@ -239,12 +274,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
         // TODO: Do I also need to set loaded back to false here?
 
-        if (newAppState.pass) {
+        if (newAppState.status === 'pass') {
           console.log('user did not ascend, reiniting iframe')
 
           // User did not ascend, close dialog and continue
           sendInitToIframe(appState, {reinit: true})
-        } else {
+        } else if (newAppState.status === 'dialog') {
           console.log('user ascended, redirecting', newAppState)
           ctx.ui.navigateTo(newAppState.redirectURL)
         }
@@ -269,7 +304,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     onMessage(msg) {
       if (session.debug)
         console.log(
-          `${appState.pass ? appState.profile.username : 'app state no pass'} Devvit ← realtime msg=${JSON.stringify(msg)}`,
+          `${appState.status === 'pass' ? appState.profile.username : 'app state no pass'} Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
 
       iframe.postMessage(msg)
