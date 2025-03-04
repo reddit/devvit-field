@@ -1,5 +1,5 @@
 import type {BitfieldCommand} from '@devvit/public-api'
-import {expect} from 'vitest'
+import {beforeEach, expect} from 'vitest'
 import {makeRandomSeed} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import {USER_IDS} from '../../../shared/test-utils'
@@ -8,7 +8,7 @@ import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
 import {parseBitfieldToFlatArray} from './bitfieldHelpers'
-import {challengeMakeNew} from './challenge'
+import {challengeConfigClearCache, challengeMakeNew} from './challenge'
 import {deltasGet} from './deltas'
 import {
   FIELD_CELL_BITS,
@@ -20,6 +20,10 @@ import {
 import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 import {userGet, userSet} from './user'
+
+beforeEach(() => {
+  challengeConfigClearCache()
+})
 
 // TODO: Tests for the partition level checks
 DevvitTest.it('fieldClaimCells - should throw on out of bounds', async ctx => {
@@ -102,6 +106,7 @@ DevvitTest.it(
     await expect(
       fieldGetDeltas({
         challengeNumber,
+        subredditId: ctx.subredditId,
         redis: ctx.redis,
         partitionXY: {x: 0, y: 0},
       }),
@@ -111,6 +116,7 @@ DevvitTest.it(
       toMatrix({
         result: await fieldGet({
           challengeNumber,
+          subredditId: ctx.subredditId,
           redis: ctx.redis,
           partitionXY: {x: 0, y: 0},
         }),
@@ -165,6 +171,7 @@ DevvitTest.it(
     await expect(
       fieldGetDeltas({
         challengeNumber,
+        subredditId: ctx.subredditId,
         redis: ctx.redis,
         partitionXY: {x: 4, y: 4},
       }),
@@ -174,6 +181,7 @@ DevvitTest.it(
       toMatrix({
         result: await fieldGet({
           challengeNumber,
+          subredditId: ctx.subredditId,
           redis: ctx.redis,
           partitionXY: {x: 4, y: 4},
         }),
@@ -227,6 +235,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
   await expect(
     fieldGetDeltas({
       challengeNumber,
+      subredditId: ctx.subredditId,
       redis: ctx.redis,
       partitionXY: {x: 0, y: 0},
     }),
@@ -236,6 +245,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
     toMatrix({
       result: await fieldGet({
         challengeNumber,
+        subredditId: ctx.subredditId,
         redis: ctx.redis,
         partitionXY: {x: 0, y: 0},
       }),
@@ -525,6 +535,7 @@ DevvitTest.it(
     await expect(
       fieldGetDeltas({
         challengeNumber,
+        subredditId: ctx.subredditId,
         partitionXY: {x: 0, y: 0},
         redis: ctx.redis,
       }),

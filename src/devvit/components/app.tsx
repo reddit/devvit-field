@@ -46,6 +46,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         activeConnections.map(key =>
           fieldGetDeltas({
             challengeNumber: appState.challengeNumber,
+            subredditId: ctx.subredditId,
             redis: ctx.redis,
             partitionXY: parsePartitionXY(key),
           }),

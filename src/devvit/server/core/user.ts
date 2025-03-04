@@ -46,7 +46,7 @@ export const userGet = async (args: {
   const user = await userMaybeGet(args)
 
   if (!user) {
-    throw new Error('No user found')
+    throw new Error(`No user found: ${args.userId}`)
   }
 
   return user

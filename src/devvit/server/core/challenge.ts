@@ -19,20 +19,44 @@ export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => ({
   mineDensity: 2,
 })
 
+// While it's a little inappropriate to be storing and reading things outside
+// of the request context, this prevents a barrage of requests to redis for the
+// same challenge config. One per actor node is very different than one per
+// user interaction.
+const challengeConfigCache: Record<string, ChallengeConfig> = {}
+
 export const challengeConfigGet = async ({
   redis,
+  subredditId,
   challengeNumber,
 }: {
   redis: Devvit.Context['redis']
+  subredditId: string
   challengeNumber: number
 }): Promise<ChallengeConfig> => {
+  const cacheKey = `${subredditId}:${challengeNumber}`
+  if (challengeConfigCache[cacheKey]) {
+    return challengeConfigCache[cacheKey]
+  }
+
   const config = await redis.hGetAll(createChallengeConfigKey(challengeNumber))
   if (Object.keys(config).length === 0) {
     throw new Error(
       `No challenge config for challengeNumber: ${challengeNumber}`,
     )
   }
-  return deserializeChallengeConfig(config)
+  const challengeConfig = deserializeChallengeConfig(config)
+  challengeConfigCache[cacheKey] = challengeConfig
+  return challengeConfig
+}
+
+/**
+ * Clears the cache of challenge configs. Primarily used for testing.
+ */
+export const challengeConfigClearCache = async (): Promise<void> => {
+  for (const key in challengeConfigCache) {
+    delete challengeConfigCache[key]
+  }
 }
 
 /**

@@ -48,6 +48,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   const [challengeConfig, initialCellsClaimed] = await Promise.all([
     challengeConfigGet({
       redis: ctx.redis,
+      subredditId: ctx.subredditId,
       challengeNumber,
     }),
     teamStatsCellsClaimedGet({
@@ -64,6 +65,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
 
   const deltas = await fieldGetDeltas({
     challengeNumber,
+    subredditId: ctx.subredditId,
     redis: ctx.redis,
     partitionXY: getPartitionCoords(
       initialGlobalXY,

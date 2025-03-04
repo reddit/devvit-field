@@ -353,6 +353,7 @@ export const fieldClaimCells = async ({
   // of information that we need
   const fieldConfig = await challengeConfigGet({
     redis: ctx.redis,
+    subredditId: ctx.subredditId,
     challengeNumber,
   })
 
@@ -421,14 +422,16 @@ export const fieldClaimCells = async ({
  */
 export const fieldGet = async ({
   challengeNumber,
+  subredditId,
   redis,
   partitionXY,
 }: {
   challengeNumber: number
+  subredditId: string
   redis: Devvit.Context['redis']
   partitionXY: XY
 }): Promise<number[]> => {
-  const meta = await challengeConfigGet({redis, challengeNumber})
+  const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
   const area = meta.size * meta.size
 
   if (area > 5_000) {
@@ -460,15 +463,22 @@ export const fieldGet = async ({
 
 export const fieldGetDeltas = async ({
   challengeNumber,
+  subredditId,
   redis,
   partitionXY,
 }: {
   challengeNumber: number
+  subredditId: string
   redis: Devvit.Context['redis']
   partitionXY: XY
 }): Promise<Delta[]> => {
-  const meta = await challengeConfigGet({redis, challengeNumber})
-  const fieldData = await fieldGet({challengeNumber, redis, partitionXY})
+  const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
+  const fieldData = await fieldGet({
+    challengeNumber,
+    subredditId,
+    redis,
+    partitionXY,
+  })
 
   if (fieldData.length === 0) return []
 

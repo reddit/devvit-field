@@ -36,6 +36,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 
   const config = await challengeConfigGet({
     challengeNumber: currentChallengeNumber,
+    subredditId: ctx.subredditId,
     redis: ctx.redis,
   })
 

@@ -1,7 +1,8 @@
-import {expect} from 'vitest'
+import {beforeEach, expect} from 'vitest'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import {DevvitTest} from './_utils/DevvitTest'
 import {
+  challengeConfigClearCache,
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
   challengeIncrementCurrentChallengeNumber,
@@ -10,6 +11,10 @@ import {
   makeFallbackDefaultChallengeConfig,
 } from './challenge'
 import {defaultChallengeConfigSet} from './defaultChallengeConfig'
+
+beforeEach(() => {
+  challengeConfigClearCache()
+})
 
 DevvitTest.it(
   'current challenge number starts at 0 and increments',
@@ -70,6 +75,7 @@ DevvitTest.it(
 
     const challengeConfig = await challengeConfigGet({
       redis: ctx.redis,
+      subredditId: ctx.subredditId,
       challengeNumber,
     })
 
@@ -89,6 +95,7 @@ DevvitTest.it(
     const {challengeNumber} = await challengeMakeNew({ctx})
     const challengeConfig = await challengeConfigGet({
       redis: ctx.redis,
+      subredditId: ctx.subredditId,
       challengeNumber,
     })
 
@@ -132,6 +139,7 @@ DevvitTest.it(
     })
     const challengeConfig = await challengeConfigGet({
       redis: ctx.redis,
+      subredditId: ctx.subredditId,
       challengeNumber,
     })
 

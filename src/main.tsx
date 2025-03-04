@@ -169,6 +169,7 @@ export default class extends Devvit implements Hello {
 
     const challenge = await challengeConfigGet({
       challengeNumber: msg.delayMillis,
+      subredditId: ctx.subredditId,
       redis: ctx.redis,
     })
 
