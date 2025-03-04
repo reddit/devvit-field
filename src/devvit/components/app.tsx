@@ -97,6 +97,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       connected: chan.status === ChannelStatus.Connected,
       debug: session.debug,
       field: {
+        bans: 0.2 * challengeConfig.size * challengeConfig.size, // to-do: fix me!
         partSize: challengeConfig.partitionSize,
         wh: {w: challengeConfig.size, h: challengeConfig.size},
       },

@@ -174,6 +174,7 @@ export class BFGame extends LitElement {
         @game-update='${() => this.requestUpdate()}'
         @claim='${this.#onClaim}'
         @open-leaderboard='${() => this.#game.postMessage({type: 'OpenLeaderboard'})}'
+        bans='${ifDefined(this.#game.fieldConfig?.bans)}'
         boxes='${boxes}'
         challenge='${ifDefined(this.#game.challenge)}'
         ?cooldown='${this.#game.isCooldown()}'

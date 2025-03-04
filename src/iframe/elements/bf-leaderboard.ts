@@ -85,6 +85,7 @@ export class BFLeaderboard extends LitElement {
     }
   `
 
+  @property({type: Number}) accessor bans: number = 0
   @property({type: Number}) accessor boxes: number = 0
   /** Boxes scored. */
   @property({type: Number}) accessor flamingo: number = 0
@@ -93,7 +94,7 @@ export class BFLeaderboard extends LitElement {
   @property({type: Number}) accessor sunshine: number = 0
 
   protected override render(): TemplateResult {
-    const boxes = this.boxes || 1
+    const boxes = this.boxes - this.bans || 1
     const flamingo = (this.flamingo / boxes) * 100
     const juiceBox = (this.juiceBox / boxes) * 100
     const lasagna = (this.lasagna / boxes) * 100

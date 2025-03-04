@@ -97,6 +97,7 @@ export class BFTerminal extends LitElement {
 
   @queryAsync('canvas') accessor canvas!: Promise<HTMLCanvasElement>
 
+  @property({type: Number}) accessor bans: number = 0
   @property({type: Number}) accessor boxes: number = 0
   @property({type: Boolean}) accessor cooldown: boolean = false
   @property({type: Number}) accessor challenge: number = 0
@@ -138,6 +139,7 @@ export class BFTerminal extends LitElement {
           style='--width: 256px;'
         ></bf-button>
         <bf-leaderboard
+          bans='${this.bans}'
           boxes='${this.boxes}'
           flamingo='${this.flamingo}'
           juiceBox='${this.juiceBox}'

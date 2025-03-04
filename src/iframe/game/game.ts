@@ -302,7 +302,8 @@ export class Game {
       : ''
     const partSize = 128
     const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
-    const field = {partSize, wh: {w: size, h: size}}
+    // to-do: randomize bans.
+    const field = {bans: 0, partSize, wh: {w: size, h: size}}
     const team = Math.trunc(rnd.num * 4) as Team
     const visible = Math.trunc(rnd.num * field.wh.w * field.wh.h)
     const teamBoxCounts: TeamBoxCounts = [0, 0, 0, 0]
