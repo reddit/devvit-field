@@ -42,7 +42,7 @@ export class BFLeaderboard extends LitElement {
     }
 
     .bar {
-      height: 7.5px;
+      height: 10px;
       width: 100%;
     }
     .bar > div {
@@ -54,6 +54,7 @@ export class BFLeaderboard extends LitElement {
       transition-timing-function: ease;
     }
 
+    .chart { border-collapse: collapse; }
     .chart > tr {
       padding-inline-start: 0;
       padding-inline-end: 0;
@@ -62,9 +63,10 @@ export class BFLeaderboard extends LitElement {
     }
 
     .percent {
-      font-size: 7px;
+      font-size: 10px;
       text-align: end;
       width: auto;
+      padding-inline-end: ${spacePx}px;
     }
 
     .flamingo { color: ${unsafeCSS(cssHex(paletteFlamingo))}; }
