@@ -424,6 +424,7 @@ export class Game {
         if (msg.reinit) {
           console.log('reinit')
           this.ac = new AudioContext()
+          this.#pending.length = 0
           if (!this.assets) throw Error('no assets')
           this.renderer.load(
             this.atlas,
