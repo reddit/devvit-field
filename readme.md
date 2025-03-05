@@ -11,16 +11,6 @@ npm install
 Run `npm test` to execute tests. See
 [supplemental development notes](docs/dev.md).
 
-### Secrets
-
-You will need to add the following secrets to interact with some features of the app. Reach out to a 
-team member for dev credentials.
-
-```sh
-devvit settings set aws-access-key --config ./devvit.dev.yaml
-devvit settings set aws-secret --config ./devvit.dev.yaml
-```
-
 ### Local Iframe Development
 
 Develop locally for iframe (web view code under src/iframe and src/shared).
@@ -65,6 +55,16 @@ Visit **`https://reddit.com/r/<sub>?playtest&devvitdebug=app`**. Also,
 launches [local iframe development](#local-iframe-development).
 
 ⚠️ `devvit` logs do not include iframe output.
+
+#### Secrets
+
+You will need to add the following secrets to interact with some features of the
+app. Reach out to a team member for dev credentials.
+
+```sh
+npx devvit settings set aws-access-key --config=devvit.dev.yaml
+npx devvit settings set aws-secret --config=devvit.dev.yaml
+```
 
 ### NPM Scripts
 
