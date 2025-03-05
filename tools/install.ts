@@ -23,6 +23,20 @@ const version = app.match(/^version:\s*(.+)$/m)?.[1]?.trim()
 if (!name || !version) throw Error('bad YAML')
 
 await Promise.all([
+  // Only install to r/GOR when in development. Prod is on a different version
+  // for countdowns to prevent deploying code. to-do: make unconditional
+  // post-launch.
+  ...(configFilename.includes('.prod.')
+    ? []
+    : [
+        spawnAsync('npx', [
+          'devvit',
+          'install',
+          `--config=${config.devvitConfig}`,
+          `r/${config.leaderboard.subredditName}`,
+          `${name}@${version}`,
+        ]),
+      ]),
   config.levels.map(lvl =>
     spawnAsync('npx', [
       'devvit',
