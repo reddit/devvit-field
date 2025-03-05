@@ -12,6 +12,9 @@ import {
 } from '../../shared/theme.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
+import {
+  levels,
+} from '../server/core/levels.js'
 import {StyledButton} from './styled-button.tsx'
 
 export type GlobalScoreboardProps = {loaded: boolean; teamScores: number[]}
@@ -46,9 +49,7 @@ export const GlobalScoreboard: Devvit.BlockComponent = (_, ctx) => {
   useInterval(updateState, 30000).start()
 
   const handleButtonPress = () => {
-    ctx.ui.navigateTo(
-      'https://www.reddit.com/r/jastesting/comments/1iyyecj/banfield_47/',
-    )
+    ctx.ui.navigateTo('https://www.reddit.com/r/Field/')
   }
 
   return (
