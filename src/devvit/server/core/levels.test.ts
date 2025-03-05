@@ -38,7 +38,7 @@ DevvitTest.it(
   },
 )
 
-DevvitTest.it('should pass if user have never played on level 0', async ctx => {
+DevvitTest.it('should pass if user has never played on level 0', async ctx => {
   setCtxLevel(ctx, 0)
 
   await challengeMakeNew({
@@ -221,6 +221,15 @@ DevvitTest.it(
         profile,
       }),
     ).resolves.toEqual({pass: true})
+
+    await expect(
+      userGet({
+        redis: ctx.redis,
+        userId: USER_IDS.TEAM_2_PLAYER_1,
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 0}),
+    )
   },
 )
 

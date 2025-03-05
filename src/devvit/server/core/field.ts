@@ -9,6 +9,7 @@ import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
+import type {Level} from '../../../shared/types/level'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
@@ -146,7 +147,7 @@ export const _fieldClaimCellsSuccess = async ({
   deltas: Delta[]
   ctx: Devvit.Context
   fieldConfig: ChallengeConfig
-}): Promise<void> => {
+}): Promise<{newLevel: Level | undefined}> => {
   // TODO: Everything in a transaction?
 
   // Save deltas first since we have a job running consuming them and
@@ -160,9 +161,10 @@ export const _fieldClaimCellsSuccess = async ({
   const isGameOverForUser = deltas.some(delta => delta.isBan)
 
   // User stats
+  let newLevel: Level | undefined = undefined
   if (isGameOverForUser) {
     console.log(`Game over for ${userId}. Hit a mine!`)
-    await userDescendLevel({
+    newLevel = await userDescendLevel({
       redis: ctx.redis,
       userId,
     })
@@ -211,6 +213,10 @@ export const _fieldClaimCellsSuccess = async ({
   if (isOver) {
     const p1BoxCount = 0 // to-do: fill me out.
     await fieldEndGame(ctx, challengeNumber, standings, p1BoxCount)
+  }
+
+  return {
+    newLevel,
   }
 }
 
@@ -345,8 +351,8 @@ export const fieldClaimCells = async ({
   userId: T2
   challengeNumber: number
   ctx: Devvit.Context
-}): Promise<{deltas: Delta[]}> => {
-  if (coords.length === 0) return {deltas: []}
+}): Promise<{deltas: Delta[]; newLevel: Level | undefined}> => {
+  if (coords.length === 0) return {deltas: [], newLevel: undefined}
 
   // We need a lookup here instead of passing in the config from blocks land
   // because blocks doesn't have the seed and other backend only pieces
@@ -394,7 +400,7 @@ export const fieldClaimCells = async ({
 
   const deltas = fieldsOpsReturn.flat()
 
-  await _fieldClaimCellsSuccess({
+  const {newLevel} = await _fieldClaimCellsSuccess({
     challengeNumber,
     userId,
     deltas,
@@ -405,6 +411,7 @@ export const fieldClaimCells = async ({
   // TODO: Where I return to client anything you need like user's scores and other things
   return {
     deltas,
+    newLevel,
   }
 }
 

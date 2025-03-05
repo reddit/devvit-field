@@ -45,7 +45,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
         <button
           onPress={async () => {
-            console.log('do something')
+            console.log('not yet implemented!')
           }}
         >
           Check status
@@ -249,12 +249,40 @@ export function App(ctx: Devvit.Context): JSX.Element {
             return
           }
 
-          const {deltas} = await fieldClaimCells({
+          const {deltas, newLevel} = await fieldClaimCells({
             challengeNumber: appState.challengeNumber,
             coords: msg.boxes,
             ctx,
             userId: appState.profile.t2,
           })
+
+          // Before returning the result to the client, we need to check if the user hit a mine
+          // and if they did we don't let them try to click again.
+          //
+          // I do a naive current level check to save us another read on the click path.
+          // Note: newLevel can return 0 and we still want to do the check
+          if (newLevel !== undefined) {
+            const result = await levelsIsUserInRightPlace({
+              ctx,
+              profile: {
+                ...profile,
+                // Users only descend levels when they hit a mine so we can
+                // assume what the state would be if we looked i up live.
+                lastPlayedChallengeNumberForLevel: 0,
+                lastPlayedChallengeNumberCellsClaimed: 0,
+                currentLevel: newLevel,
+              },
+            })
+
+            if (result.pass === false) {
+              const {pass: _pass, ...rest} = result
+              iframe.postMessage({type: 'Dialog', ...rest})
+              return
+            }
+
+            // They passed, so even though we got a new level, we let it ride
+            // since the next tap will validate before submit
+          }
 
           iframe.postMessage({
             type: 'Box',
@@ -280,7 +308,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           console.log('user did not ascend, reiniting iframe')
 
           // User did not ascend, close dialog and continue
-          sendInitToIframe(appState, {reinit: true})
+          sendInitToIframe(newAppState, {reinit: true})
         } else if (newAppState.status === 'dialog') {
           console.log('user ascended, redirecting', newAppState)
           ctx.ui.navigateTo(newAppState.redirectURL)

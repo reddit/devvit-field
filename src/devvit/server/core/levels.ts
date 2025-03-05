@@ -7,7 +7,7 @@ import {challengeGetCurrentChallengeNumber} from './challenge'
 import config from './config.dev.json'
 // import config from './config.prod.json'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
-import {userAscendLevel} from './user'
+import {userAscendLevel, userSet} from './user'
 
 export const levels: readonly Readonly<LevelConfig>[] =
   config.levels as LevelConfig[]
@@ -81,19 +81,14 @@ export const levelsIsUserInRightPlace = async ({
 
   if (
     winningTeam === userTeam &&
-    profile.lastPlayedChallengeNumberCellsClaimed > 0
+    profile.lastPlayedChallengeNumberCellsClaimed > 0 &&
+    // You can't ascend from the first level
+    subredditLevel.id !== levels[0]!.id
   ) {
     const newLevelForUser = await userAscendLevel({
       redis: ctx.redis,
       userId: profile.t2,
     })
-
-    const firstLevel = levels[0]!.id
-    if (subredditLevel.id === firstLevel) {
-      return {
-        pass: true,
-      }
-    }
 
     const newLevelForUserConfig = levels.find(x => x.id === newLevelForUser)!
 
@@ -103,6 +98,24 @@ export const levelsIsUserInRightPlace = async ({
       code: 'WrongLevel',
       redirectURL: newLevelForUserConfig.url,
     }
+  }
+
+  // Without this fix a user's score will continue to increment on level 0
+  //
+  // Weird edge case and I can't find a better place for it. We know the user passes, but
+  // we also know that the user is not playing the current challenge. We reset their claimed cells to 0
+  // in that case.
+  //
+  // We do not set their last played challenge since they technically haven't played (only observed).
+  // Playing would mean that they have attempted to claim cells.
+  if (profile.lastPlayedChallengeNumberCellsClaimed > 0) {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        ...profile,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+      },
+    })
   }
 
   return {pass: true}

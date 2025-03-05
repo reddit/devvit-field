@@ -1,4 +1,5 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
+import type {DefaultChallengeConfig} from '../../shared/types/challenge-config'
 import {validateChallengeConfig} from '../../shared/validateChallengeConfig'
 import {validateFieldArea} from '../../shared/validateFieldArea'
 import {makeFallbackDefaultChallengeConfig} from '../server/core/challenge'
@@ -8,11 +9,9 @@ import {
 } from '../server/core/defaultChallengeConfig'
 
 export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
-  (data: {
-    currentDefaultSize?: number
-    currentDefaultPartitionSize?: number
-    currentDefaultMineDensity?: number
-  }) => {
+  args => {
+    const data = args as DefaultChallengeConfig | undefined
+
     const defaults = makeFallbackDefaultChallengeConfig()
     return {
       title: 'Set Default Config',
@@ -23,7 +22,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           type: 'number',
           name: 'size',
           label: 'Size',
-          defaultValue: data.currentDefaultSize || defaults.size,
+          defaultValue: data?.size ?? defaults.size,
           helpText:
             'The size of one side of the field. All fields must be a perfect square. For example, put in 10 if you want a 10x10 field (100 cells).',
           required: true,
@@ -32,8 +31,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           type: 'number',
           name: 'partitionSize',
           label: 'Partition Size',
-          defaultValue:
-            data.currentDefaultPartitionSize || defaults.partitionSize,
+          defaultValue: data?.partitionSize ?? defaults.partitionSize,
           helpText:
             'Must be perfectly divisible by the size given. For example, if you have a 10x10 field, you can put in 2 to have a 5x5 partition.',
           required: true,
@@ -42,7 +40,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           type: 'number',
           name: 'mineDensity',
           label: 'Mine Density',
-          defaultValue: data.currentDefaultMineDensity || defaults.mineDensity,
+          defaultValue: data?.mineDensity ?? defaults.mineDensity,
           helpText: 'Number between 0 and 100. 0:No mines. 100:Only mines.',
           required: true,
         },
@@ -83,17 +81,10 @@ export const setDefaultConfigMenuAction = (): MenuItem => ({
       const currentDefaultConfig = await defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       })
-      if (currentDefaultConfig) {
-        ctx.ui.showForm(setDefaultConfigFormKey, {
-          currentDefaultSize: currentDefaultConfig.size,
-          currentDefaultPartitionSize: currentDefaultConfig.partitionSize,
-          currentDefaultMineDensity: currentDefaultConfig.mineDensity,
-        })
-      }
-      return
+
+      ctx.ui.showForm(setDefaultConfigFormKey, currentDefaultConfig)
     } catch (error) {
       console.error('Error fetching default config:', error)
     }
-    ctx.ui.showForm(setDefaultConfigFormKey)
   },
 })
