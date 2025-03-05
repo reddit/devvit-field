@@ -26,10 +26,10 @@ export function PixelText(props: PixelTextProps): JSX.Element {
 
   let xOffset = 0
   const characters: string[] = []
-  line.forEach(character => {
+  for (const character of line) {
     if (!(character in Glyphs)) {
       xOffset += GLYPH_WIDTH
-      return
+      continue
     }
 
     characters.push(`<path
@@ -40,7 +40,7 @@ export function PixelText(props: PixelTextProps): JSX.Element {
         fill="${color}"
       />`)
     xOffset += GLYPH_WIDTH
-  })
+  }
 
   const width = line.length * GLYPH_WIDTH
   const height = GLYPH_HEIGHT
