@@ -1,5 +1,11 @@
 {
   "devvitConfig": "devvit.dev.yaml",
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subredditName": "",
+    "subredditId": "t5_",
+    "postId": "t3_"
+  },
   "levels": [
     {
       "id": 0,

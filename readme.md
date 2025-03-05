@@ -66,6 +66,24 @@ npx devvit settings set aws-access-key --config=devvit.dev.yaml
 npx devvit settings set aws-secret --config=devvit.dev.yaml
 ```
 
+## Production Installs
+
+> Note: Substitute `config.prod.json` to `config.dev.json` if you are trying to set up development environments.
+
+- First, make sure `config.prod.json` has the subreddit name and ID for all subs you are targeting.
+- Next, go to `src/devvit/server/core/levels.ts` and make sure `config.prod.json` is imported and `config.dev.json` is not.
+- Run `npm run devvit:install:prod` to upload a production version of app
+- Go to https://developers.reddit.com/apps/banfield-app and install the app in the subreddits you need
+- Go to each subreddit and click make new posts by using the menu item action: `[BanField] New Post`. Only make one per subreddit. As you are redirected to the post unit for each created banfield copy and page the link into `config.prod.json`. We need these for ascending and descending
+- Make sure the last level is a size of 1, partition size of 1, and mine density of 0!
+- For the leaderboard, make a new subreddit, and create another post with `[BanField] New Post`.  Give it a size of 1, partition size of 1, and mine density of 0 (shouldn't matter but you never know!).
+- Take the subredditId (t5_) and postId (t3_) and add it to `config.prod.json`. I get `subredditId` from the network tab filtering by `/events`
+- Build again and update all of the subreddits you installed to. They will need the new config to work properly.
+
+### Gotchas
+
+- If you see `Cannot find level...` when trying to install into a sub you need to update the config. The subreddit names are case sensitive!
+
 ### NPM Scripts
 
 - `install`: install app dependencies.

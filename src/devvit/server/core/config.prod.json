@@ -1,43 +1,49 @@
 {
   "devvitConfig": "devvit.prod.yaml",
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subredditName": "GamesOnRedditDev",
+    "subredditId": "t5_dsfv4q",
+    "postId": "t3_1j46hhc"
+  },
   "levels": [
     {
       "id": 0,
-      "subredditId": "t5_dkz0bh",
-      "url": "https://www.reddit.com/r/PlayBanField/comments/1iy38v5/banfield_13/",
-      "subredditName": "PlayBanField",
+      "subredditId": "t5_2rbc9",
+      "url": "https://www.reddit.com/r/Field/comments/1j45sfr/denial/",
+      "subredditName": "Field",
       "theme": {},
       "title": "Denial"
     },
     {
       "id": 1,
-      "subredditId": "t5_dkz0gv",
-      "url": "https://www.reddit.com/r/CantPlayBanField/comments/1ix3t89/banfield_1/",
-      "subredditName": "CantPlayBanField",
+      "subredditId": "t5_dpi2wi",
+      "url": "https://www.reddit.com/r/BannedField/comments/1j45yoq/anger/",
+      "subredditName": "BannedField",
       "theme": {},
       "title": "Anger"
     },
     {
       "id": 2,
-      "subredditId": "t5_dkz0k9",
-      "url": "https://www.reddit.com/r/BananaField/comments/1ix3tky/banfield_1/",
-      "subredditName": "BananaField",
+      "subredditId": "t5_dpi30c",
+      "url": "https://www.reddit.com/r/VeryBannedField/comments/1j45z9z/bargaining/",
+      "subredditName": "VeryBannedField",
       "theme": {},
       "title": "Bargaining"
     },
     {
       "id": 3,
-      "subredditId": "t5_dkz0qm",
-      "url": "https://www.reddit.com/r/WhyBanField/comments/1ix3tuy/banfield_1/",
-      "subredditName": "WhyBanField",
+      "subredditId": "t5_dkz0k9",
+      "url": "https://www.reddit.com/r/BananaField/comments/1j45znl/depression/",
+      "subredditName": "BananaField",
       "theme": {},
       "title": "Depression"
     },
     {
       "id": 4,
-      "subredditId": "t5_dkz0tb",
-      "url": "https://www.reddit.com/r/WhatIsBanField/comments/1ix3u9l/banfield_1/",
-      "subredditName": "WhatIsBanField",
+      "subredditId": "t5_dpi3gj",
+      "url": "https://www.reddit.com/r/WhatIsField/comments/1j463h2/acceptance/",
+      "subredditName": "WhatIsField",
       "theme": {},
       "title": "Acceptance"
     }

@@ -76,7 +76,7 @@ DevvitTest.it(
   'validates form values before saving default config',
   async ctx => {
     const invalidSize: DefaultChallengeConfig = {
-      size: 1,
+      size: 0,
       partitionSize: 1,
       mineDensity: 2,
     }
@@ -111,7 +111,7 @@ DevvitTest.it(
         redis: ctx.redis,
         config: invalidSize,
       }),
-    ).rejects.toThrow('Size must be greater than 1')
+    ).rejects.toThrow('Size must be greater than 0')
     await expect(() =>
       defaultChallengeConfigSet({
         redis: ctx.redis,

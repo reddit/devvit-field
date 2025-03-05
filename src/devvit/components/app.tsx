@@ -24,7 +24,11 @@ import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
-import {levels, levelsIsUserInRightPlace} from '../server/core/levels.js'
+import {
+  LEADERBOARD_CONFIG,
+  levels,
+  levelsIsUserInRightPlace,
+} from '../server/core/levels.js'
 import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
@@ -34,8 +38,10 @@ import {Title} from './title.tsx'
 // import {Countdown} from './countdown.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
-  //TODO: currently hardcoded to r/jastesting test post. Update to r/GamesOnRedditDev
-  if (ctx.subredditId === 't5_79jecz' && ctx.postId === 't3_1iyb84e') {
+  if (
+    ctx.subredditId === LEADERBOARD_CONFIG.subredditId &&
+    ctx.postId === LEADERBOARD_CONFIG.postId
+  ) {
     // TODO: add conditional to render countdown... not sure about timing yet.
     // return <Countdown />;
     return <GlobalScoreboard />

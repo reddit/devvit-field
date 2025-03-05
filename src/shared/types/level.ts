@@ -1,7 +1,7 @@
 // NOTE: I don't put the level config in here since it's bundled
 // to the client. We want the levels to be a surprise!
 
-import type {T5} from './tid'
+import type {T3, T5} from './tid'
 
 /** The current level the user is on */
 export type Level = 0 | 1 | 2 | 3 | 4
@@ -16,6 +16,12 @@ export type BanFieldConfig = {
   /** Path to Devvit config file from root of repo. Eg, 'devvit.dev.yaml'. */
   devvitConfig: string
   levels: LevelConfig[]
+  leaderboard: {
+    title: string
+    subredditName: string
+    subredditId: T5
+    postId: T3
+  }
 }
 
 export type LevelConfig = {

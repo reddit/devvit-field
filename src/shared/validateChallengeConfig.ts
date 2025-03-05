@@ -20,8 +20,8 @@ export function validateChallengeConfig(
     throw new Error('Size, partitionSize, and mineDensity must be integers')
   }
 
-  if (config.size < 2) {
-    throw new Error('Size must be greater than 1')
+  if (config.size < 1) {
+    throw new Error('Size must be greater than 0')
   }
 
   if (config.partitionSize < 1) {
