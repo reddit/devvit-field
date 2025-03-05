@@ -29,9 +29,17 @@ import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
 } from '../server/core/user.js'
+import {GlobalScoreboard} from './global-scoreboard.tsx'
 import {Title} from './title.tsx'
+// import {Countdown} from './countdown.tsx'
 
 export function App(ctx: Devvit.Context): JSX.Element {
+  //TODO: currently hardcoded to r/jastesting test post. Update to r/GamesOnRedditDev
+  if (ctx.subredditId === 't5_79jecz' && ctx.postId === 't3_1iyb84e') {
+    // TODO: add conditional to render countdown... not sure about timing yet.
+    // return <Countdown />;
+    return <GlobalScoreboard />
+  }
   const session = useSession(ctx)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
   const [activeConnections, setActiveConnections] = useState2<PartitionKey[]>(
@@ -161,7 +169,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
       console.log(
-        `${appState.status === 'pass' ? appState.profile.username : 'app state no pass'} Devvit ← iframe msg=${JSON.stringify(msg)}`,
+        `${
+          appState.status === 'pass'
+            ? appState.profile.username
+            : 'app state no pass'
+        } Devvit ← iframe msg=${JSON.stringify(msg)}`,
       )
 
     switch (msg.type) {
@@ -334,7 +346,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
     onMessage(msg) {
       if (session.debug)
         console.log(
-          `${appState.status === 'pass' ? appState.profile.username : 'app state no pass'} Devvit ← realtime msg=${JSON.stringify(msg)}`,
+          `${
+            appState.status === 'pass'
+              ? appState.profile.username
+              : 'app state no pass'
+          } Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
 
       iframe.postMessage(msg)

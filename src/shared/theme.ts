@@ -13,7 +13,7 @@ export const paletteShade60: number = 0x00000099
 export const paletteTint75: number = 0xffffffb0
 
 export const paletteField: number = 0x0a7f18ff
-export const paletteFieldLight: number = 0x7dff00ff
+export const paletteFieldLight: number = 0x7dff00ff // also used for leaderboard game stat text
 export const paletteFieldDark: number = 0x002e00ff
 export const paletteBannedField: number = 0xb72216ff
 export const paletteBannedFieldLight: number = 0xff7260ff
@@ -32,6 +32,13 @@ export const paletteWhatIsFieldDark: number = 0x1897b5ff
 export const paletteTerminalGreen: number = 0x4cf190ff
 export const paletteDarkGrey: number = 0x1f2430ff
 export const paletteGrid: number = 0x002e00ff
+
+export const consoleBase: number = 0x1f2430ff
+export const leaderboardFlamingo: number = 0xcc3a83ff
+export const leaderboardJuiceBox: number = 0x6b92f2ff
+export const leaderboardLasagna: number = 0xea6126ff
+export const leaderboardSunshine: number = 0xeda635ff
+export const leaderboardButton: number = 0x15d715ff
 
 export const spacePx: number = 8
 
