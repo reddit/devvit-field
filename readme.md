@@ -95,9 +95,9 @@ launches [local iframe development](#local-iframe-development).
 - **docs**/: supplemental documentation.
 - **src**/: source inputs.
   - **devvit**/, **src/main.ts**: Devvit Blocks code.
+    - **server**/: code that may only execute on the remote and is replaced with
+                   circuit breakers in the client app bundle. Secrets too.
   - **iframe**/: web view code.
-  - **server**/: code that may only execute on the remote and is replaced with
-                 circuit breakers in the client app bundle. Secrets too.
   - **shared**/: code that may run in iframe and / or Devvit.
   - **test**/, **\*.test.ts**: tests and test utils.
 - **tools**/: development scripts and configs.
