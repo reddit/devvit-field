@@ -1,71 +1,71 @@
-import { Devvit } from '@devvit/public-api';
+import {Devvit} from '@devvit/public-api'
+import {abbreviateNumber} from '../../shared/format.js'
 import {
-  cssHex,
-  paletteConsole,
-  paletteBlack,
-  paletteTerminalGreen,
-  paletteWhite,
-  paletteBlandBlue,
-  paletteOffline,
-  fallbackPixelRatio,
-} from '../../shared/theme.js';
-import { StyledButton } from './StyledButton.js';
-import { PixelText } from './PixelText.js';
-import { abbreviateNumber } from '../../shared/format.js';
-import {
+  type Team,
   teamLeaderboardBackgroundColor,
   teamTitleCase,
-  type Team,
-} from '../../shared/team.ts';
+} from '../../shared/team.ts'
+import {
+  cssHex,
+  fallbackPixelRatio,
+  paletteBlack,
+  paletteBlandBlue,
+  paletteConsole,
+  paletteOffline,
+  paletteTerminalGreen,
+  paletteWhite,
+} from '../../shared/theme.js'
+import {PixelText} from './PixelText.js'
+import {StyledButton} from './StyledButton.js'
 
 type LeaderboardViewProps = {
   standings?: {
-    member: Team;
-    score: number;
-  }[];
-  pixelRatio?: number;
-  online?: boolean;
-  onPlay?: () => void;
-};
+    member: Team
+    score: number
+  }[]
+  pixelRatio?: number
+  online?: boolean
+  onPlay?: () => void
+}
 
 export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
   const standings = props.standings ?? [
-    { member: 0, score: 0 },
-    { member: 1, score: 0 },
-    { member: 2, score: 0 },
-    { member: 3, score: 0 },
-  ];
-  const online = props.online ?? false;
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio;
+    {member: 0, score: 0},
+    {member: 1, score: 0},
+    {member: 2, score: 0},
+    {member: 3, score: 0},
+  ]
+  const online = props.online ?? false
+  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
 
   return (
     <vstack
-      height="100%"
-      width="100%"
+      height='100%'
+      width='100%'
       backgroundColor={cssHex(paletteConsole)}
-      padding="medium"
+      padding='medium'
     >
       {/* Inset Border */}
       <vstack
-        height="100%"
-        width="100%"
-        padding="medium"
-        border="thin"
+        height='100%'
+        width='100%'
+        padding='medium'
+        border='thin'
         borderColor={cssHex(paletteBlack)}
-        cornerRadius="medium"
-        alignment="center middle"
+        cornerRadius='medium'
+        alignment='center middle'
       >
         {/* Field Logo */}
         <image
-          imageHeight="264px"
-          imageWidth="900px"
-          width="100%"
-          height="60px"
-          description="r/Field Logo"
-          url="field-logo-dark.png"
-          resizeMode="fit"
+          imageHeight='264px'
+          imageWidth='900px'
+          width='100%'
+          height='60px'
+          description='r/Field Logo'
+          url='field-logo-dark.png'
+          resizeMode='fit'
         />
-        <spacer height="8px" />
+        <spacer height='8px' />
 
         {/* Online Status */}
         <PixelText
@@ -75,16 +75,16 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         >
           {online ? '•ONLINE' : '•OFFLINE'}
         </PixelText>
-        <spacer height="24px" />
+        <spacer height='24px' />
 
         <StyledButton
           width={200}
           pixelRatio={pixelRatio}
-          onPress={props.onPlay!! ? props.onPlay : () => {}}
+          onPress={props.onPlay! ? props.onPlay : () => {}}
         >
           Play r/Field
         </StyledButton>
-        <spacer height="24px" />
+        <spacer height='24px' />
 
         <PixelText
           pixelRatio={pixelRatio}
@@ -94,9 +94,9 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         >
           CURRENT TEAM SCORES
         </PixelText>
-        <spacer height="8px" />
-        <hstack width="100%" gap="small" alignment="center">
-          {standings.map((team) => (
+        <spacer height='8px' />
+        <hstack width='100%' gap='small' alignment='center'>
+          {standings.map(team => (
             <TeamTile
               pixelRatio={pixelRatio}
               label={teamTitleCase[team.member]}
@@ -106,7 +106,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
             />
           ))}
         </hstack>
-        <spacer height="24px" />
+        <spacer height='24px' />
 
         <PixelText
           pixelRatio={pixelRatio}
@@ -116,16 +116,16 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         >
           GAME STATS
         </PixelText>
-        <spacer height="8px" />
-        <hstack width="100%" gap="small" alignment="center">
-          <StatTile pixelRatio={pixelRatio} label="PLAYERS" value={1001923} />
-          <StatTile pixelRatio={pixelRatio} label="BANS" value={12334} />
-          <StatTile pixelRatio={pixelRatio} label="FIELDS" value={15} />
+        <spacer height='8px' />
+        <hstack width='100%' gap='small' alignment='center'>
+          <StatTile pixelRatio={pixelRatio} label='PLAYERS' value={1001923} />
+          <StatTile pixelRatio={pixelRatio} label='BANS' value={12334} />
+          <StatTile pixelRatio={pixelRatio} label='FIELDS' value={15} />
         </hstack>
 
-        <spacer height="24px" />
+        <spacer height='24px' />
 
-        <hstack width="100%" alignment="center">
+        <hstack width='100%' alignment='center'>
           <PixelText
             pixelRatio={pixelRatio}
             size={12}
@@ -133,7 +133,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
           >
             DOWNLOAD THE FULL DATA SET
           </PixelText>
-          <spacer width="6px" />
+          <spacer width='6px' />
           <PixelText
             pixelRatio={pixelRatio}
             size={12}
@@ -145,22 +145,22 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         </hstack>
       </vstack>
     </vstack>
-  );
+  )
 }
 
 function TeamTile(props: {
-  key: string;
-  label: string;
-  value: number;
-  color: `#${string}`;
-  pixelRatio: number;
+  key: string
+  label: string
+  value: number
+  color: `#${string}`
+  pixelRatio: number
 }) {
   return (
     <vstack
-      width="25%"
-      height="52px"
+      width='25%'
+      height='52px'
       backgroundColor={props.color}
-      alignment="center middle"
+      alignment='center middle'
       key={props.key}
     >
       <PixelText
@@ -178,17 +178,17 @@ function TeamTile(props: {
         {props.label}
       </PixelText>
     </vstack>
-  );
+  )
 }
 
-function StatTile(props: { label: string; value: number; pixelRatio: number }) {
+function StatTile(props: {label: string; value: number; pixelRatio: number}) {
   return (
     <vstack
-      width="33.332%"
-      height="52px"
+      width='33.332%'
+      height='52px'
       backgroundColor={cssHex(paletteBlack)}
-      alignment="center middle"
-      border="thin"
+      alignment='center middle'
+      border='thin'
       borderColor={cssHex(paletteTerminalGreen)}
     >
       <PixelText
@@ -206,5 +206,5 @@ function StatTile(props: { label: string; value: number; pixelRatio: number }) {
         {props.label}
       </PixelText>
     </vstack>
-  );
+  )
 }

@@ -1,18 +1,18 @@
-import { Devvit } from '@devvit/public-api';
-import Glyphs from '../data/font.json' assert { type: 'json' };
+import {Devvit} from '@devvit/public-api'
+import Glyphs from '../data/font.json' assert {type: 'json'}
 
-const DEFAULT_SIZE = 11;
-const GLYPH_HEIGHT = 14;
-const GLYPH_WIDTH = 7;
+const DEFAULT_SIZE = 11
+const GLYPH_HEIGHT = 14
+const GLYPH_WIDTH = 7
 
 type PixelTextProps = {
-  children: string;
-  size?: number;
-  color?: `#${string}`;
-  pixelRatio?: number;
-  opacity?: number;
-  underline?: boolean;
-};
+  children: string
+  size?: number
+  color?: `#${string}`
+  pixelRatio?: number
+  opacity?: number
+  underline?: boolean
+}
 
 export function PixelText(props: PixelTextProps): JSX.Element {
   const {
@@ -21,15 +21,15 @@ export function PixelText(props: PixelTextProps): JSX.Element {
     color = '#ff00ff',
     pixelRatio = 2,
     opacity = 1,
-  } = props;
-  const line = children[0]!.split('') ?? [];
+  } = props
+  const line = children[0]!.split('') ?? []
 
-  let xOffset = 0;
-  const characters: string[] = [];
-  line.forEach((character) => {
+  let xOffset = 0
+  const characters: string[] = []
+  line.forEach(character => {
     if (!(character in Glyphs)) {
-      xOffset += GLYPH_WIDTH;
-      return;
+      xOffset += GLYPH_WIDTH
+      return
     }
 
     characters.push(`<path
@@ -38,16 +38,16 @@ export function PixelText(props: PixelTextProps): JSX.Element {
         fill-rule="evenodd"
         clip-rule="evenodd"
         fill="${color}"
-      />`);
-    xOffset += GLYPH_WIDTH;
-  });
+      />`)
+    xOffset += GLYPH_WIDTH
+  })
 
-  const width = line.length * GLYPH_WIDTH;
-  const height = GLYPH_HEIGHT;
-  const scaledHeight = Math.round((GLYPH_HEIGHT / DEFAULT_SIZE) * size);
+  const width = line.length * GLYPH_WIDTH
+  const height = GLYPH_HEIGHT
+  const scaledHeight = Math.round((GLYPH_HEIGHT / DEFAULT_SIZE) * size)
   const scaledWidth = Math.round(
-    (GLYPH_WIDTH / DEFAULT_SIZE) * size * line.length
-  );
+    (GLYPH_WIDTH / DEFAULT_SIZE) * size * line.length,
+  )
 
   return (
     <image
@@ -56,7 +56,7 @@ export function PixelText(props: PixelTextProps): JSX.Element {
       height={`${scaledHeight}px`} // Block size
       width={`${scaledWidth}px`} // Block size
       description={children}
-      resizeMode="fill"
+      resizeMode='fill'
       url={`data:image/svg+xml;charset=UTF-8,
           <svg
               width="${scaledWidth}"
@@ -75,5 +75,5 @@ export function PixelText(props: PixelTextProps): JSX.Element {
           </svg>
         `}
     />
-  );
+  )
 }
