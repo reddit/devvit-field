@@ -1,41 +1,41 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, useAsync} from '@devvit/public-api'
-import {useChannel, useWebView} from '@devvit/public-api'
-import {ChannelStatus} from '@devvit/public-api/types/realtime'
-import {defaultCooldownMillis} from '../../shared/config.ts'
-import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
+import { Devvit, useAsync } from '@devvit/public-api';
+import { useChannel, useWebView } from '@devvit/public-api';
+import { ChannelStatus } from '@devvit/public-api/types/realtime';
+import { defaultCooldownMillis } from '../../shared/config.ts';
+import { GLOBAL_REALTIME_CHANNEL } from '../../shared/const.ts';
 import {
   getPartitionCoords,
   makePartitionKey,
   parsePartitionXY,
-} from '../../shared/partition.ts'
-import {getTeamFromUserId} from '../../shared/team.ts'
-import {playButtonWidth} from '../../shared/theme.ts'
-import type {PartitionKey} from '../../shared/types/2d.ts'
-import type {Delta} from '../../shared/types/field.ts'
+} from '../../shared/partition.ts';
+import { getTeamFromUserId } from '../../shared/team.ts';
+import { playButtonWidth } from '../../shared/theme.ts';
+import type { PartitionKey } from '../../shared/types/2d.ts';
+import type { Delta } from '../../shared/types/field.ts';
 import type {
   DevvitMessage,
   IframeMessage,
   PartitionUpdate,
   RealtimeMessage,
   TeamBoxCounts,
-} from '../../shared/types/message.ts'
-import {useSession} from '../hooks/use-session.ts'
-import {useState2} from '../hooks/use-state2.ts'
-import {type AppState, appInitState} from '../server/core/app.js'
-import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
+} from '../../shared/types/message.ts';
+import { useSession } from '../hooks/use-session.ts';
+import { useState2 } from '../hooks/use-state2.ts';
+import { type AppState, appInitState } from '../server/core/app.js';
+import { fieldClaimCells, fieldGetDeltas } from '../server/core/field.js';
 import {
   LEADERBOARD_CONFIG,
   levels,
   levelsIsUserInRightPlace,
-} from '../server/core/levels.js'
+} from '../server/core/levels.js';
 import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
-} from '../server/core/user.js'
-import {GlobalScoreboard} from './global-scoreboard.tsx'
-import {Title} from './title.tsx'
-// import {Countdown} from './countdown.tsx'
+} from '../server/core/user.js';
+import { Title } from './title.tsx';
+import { LeaderboardController } from './LeaderboardController.tsx';
+//import { CountdownController } from './CountdownController.tsx';
 
 export function App(ctx: Devvit.Context): JSX.Element {
   if (
@@ -43,82 +43,84 @@ export function App(ctx: Devvit.Context): JSX.Element {
     ctx.postId === LEADERBOARD_CONFIG.postId
   ) {
     // TODO: add conditional to render countdown... not sure about timing yet.
-    // return <Countdown />;
-    return <GlobalScoreboard />
+    //return <CountdownController />;
+    return <LeaderboardController />;
   }
-  const session = useSession(ctx)
-  const [appState, setAppState] = useState2(async () => await appInitState(ctx))
+  const session = useSession(ctx);
+  const [appState, setAppState] = useState2(
+    async () => await appInitState(ctx)
+  );
   const [activeConnections, setActiveConnections] = useState2<PartitionKey[]>(
-    [],
-  )
+    []
+  );
 
   if (appState.status === 'needsToVerifyEmail') {
     return (
-      <vstack alignment='center middle'>
+      <vstack alignment="center middle">
         <text>You need to verify your email before playing</text>
         {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
         <button
           onPress={async () => {
-            console.log('not yet implemented!')
+            console.log('not yet implemented!');
           }}
         >
           Check status
         </button>
       </vstack>
-    )
+    );
   }
 
   if (appState.status === 'notAllowed') {
     return (
-      <vstack alignment='center middle'>
+      <vstack alignment="center middle">
         <text>Sorry, you can't access this post</text>
       </vstack>
-    )
+    );
   }
 
   // TODO: Remove this once the webview can get this from S3
   useAsync<Delta[]>(
     async () => {
       if (appState.status !== 'pass' || activeConnections.length === 0)
-        return []
+        return [];
 
       const deltas = await Promise.all(
-        activeConnections.map(key =>
+        activeConnections.map((key) =>
           fieldGetDeltas({
             challengeNumber: appState.challengeNumber,
             subredditId: ctx.subredditId,
             redis: ctx.redis,
             partitionXY: parsePartitionXY(key),
-          }),
-        ),
-      )
+          })
+        )
+      );
 
-      return deltas.flat()
+      return deltas.flat();
     },
     {
       // Depends is a JSON.stringify check so order matters!
       depends: activeConnections.sort(),
       finally(data, error) {
         if (error) {
-          console.error('useAsync get deltas error:', error)
+          console.error('useAsync get deltas error:', error);
         }
-        if (!data) return
+        if (!data) return;
 
         iframe.postMessage({
           type: 'Box',
           deltas: data,
-        })
+        });
       },
-    },
-  )
+    }
+  );
 
-  const iframe = useWebView<IframeMessage, DevvitMessage>({onMessage: onMsg})
+  const iframe = useWebView<IframeMessage, DevvitMessage>({ onMessage: onMsg });
 
   function sendInitToIframe(
     state: AppState,
-    {reinit}: {reinit: boolean} = {reinit: false},
+    { reinit }: { reinit: boolean } = { reinit: false }
   ): void {
-    if (state.status !== 'pass') return
+    if (state.status !== 'pass') return;
 
     const {
       profile,
@@ -129,9 +131,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
       initialCellsClaimed,
       visible,
       minesHitByTeam,
-    } = state
+    } = state;
 
-    const p1 = {profile, sid: session.sid}
+    const p1 = { profile, sid: session.sid };
 
     iframe.postMessage({
       bannedPlayers: minesHitByTeam.reduce((acc, v) => acc + v.score, 0),
@@ -142,7 +144,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       field: {
         bans: challengeConfig.totalNumberOfMines,
         partSize: challengeConfig.partitionSize,
-        wh: {w: challengeConfig.size, h: challengeConfig.size},
+        wh: { w: challengeConfig.size, h: challengeConfig.size },
       },
       lvl: state.level.id,
       p1,
@@ -152,13 +154,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
       team: getTeamFromUserId(profile.t2),
       teamBoxCounts: initialCellsClaimed
         .sort((a, b) => a.member - b.member)
-        .map(x => x.score) as TeamBoxCounts,
+        .map((x) => x.score) as TeamBoxCounts,
       type: 'Init',
       visible,
       initialDeltas,
       initialGlobalXY,
       reinit,
-    })
+    });
   }
 
   const partitionUpdateChannel = useChannel<Omit<PartitionUpdate, 'type'>>({
@@ -167,10 +169,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
       iframe.postMessage({
         type: 'PartitionUpdate',
         ...msg,
-      })
+      });
     },
-  })
-  partitionUpdateChannel.subscribe()
+  });
+  partitionUpdateChannel.subscribe();
 
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
@@ -179,57 +181,57 @@ export function App(ctx: Devvit.Context): JSX.Element {
           appState.status === 'pass'
             ? appState.profile.username
             : 'app state no pass'
-        } Devvit ← iframe msg=${JSON.stringify(msg)}`,
-      )
+        } Devvit ← iframe msg=${JSON.stringify(msg)}`
+      );
 
     switch (msg.type) {
       case 'ConnectPartitions': {
-        if (appState.status !== 'pass') return
+        if (appState.status !== 'pass') return;
 
-        const newConnections = msg.parts.map(part =>
+        const newConnections = msg.parts.map((part) =>
           makePartitionKey(
-            getPartitionCoords(part, appState.challengeConfig.partitionSize),
-          ),
-        )
+            getPartitionCoords(part, appState.challengeConfig.partitionSize)
+          )
+        );
 
         // Note, I don't circuit break here because I think it may slow the experience
         // for the user. Instead, I set state and use `useAsync` to get the current
         // state of the partitions since realtime is only the deltas
-        setActiveConnections(newConnections.sort())
+        setActiveConnections(newConnections.sort());
 
-        break
+        break;
       }
       case 'Loaded':
-        break
+        break;
       case 'Registered': {
         if (appState.status === 'dialog') {
-          const {status: _status, ...rest} = appState
-          iframe.postMessage({type: 'Dialog', ...rest})
+          const { status: _status, ...rest } = appState;
+          iframe.postMessage({ type: 'Dialog', ...rest });
         } else if (appState.status === 'pass') {
-          sendInitToIframe(appState)
+          sendInitToIframe(appState);
         }
 
-        break
+        break;
       }
       case 'ClaimBoxes': {
         if (appState.status === 'dialog') {
-          const {status: _status, ...rest} = appState
-          iframe.postMessage({type: 'Dialog', ...rest})
+          const { status: _status, ...rest } = appState;
+          iframe.postMessage({ type: 'Dialog', ...rest });
         } else if (appState.status === 'pass') {
           // Get a fresh profile in case something has changed!
           const profile = await userGet({
             redis: ctx.redis,
             userId: appState.profile.t2,
-          })
+          });
 
           if (profile.blocked) {
-            console.warn('Cannot claim boxes, user is not allowed to play.')
-            return
+            console.warn('Cannot claim boxes, user is not allowed to play.');
+            return;
           }
 
           if (!profile.hasVerifiedEmail) {
-            console.warn('Cannot claim boxes, user needs to verify email.')
-            return
+            console.warn('Cannot claim boxes, user needs to verify email.');
+            return;
           }
 
           const result = await levelsIsUserInRightPlace({
@@ -240,39 +242,39 @@ export function App(ctx: Devvit.Context): JSX.Element {
             // 2. User tries to click again before we show
             //    the game over dialog
             profile,
-          })
+          });
 
           if (result.pass === false) {
-            const {pass: _pass, ...rest} = result
-            iframe.postMessage({type: 'Dialog', ...rest})
-            return
+            const { pass: _pass, ...rest } = result;
+            iframe.postMessage({ type: 'Dialog', ...rest });
+            return;
           }
 
-          const lastLevel = levels[levels.length - 1]!
+          const lastLevel = levels[levels.length - 1]!;
 
           // Attempt to claim a global point if on the last level
           if (lastLevel.id === profile.currentLevel) {
-            const {success} = await userAttemptToClaimSpecialPointForTeam({
+            const { success } = await userAttemptToClaimSpecialPointForTeam({
               ctx,
               userId: profile.t2,
-            })
+            });
 
             if (success) {
-              ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
-              ctx.ui.navigateTo(levels[0]!.url)
+              ctx.ui.showToast('Global point claimed! Redirecting to level 0.');
+              ctx.ui.navigateTo(levels[0]!.url);
             } else {
-              ctx.ui.showToast('Global claim fail, try again.')
+              ctx.ui.showToast('Global claim fail, try again.');
             }
 
-            return
+            return;
           }
 
-          const {deltas, newLevel} = await fieldClaimCells({
+          const { deltas, newLevel } = await fieldClaimCells({
             challengeNumber: appState.challengeNumber,
             coords: msg.boxes,
             ctx,
             userId: appState.profile.t2,
-          })
+          });
 
           // Before returning the result to the client, we need to check if the user hit a mine
           // and if they did we don't let them try to click again.
@@ -290,12 +292,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
                 lastPlayedChallengeNumberCellsClaimed: 0,
                 currentLevel: newLevel,
               },
-            })
+            });
 
             if (result.pass === false) {
-              const {pass: _pass, ...rest} = result
-              iframe.postMessage({type: 'Dialog', ...rest})
-              return
+              const { pass: _pass, ...rest } = result;
+              iframe.postMessage({ type: 'Dialog', ...rest });
+              return;
             }
 
             // They passed, so even though we got a new level, we let it ride
@@ -305,45 +307,45 @@ export function App(ctx: Devvit.Context): JSX.Element {
           iframe.postMessage({
             type: 'Box',
             deltas,
-          })
+          });
         }
 
-        break
+        break;
       }
       case 'OnNextChallengeClicked': {
-        if (appState.status !== 'pass') break
+        if (appState.status !== 'pass') break;
 
         // This handles ascension! Keep in mind that if
         // we get here all of the state in the app is now
         // old so we need to refresh all of it
-        const newAppState = await appInitState(ctx)
+        const newAppState = await appInitState(ctx);
 
-        setAppState(newAppState)
+        setAppState(newAppState);
 
         // TODO: Do I also need to set loaded back to false here?
 
         if (newAppState.status === 'pass') {
-          console.log('user did not ascend, reiniting iframe')
+          console.log('user did not ascend, reiniting iframe');
 
           // User did not ascend, close dialog and continue
-          sendInitToIframe(newAppState, {reinit: true})
+          sendInitToIframe(newAppState, { reinit: true });
         } else if (newAppState.status === 'dialog') {
-          console.log('user ascended, redirecting', newAppState)
-          ctx.ui.navigateTo(newAppState.redirectURL)
+          console.log('user ascended, redirecting', newAppState);
+          ctx.ui.navigateTo(newAppState.redirectURL);
         }
 
-        break
+        break;
       }
       case 'OpenLeaderboard':
         // to-do: PascalCase URL once it doesn't redirect.
-        ctx.ui.navigateTo('https://www.reddit.com/r/gamesonreddit')
-        break
+        ctx.ui.navigateTo('https://www.reddit.com/r/gamesonreddit');
+        break;
       case 'Dialog':
-        ctx.ui.navigateTo(msg.redirectURL)
-        break
+        ctx.ui.navigateTo(msg.redirectURL);
+        break;
 
       default:
-        msg satisfies never
+        msg satisfies never;
     }
   }
 
@@ -356,28 +358,28 @@ export function App(ctx: Devvit.Context): JSX.Element {
             appState.status === 'pass'
               ? appState.profile.username
               : 'app state no pass'
-          } Devvit ← realtime msg=${JSON.stringify(msg)}`,
-        )
+          } Devvit ← realtime msg=${JSON.stringify(msg)}`
+        );
 
-      iframe.postMessage(msg)
+      iframe.postMessage(msg);
     },
-    onSubscribed: () => iframe.postMessage({type: 'Connected'}),
-    onUnsubscribed: () => iframe.postMessage({type: 'Disconnected'}),
-  })
-  chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
+    onSubscribed: () => iframe.postMessage({ type: 'Connected' }),
+    onUnsubscribed: () => iframe.postMessage({ type: 'Disconnected' }),
+  });
+  chan.subscribe(); // to-do: verify platform unsubscribes hidden posts.
 
   return (
     <Title>
       {/* biome-ignore lint/a11y/useButtonType: */}
       <button
-        appearance='secondary'
-        size='large'
+        appearance="secondary"
+        size="large"
         minWidth={`${playButtonWidth}px`}
-        icon='play-outline'
+        icon="play-outline"
         onPress={() => iframe.mount()}
       >
         Enter the BanField
       </button>
     </Title>
-  )
+  );
 }

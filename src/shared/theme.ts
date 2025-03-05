@@ -40,7 +40,11 @@ export const leaderboardLasagna: number = 0xea6126ff
 export const leaderboardSunshine: number = 0xeda635ff
 export const leaderboardButton: number = 0x15d715ff
 
+export const paletteOffline: number = 0xff0000ff
+
 export const spacePx: number = 8
+
+export const fallbackPixelRatio: number = 2
 
 export const minCanvasWH: Readonly<WH> = {w: 288, h: 320}
 
