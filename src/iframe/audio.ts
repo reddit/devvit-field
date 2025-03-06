@@ -1,4 +1,5 @@
 import type {AssetMap} from './asset-map.ts'
+import type {Game} from './game/game.ts'
 
 export type Audio = AudioBufferByName & {ctx: AudioContext}
 export type AudioBufferByName = {
@@ -50,20 +51,24 @@ export function audioPlayMusic(
 }
 
 export function audioPlay(
-  ctx: AudioContext,
+  game: Game,
   buf: AudioBuffer,
   delayMillis: number = 0,
-  queue: boolean = false,
+  queue: 'Drop' | 'Queue' | 'Retry' = 'Retry',
 ): void {
-  if (!queue && ctx.state !== 'running') return
+  if (queue !== 'Queue' && game.ac.state !== 'running') {
+    if (queue === 'Drop') return
+    // Audio may be resuming. Try again next frame.
+    setTimeout(() => audioPlay(game, buf, delayMillis, 'Drop'), 0)
+  }
 
-  const src = ctx.createBufferSource()
+  const src = game.ac.createBufferSource()
   src.buffer = buf
 
-  const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.075, ctx.currentTime)
+  const gain = game.ac.createGain()
+  gain.gain.setValueAtTime(0.075, game.ac.currentTime)
   src.connect(gain)
 
-  gain.connect(ctx.destination)
-  src.start(ctx.currentTime + delayMillis / 1000)
+  gain.connect(game.ac.destination)
+  src.start(game.ac.currentTime + delayMillis / 1000)
 }

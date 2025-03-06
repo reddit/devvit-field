@@ -50,7 +50,7 @@ export class BoxEnt implements Ent {
       const next = this.#seq.shift()!
       if (next === 'Banned' || next === 'Claimed' || next === 'Lost') {
         if (game.audio && next === 'Claimed')
-          audioPlay(game.ac, game.audio.claimed)
+          audioPlay(game, game.audio.claimed)
         game.zoo.remove(this)
         return
       }

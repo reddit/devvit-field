@@ -140,7 +140,7 @@ export class Game {
 
   claimBox(xy: Readonly<XY>): void {
     if (!this.audio || !this.fieldConfig) return
-    audioPlay(this.ac, this.audio.claim)
+    audioPlay(this, this.audio.claim)
     if (this.isCooldown() || !this.isClaimable(xy)) return
     // Delay until claim sound completes.
     // to-do: this is overlapping with claimed.
