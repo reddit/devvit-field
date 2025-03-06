@@ -14,7 +14,7 @@ type StyledButtonProps = {
   color?: `#${string}`
   width?: number
   pixelRatio?: number
-  onPress?: () => void
+  onPress?: (() => void) | undefined
 }
 
 export function StyledButton(props: StyledButtonProps): JSX.Element {

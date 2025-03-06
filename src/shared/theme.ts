@@ -10,6 +10,7 @@ export const paletteSunshine: number = 0xe2a94dff // oklch(77.11% 0.127 76.74)
 export const paletteShade19: number = 0x00000030
 export const paletteShade50: number = 0x00000080
 export const paletteShade60: number = 0x00000099
+export const paletteShade80: number = 0x000000cd
 export const paletteTint75: number = 0xffffffb0
 
 export const paletteField: number = 0x0a7f18ff
@@ -32,6 +33,8 @@ export const paletteWhatIsFieldDark: number = 0x1897b5ff
 export const paletteTerminalGreen: number = 0x4cf190ff
 export const paletteDarkGrey: number = 0x1f2430ff
 export const paletteGrid: number = 0x002e00ff
+
+export const paletteDialogBase: number = 0x002e00ff
 
 export const consoleBase: number = 0x1f2430ff
 export const leaderboardFlamingo: number = 0xcc3a83ff
