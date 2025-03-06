@@ -6,6 +6,8 @@ const GLYPH_HEIGHT = 14
 const GLYPH_WIDTH = 7
 
 type PixelTextProps = {
+  // I take a key, but can't apply it to the image element. yolo.
+  key?: string
   children: string
   size?: number
   color?: `#${string}`

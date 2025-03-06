@@ -5,9 +5,14 @@ import {
   fallbackPixelRatio,
   fontMSize,
   paletteBlack,
-  paletteFieldLight,
   paletteWhite,
 } from '../../shared/theme'
+import {
+  type Level,
+  levelBaseColor,
+  levelHighlightColor,
+  levelShadowColor,
+} from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {PixelText} from './PixelText'
 import {Scrim} from './Scrim'
@@ -20,7 +25,8 @@ type DialogProps = {
   onPress?: (() => void) | undefined
   pixelRatio?: number
   children: JSX.Element | JSX.Element[]
-  attributionColor?: 'blue' | 'green' | 'purple' | 'red' | 'yellow'
+  level?: Level
+  backgroundElement?: JSX.Element
 }
 
 export function Dialog(props: DialogProps): JSX.Element {
@@ -28,7 +34,7 @@ export function Dialog(props: DialogProps): JSX.Element {
   const DEFAULT_WIDTH = 288
   const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
   const buttonLabel = props.buttonLabel ?? 'OK'
-  const attributionColor = props.attributionColor ?? 'green'
+  const level = props.level ?? 0
   return (
     <zstack
       height='100%'
@@ -36,6 +42,9 @@ export function Dialog(props: DialogProps): JSX.Element {
       alignment='center middle'
       backgroundColor={cssHex(consoleBase)}
     >
+      {/* Background Screen */}
+      {props.backgroundElement ?? null}
+
       {/* Scrim */}
       <Scrim />
 
@@ -53,6 +62,8 @@ export function Dialog(props: DialogProps): JSX.Element {
               height={props.height ?? DEFAULT_HEIGHT}
               pixelRatio={pixelRatio}
               padding='medium'
+              backgroundColor={cssHex(levelShadowColor[level])}
+              borderColor={cssHex(levelBaseColor[level])}
             >
               <spacer height='8px' />
               <vstack grow width='100%' alignment='center middle'>
@@ -63,11 +74,14 @@ export function Dialog(props: DialogProps): JSX.Element {
 
           <vstack>
             <spacer height='7px' />
-            <DialogBadge pixelRatio={pixelRatio} />
+            <DialogBadge pixelRatio={pixelRatio} level={level} />
           </vstack>
         </zstack>
 
-        <StyledButton color={cssHex(paletteFieldLight)} onPress={props.onPress}>
+        <StyledButton
+          color={cssHex(levelHighlightColor[level])}
+          onPress={props.onPress}
+        >
           {buttonLabel}
         </StyledButton>
         <spacer height='24px' />
@@ -83,7 +97,7 @@ export function Dialog(props: DialogProps): JSX.Element {
             height='40px'
             description='r/GamesOnReddit Logo'
             resizeMode='fit'
-            url={`gor-${attributionColor}.png`}
+            url={`gor-${level}.png`}
           />
         </vstack>
       </vstack>
@@ -91,7 +105,13 @@ export function Dialog(props: DialogProps): JSX.Element {
   )
 }
 
-function DialogBadge(props: {pixelRatio: number}): JSX.Element {
+type DialogBadgeProps = {
+  pixelRatio: number
+  level?: Level
+}
+
+function DialogBadge(props: DialogBadgeProps): JSX.Element {
+  const level = props.level ?? 0
   const SIZE = 24
   return (
     <image
@@ -110,12 +130,12 @@ function DialogBadge(props: {pixelRatio: number}): JSX.Element {
 
 <!-- Border -->
 <path fill-rule="evenodd" clip-rule="evenodd" d="M4.85714 0H19.1429C21.8254 0 24 2.17462 24 4.85714V19.1429C24 21.8254 21.8254 24 19.1429 24H4.85714C2.17462 24 0 21.8254 0 19.1429V4.85714C0 2.17462 2.17462 0 4.85714 0ZM4.85714 2H19.1429C20.7208 2 22 3.27919 22 4.85714V19.1429C22 20.7208 20.7208 22 19.1429 22H4.85714C3.27919 22 2 20.7208 2 19.1429V4.85714C2 3.27919 3.27919 2 4.85714 2Z" fill="${cssHex(
-        paletteFieldLight,
+        levelBaseColor[level],
       )}"/>
 
 <!-- Symbol -->
 <path d="M14.0001 6H18V10.0001H14.0001V6Z M14.0001 10.0001L9.99988 10.0013V13.9999H6V18H9.99993V14.0015H13.9998L14.0001 10.0001Z M9.99993 6H6V10.0001L9.99988 10.0013L9.99993 6Z M14.0001 13.9999H18V18H14.0001V13.9999Z" fill="${cssHex(
-        paletteFieldLight,
+        levelHighlightColor[level],
       )}"/>
 </svg>`}
     />

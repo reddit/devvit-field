@@ -32,10 +32,11 @@ import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
 } from '../server/core/user.js'
-import {FirstTimePlayerView} from './FirstTimePlayerView.tsx'
+import {LeaderboardController} from './LeaderboardController.tsx'
 import {Title} from './title.tsx'
-//import { CountdownController } from './CountdownController.tsx';
-//import { LeaderboardController } from './LeaderboardController.tsx';
+
+// import {DialogUnauthorized} from './DialogUnauthorized.tsx'
+// import { CountdownController } from './CountdownController.tsx';
 
 export function App(ctx: Devvit.Context): JSX.Element {
   if (
@@ -44,8 +45,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
   ) {
     // TODO: add conditional to render countdown... not sure about timing yet.
     //return <CountdownController />;
-    // return <LeaderboardController />;
-    return <FirstTimePlayerView />
+    // return <DialogUnauthorized level={2} />
+    return <LeaderboardController />
   }
   const session = useSession(ctx)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))

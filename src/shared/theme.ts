@@ -28,7 +28,7 @@ export const paletteBananaFieldLight: number = 0xfaeb25ff
 export const paletteBananaFieldDark: number = 0x2c2401ff
 export const paletteWhatIsField: number = 0xa955b7ff
 export const paletteWhatIsFieldLight: number = 0xda57fbff
-export const paletteWhatIsFieldDark: number = 0x1897b5ff
+export const paletteWhatIsFieldDark: number = 0x300f38ff
 
 export const paletteTerminalGreen: number = 0x4cf190ff
 export const paletteDarkGrey: number = 0x1f2430ff
