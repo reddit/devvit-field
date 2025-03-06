@@ -8,6 +8,8 @@ import type {AttribBuffer} from './attrib-buffer.js'
 import type {Cam} from './cam.js'
 import {fieldFragGLSL} from './field-frag.glsl.js'
 import {fieldVertGLSL} from './field-vert.glsl.js'
+import {mapFragGLSL} from './map-frag.glsl.js'
+import {mapVertGLSL} from './map-vert.glsl.js'
 import {type GL, Shader} from './shader.js'
 import {spriteFragGLSL} from './sprite-frag.glsl.js'
 import {spriteVertGLSL} from './sprite-vert.glsl.js'
@@ -26,6 +28,7 @@ export class Renderer {
   #idByColor: Uint32Array = new Uint32Array()
   #loseContext: WEBGL_lose_context | null = null
   #map: Readonly<Uint8Array> | undefined
+  #mapShader: Shader | undefined
   #spriteShader: Shader | undefined
 
   constructor(canvas: HTMLCanvasElement) {
@@ -67,20 +70,20 @@ export class Renderer {
     gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, false)
 
     this.#loseContext = gl.getExtension('WEBGL_lose_context')
-    this.#spriteShader = this.#atlasImage
-      ? SpriteShader(gl, this.#atlasImage, this.#cels)
-      : undefined
     this.#fieldShader =
-      this.#atlasImage && this.#field && this.#fieldConfig && this.#map
+      this.#atlasImage && this.#field && this.#fieldConfig
         ? FieldShader(
             gl,
             this.#atlasImage,
             this.#cels,
             this.#field,
-            this.#map,
             this.#fieldConfig,
           )
         : undefined
+    this.#mapShader = this.#map ? MapShader(gl, this.#map) : undefined
+    this.#spriteShader = this.#atlasImage
+      ? SpriteShader(gl, this.#atlasImage, this.#cels)
+      : undefined
   }
 
   get loseContext(): WEBGL_lose_context | null {
@@ -131,6 +134,7 @@ export class Renderer {
 
     this.#renderField(cam, frame, fieldScale)
     this.#renderSprites(cam, frame, bmps)
+    this.#renderMap(cam)
   }
 
   setBox(xy: Readonly<XY>, val: number): void {
@@ -165,7 +169,6 @@ export class Renderer {
     this.#gl.uniform1i(this.#fieldShader.uniforms.uTex!, 0)
     this.#gl.uniform1i(this.#fieldShader.uniforms.uCels!, 1)
     this.#gl.uniform1i(this.#fieldShader.uniforms.uField!, 2)
-    this.#gl.uniform1i(this.#fieldShader.uniforms.uMap!, 3)
     this.#gl.uniform2ui(
       this.#fieldShader.uniforms.uTexWH!,
       this.#atlasImage.naturalWidth,
@@ -196,6 +199,34 @@ export class Renderer {
     }
 
     this.#gl.bindVertexArray(this.#fieldShader.vao)
+    this.#gl.drawArrays(
+      this.#gl.TRIANGLE_STRIP,
+      0,
+      uv.length / 2, // d
+    )
+    this.#gl.bindVertexArray(null)
+  }
+
+  #renderMap(cam: Readonly<Cam>): void {
+    if (!this.#gl || !this.#mapShader) return
+
+    this.#gl.useProgram(this.#mapShader.pgm)
+
+    this.#gl.uniform1i(this.#mapShader.uniforms.uMap!, 0)
+    this.#gl.uniform4f(
+      this.#mapShader.uniforms.uCam!,
+      cam.x,
+      cam.y,
+      cam.w,
+      cam.h,
+    )
+
+    for (const [i, tex] of this.#mapShader.textures.entries()) {
+      this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
+      this.#gl.bindTexture(this.#gl.TEXTURE_2D, tex)
+    }
+
+    this.#gl.bindVertexArray(this.#mapShader.vao)
     this.#gl.drawArrays(
       this.#gl.TRIANGLE_STRIP,
       0,
@@ -286,11 +317,9 @@ function FieldShader(
   atlasImage: HTMLImageElement,
   cels: Readonly<Uint16Array>,
   field: Uint8Array,
-  map: Uint8Array,
   config: Readonly<FieldConfig>,
 ): Shader {
   const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [
-    gl.createTexture(),
     gl.createTexture(),
     gl.createTexture(),
     gl.createTexture(),
@@ -350,8 +379,22 @@ function FieldShader(
   gl.bindTexture(gl.TEXTURE_2D, null)
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
 
+  return shader
+}
+
+function MapShader(gl: GL, map: Uint8Array): Shader {
+  const shader = Shader(gl, mapVertGLSL, mapFragGLSL, [gl.createTexture()])
+
+  gl.bindVertexArray(shader.vao)
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
+  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW)
+  gl.enableVertexAttribArray(0)
+  gl.vertexAttribIPointer(0, 2, gl.BYTE, 0, 0)
+  gl.bindVertexArray(null)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
-  gl.bindTexture(gl.TEXTURE_2D, shader.textures[3]!)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
   gl.texImage2D(
