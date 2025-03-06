@@ -31,6 +31,7 @@ export class CursorEnt implements Ent {
     if (!this.#visible) {
       // to-do: how to correlate with innerWidth * devicePixelRatio? should this
       //        be in Pointer.clientPoint?
+      // to-do: is client point right here? not screen point?
       const x = lvl ? ctrl.point.x : ctrl.clientPoint.x * devicePixelRatio
       const y = lvl ? ctrl.point.y : ctrl.clientPoint.y * devicePixelRatio
       return {

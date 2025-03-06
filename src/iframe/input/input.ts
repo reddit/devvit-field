@@ -163,10 +163,6 @@ export class Input<T extends string> {
     for (const key of keys) this.#keyboard.map(key, this.#map(button))
   }
 
-  get midScreenPoint(): XY {
-    return this.#pointer.midScreenPoint
-  }
-
   get pinch(): number {
     return this.#pointer.pinch
   }
@@ -227,8 +223,16 @@ export class Input<T extends string> {
     this.#pointer.reset()
   }
 
+  get screenMidPoint(): XY {
+    return this.#pointer.screenMidPoint
+  }
+
   get screenPoint(): Readonly<XY> {
     return this.#pointer.screenXY
+  }
+
+  get screenStartPoint(): Readonly<XY> {
+    return this.#pointer.screenStartXY
   }
 
   get wheel(): Readonly<XYZ> {

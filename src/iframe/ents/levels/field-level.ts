@@ -1,4 +1,5 @@
 import {boxHits} from '../../../shared/types/2d.ts'
+import {mapSize} from '../../../shared/types/app-config.ts'
 import type {LevelPascalCase} from '../../../shared/types/level.ts'
 import {audioPlayMusic} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
@@ -43,6 +44,24 @@ export class FieldLevel implements LevelEnt {
   #updatePick(game: Game): void {
     const {cam, ctrl, fieldConfig} = game
 
+    if (
+      fieldConfig &&
+      (ctrl.isOnStart('A') || ctrl.drag) &&
+      !ctrl.pinch &&
+      !ctrl.handled &&
+      boxHits({w: mapSize, h: mapSize}, ctrl.screenStartPoint) &&
+      boxHits({w: mapSize, h: mapSize}, ctrl.screenPoint)
+    ) {
+      ctrl.handled = true
+      const xy = {
+        x: Math.trunc((ctrl.screenPoint.x * fieldConfig.wh.w) / mapSize),
+        y: Math.trunc((ctrl.screenPoint.y * fieldConfig.wh.h) / mapSize),
+      }
+      game.centerBox(xy)
+      game.selectBox(xy)
+      return
+    }
+
     // Use floor, not trunc. when out of bounds, do truncate back to inbounds.
     const select = {
       x: Math.floor(
@@ -71,7 +90,11 @@ export class FieldLevel implements LevelEnt {
   #updatePosition(game: Game): void {
     const {cam, ctrl} = game
 
-    if (ctrl.drag && !ctrl.handled) {
+    if (
+      ctrl.drag &&
+      !ctrl.handled &&
+      !boxHits({w: mapSize, h: mapSize}, ctrl.screenStartPoint)
+    ) {
       ctrl.handled = true
 
       cam.x -= ctrl.delta.x / cam.scale / cam.fieldScale
@@ -117,7 +140,7 @@ export class FieldLevel implements LevelEnt {
 
       game.cam.setFieldScaleLevel(
         this.#zoomLvl + Math.trunc(game.ctrl.pinch / 50),
-        game.ctrl.midScreenPoint,
+        game.ctrl.screenMidPoint,
         !!game.p1?.profile.superuser,
       )
 
