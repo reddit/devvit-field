@@ -47,34 +47,39 @@ export function FirstTimePlayerView(
           width={256}
           pixelRatio={pixelRatio}
           backgroundColor={cssHex(paletteBlack)}
+          padding='none'
         >
-          <PixelText
-            pixelRatio={pixelRatio}
-            size={16}
-            color={cssHex(paletteWhite)}
-          >
-            How to Play
-          </PixelText>
-          <spacer height='8px' />
-          <vstack alignment='start middle'>
-            <ListItem
-              label='1,000,000+ squares per board'
+          <vstack height='100%' width='100%' alignment='center middle'>
+            <spacer height='16px' />
+            <PixelText
               pixelRatio={pixelRatio}
-            />
-            <ListItem
-              label='Claim as many as you can'
-              pixelRatio={pixelRatio}
-            />
-            <ListItem
-              label='But beware of ban boxes—'
-              pixelRatio={pixelRatio}
-            />
-            <PixelText {...bodyCopyProps}>
-              {"  hit one and you'll be banned"}
+              size={16}
+              color={cssHex(paletteWhite)}
+            >
+              How to Play
             </PixelText>
-            <PixelText {...bodyCopyProps}>
-              {'  from the community FOREVER!'}
-            </PixelText>
+            <spacer height='8px' />
+            <vstack alignment='start middle'>
+              <ListItem
+                label='1,000,000+ squares per board'
+                pixelRatio={pixelRatio}
+              />
+              <ListItem
+                label='Claim as many as you can'
+                pixelRatio={pixelRatio}
+              />
+              <ListItem
+                label='But beware of ban boxes—'
+                pixelRatio={pixelRatio}
+              />
+              <PixelText {...bodyCopyProps}>
+                {"  hit one and you'll be banned"}
+              </PixelText>
+              <PixelText {...bodyCopyProps}>
+                {'  from the community FOREVER!'}
+              </PixelText>
+            </vstack>
+            <spacer height='16px' />
           </vstack>
         </BorderedContainer>
       </Dialog>
