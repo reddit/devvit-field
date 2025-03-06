@@ -1,10 +1,12 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
-import type {AppConfig} from '../../shared/types/app-config'
 import {
+  type AppConfig,
   getDefaultAppConfig,
+} from '../../shared/types/app-config.js'
+import {
   liveSettingsGet,
   liveSettingsUpdate,
-} from '../server/core/live-settings'
+} from '../server/core/live-settings.js'
 
 export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
   (data: {

@@ -1,6 +1,9 @@
 import type {Context} from '@devvit/public-api'
 import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
-import type {AppConfig} from '../../../shared/types/app-config'
+import {
+  type AppConfig,
+  getDefaultAppConfig,
+} from '../../../shared/types/app-config.js'
 import type {ConfigUpdateMessage} from '../../../shared/types/message'
 
 // Global settings key
@@ -8,13 +11,6 @@ const globalSettingsKey = 'global:settings' as const
 
 // Installation settings key
 const installationSettingsKey = 'installation:settings' as const
-
-export function getDefaultAppConfig(): AppConfig {
-  return {
-    globalClickCooldownMillis: 1000,
-    globalServerPollingTimeMillis: 60_000,
-  }
-}
 
 export async function liveSettingsUpdate(
   ctx: Pick<Context, 'redis' | 'realtime'>,

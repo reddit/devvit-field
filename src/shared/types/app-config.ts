@@ -15,3 +15,13 @@ export type AppConfig = {
    */
   globalServerPollingTimeMillis: number
 }
+
+/** Number of boxes per side of the minimap. */
+export const mapSize: number = 80
+
+export function getDefaultAppConfig(): AppConfig {
+  return {
+    globalClickCooldownMillis: 1000,
+    globalServerPollingTimeMillis: 60_000,
+  }
+}

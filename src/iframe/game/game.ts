@@ -2,7 +2,10 @@ import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import {type XY, xyEq} from '../../shared/types/2d.ts'
-import type {AppConfig} from '../../shared/types/app-config.ts'
+import {
+  type AppConfig,
+  getDefaultAppConfig,
+} from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta} from '../../shared/types/field.ts'
 import {
@@ -60,10 +63,7 @@ export class Game {
   // to-do: SavableGame for LocalStorage savable state.
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
   ac: AudioContext
-  appConfig: AppConfig = {
-    globalClickCooldownMillis: 1_000,
-    globalServerPollingTimeMillis: 60_000,
-  }
+  appConfig: AppConfig = getDefaultAppConfig()
   assets: AssetMap | undefined
   atlas: Atlas<Tag>
   audio?: AudioBufferByName
