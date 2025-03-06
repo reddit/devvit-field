@@ -243,7 +243,7 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   const claimOps: BitfieldCommand[] = batch.map(
     ({localXY}): BitfieldCommand => [
       'set',
-      `u${FIELD_CELL_BITS}`,
+      'u1',
       coordsToOffset(
         enforceBounds({
           coord: localXY,
@@ -252,7 +252,7 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
         }),
         fieldConfig.partitionSize,
       ),
-      encodeVTT(1, 0), // we assume team 0 here since there isn't an extra bit to define an unknown team!
+      1,
     ],
   )
 
@@ -278,9 +278,8 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   // were successfully claimed and create the write operations for the team.
   claimOpsReturn.forEach((value, i) => {
     const batchItem = batch[i]
-    const {claimed} = decodeVTT(value)
 
-    if (claimed === 0 && batchItem) {
+    if (value === 0 && batchItem) {
       teamWriteOpsBatchIndex.push(i)
       teamWriteOps.push([
         'set',

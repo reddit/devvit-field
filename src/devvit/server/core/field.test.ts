@@ -7,7 +7,7 @@ import type {ChallengeConfig} from '../../../shared/types/challenge-config.js'
 import type {Delta} from '../../../shared/types/field'
 import {DevvitTest} from './_utils/DevvitTest'
 import {toMatrix} from './_utils/utils'
-import {parseBitfieldToFlatArray} from './bitfieldHelpers'
+import {decodeVTT, parseBitfieldToFlatArray} from './bitfieldHelpers'
 import {challengeConfigClearCache, challengeMakeNew} from './challenge'
 import {deltasGet} from './deltas'
 import {
@@ -315,6 +315,33 @@ DevvitTest.it(
     })
 
     expect(result).toEqual({deltas: []})
+
+    const newFieldState = await fieldGet({
+      challengeNumber,
+      subredditId: ctx.subredditId,
+      redis: ctx.redis,
+      partitionXY: {x: 0, y: 0},
+    })
+
+    const decodedFieldState = newFieldState.map(x => decodeVTT(x))
+    expect(decodedFieldState).toEqual([
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 1,
+        team: 3,
+      },
+    ])
   },
 )
 
@@ -599,5 +626,168 @@ DevvitTest.it(
 
     // Fails because the function returns this: [0,4,3,0]
     expect(parseBitfieldToFlatArray(buffer!, cols, rows)).toEqual([7, 0, 0, 7])
+  },
+)
+
+DevvitTest.it.only(
+  'fieldClaimCells - claims should not shift other bits',
+  async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+        hasVerifiedEmail: true,
+      },
+    })
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        t2: USER_IDS.TEAM_3_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+        hasVerifiedEmail: true,
+      },
+    })
+
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {
+        size: 2,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 2,
+      },
+    })
+
+    await fieldClaimCells({
+      coords: [{x: 1, y: 1}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    const newFieldState = await fieldGet({
+      challengeNumber,
+      partitionXY: {x: 0, y: 0},
+      redis: ctx.redis,
+      subredditId: ctx.subredditId,
+    })
+    const decodedFieldState = newFieldState.map(x => decodeVTT(x))
+
+    expect(decodedFieldState).toEqual([
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 1,
+        team: 2,
+      },
+    ])
+
+    await fieldClaimCells({
+      coords: [{x: 0, y: 1}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    const newFieldState1 = await fieldGet({
+      challengeNumber,
+      partitionXY: {x: 0, y: 0},
+      redis: ctx.redis,
+      subredditId: ctx.subredditId,
+    })
+    const decodedFieldState1 = newFieldState1.map(x => decodeVTT(x))
+
+    expect(decodedFieldState1).toEqual([
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 1,
+        team: 2,
+      },
+      {
+        claimed: 1,
+        team: 2,
+      },
+    ])
+
+    await fieldClaimCells({
+      coords: [{x: 1, y: 0}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    const newFieldState2 = await fieldGet({
+      challengeNumber,
+      partitionXY: {x: 0, y: 0},
+      redis: ctx.redis,
+      subredditId: ctx.subredditId,
+    })
+    const decodedFieldState2 = newFieldState2.map(x => decodeVTT(x))
+
+    const finalState = [
+      {
+        claimed: 0,
+        team: 0,
+      },
+      {
+        claimed: 1,
+        team: 2,
+      },
+      {
+        claimed: 1,
+        team: 2,
+      },
+      {
+        claimed: 1,
+        team: 2,
+      },
+    ]
+
+    expect(decodedFieldState2).toEqual(finalState)
+
+    // This is just a write bit op to make sure that a singular write doesn't cause
+    // weird shifts either
+    await fieldClaimCells({
+      coords: [{x: 1, y: 0}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_3_PLAYER_1,
+      ctx,
+    })
+
+    const newFieldState3 = await fieldGet({
+      challengeNumber,
+      partitionXY: {x: 0, y: 0},
+      redis: ctx.redis,
+      subredditId: ctx.subredditId,
+    })
+    const decodedFieldState3 = newFieldState3.map(x => decodeVTT(x))
+
+    expect(decodedFieldState3).toEqual(finalState)
   },
 )
