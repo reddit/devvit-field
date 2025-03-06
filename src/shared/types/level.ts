@@ -5,6 +5,11 @@ import type {T3, T5} from './tid'
 
 /** The current level the user is on */
 export type Level = 0 | 1 | 2 | 3 | 4
+
+/**
+ * Field level / subreddit enumeration. Doesn't include r/ prefix. Development
+ * subs may not match.
+ */
 export type LevelPascalCase =
   | 'Field'
   | 'BannedField'

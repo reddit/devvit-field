@@ -3,8 +3,8 @@ import type {Team} from '../team.ts'
 import type {PartitionKey, XY} from './2d.ts'
 import type {AppConfig} from './app-config.ts'
 import type {FieldConfig} from './field-config.ts'
-import type {Delta, FieldSub} from './field.ts'
-import type {Level} from './level.ts'
+import type {Delta} from './field.ts'
+import type {Level, LevelPascalCase} from './level.ts'
 import type {Seed} from './random.ts'
 
 /**
@@ -46,7 +46,7 @@ export type InitDevvitMessage = {
    * The subreddit name without an r/ prefix. Eg, BananaField. The field level
    * when not in a dev sub.
    */
-  sub: FieldSub | string
+  sub: LevelPascalCase | string
   team: Team
   teamBoxCounts: TeamBoxCounts
   type: 'Init'

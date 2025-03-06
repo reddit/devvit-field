@@ -4,8 +4,12 @@ import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import {type XY, xyEq} from '../../shared/types/2d.ts'
 import type {AppConfig} from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
-import type {Delta, FieldSub} from '../../shared/types/field.ts'
-import type {Level} from '../../shared/types/level.ts'
+import type {Delta} from '../../shared/types/field.ts'
+import {
+  type Level,
+  type LevelPascalCase,
+  levelPascalCase,
+} from '../../shared/types/level.ts'
 import type {
   DevvitMessage,
   DevvitSystemMessage,
@@ -95,7 +99,7 @@ export class Game {
    * The subreddit name without an r/ prefix. Eg, BananaField. The field level
    * when not in a dev sub.
    */
-  sub?: FieldSub | string
+  sub?: LevelPascalCase | string
   subLvl?: Level
   team: Team | undefined
   teamBoxCounts: TeamBoxCounts | undefined
@@ -297,13 +301,7 @@ export class Game {
         }
 
     const sub = devMode
-      ? [
-          'PlayBanField',
-          'CantPlayBanField',
-          'BananaField',
-          'WhyBanField',
-          'WhatIsBanField',
-        ][Math.trunc(rnd.num * 5)]!
+      ? Object.values(levelPascalCase)[Math.trunc(rnd.num * 5)]!
       : ''
     const partSize = 128
     const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
