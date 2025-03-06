@@ -135,10 +135,12 @@ export class Game {
   }
 
   centerBox(xy: Readonly<XY>): void {
-    this.cam.x =
-      xy.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2 + 0.5
-    this.cam.y =
-      xy.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2 + 0.5
+    this.cam.x = Math.floor(
+      xy.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2 + 0.5,
+    )
+    this.cam.y = Math.floor(
+      xy.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2 + 0.5,
+    )
   }
 
   claimBox(xy: Readonly<XY>): void {

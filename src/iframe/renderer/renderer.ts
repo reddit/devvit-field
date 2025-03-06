@@ -220,6 +220,10 @@ export class Renderer {
       cam.w,
       cam.h,
     )
+    this.#gl.uniform1f(
+      this.#mapShader.uniforms.uSize!,
+      mapSize * devicePixelRatio,
+    )
 
     for (const [i, tex] of this.#mapShader.textures.entries()) {
       this.#gl.activeTexture(this.#gl.TEXTURE0 + i)

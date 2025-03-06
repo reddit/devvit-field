@@ -2,6 +2,7 @@ export const mapFragGLSL: string = `#version 300 es
 precision highp float;
 
 uniform highp usampler2D uMap;
+uniform highp float uSize;
 
 in vec2 vXY;
 
@@ -19,14 +20,14 @@ const vec4 palette[] = vec4[](
 void main() {
   // if (int(vXY.x) % 10 == 0 || int(vXY.y) % 10 == 0) {
   if (
-    int(vXY.x) == 0 || int(vXY.x) >= 159 ||
-    int(vXY.y) == 0 || int(vXY.y) >= 159
+    vXY.x <= 1. || vXY.x >= (uSize - 1.) ||
+    vXY.y <= 1. || vXY.y >= (uSize - 1.)
   ) {
     oFrag = palette[1];
     return;
   }
 
-  lowp uint box = texelFetch(uMap, ivec2(vXY), 0).r;
+  lowp uint box = texelFetch(uMap, ivec2(vXY / ${devicePixelRatio}.), 0).r;
   oFrag = palette[box];
 }`
 

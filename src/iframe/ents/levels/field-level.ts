@@ -43,22 +43,39 @@ export class FieldLevel implements LevelEnt {
 
   #updatePick(game: Game): void {
     const {cam, ctrl, fieldConfig} = game
+    if (!fieldConfig) return
+    const scaledMapSize = mapSize * devicePixelRatio
 
     if (
       fieldConfig &&
       (ctrl.isOnStart('A') || ctrl.drag) &&
       !ctrl.pinch &&
       !ctrl.handled &&
-      boxHits({w: mapSize, h: mapSize}, ctrl.screenStartPoint) &&
-      boxHits({w: mapSize, h: mapSize}, ctrl.screenPoint)
+      boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint) &&
+      boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenPoint)
     ) {
       ctrl.handled = true
+
       const xy = {
-        x: Math.trunc((ctrl.screenPoint.x * fieldConfig.wh.w) / mapSize),
-        y: Math.trunc((ctrl.screenPoint.y * fieldConfig.wh.h) / mapSize),
+        x: Math.max(
+          0,
+          Math.min(
+            fieldConfig.wh.w - 1,
+            Math.floor((ctrl.screenPoint.x * fieldConfig.wh.w) / scaledMapSize),
+          ),
+        ),
+        y: Math.max(
+          0,
+          Math.min(
+            fieldConfig.wh.h - 1,
+            Math.floor((ctrl.screenPoint.y * fieldConfig.wh.h) / scaledMapSize),
+          ),
+        ),
       }
-      game.centerBox(xy)
+
       game.selectBox(xy)
+      game.centerBox(xy)
+      // lerp
       return
     }
 
@@ -73,7 +90,6 @@ export class FieldLevel implements LevelEnt {
     }
 
     if (
-      fieldConfig &&
       ctrl.isOnStart('A') &&
       !ctrl.drag &&
       !ctrl.pinch &&
@@ -89,11 +105,12 @@ export class FieldLevel implements LevelEnt {
 
   #updatePosition(game: Game): void {
     const {cam, ctrl} = game
+    const scaledMapSize = mapSize * devicePixelRatio
 
     if (
       ctrl.drag &&
       !ctrl.handled &&
-      !boxHits({w: mapSize, h: mapSize}, ctrl.screenStartPoint)
+      !boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint)
     ) {
       ctrl.handled = true
 
