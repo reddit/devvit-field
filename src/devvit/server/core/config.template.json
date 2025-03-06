@@ -2,7 +2,7 @@
   "devvitConfig": "devvit.dev.yaml",
   "leaderboard": {
     "title": "Leaderboard",
-    "subredditName": "",
+    "subredditName": "GamesOnRedditDev",
     "subredditId": "t5_",
     "postId": "t3_"
   },
@@ -10,40 +10,40 @@
     {
       "id": 0,
       "subredditId": "t5_",
-      "url": "https://reddit.com/",
-      "subredditName": "PlayBanField",
+      "url": "https://www.reddit.com/r/",
+      "subredditName": "Field",
       "theme": {},
       "title": "Denial"
     },
     {
       "id": 1,
       "subredditId": "t5_",
-      "url": "https://reddit.com/",
-      "subredditName": "CantPlayBanField",
+      "url": "https://www.reddit.com/r/",
+      "subredditName": "BannedField",
       "theme": {},
       "title": "Anger"
     },
     {
       "id": 2,
       "subredditId": "t5_",
-      "url": "https://reddit.com/",
-      "subredditName": "BananaField",
+      "url": "https://www.reddit.com/r/",
+      "subredditName": "VeryBannedField",
       "theme": {},
       "title": "Bargaining"
     },
     {
       "id": 3,
       "subredditId": "t5_",
-      "url": "https://reddit.com/",
-      "subredditName": "WhyBanField",
+      "url": "https://www.reddit.com/r/",
+      "subredditName": "BananaField",
       "theme": {},
       "title": "Depression"
     },
     {
       "id": 4,
       "subredditId": "t5_",
-      "url": "https://reddit.com/",
-      "subredditName": "WhatIsBanField",
+      "url": "https://www.reddit.com/r/",
+      "subredditName": "WhatIsField",
       "theme": {},
       "title": "Acceptance"
     }
