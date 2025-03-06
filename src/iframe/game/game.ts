@@ -5,6 +5,7 @@ import {type XY, xyEq} from '../../shared/types/2d.ts'
 import {
   type AppConfig,
   getDefaultAppConfig,
+  mapSize,
 } from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta} from '../../shared/types/field.ts'
@@ -86,6 +87,7 @@ export class Game {
   init: Promise<void>
   looper!: Looper
   lvl: FieldLevel
+  map: Uint8Array
   now: UTCMillis
   p1?: Player
   p1BoxCount: number = 0
@@ -124,6 +126,7 @@ export class Game {
     this.field = new Uint8Array()
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.lvl = new FieldLevel(this)
+    this.map = new Uint8Array()
     this.now = 0 as UTCMillis
     this.players = 0
     this.select = {x: 0, y: 0}
@@ -233,6 +236,7 @@ export class Game {
       assets.img.atlas,
       this.field,
       this.fieldConfig,
+      this.map,
       this.subLvl,
     )
 
@@ -414,6 +418,7 @@ export class Game {
         this.bannedPlayers = msg.bannedPlayers
         this.challenge = msg.challenge
         this.debug = msg.debug
+        this.map = new Uint8Array(mapSize * mapSize)
         this.p1BoxCount = msg.p1BoxCount
         this.players = msg.players
         this.seed = msg.seed ?? (0 as Seed)
@@ -435,6 +440,7 @@ export class Game {
             this.assets.img.atlas,
             this.field,
             this.fieldConfig,
+            this.map,
             this.subLvl,
           )
           this.zoo.clear()
@@ -463,6 +469,18 @@ export class Game {
                     )
                 }
               }
+
+          for (let y = 0; y < mapSize; y++)
+            for (let x = 0; x < mapSize; x++) {
+              const i = fieldArrayIndex(
+                {bans: 0, partSize: mapSize, wh: {w: mapSize, h: mapSize}},
+                {x, y},
+              )
+              if (rnd.num < 0.8) continue
+              if (rnd.num < 0.2) fieldArraySetBan(this.map, i)
+              else
+                fieldArraySetTeam(this.map, i, Math.trunc(rnd.num * 4) as Team)
+            }
         }
 
         this.selectBox(msg.initialGlobalXY)

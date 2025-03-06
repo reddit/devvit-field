@@ -17,7 +17,7 @@ export type AppConfig = {
 }
 
 /** Number of boxes per side of the minimap. */
-export const mapSize: number = 80
+export const mapSize: number = 160
 
 export function getDefaultAppConfig(): AppConfig {
   return {

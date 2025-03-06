@@ -1,4 +1,5 @@
 import type {XY} from '../../shared/types/2d.js'
+import {mapSize} from '../../shared/types/app-config.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
 import {type Level, levelWord} from '../../shared/types/level.js'
 import type {Tag} from '../game/config.js'
@@ -22,9 +23,10 @@ export class Renderer {
   #fieldConfig: Readonly<FieldConfig> | undefined
   #fieldShader: Shader | undefined
   #gl?: GL
-  #loseContext: WEBGL_lose_context | null = null
-  #spriteShader: Shader | undefined
   #idByColor: Uint32Array = new Uint32Array()
+  #loseContext: WEBGL_lose_context | null = null
+  #map: Readonly<Uint8Array> | undefined
+  #spriteShader: Shader | undefined
 
   constructor(canvas: HTMLCanvasElement) {
     this.#canvas = canvas
@@ -69,12 +71,13 @@ export class Renderer {
       ? SpriteShader(gl, this.#atlasImage, this.#cels)
       : undefined
     this.#fieldShader =
-      this.#atlasImage && this.#field && this.#fieldConfig
+      this.#atlasImage && this.#field && this.#fieldConfig && this.#map
         ? FieldShader(
             gl,
             this.#atlasImage,
             this.#cels,
             this.#field,
+            this.#map,
             this.#fieldConfig,
           )
         : undefined
@@ -93,12 +96,14 @@ export class Renderer {
     atlasImage: HTMLImageElement,
     field: Readonly<Uint8Array> | undefined,
     fieldConfig: Readonly<FieldConfig> | undefined,
+    map: Readonly<Uint8Array> | undefined,
     lvl: Level | undefined,
   ): void {
     this.#atlasImage = atlasImage
     this.#cels = new Uint16Array(atlas.cels)
     this.#field = field
     this.#fieldConfig = fieldConfig
+    this.#map = map
     if (lvl != null) {
       const pascalLvl = levelWord[lvl]
       this.#idByColor = new Uint32Array([
@@ -160,6 +165,7 @@ export class Renderer {
     this.#gl.uniform1i(this.#fieldShader.uniforms.uTex!, 0)
     this.#gl.uniform1i(this.#fieldShader.uniforms.uCels!, 1)
     this.#gl.uniform1i(this.#fieldShader.uniforms.uField!, 2)
+    this.#gl.uniform1i(this.#fieldShader.uniforms.uMap!, 3)
     this.#gl.uniform2ui(
       this.#fieldShader.uniforms.uTexWH!,
       this.#atlasImage.naturalWidth,
@@ -280,9 +286,11 @@ function FieldShader(
   atlasImage: HTMLImageElement,
   cels: Readonly<Uint16Array>,
   field: Uint8Array,
+  map: Uint8Array,
   config: Readonly<FieldConfig>,
 ): Shader {
   const shader = Shader(gl, fieldVertGLSL, fieldFragGLSL, [
+    gl.createTexture(),
     gl.createTexture(),
     gl.createTexture(),
     gl.createTexture(),
@@ -338,6 +346,24 @@ function FieldShader(
     gl.RED_INTEGER,
     gl.UNSIGNED_BYTE,
     field,
+  )
+  gl.bindTexture(gl.TEXTURE_2D, null)
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
+
+  gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1)
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[3]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.R8UI,
+    mapSize,
+    mapSize,
+    0,
+    gl.RED_INTEGER,
+    gl.UNSIGNED_BYTE,
+    map,
   )
   gl.bindTexture(gl.TEXTURE_2D, null)
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)

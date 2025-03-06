@@ -8,6 +8,7 @@ uniform uvec2 uFieldWH;
 uniform mediump sampler2D uTex;
 uniform mediump uvec2 uTexWH;
 uniform highp usampler2D uField;
+uniform highp usampler2D uMap;
 uniform float uScale;
 uniform highp uint uIDByColor[6];
 
@@ -15,7 +16,24 @@ in vec2 vUV;
 
 out highp vec4 oFrag;
 
+const vec4 bgTeam[] = vec4[](
+  ${rgbaVec4(paletteBlack)},
+  ${rgbaVec4(paletteTerminalGreen)}, // to-do: vary
+  ${rgbaVec4(paletteFlamingo)},
+  ${rgbaVec4(paletteJuiceBox)},
+  ${rgbaVec4(paletteLasagna)},
+  ${rgbaVec4(paletteSunshine)}
+);
+
 void main() {
+  vec2 viewXY = vUV * uCam.zw * uScale;
+  if (viewXY.x >= 0. && viewXY.x <= ${mapSize}. &&
+      viewXY.y >= 0. && viewXY.y <= ${mapSize}.) {
+    lowp uint box = texelFetch(uMap, ivec2(viewXY), 0).r;
+    oFrag = bgTeam[box];
+    return;
+  }
+
   vec2 xy = vUV * uCam.zw + uCam.xy;
   if (
     xy.x < 0. || xy.x >= float(uFieldWH.x) ||
@@ -46,7 +64,16 @@ void main() {
   oFrag = texture(uTex, px / vec2(uTexWH));
 }`
 
-import {paletteGrid} from '../../shared/theme.ts'
+import {
+  paletteBlack,
+  paletteFlamingo,
+  paletteGrid,
+  paletteJuiceBox,
+  paletteLasagna,
+  paletteSunshine,
+  paletteTerminalGreen,
+} from '../../shared/theme.ts'
+import {mapSize} from '../../shared/types/app-config.js'
 import {fieldArrayColorHidden, fieldArrayColorPending} from './field-array.ts'
 
 function rgbaVec4(rgba: number): string {
