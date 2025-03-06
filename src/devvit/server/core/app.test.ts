@@ -28,6 +28,10 @@ DevvitTest.it(
 
     await expect(appInitState(ctx)).resolves.toEqual({
       status: 'pass',
+      appConfig: {
+        globalClickCooldownMillis: 1000,
+        globalServerPollingTimeMillis: 60000,
+      },
       challengeConfig: {
         partitionSize: 5,
         size: 10,

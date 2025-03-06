@@ -22,6 +22,7 @@ import {makeSuperUserMenuAction} from './devvit/menu-actions/makeSuperUser.js'
 import {setDefaultConfigMenuAction} from './devvit/menu-actions/setDefaultConfig.js'
 import {setUserLevelMenuAction} from './devvit/menu-actions/setUserLevel.js'
 import {unblockUsersMenuAction} from './devvit/menu-actions/unblockUsers.js'
+import {updateLiveConfigMenuAction} from './devvit/menu-actions/updateLiveConfig.js'
 import {
   challengeConfigGet,
   challengeMakeNew,
@@ -152,6 +153,7 @@ Devvit.addMenuItem(makeSuperUserMenuAction())
 Devvit.addMenuItem(setUserLevelMenuAction())
 Devvit.addMenuItem(setDefaultConfigMenuAction())
 Devvit.addMenuItem(getDefaultConfigMenuAction())
+Devvit.addMenuItem(updateLiveConfigMenuAction())
 Devvit.addMenuItem(endCurrentChallengeMenuAction())
 Devvit.addMenuItem(blockUsersMenuAction())
 Devvit.addMenuItem(unblockUsersMenuAction())

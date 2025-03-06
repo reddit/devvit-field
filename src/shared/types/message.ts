@@ -1,6 +1,7 @@
 import type {Player} from '../save.ts'
 import type {Team} from '../team.ts'
 import type {PartitionKey, XY} from './2d.ts'
+import type {AppConfig} from './app-config.ts'
 import type {FieldConfig} from './field-config.ts'
 import type {Delta, FieldSub} from './field.ts'
 import type {Level} from './level.ts'
@@ -22,11 +23,10 @@ export type DevvitMessage =
   | DialogMessage
 
 export type InitDevvitMessage = {
+  appConfig: AppConfig
   /** Number of players banned. */
   bannedPlayers: number
   challenge: number
-  /** The minimum number of milliseconds between claims. */
-  cooldownMillis: number
   /** Connected may be sent before Registered. Reinit status. */
   connected: boolean
   /**
@@ -96,6 +96,7 @@ export type IframeMessage =
 export type RealtimeMessage =
   | BoxRealtimeMessage
   | FieldBroadcast
+  | ConfigUpdateMessage
   | ChallengeCompleteMessage
   | PartitionUpdate
 
@@ -127,6 +128,11 @@ export type ChallengeCompleteMessage = {
    */
   p1BoxCount: number
   standings: {member: Team; score: number}[]
+}
+
+export type ConfigUpdateMessage = {
+  type: 'ConfigUpdate'
+  config: AppConfig
 }
 
 export type DialogMessage = {

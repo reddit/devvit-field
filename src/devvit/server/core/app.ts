@@ -12,12 +12,14 @@ import {fieldGetDeltas} from './field'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
 import {levels, levelsIsUserInRightPlace} from './levels'
+import {liveSettingsGet} from './live-settings'
 import {userGetOrSet} from './user'
 
 export type AppState =
   /** Continue rendering the app as usual */
   | {
       status: 'pass'
+      appConfig: Awaited<ReturnType<typeof liveSettingsGet>>
       challengeNumber: Awaited<
         ReturnType<typeof challengeGetCurrentChallengeNumber>
       >
@@ -44,7 +46,8 @@ export type AppState =
     }
 
 export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
-  const [profile, challengeNumber] = await Promise.all([
+  const [appConfig, profile, challengeNumber] = await Promise.all([
+    liveSettingsGet(ctx),
     userGetOrSet({ctx}),
     challengeGetCurrentChallengeNumber({redis: ctx.redis}),
   ])
@@ -111,6 +114,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
 
   return {
     status: 'pass',
+    appConfig,
     challengeNumber,
     profile,
     // DO NOT RETURN THE SEED

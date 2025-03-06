@@ -1,8 +1,8 @@
-import {defaultCooldownMillis} from '../../shared/config.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
 import {type XY, xyEq} from '../../shared/types/2d.ts'
+import type {AppConfig} from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Delta, FieldSub} from '../../shared/types/field.ts'
 import type {Level} from '../../shared/types/level.ts'
@@ -56,6 +56,10 @@ export class Game {
   // to-do: SavableGame for LocalStorage savable state.
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
   ac: AudioContext
+  appConfig: AppConfig = {
+    globalClickCooldownMillis: 1_000,
+    globalServerPollingTimeMillis: 60_000,
+  }
   assets: AssetMap | undefined
   atlas: Atlas<Tag>
   audio?: AudioBufferByName
@@ -67,7 +71,6 @@ export class Game {
   challenge: number | undefined
   /** Most recent claim timestamp. */
   claimed: UTCMillis = 0 as UTCMillis
-  cooldownMillis: number = defaultCooldownMillis
   connected: boolean
   ctrl!: Input<DefaultButton>
   debug: boolean
@@ -147,7 +150,7 @@ export class Game {
     setTimeout(
       () => this.canvas.dispatchEvent(Bubble('game-update', undefined)),
       // Hack: ensure this.now >= cooldownMillis.
-      this.cooldownMillis + 100,
+      this.appConfig.globalClickCooldownMillis + 100,
     )
 
     const box = new BoxEnt(this, xy)
@@ -165,7 +168,7 @@ export class Game {
   }
 
   isCooldown(): boolean {
-    return this.now - this.claimed < this.cooldownMillis
+    return this.now - this.claimed < this.appConfig.globalClickCooldownMillis
   }
 
   selectBox(xy: Readonly<XY>): void {
@@ -319,9 +322,12 @@ export class Game {
     setTimeout(
       () => {
         this.#onDevMsg({
+          appConfig: {
+            globalClickCooldownMillis: 1000,
+            globalServerPollingTimeMillis: 60_000,
+          },
           bannedPlayers: Math.trunc(rnd.num * 5_000_000),
           challenge: Math.trunc(rnd.num * 10_000),
-          cooldownMillis: defaultCooldownMillis,
           connected: true,
           debug: true,
           field,
@@ -406,9 +412,9 @@ export class Game {
 
     switch (msg.type) {
       case 'Init': {
+        this.appConfig = msg.appConfig
         this.bannedPlayers = msg.bannedPlayers
         this.challenge = msg.challenge
-        this.cooldownMillis = msg.cooldownMillis
         this.debug = msg.debug
         this.p1BoxCount = msg.p1BoxCount
         this.players = msg.players
@@ -502,6 +508,9 @@ export class Game {
       case 'PartitionUpdate':
         if (!this.p1) return
         this.#applyDeltas(msg.deltas)
+        break
+      case 'ConfigUpdate':
+        this.appConfig = msg.config
         break
       default:
         msg satisfies never
