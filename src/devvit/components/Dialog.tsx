@@ -1,5 +1,5 @@
 import {Devvit} from '@devvit/public-api'
-import {consoleBase, cssHex, paletteBlack} from '../../shared/theme'
+import {cssHex, paletteBlack, paletteConsole} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -33,7 +33,7 @@ export function Dialog(props: DialogProps): JSX.Element {
       height='100%'
       width='100%'
       alignment='center middle'
-      backgroundColor={cssHex(consoleBase)}
+      backgroundColor={cssHex(paletteConsole)}
     >
       {/* Background Screen */}
       {props.backgroundElement ?? null}

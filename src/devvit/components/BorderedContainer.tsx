@@ -1,11 +1,6 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
 import {Devvit} from '@devvit/public-api'
-import {
-  cssHex,
-  paletteBlack,
-  paletteDialogBase,
-  paletteFieldLight,
-} from '../../shared/theme'
+import {cssHex, paletteBlack, paletteFieldLight} from '../../shared/theme'
 
 type BorderedContainerProps = {
   children: JSX.Element | JSX.Element[]
@@ -23,7 +18,7 @@ type BorderedContainerProps = {
 export function BorderedContainer(props: BorderedContainerProps): JSX.Element {
   const height = props.height ?? 256
   const width = props.width ?? 300
-  const backgroundColor = props.backgroundColor ?? cssHex(paletteDialogBase)
+  const backgroundColor = props.backgroundColor ?? cssHex(paletteBlack)
   const borderColor = props.borderColor ?? cssHex(paletteFieldLight)
   const lines = props.lines ?? false
 

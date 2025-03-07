@@ -1,10 +1,6 @@
 import {Devvit} from '@devvit/public-api'
 import {abbreviateNumber} from '../../shared/format.js'
-import {
-  type Team,
-  teamLeaderboardBackgroundColor,
-  teamTitleCase,
-} from '../../shared/team.ts'
+import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
 import {
   cssHex,
   paletteBlack,
@@ -93,7 +89,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
               {...props}
               label={teamTitleCase[team.member]}
               value={team.score}
-              color={cssHex(teamLeaderboardBackgroundColor[team.member])}
+              color={cssHex(teamColor[team.member])}
               key={`team-${team.member}`}
             />
           ))}

@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import type {Team} from '../../shared/team'
 import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
@@ -8,6 +9,7 @@ import {
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
+import {GameScreen} from './GameScreen'
 import {PixelText} from './PixelText'
 
 // This dialog is shown whenever a user transitions to a new level.
@@ -16,6 +18,7 @@ import {PixelText} from './PixelText'
 
 type DialogBannedProps = {
   level: Level
+  team: Team
   targetLevel: Level
   pixelRatio: number
   onPress?: () => void
@@ -26,6 +29,13 @@ export function DialogBanned(props: DialogBannedProps): JSX.Element {
     <Dialog
       {...props}
       buttonLabel={`Go to r/${levelPascalCase[props.targetLevel]}`}
+      backgroundElement={
+        <GameScreen
+          level={props.level}
+          team={props.team}
+          pixelRatio={props.pixelRatio}
+        />
+      }
     >
       <BorderedContainer
         height={96}
