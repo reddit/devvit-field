@@ -92,7 +92,6 @@ export class BFTerminal extends LitElement {
     .your-boxes-title {
       color: var(--color-bland-blue);
       text-transform: uppercase;
-      text-decoration: underline;
     }
     .your-boxes-num {color: var(--color-bland-blue);}
     .coords {
