@@ -30,10 +30,6 @@ export const paletteWhatIsField: number = 0xa955b7ff
 export const paletteWhatIsFieldLight: number = 0xda57fbff
 export const paletteWhatIsFieldDark: number = 0x300f38ff
 
-export const paletteTerminalGreen: number = 0x4cf190ff
-export const paletteDarkGrey: number = 0x1f2430ff
-export const paletteGrid: number = 0x002e00ff
-
 export const paletteOffline: number = 0xff0000ff
 export const paletteDisabled: number = 0x505050ff
 

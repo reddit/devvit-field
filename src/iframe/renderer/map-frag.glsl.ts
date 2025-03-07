@@ -3,19 +3,19 @@ precision highp float;
 
 uniform highp usampler2D uMap;
 uniform highp float uSize;
+uniform highp uint uRGBAByColor[6];
 
 in vec2 vXY;
 
 out highp vec4 oFrag;
 
-const vec4 palette[] = vec4[](
-  ${rgbaVec4(paletteBlack)},
-  ${rgbaVec4(paletteTerminalGreen)}, // to-do: vary
-  ${rgbaVec4(paletteFlamingo)},
-  ${rgbaVec4(paletteJuiceBox)},
-  ${rgbaVec4(paletteLasagna)},
-  ${rgbaVec4(paletteSunshine)}
-);
+vec4 rgbaToVec4(uint rgba) {
+  float r = float((rgba >> 24u) & 0xffu);
+  float g = float((rgba >> 16u) & 0xffu);
+  float b = float((rgba >>  8u) & 0xffu);
+  float a = float( rgba         & 0xffu);
+  return vec4(r / 255., g / 255., b / 255., a / 255.);
+}
 
 void main() {
   // if (int(vXY.x) % 10 == 0 || int(vXY.y) % 10 == 0) {
@@ -23,28 +23,12 @@ void main() {
     vXY.x <= 1. || vXY.x >= (uSize - 1.) ||
     vXY.y <= 1. || vXY.y >= (uSize - 1.)
   ) {
-    oFrag = palette[1];
+    oFrag = rgbaToVec4(uRGBAByColor[1]);
     return;
   }
 
-  lowp uint box = texelFetch(uMap, ivec2(vXY * ${mapSize}. / uSize), 0).r;
-  oFrag = palette[box];
+  lowp uint color = texelFetch(uMap, ivec2(vXY * ${mapSize}. / uSize), 0).r;
+  oFrag = rgbaToVec4(uRGBAByColor[color]);
 }`
 
-import {
-  paletteBlack,
-  paletteFlamingo,
-  paletteJuiceBox,
-  paletteLasagna,
-  paletteSunshine,
-  paletteTerminalGreen,
-} from '../../shared/theme.ts'
 import {mapSize} from '../../shared/types/app-config.js'
-
-function rgbaVec4(rgba: number): string {
-  const r = ((rgba >>> 24) & 0xff) / 0xff
-  const g = ((rgba >>> 16) & 0xff) / 0xff
-  const b = ((rgba >>> 8) & 0xff) / 0xff
-  const a = ((rgba >>> 0) & 0xff) / 0xff
-  return `vec4(${r}, ${g}, ${b}, ${a})`
-}

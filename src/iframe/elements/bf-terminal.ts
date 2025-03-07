@@ -10,7 +10,7 @@ import {ifDefined} from 'lit/directives/if-defined.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
 import {fontMSize, radiusPx, spacePx} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
-import type {Level} from '../../shared/types/level.ts'
+import {type Level, levelPascalCase} from '../../shared/types/level.ts'
 import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -52,6 +52,12 @@ export class BFTerminal extends LitElement {
       outline: none; /* Disable focus outline. */
     }
 
+    .Field {color: var(--color-field-light);}
+    .BannedField {color: var(--color-banned-field-light);}
+    .VeryBannedField {color: var(--color-very-banned-field-light);}
+    .BananaField {color: var(--color-banana-field-light);}
+    .WhatIsField {color: var(--color-what-is-field-light);}
+
     .canvas-box {
       height: 100%;
       width: 100%;
@@ -81,7 +87,7 @@ export class BFTerminal extends LitElement {
       display: flex;
       width: 100%;
     }
-    .title {flex-grow:1; color: var(--color-terminal-green);}
+    .title {flex-grow:1;}
     .challenge {color: var(--color-white);}
     .header-bottom {
       display: flex;
@@ -98,7 +104,6 @@ export class BFTerminal extends LitElement {
       left: 50%;
       transform: translateX(-50%);
       bottom: 0;
-      color: var(--color-terminal-green);
     }
 
     .leaderboard-button {
@@ -124,7 +129,6 @@ export class BFTerminal extends LitElement {
 
       margin-inline-start: ${spacePx / 2}px;
       white-space: nowrap;
-      color: var(--color-terminal-green);
     }
     .stats .num {
       text-align: end;
@@ -178,7 +182,7 @@ export class BFTerminal extends LitElement {
       : 'Claim'
     return html`
       <div
-        class='terminal'
+        class='terminal ${this.level == null ? '' : levelPascalCase[this.level]}'
         style='pointer-events: ${this.loading ? 'none' : 'initial'}'
       >
         <div class='header'>

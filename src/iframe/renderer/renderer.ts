@@ -1,3 +1,20 @@
+import {
+  paletteBananaField,
+  paletteBananaFieldDark,
+  paletteBannedField,
+  paletteBannedFieldDark,
+  paletteBlack,
+  paletteField,
+  paletteFieldDark,
+  paletteFlamingo,
+  paletteJuiceBox,
+  paletteLasagna,
+  paletteSunshine,
+  paletteVeryBannedField,
+  paletteVeryBannedFieldDark,
+  paletteWhatIsField,
+  paletteWhatIsFieldDark,
+} from '../../shared/theme.js'
 import type {XY} from '../../shared/types/2d.js'
 import {mapSize} from '../../shared/types/app-config.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
@@ -30,7 +47,9 @@ export class Renderer {
   #loseContext: WEBGL_lose_context | null = null
   #map: Readonly<Uint8Array> | undefined
   #mapShader: Shader | undefined
+  #rgbaByColor: Uint32Array = new Uint32Array()
   #spriteShader: Shader | undefined
+  #themeDark: number = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.#canvas = canvas
@@ -124,6 +143,28 @@ export class Renderer {
         atlas.anim['box--Sunshine'].id,
         0, // Pending, unused.
       ])
+      const theme = {
+        0: paletteField,
+        1: paletteBannedField,
+        2: paletteVeryBannedField,
+        3: paletteBananaField,
+        4: paletteWhatIsField,
+      }[lvl]
+      this.#rgbaByColor = new Uint32Array([
+        paletteBlack,
+        theme,
+        paletteFlamingo,
+        paletteJuiceBox,
+        paletteLasagna,
+        paletteSunshine,
+      ])
+      this.#themeDark = {
+        0: paletteFieldDark,
+        1: paletteBannedFieldDark,
+        2: paletteVeryBannedFieldDark,
+        3: paletteBananaFieldDark,
+        4: paletteWhatIsFieldDark,
+      }[lvl]
     }
     this.initGL()
   }
@@ -198,6 +239,7 @@ export class Renderer {
       this.#fieldShader.uniforms.uIDByColor!,
       this.#idByColor,
     )
+    this.#gl.uniform1ui(this.#fieldShader.uniforms.uGridRGBA!, this.#themeDark)
 
     for (const [i, tex] of this.#fieldShader.textures.entries()) {
       this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
@@ -229,6 +271,10 @@ export class Renderer {
     this.#gl.uniform1f(
       this.#mapShader.uniforms.uSize!,
       mapSize * devicePixelRatio,
+    )
+    this.#gl.uniform1uiv(
+      this.#mapShader.uniforms.uRGBAByColor!,
+      this.#rgbaByColor,
     )
 
     for (const [i, tex] of this.#mapShader.textures.entries()) {
