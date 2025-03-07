@@ -52,16 +52,11 @@ export class Looper {
     if (op === 'add') this.#renderer.initGL()
   }
 
-  render(
-    cam: Readonly<Cam>,
-    bmps: Readonly<AttribBuffer>,
-    loop: (() => void) | undefined,
-    fieldScale: number,
-  ): void {
+  render(bmps: Readonly<AttribBuffer>, loop: (() => void) | undefined): void {
     this.#loop = loop
     if (document.hidden || !this.#renderer.hasContext()) return
     if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
-    this.#renderer.render(cam, this.frame, bmps, fieldScale)
+    this.#renderer.render(this.#cam, this.frame, bmps, this.#cam.fieldScale)
   }
 
   #onEvent = (ev: Event): void => {

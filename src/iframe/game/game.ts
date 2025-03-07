@@ -141,8 +141,7 @@ export class Game {
     const y = Math.floor(
       xy.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2 + 0.5,
     )
-    this.cam.x = x
-    this.cam.y = y
+    this.moveTo({x, y})
   }
 
   claimBox(xy: Readonly<XY>): void {
@@ -180,6 +179,26 @@ export class Game {
 
   isCooldown(): boolean {
     return this.now - this.claimed < this.appConfig.globalClickCooldownMillis
+  }
+
+  moveTo(xy: Readonly<XY>): void {
+    if (!this.fieldConfig) return
+    this.cam.x = Math.max(
+      -this.cam.w / 2 / this.cam.scale / this.cam.fieldScale,
+      Math.min(
+        xy.x,
+        this.fieldConfig.wh.w -
+          this.cam.w / 2 / this.cam.scale / this.cam.fieldScale,
+      ),
+    )
+    this.cam.y = Math.max(
+      -this.cam.h / 2 / this.cam.scale / this.cam.fieldScale,
+      Math.min(
+        xy.y,
+        this.fieldConfig.wh.h -
+          this.cam.h / 2 / this.cam.scale / this.cam.fieldScale,
+      ),
+    )
   }
 
   selectBox(xy: Readonly<XY>): void {
@@ -398,7 +417,7 @@ export class Game {
     this.zoo.update(this)
     this.zoo.draw(this)
 
-    this.looper.render(this.cam, this.bmps, this.#onLoop, this.cam.fieldScale)
+    this.looper.render(this.bmps, this.#onLoop)
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {

@@ -102,18 +102,21 @@ export class FieldLevel implements LevelEnt {
   }
 
   #updatePosition(game: Game): void {
-    const {cam, ctrl} = game
+    const {cam, ctrl, fieldConfig} = game
     const scaledMapSize = mapSize * devicePixelRatio
 
     if (
+      fieldConfig &&
       ctrl.drag &&
       !ctrl.handled &&
       !boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint)
     ) {
       ctrl.handled = true
 
-      cam.x -= ctrl.delta.x / cam.scale / cam.fieldScale
-      cam.y -= ctrl.delta.y / cam.scale / cam.fieldScale
+      game.moveTo({
+        x: cam.x - ctrl.delta.x / cam.scale / cam.fieldScale,
+        y: cam.y - ctrl.delta.y / cam.scale / cam.fieldScale,
+      })
 
       this.#rtConnector.update(game)
     }
@@ -129,8 +132,7 @@ export class FieldLevel implements LevelEnt {
 
       const speed =
         (dir.x && dir.y ? Math.sqrt(25 / 2) : 5) / cam.scale / cam.fieldScale
-      cam.x += dir.x * speed
-      cam.y += dir.y * speed
+      game.moveTo({x: cam.x + dir.x * speed, y: cam.y + dir.y * speed})
 
       this.#rtConnector.update(game)
     }
@@ -146,6 +148,8 @@ export class FieldLevel implements LevelEnt {
         game.ctrl.screenPoint,
         !!game.p1?.profile.superuser,
       )
+      // to-do: centralize cam movements.
+      game.moveTo(game.cam)
 
       this.#rtConnector.update(game)
     }
@@ -158,6 +162,7 @@ export class FieldLevel implements LevelEnt {
         game.ctrl.screenMidPoint,
         !!game.p1?.profile.superuser,
       )
+      game.moveTo(game.cam)
 
       this.#rtConnector.update(game)
     } else this.#zoomLvl = game.cam.fieldScaleLevel

@@ -5,6 +5,7 @@ import type {FieldConfig} from '../shared/types/field-config.ts'
 import type {Game} from './game/game.ts'
 import type {Cam} from './renderer/cam.ts'
 
+// to-do: delete.
 export class RealtimeConnector {
   #start: XY = {x: 0, y: 0}
   #end: XY = {x: 0, y: 0}
