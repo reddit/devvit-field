@@ -99,12 +99,6 @@ export class BFTerminal extends LitElement {
       text-transform: uppercase;
     }
     .your-boxes-num {color: var(--color-bland-blue);}
-    .coords {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 0;
-    }
 
     .leaderboard-button {
       text-transform: uppercase;
@@ -194,7 +188,6 @@ export class BFTerminal extends LitElement {
             <div class='status'>${this.online ? html`&nbsp;` : '• Offline'}</div>
             <div class='your-boxes-num'>${this.p1Boxes}</div>
           </div>
-          <div class='coords'>(${this.x.toString().padStart(4, '0')}, ${this.y.toString().padStart(4, '0')})</div>
         </div>
         <div class='canvas-box'>
           <!--- Set tabIndex to propagate key events. -->
