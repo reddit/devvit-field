@@ -4,7 +4,7 @@ import {
   cssHex,
   fallbackPixelRatio,
   paletteBlack,
-  paletteTerminalGreen,
+  paletteFieldLight,
   paletteWhite,
 } from '../../shared/theme.js'
 import {PixelText} from './PixelText.js'
@@ -13,15 +13,17 @@ type StyledButtonProps = {
   children: string
   color?: `#${string}`
   width?: number
-  pixelRatio?: number
+  pixelRatio: number
   onPress?: (() => void) | undefined
 }
 
 export function StyledButton(props: StyledButtonProps): JSX.Element {
-  const color = props.color ?? cssHex(paletteTerminalGreen)
+  const color = props.color ?? cssHex(paletteFieldLight)
   const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
   const height = 44
   const width = props.width ?? 256
+
+  const RADIUS = 8
 
   return (
     <zstack width={`${width}px`} height={`${height}px`} onPress={props.onPress}>
@@ -35,38 +37,38 @@ export function StyledButton(props: StyledButtonProps): JSX.Element {
   <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   
   <!-- Button Shadow -->
-  <rect x="0" y="10" width="${width}" height="34" rx="4" ry="4" fill="${cssHex(
+  <rect x="0" y="10" width="${width}" height="34" rx="${RADIUS}" ry="${RADIUS}" fill="${cssHex(
     paletteBlack,
   )}" opacity="0.5" />
   
   <!-- Button Side: Stroke -->
-  <rect x="0" y="6" width="${width}" height="34" rx="4" ry="4" fill="${cssHex(
+  <rect x="0" y="6" width="${width}" height="34" rx="${RADIUS}" ry="${RADIUS}" fill="${cssHex(
     paletteBlack,
   )}" />
 
   <!-- Button Side: Fill -->
-  <rect x="1" y="7" width="${
-    width - 2
-  }" height="32" rx="3" ry="3" fill="${color}" />
+  <rect x="1" y="7" width="${width - 2}" height="32" rx="${RADIUS - 1}" ry="${
+    RADIUS - 1
+  }" fill="${color}" />
 
   <!-- Button Side: Tint -->
-  <rect x="1" y="7" width="${
-    width - 2
-  }" height="32" rx="3" ry="3" fill="${cssHex(paletteBlack)}" opacity="0.5" />
+  <rect x="1" y="7" width="${width - 2}" height="32" rx="${RADIUS - 1}" ry="${
+    RADIUS - 1
+  }" fill="${cssHex(paletteBlack)}" opacity="0.5" />
   
   <!-- Front: Stroke -->
-  <rect x="0" y="0" width="${width}" height="34" rx="4" ry="4" fill="${cssHex(
+  <rect x="0" y="0" width="${width}" height="34" rx="${RADIUS}" ry="${RADIUS}" fill="${cssHex(
     paletteBlack,
   )}" />
 
   <!-- Front: Fill -->
-  <rect x="1" y="1" width="${
-    width - 2
-  }" height="32" rx="3" ry="3" fill="${color}" />
+  <rect x="1" y="1" width="${width - 2}" height="32" rx="${RADIUS - 1}" ry="${
+    RADIUS - 1
+  }" fill="${color}" />
 
   <!-- Front: Highlight -->
-  <rect x="4" y="2" width="${
-    width - 8
+  <rect x="8" y="2" width="${
+    width - 16
   }" height="3" rx="1.5" ry="1.5" fill="${cssHex(
     paletteWhite,
   )}" opacity="0.6" />

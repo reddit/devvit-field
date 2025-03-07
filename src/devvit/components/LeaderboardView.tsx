@@ -10,8 +10,8 @@ import {
   paletteBlack,
   paletteBlandBlue,
   paletteConsole,
+  paletteFieldLight,
   paletteOffline,
-  paletteTerminalGreen,
   paletteWhite,
 } from '../../shared/theme.js'
 import {PixelText} from './PixelText.js'
@@ -68,7 +68,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         <PixelText
           {...props}
           size={16}
-          color={cssHex(props.online ? paletteTerminalGreen : paletteOffline)}
+          color={cssHex(props.online ? paletteFieldLight : paletteOffline)}
         >
           {props.online ? '•ONLINE' : '•OFFLINE'}
         </PixelText>
@@ -172,19 +172,19 @@ function StatTile(props: {label: string; value: number; pixelRatio: number}) {
       backgroundColor={cssHex(paletteBlack)}
       alignment='center middle'
       border='thin'
-      borderColor={cssHex(paletteTerminalGreen)}
+      borderColor={cssHex(paletteFieldLight)}
     >
       <PixelText
         pixelRatio={props.pixelRatio}
         size={24}
-        color={cssHex(paletteTerminalGreen)}
+        color={cssHex(paletteFieldLight)}
       >
         {abbreviateNumber(props.value)}
       </PixelText>
       <PixelText
         pixelRatio={props.pixelRatio}
         size={12}
-        color={cssHex(paletteTerminalGreen)}
+        color={cssHex(paletteFieldLight)}
       >
         {props.label}
       </PixelText>
