@@ -2,6 +2,7 @@ import type {XY} from '../../shared/types/2d.js'
 import {mapSize} from '../../shared/types/app-config.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
 import {type Level, levelWord} from '../../shared/types/level.js'
+import {Bubble} from '../elements/bubble.js'
 import type {Tag} from '../game/config.js'
 import type {Atlas} from '../graphics/atlas.js'
 import type {AttribBuffer} from './attrib-buffer.js'
@@ -51,7 +52,12 @@ export class Renderer {
       antialias: false,
       ...(devMode && {powerPreference: 'low-power'}),
     })
-    if (!gl) throw Error('WebGL v2 unsupported')
+    if (!gl) {
+      this.#canvas.dispatchEvent(
+        Bubble('game-ui', {ui: 'NoWebGL', msg: undefined}),
+      )
+      throw Error('WebGL v2 unsupported')
+    }
     this.#gl = gl
 
     this.clearColor(this.#clearRGBA)

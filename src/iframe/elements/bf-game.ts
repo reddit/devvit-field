@@ -41,6 +41,7 @@ export type UI =
   | 'Loading'
   /** Promoted, replaying / stuck, or demoted. */
   | 'NextLevel' // to-do: rename ChallengeCompleteMessage?
+  | 'NoWebGL'
   | 'Playing'
   | 'Scored'
 
@@ -151,6 +152,14 @@ export class BFGame extends LitElement {
         `
         break
       }
+      case 'NoWebGL':
+        dialog = html`
+          <bf-dialog open>
+            <h2>Error</h2>
+            WebGL 2 support is required to play. Try another device.
+          </bf-dialog>
+        `
+        break
       case 'Scored':
         return html`to-do: fix me.`
       default:
