@@ -9,7 +9,6 @@ import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
 import {fontMSize, radiusPx, spacePx} from '../../shared/theme.ts'
-import {fontSSize} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import type {Level} from '../../shared/types/level.ts'
 import {Bubble} from './bubble.ts'
@@ -108,7 +107,7 @@ export class BFTerminal extends LitElement {
 
     .panel {
       display: flex;
-      font-size: ${fontSSize}px;
+      font-size: ${fontMSize}px;
       width: 100%;
       padding-block-start: ${spacePx / 2}px;
       padding-block-end: ${spacePx / 2}px;
