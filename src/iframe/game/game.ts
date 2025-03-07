@@ -23,7 +23,6 @@ import type {
 import {Random, type Seed} from '../../shared/types/random.ts'
 import {SID} from '../../shared/types/sid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
-import {lerp} from '../../shared/utils/math.ts'
 import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName, audioPlay} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
@@ -135,15 +134,13 @@ export class Game {
     this.zoo = new Zoo()
   }
 
-  centerBox(xy: Readonly<XY>, anim: 'None' | number): void {
-    let x = Math.floor(
+  centerBox(xy: Readonly<XY>): void {
+    const x = Math.floor(
       xy.x - this.cam.w / this.cam.scale / this.cam.fieldScale / 2 + 0.5,
     )
-    if (typeof anim === 'number') x = lerp(this.cam.x, x, anim)
-    let y = Math.floor(
+    const y = Math.floor(
       xy.y - this.cam.h / this.cam.scale / this.cam.fieldScale / 2 + 0.5,
     )
-    if (typeof anim === 'number') y = lerp(this.cam.y, y, anim)
     this.cam.x = x
     this.cam.y = y
   }
@@ -491,7 +488,7 @@ export class Game {
         }
 
         this.selectBox(msg.initialGlobalXY)
-        this.centerBox(msg.initialGlobalXY, 'None')
+        this.centerBox(msg.initialGlobalXY)
         this.#applyDeltas(msg.initialDeltas)
         this.p1 = msg.p1
         if (this.debug) console.log('init')

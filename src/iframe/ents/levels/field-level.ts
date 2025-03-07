@@ -74,7 +74,7 @@ export class FieldLevel implements LevelEnt {
       }
 
       game.selectBox(xy)
-      game.centerBox(xy, 0.01)
+      game.centerBox(xy)
       return
     }
 
