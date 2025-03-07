@@ -1,4 +1,4 @@
-import {type Context, Devvit, useInterval, useState} from '@devvit/public-api'
+import {Devvit, useInterval, useState} from '@devvit/public-api'
 import {clamp} from '../../shared/math.js'
 import {CountdownView} from './CountdownView.js'
 
@@ -6,16 +6,16 @@ import {CountdownView} from './CountdownView.js'
 // not available to us in the preview state. Enabling us to reuse the template
 // between the default and preview states.
 
+type CountdownControllerProps = {
+  pixelRatio: number
+}
+
 export function CountdownController(
-  _props: unknown,
-  context: Context,
+  props: CountdownControllerProps,
 ): JSX.Element {
   const TARGET_EPOCH = 1743512400000
   const MIN_SECONDS = 0
   const MAX_SECONDS = 359999 // 99:59:59 (hours:minutes:seconds)
-  const DEFAULT_PIXEL_RATIO = 2
-
-  const pixelRatio = context.dimensions?.scale ?? DEFAULT_PIXEL_RATIO
 
   const [secondsLeft, setSecondsLeft] = useState(
     clamp((TARGET_EPOCH - Date.now()) / 1000, MIN_SECONDS, MAX_SECONDS),
@@ -35,5 +35,7 @@ export function CountdownController(
     tick.start()
   }
 
-  return <CountdownView secondsLeft={secondsLeft} pixelRatio={pixelRatio} />
+  return (
+    <CountdownView secondsLeft={secondsLeft} pixelRatio={props.pixelRatio} />
+  )
 }

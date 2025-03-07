@@ -1,10 +1,5 @@
 import {Devvit} from '@devvit/public-api'
-import {
-  cssHex,
-  fallbackPixelRatio,
-  paletteBlack,
-  paletteWhite,
-} from '../../shared/theme'
+import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -23,40 +18,36 @@ const LEVEL_COPY = [
 ]
 
 type DialogUnauthorizedProps = {
-  pixelRatio?: number
-  level?: Level
+  pixelRatio: number
+  level: Level
 }
 
 export function DialogUnauthorized(
   props: DialogUnauthorizedProps,
 ): JSX.Element {
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
-  const level = props.level ?? 0
-
   return (
     <Dialog
       onPress={() => console.log('do something')}
-      pixelRatio={pixelRatio}
+      {...props}
       buttonLabel='Go To r/Level'
-      level={level}
     >
       <BorderedContainer
         height={180}
         width={256}
-        pixelRatio={pixelRatio}
+        {...props}
         lines
         padding='none'
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[level])}
+        borderColor={cssHex(levelBaseColor[props.level])}
       >
         <vstack height='100%' width='100%' alignment='center middle'>
           <spacer height='16px' />
-          {LEVEL_COPY[level]?.map(copy => (
+          {LEVEL_COPY[props.level]?.map(copy => (
             <PixelText
               key={copy}
-              pixelRatio={pixelRatio}
+              {...props}
               size={16}
-              color={cssHex(levelHighlightColor[level])}
+              color={cssHex(levelHighlightColor[props.level])}
             >
               {copy}
             </PixelText>
@@ -66,7 +57,7 @@ export function DialogUnauthorized(
       </BorderedContainer>
       <spacer grow />
 
-      <PixelText size={12} color={cssHex(paletteWhite)}>
+      <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
         YOUR TEAM NEEDS YOU HERE:
       </PixelText>
       <spacer grow />

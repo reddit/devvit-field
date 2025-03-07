@@ -2,7 +2,6 @@
 import {Devvit} from '@devvit/public-api'
 import {
   cssHex,
-  fallbackPixelRatio,
   paletteBlack,
   paletteDialogBase,
   paletteFieldLight,
@@ -12,7 +11,7 @@ type BorderedContainerProps = {
   children: JSX.Element | JSX.Element[]
   height?: number
   width?: number
-  pixelRatio?: number
+  pixelRatio: number
   backgroundColor?: Devvit.Blocks.ColorString
   shadow?: boolean
   borderColor?: Devvit.Blocks.ColorString
@@ -24,7 +23,6 @@ type BorderedContainerProps = {
 export function BorderedContainer(props: BorderedContainerProps): JSX.Element {
   const height = props.height ?? 256
   const width = props.width ?? 300
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
   const backgroundColor = props.backgroundColor ?? cssHex(paletteDialogBase)
   const borderColor = props.borderColor ?? cssHex(paletteFieldLight)
   const lines = props.lines ?? false
@@ -44,8 +42,8 @@ export function BorderedContainer(props: BorderedContainerProps): JSX.Element {
     <zstack width={`${width}px`} height={`${height}px`}>
       {/* Container Background + Border */}
       <image
-        imageHeight={Math.ceil(height * pixelRatio)}
-        imageWidth={Math.ceil(width * pixelRatio)}
+        imageHeight={Math.ceil(height * props.pixelRatio)}
+        imageWidth={Math.ceil(width * props.pixelRatio)}
         width='100%'
         height='100%'
         description={`"${props.children}" button`}
@@ -112,8 +110,8 @@ export function BorderedContainer(props: BorderedContainerProps): JSX.Element {
       {/* CRT Lines */}
       {lines && (
         <image
-          imageHeight={Math.ceil(height * pixelRatio)}
-          imageWidth={Math.ceil(width * pixelRatio)}
+          imageHeight={Math.ceil(height * props.pixelRatio)}
+          imageWidth={Math.ceil(width * props.pixelRatio)}
           width='100%'
           height='100%'
           description={`"${props.children}" button`}

@@ -9,7 +9,7 @@ import {
   parsePartitionXY,
 } from '../../shared/partition.ts'
 import {getTeamFromUserId} from '../../shared/team.ts'
-import {playButtonWidth} from '../../shared/theme.ts'
+import {fallbackPixelRatio, playButtonWidth} from '../../shared/theme.ts'
 import type {PartitionKey} from '../../shared/types/2d.ts'
 import type {Delta} from '../../shared/types/field.ts'
 import type {
@@ -34,11 +34,12 @@ import {
 } from '../server/core/user.js'
 import {LeaderboardController} from './LeaderboardController.tsx'
 import {Title} from './title.tsx'
-
+// import { DialogWelcome } from './DialogWelcome.tsx';
 // import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 // import { CountdownController } from './CountdownController.tsx';
 
 export function App(ctx: Devvit.Context): JSX.Element {
+  const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
   if (
     ctx.subredditId === LEADERBOARD_CONFIG.subredditId &&
     ctx.postId === LEADERBOARD_CONFIG.postId
@@ -46,7 +47,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
     // TODO: add conditional to render countdown... not sure about timing yet.
     //return <CountdownController />;
     // return <DialogUnauthorized level={2} />
-    return <LeaderboardController />
+    // return <DialogWelcome team={2} level={4} pixelRatio={pixelRatio} />;
+    return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))

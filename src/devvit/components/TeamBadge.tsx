@@ -4,31 +4,30 @@ import {
   teamLeaderboardBackgroundColor,
   teamTitleCase,
 } from '../../shared/team'
-import {cssHex, fallbackPixelRatio, paletteWhite} from '../../shared/theme'
+import {cssHex, paletteWhite} from '../../shared/theme'
 import {PixelText, getTextSize} from './PixelText'
 
 type TeamBadgeProps = {
   team: Team
-  pixelRatio?: number
+  pixelRatio: number
 }
 
 export function TeamBadge(props: TeamBadgeProps): JSX.Element {
   const MARGIN = 20
   const TEXT_SIZE = 20
 
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
   const backgroundColor = cssHex(teamLeaderboardBackgroundColor[props.team])
   const teamName = teamTitleCase[props.team]
   const textWidth = getTextSize(teamName, TEXT_SIZE).width
   const middleSegmentWidth = Math.ceil(textWidth + MARGIN * 2)
-  const imageHeight = Math.ceil(40 * pixelRatio)
+  const imageHeight = Math.ceil(40 * props.pixelRatio)
 
   return (
     <hstack>
       {/* Left Cap */}
       <image
         imageHeight={imageHeight}
-        imageWidth={9 * pixelRatio}
+        imageWidth={9 * props.pixelRatio}
         width='9px'
         height='40px'
         description='Team Badge: Left End Cap'
@@ -47,8 +46,8 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
       >
         {/* Background */}
         <image
-          imageWidth={middleSegmentWidth * pixelRatio}
-          imageHeight={imageHeight * pixelRatio}
+          imageWidth={middleSegmentWidth * props.pixelRatio}
+          imageHeight={imageHeight * props.pixelRatio}
           width={`${middleSegmentWidth}px`}
           height='40px'
           description='Team Badge - Middle Section'
@@ -64,7 +63,7 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
         {/* Text */}
         <vstack height='100%' width='100%' alignment='top center'>
           <spacer height='4px' />
-          <PixelText size={TEXT_SIZE} color={cssHex(paletteWhite)}>
+          <PixelText {...props} size={TEXT_SIZE} color={cssHex(paletteWhite)}>
             {teamName}
           </PixelText>
         </vstack>
@@ -73,7 +72,7 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
       {/* Right Cap */}
       <image
         imageHeight={imageHeight}
-        imageWidth={12 * pixelRatio}
+        imageWidth={12 * props.pixelRatio}
         width='12px'
         height='40px'
         description='Team Badge: Right End Cap'

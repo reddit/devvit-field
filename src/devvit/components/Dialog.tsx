@@ -3,9 +3,7 @@ import {
   consoleBase,
   cssHex,
   fallbackPixelRatio,
-  fontMSize,
   paletteBlack,
-  paletteWhite,
 } from '../../shared/theme'
 import {
   type Level,
@@ -14,7 +12,7 @@ import {
   levelShadowColor,
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
-import {PixelText} from './PixelText'
+import {GamesOnRedditBanner} from './GamesOnRedditBanner'
 import {Scrim} from './Scrim'
 import {StyledButton} from './StyledButton'
 
@@ -22,10 +20,10 @@ type DialogProps = {
   height?: number
   width?: number
   buttonLabel?: string
-  onPress?: (() => void) | undefined
-  pixelRatio?: number
+  onPress?: () => void
+  pixelRatio: number
   children: JSX.Element | JSX.Element[]
-  level?: Level
+  level: Level
   backgroundElement?: JSX.Element
 }
 
@@ -86,24 +84,15 @@ export function Dialog(props: DialogProps): JSX.Element {
         </StyledButton>
         <spacer height='24px' />
 
-        <vstack width='100%' alignment='center middle'>
-          <PixelText size={fontMSize} color={cssHex(paletteWhite)}>
-            BROUGHT TO YOU BY
-          </PixelText>
-          <image
-            imageWidth='680px'
-            imageHeight='80px'
-            width='256px'
-            height='40px'
-            description='r/GamesOnReddit Logo'
-            resizeMode='fit'
-            url={`gor-${level}.png`}
-          />
-        </vstack>
+        <GamesOnRedditBanner {...props} />
       </vstack>
     </zstack>
   )
 }
+
+/*
+ * Field Badge on Dialog Top-Mid Boundary
+ */
 
 type DialogBadgeProps = {
   pixelRatio: number

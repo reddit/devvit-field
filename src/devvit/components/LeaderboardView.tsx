@@ -7,7 +7,6 @@ import {
 } from '../../shared/team.ts'
 import {
   cssHex,
-  fallbackPixelRatio,
   paletteBlack,
   paletteBlandBlue,
   paletteConsole,
@@ -23,8 +22,8 @@ type LeaderboardViewProps = {
     member: Team
     score: number
   }[]
-  pixelRatio?: number
-  online?: boolean
+  pixelRatio: number
+  online: boolean
   onPlay?: () => void
 }
 
@@ -35,8 +34,6 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
     {member: 2, score: 0},
     {member: 3, score: 0},
   ]
-  const online = props.online ?? false
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
 
   return (
     <vstack
@@ -69,36 +66,31 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
 
         {/* Online Status */}
         <PixelText
-          pixelRatio={pixelRatio}
+          {...props}
           size={16}
-          color={cssHex(online ? paletteTerminalGreen : paletteOffline)}
+          color={cssHex(props.online ? paletteTerminalGreen : paletteOffline)}
         >
-          {online ? '•ONLINE' : '•OFFLINE'}
+          {props.online ? '•ONLINE' : '•OFFLINE'}
         </PixelText>
         <spacer height='24px' />
 
         <StyledButton
           width={200}
-          pixelRatio={pixelRatio}
+          {...props}
           onPress={props.onPlay! ? props.onPlay : () => {}}
         >
           Play r/Field
         </StyledButton>
         <spacer height='24px' />
 
-        <PixelText
-          pixelRatio={pixelRatio}
-          size={16}
-          color={cssHex(paletteWhite)}
-          underline
-        >
+        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
           CURRENT TEAM SCORES
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
           {standings.map(team => (
             <TeamTile
-              pixelRatio={pixelRatio}
+              {...props}
               label={teamTitleCase[team.member]}
               value={team.score}
               color={cssHex(teamLeaderboardBackgroundColor[team.member])}
@@ -108,34 +100,25 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         </hstack>
         <spacer height='24px' />
 
-        <PixelText
-          pixelRatio={pixelRatio}
-          size={16}
-          color={cssHex(paletteWhite)}
-          underline
-        >
+        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
           GAME STATS
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
-          <StatTile pixelRatio={pixelRatio} label='PLAYERS' value={1001923} />
-          <StatTile pixelRatio={pixelRatio} label='BANS' value={12334} />
-          <StatTile pixelRatio={pixelRatio} label='FIELDS' value={15} />
+          <StatTile {...props} label='PLAYERS' value={1001923} />
+          <StatTile {...props} label='BANS' value={12334} />
+          <StatTile {...props} label='FIELDS' value={15} />
         </hstack>
 
         <spacer height='24px' />
 
         <hstack width='100%' alignment='center'>
-          <PixelText
-            pixelRatio={pixelRatio}
-            size={12}
-            color={cssHex(paletteWhite)}
-          >
+          <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
             DOWNLOAD THE FULL DATA SET
           </PixelText>
           <spacer width='6px' />
           <PixelText
-            pixelRatio={pixelRatio}
+            {...props}
             size={12}
             color={cssHex(paletteBlandBlue)}
             underline

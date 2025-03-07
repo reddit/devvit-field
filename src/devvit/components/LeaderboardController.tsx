@@ -1,15 +1,16 @@
 import {type Context, Devvit, useInterval, useState} from '@devvit/public-api'
 import type {Team} from '../../shared/team.js'
-import {fallbackPixelRatio} from '../../shared/theme.js'
 import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
 import {LeaderboardView} from './LeaderboardView.js'
-type LeaderboardControllerProps = {
-  online?: boolean
-}
 
 // The LeaderboardView has a detatched head to separate out the utilities
 // not available to us in the preview state. Enabling us to reuse the template
 // between the default and preview states.
+
+type LeaderboardControllerProps = {
+  online?: boolean
+  pixelRatio: number
+}
 
 export function LeaderboardController(
   props: LeaderboardControllerProps,
@@ -46,7 +47,7 @@ export function LeaderboardController(
   return (
     <LeaderboardView
       standings={standings}
-      pixelRatio={context.dimensions?.scale ?? fallbackPixelRatio}
+      pixelRatio={props.pixelRatio}
       online={online} // to-do: implement online status
       onPlay={handleButtonPress}
     />

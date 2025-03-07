@@ -11,7 +11,7 @@ type PixelTextProps = {
   children: string
   size?: number
   color?: `#${string}`
-  pixelRatio?: number
+  pixelRatio: number
   opacity?: number
   underline?: boolean
 }
@@ -21,7 +21,7 @@ export function PixelText(props: PixelTextProps): JSX.Element {
     children = '',
     size = DEFAULT_SIZE,
     color = '#ff00ff',
-    pixelRatio = 2,
+    pixelRatio,
     opacity = 1,
   } = props
   const line = children[0]!.split('') ?? []
