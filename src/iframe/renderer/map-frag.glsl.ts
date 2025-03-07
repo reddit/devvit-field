@@ -27,7 +27,7 @@ void main() {
     return;
   }
 
-  lowp uint box = texelFetch(uMap, ivec2(vXY), 0).r;
+  lowp uint box = texelFetch(uMap, ivec2(vXY * ${mapSize}. / uSize), 0).r;
   oFrag = palette[box];
 }`
 
@@ -39,6 +39,7 @@ import {
   paletteSunshine,
   paletteTerminalGreen,
 } from '../../shared/theme.ts'
+import {mapSize} from '../../shared/types/app-config.js'
 
 function rgbaVec4(rgba: number): string {
   const r = ((rgba >>> 24) & 0xff) / 0xff
