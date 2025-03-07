@@ -27,7 +27,7 @@ void main() {
     return;
   }
 
-  lowp uint box = texelFetch(uMap, ivec2(vXY / ${devicePixelRatio}.), 0).r;
+  lowp uint box = texelFetch(uMap, ivec2(vXY), 0).r;
   oFrag = palette[box];
 }`
 
