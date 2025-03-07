@@ -34,6 +34,7 @@ import {
 } from '../server/core/user.js'
 import {LeaderboardController} from './LeaderboardController.tsx'
 import {Title} from './title.tsx'
+//import { DialogBanned } from './DialogBanned.tsx';
 // import { DialogWelcome } from './DialogWelcome.tsx';
 // import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 // import { CountdownController } from './CountdownController.tsx';
@@ -48,6 +49,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     //return <CountdownController />;
     // return <DialogUnauthorized level={2} />
     // return <DialogWelcome team={2} level={4} pixelRatio={pixelRatio} />;
+    //return <DialogBanned level={1} targetLevel={2} pixelRatio={pixelRatio} />;
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
