@@ -45,6 +45,7 @@ export class BFTerminal extends LitElement {
 
     canvas {
       /* cursor: none; Cursor provided by app. */
+      cursor: pointer;
       display: none;
       image-rendering: pixelated;
       /* Update on each pointermove *touch* Event like *mouse* Events. */
