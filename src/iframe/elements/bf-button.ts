@@ -126,8 +126,7 @@ export class BFButton extends LitElement {
       padding-right: 16px;
       padding-bottom: 12px;
       padding-left: 16px;
-      font-size: 20px;
-      font-size: 50px;
+      font-size: 10px;
       font-style: normal;
       font-weight: 600;
       line-height: 26px;
