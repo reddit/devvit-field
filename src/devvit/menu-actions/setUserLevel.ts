@@ -19,7 +19,7 @@ export const setUserLevelFormKey: FormKey = Devvit.createForm(
         label: 'Level',
         name: 'level',
         required: true,
-        options: ([0, 1, 2, 3, 4] as Level[]).map(x => ({
+        options: ([0, 1, 2, 3, 4] satisfies Level[]).map(x => ({
           label: x.toString(),
           value: x.toString(),
         })),
