@@ -1,11 +1,13 @@
 export const spriteFragGLSL: string = `#version 300 es
+precision highp float;
+
 uniform mediump sampler2D uTex;
 uniform mediump uvec2 uTexWH;
 
 flat in highp ivec4 vTexXYWH;
 in highp vec2 vDstWH;
 flat in highp ivec2 vDstWHFixed;
-flat in uint vStretch;
+flat in lowp uint vStretch;
 
 out highp vec4 oFrag;
 

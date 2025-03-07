@@ -1,8 +1,10 @@
 export const spriteVertGLSL: string = `#version 300 es
+precision highp float;
+
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices#essl300_minimum_requirements_webgl_2
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_best_practices#understand_system_limits
 // https://web3dsurvey.com/webgl2
-uniform mediump vec4 uCam;
+uniform highp vec4 uCam;
 uniform lowp usampler2D uCels;
 uniform highp uint uFrame;
 
@@ -15,7 +17,7 @@ layout (location=4) in highp uint iISFFZZ;
 flat out highp ivec4 vTexXYWH;
 out highp vec2 vDstWH;
 flat out highp ivec2 vDstWHFixed;
-flat out uint vStretch;
+flat out lowp uint vStretch;
 
 const mediump int maxY = 0x1000;
 const lowp int maxZ = 8;
@@ -44,7 +46,7 @@ void main() {
 
   highp vec2 end = vec2(x + targetWH.x, y + targetWH.y);
   // Cursor and UI layers are always given in screen coordinates.
-  vec2 camXY = z >= 3 ? uCam.xy : vec2(0, 0);
+  highp vec2 camXY = z >= 3 ? uCam.xy : vec2(0, 0);
   highp vec2 clip =  ((-2. * camXY  + 2. * end) / uCam.zw - 1.) * vec2(1, -1);
   gl_Position = vec4(clip, depth, 1);
   vTexXYWH = ivec4(texXYWH);

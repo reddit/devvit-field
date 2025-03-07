@@ -1,30 +1,30 @@
 export const fieldFragGLSL: string = `#version 300 es
 precision highp float;
 
-uniform mediump vec4 uCam;
+uniform highp vec4 uCam;
 uniform lowp usampler2D uCels;
 uniform highp uint uFrame;
-uniform uvec2 uFieldWH;
+uniform mediump uvec2 uFieldWH;
 uniform mediump sampler2D uTex;
 uniform mediump uvec2 uTexWH;
 uniform highp usampler2D uField;
-uniform float uScale;
+uniform highp float uScale;
 uniform highp uint uIDByColor[6];
 
-in vec2 vUV;
+in highp vec2 vUV;
 
 out highp vec4 oFrag;
 
 void main() {
-  vec2 xy = vUV * uCam.zw + uCam.xy;
+  highp vec2 xy = vUV * uCam.zw + uCam.xy;
   if (
     xy.x < 0. || xy.x >= float(uFieldWH.x) ||
     xy.y < 0. || xy.y >= float(uFieldWH.y)
   )
     discard;
 
-  vec2 fracXY = fract(xy);
-  float borderW = 0.05;
+  highp vec2 fracXY = fract(xy);
+  highp float borderW = 0.05;
   if (
     uScale >= 10. &&
     (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
@@ -38,10 +38,10 @@ void main() {
   if (box == ${fieldArrayColorHidden}u || box == ${fieldArrayColorPending}u)
     discard;
 
-  uint id = uIDByColor[box];
+  lowp uint id = uIDByColor[box];
   mediump uvec4 texXYWH = texelFetch(uCels, ivec2(0, id), 0);
   // Hack: trim transparent one pixel off the border to be flush with grid.
-  vec2 wh = vec2(texXYWH.z - 2u, texXYWH.w - 2u);
+  highp vec2 wh = vec2(texXYWH.z - 2u, texXYWH.w - 2u);
   highp vec2 px = vec2(texXYWH.x + 1u, texXYWH.y + 1u) + mod(xy * wh, wh);
   oFrag = texture(uTex, px / vec2(uTexWH));
 }`

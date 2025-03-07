@@ -1,12 +1,12 @@
 export const fieldVertGLSL: string = `#version 300 es
 precision highp float;
 
-uniform mediump vec4 uCam;
-uniform float uScale;
+uniform highp vec4 uCam;
+uniform highp float uScale;
 
-layout (location=0) in ivec2 iUV;
+layout (location=0) in lowp ivec2 iUV;
 
-out vec2 vUV;
+out highp vec2 vUV;
 
 void main() {
   vUV = vec2(iUV);
