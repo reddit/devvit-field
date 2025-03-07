@@ -38,7 +38,7 @@ export class BFButton extends LitElement {
       height: min-content;
       cursor: pointer;
       user-select: none;
-      white-space: nowrap;
+      /* white-space: nowrap; */
       border-style: none;
       justify-content: center;
       border-width: 2px;
