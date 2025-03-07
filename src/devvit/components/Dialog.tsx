@@ -1,10 +1,5 @@
 import {Devvit} from '@devvit/public-api'
-import {
-  consoleBase,
-  cssHex,
-  fallbackPixelRatio,
-  paletteBlack,
-} from '../../shared/theme'
+import {consoleBase, cssHex, paletteBlack} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -31,7 +26,6 @@ type DialogProps = {
 export function Dialog(props: DialogProps): JSX.Element {
   const DEFAULT_HEIGHT = 240
   const DEFAULT_WIDTH = 288
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
   const buttonLabel = props.buttonLabel ?? 'OK'
   const level = props.level ?? 0
   return (
@@ -59,7 +53,7 @@ export function Dialog(props: DialogProps): JSX.Element {
             <BorderedContainer
               width={props.width ?? DEFAULT_WIDTH}
               height={props.height ?? DEFAULT_HEIGHT}
-              pixelRatio={pixelRatio}
+              {...props}
               padding='medium'
               backgroundColor={cssHex(levelShadowColor[level])}
               borderColor={cssHex(levelBaseColor[level])}
@@ -73,7 +67,7 @@ export function Dialog(props: DialogProps): JSX.Element {
 
           <vstack>
             <spacer height='7px' />
-            <DialogBadge pixelRatio={pixelRatio} level={level} />
+            <DialogBadge {...props} level={level} />
           </vstack>
         </zstack>
 
@@ -83,7 +77,7 @@ export function Dialog(props: DialogProps): JSX.Element {
               ? cssHex(levelHighlightColor[props.targetLevel])
               : cssHex(levelHighlightColor[level])
           }
-          onPress={props.onPress}
+          {...props}
         >
           {buttonLabel}
         </StyledButton>
