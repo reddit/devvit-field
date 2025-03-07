@@ -51,6 +51,8 @@ export class BoxEnt implements Ent {
       if (next === 'Banned' || next === 'Claimed' || next === 'Lost') {
         if (game.audio && next === 'Claimed')
           audioPlay(game, game.audio.claimed)
+        if (next === 'Banned') vibrateBan()
+
         game.zoo.remove(this)
         return
       }
@@ -62,4 +64,23 @@ export class BoxEnt implements Ent {
     this.#sprite.y = (-cam.y + this.fieldXY.y) * cam.scale * cam.fieldScale
     this.#sprite.w = this.#sprite.h = cam.fieldScale
   }
+}
+
+function vibrateBan(): void {
+  const dot = 50
+  const dash = 3 * dot
+  const intraGap = dot // Gap within a letter.
+  const gap = 3 * dot // Gap between letters.
+  // biome-ignore format:
+  const ban = [
+    // B (−···).
+    dash, intraGap, dot, intraGap, dot, intraGap, dot, gap,
+
+    // A (·−).
+    dot, intraGap, dash, gap,
+
+    // N (−·).
+    dash, intraGap, dot, gap
+  ]
+  navigator.vibrate?.(ban)
 }
