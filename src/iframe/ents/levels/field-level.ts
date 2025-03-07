@@ -48,11 +48,10 @@ export class FieldLevel implements LevelEnt {
 
     if (
       fieldConfig &&
-      (ctrl.isOnStart('A') || ctrl.drag) &&
       !ctrl.pinch &&
       !ctrl.handled &&
-      boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint) &&
-      boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenPoint)
+      (ctrl.isOnStart('A') || ctrl.drag) &&
+      boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint)
     ) {
       ctrl.handled = true
 
