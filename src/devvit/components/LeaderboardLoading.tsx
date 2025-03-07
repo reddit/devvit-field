@@ -1,0 +1,154 @@
+import {Devvit} from '@devvit/public-api'
+import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
+import {
+  cssHex,
+  paletteBlack,
+  paletteConsole,
+  paletteDisabled,
+  paletteFieldLight,
+  paletteOffline,
+  paletteWhite,
+} from '../../shared/theme.js'
+import {PixelText} from './PixelText.js'
+import {StyledButton} from './StyledButton.js'
+
+type LeaderboardLoadingProps = {
+  standings?: {
+    member: Team
+    score: number
+  }[]
+  pixelRatio: number
+}
+
+export function LeaderboardLoading(
+  props: LeaderboardLoadingProps,
+): JSX.Element {
+  const standings = props.standings ?? [
+    {member: 0, score: 0},
+    {member: 1, score: 0},
+    {member: 2, score: 0},
+    {member: 3, score: 0},
+  ]
+
+  return (
+    <vstack
+      height='100%'
+      width='100%'
+      backgroundColor={cssHex(paletteConsole)}
+      padding='medium'
+    >
+      {/* Inset Border */}
+      <vstack
+        height='100%'
+        width='100%'
+        padding='medium'
+        border='thin'
+        borderColor={cssHex(paletteBlack)}
+        cornerRadius='medium'
+        alignment='center middle'
+      >
+        {/* Field Logo */}
+        <image
+          imageHeight='264px'
+          imageWidth='900px'
+          width='100%'
+          height='60px'
+          description='r/Field Logo'
+          url='field-logo-dark.png'
+          resizeMode='fit'
+        />
+        <spacer height='8px' />
+
+        {/* Online Status */}
+        <PixelText {...props} size={16} color={cssHex(paletteOffline)}>
+          {'•OFFLINE'}
+        </PixelText>
+        <spacer height='24px' />
+
+        <StyledButton width={200} {...props} color={cssHex(paletteDisabled)}>
+          LOADING
+        </StyledButton>
+        <spacer height='24px' />
+
+        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
+          CURRENT TEAM SCORES
+        </PixelText>
+        <spacer height='8px' />
+        <hstack width='100%' gap='small' alignment='center'>
+          {standings.map(team => (
+            <TeamTile
+              {...props}
+              label={teamTitleCase[team.member]}
+              color={cssHex(teamColor[team.member])}
+              key={`team-${team.member}`}
+            />
+          ))}
+        </hstack>
+        <spacer height='24px' />
+
+        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
+          GAME STATS
+        </PixelText>
+        <spacer height='8px' />
+        <hstack width='100%' gap='small' alignment='center'>
+          <StatTile {...props} label='PLAYERS' />
+          <StatTile {...props} label='BANS' />
+          <StatTile {...props} label='FIELDS' />
+        </hstack>
+
+        <spacer height='24px' />
+
+        {/* Data Link */}
+        <spacer height='15px' />
+      </vstack>
+    </vstack>
+  )
+}
+
+function TeamTile(props: {
+  key: string
+  label: string
+  color: `#${string}`
+  pixelRatio: number
+}) {
+  return (
+    <vstack
+      width='25%'
+      height='52px'
+      backgroundColor={props.color}
+      alignment='center middle'
+      key={props.key}
+    >
+      <spacer height='31px' />
+      <PixelText
+        pixelRatio={props.pixelRatio}
+        size={12}
+        color={cssHex(paletteBlack)}
+      >
+        {props.label}
+      </PixelText>
+    </vstack>
+  )
+}
+
+function StatTile(props: {label: string; pixelRatio: number}) {
+  return (
+    <vstack
+      width='33.332%'
+      height='52px'
+      backgroundColor={cssHex(paletteBlack)}
+      alignment='center middle'
+      border='thin'
+      borderColor={cssHex(paletteFieldLight)}
+    >
+      <spacer height='31px' />
+      <PixelText
+        pixelRatio={props.pixelRatio}
+        size={12}
+        color={cssHex(paletteFieldLight)}
+      >
+        {props.label}
+      </PixelText>
+    </vstack>
+  )
+}

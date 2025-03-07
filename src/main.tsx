@@ -13,8 +13,9 @@ import {Devvit} from '@devvit/public-api'
 import {makeAPIClients} from '@devvit/public-api/apis/makeAPIClients.js'
 import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/context.js'
 import type {Config} from '@devvit/shared-types/Config.js'
+import {DialogWelcomeLoading} from './devvit/components/DialogWelcomeLoading.js'
+import {LeaderboardLoading} from './devvit/components/LeaderboardLoading.js'
 import {App} from './devvit/components/app.js'
-import {Preview} from './devvit/components/preview.js'
 import {blockUsersMenuAction} from './devvit/menu-actions/blockUsers.js'
 import {endCurrentChallengeMenuAction} from './devvit/menu-actions/endCurrentChallenge.js'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
@@ -31,6 +32,8 @@ import {
 import {defaultChallengeConfigMaybeGet} from './devvit/server/core/defaultChallengeConfig.js'
 import {fieldClaimCells} from './devvit/server/core/field.js'
 import {LEADERBOARD_CONFIG, levels} from './devvit/server/core/levels.js'
+import {fallbackPixelRatio} from './shared/theme.js'
+import type {Level} from './shared/types/level.js'
 import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
@@ -107,8 +110,22 @@ const newPostFormKey = Devvit.createForm(
           'Cannot find level, please add the subreddit name to the config file, upload, make a post, and fill in the rest of the config to continue.',
         )
 
+      const isLeaderboard =
+        ctx.subredditName === LEADERBOARD_CONFIG.subredditName
+
       const post = await ctx.reddit.submitPost({
-        preview: <Preview />,
+        preview: isLeaderboard ? (
+          <LeaderboardLoading pixelRatio={fallbackPixelRatio} />
+        ) : (
+          <DialogWelcomeLoading
+            pixelRatio={fallbackPixelRatio}
+            level={
+              levels.findIndex(
+                lvl => lvl.subredditId === ctx.subredditId,
+              ) as Level
+            }
+          />
+        ),
         subredditName: ctx.subredditName,
         title: lvl.title,
       })

@@ -8,7 +8,7 @@ const GLYPH_WIDTH = 7
 type PixelTextProps = {
   // I take a key, but can't apply it to the image element. yolo.
   key?: string
-  children: string
+  children: string | string[]
   size?: number
   color?: `#${string}`
   pixelRatio: number
@@ -18,13 +18,17 @@ type PixelTextProps = {
 
 export function PixelText(props: PixelTextProps): JSX.Element {
   const {
-    children = '',
+    children,
     size = DEFAULT_SIZE,
     color = '#ff00ff',
     pixelRatio,
     opacity = 1,
   } = props
-  const line = children[0]!.split('') ?? []
+
+  // check if children is a string or an array of strings
+  const childrenArray = Array.isArray(children) ? children : [children]
+
+  const line = childrenArray[0]?.split('') ?? []
 
   let xOffset = 0
   const characters: string[] = []
@@ -57,7 +61,7 @@ export function PixelText(props: PixelTextProps): JSX.Element {
       imageWidth={`${scaledWidth * pixelRatio}px`} // Raster size
       height={`${scaledHeight}px`} // Block size
       width={`${scaledWidth}px`} // Block size
-      description={children}
+      description={childrenArray[0]}
       resizeMode='fill'
       url={`data:image/svg+xml;charset=UTF-8,
           <svg

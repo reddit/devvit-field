@@ -9,7 +9,7 @@ import {
   parsePartitionXY,
 } from '../../shared/partition.ts'
 import {getTeamFromUserId} from '../../shared/team.ts'
-import {fallbackPixelRatio, playButtonWidth} from '../../shared/theme.ts'
+import {fallbackPixelRatio} from '../../shared/theme.ts'
 import type {PartitionKey} from '../../shared/types/2d.ts'
 import type {Delta} from '../../shared/types/field.ts'
 import type {
@@ -32,10 +32,9 @@ import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
 } from '../server/core/user.js'
+import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
-import {Title} from './title.tsx'
 //import { DialogBanned } from './DialogBanned.tsx';
-// import { DialogWelcome } from './DialogWelcome.tsx';
 // import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 // import { CountdownController } from './CountdownController.tsx';
 
@@ -48,7 +47,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
     // TODO: add conditional to render countdown... not sure about timing yet.
     //return <CountdownController />;
     // return <DialogUnauthorized level={2} />
-    // return <DialogWelcome team={2} level={4} pixelRatio={pixelRatio} />;
     //return <DialogBanned level={1} targetLevel={2} pixelRatio={pixelRatio} />;
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
@@ -374,17 +372,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
   chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
 
   return (
-    <Title>
-      {/* biome-ignore lint/a11y/useButtonType: */}
-      <button
-        appearance='secondary'
-        size='large'
-        minWidth={`${playButtonWidth}px`}
-        icon='play-outline'
-        onPress={() => iframe.mount()}
-      >
-        Enter the BanField
-      </button>
-    </Title>
+    <DialogWelcome
+      team={getTeamFromUserId(session.t2)}
+      level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+      pixelRatio={pixelRatio}
+      onPress={() => iframe.mount()}
+    />
   )
 }

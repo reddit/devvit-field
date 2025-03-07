@@ -15,7 +15,7 @@ type DialogProps = {
   height?: number
   width?: number
   buttonLabel?: string
-  targetLevel?: Level
+  buttonColor?: `#${string}`
   onPress?: () => void
   pixelRatio: number
   children: JSX.Element | JSX.Element[]
@@ -73,8 +73,8 @@ export function Dialog(props: DialogProps): JSX.Element {
 
         <StyledButton
           color={
-            props.targetLevel
-              ? cssHex(levelHighlightColor[props.targetLevel])
+            props.buttonColor
+              ? props.buttonColor
               : cssHex(levelHighlightColor[level])
           }
           {...props}

@@ -1,10 +1,10 @@
 import {Devvit} from '@devvit/public-api'
-import type {Team} from '../../shared/team'
 import {
   cssHex,
   fontMSize,
   fontSSize,
   paletteBlack,
+  paletteDisabled,
   paletteWhite,
 } from '../../shared/theme'
 import {
@@ -15,29 +15,27 @@ import {
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
-import {GameScreen} from './GameScreen'
 import {PixelText} from './PixelText'
-import {TeamBadge} from './TeamBadge'
 
 // This dialog is shown whenever a user transitions to a new level.
 // It displays the team the user is on and their current field standings.
 // Clicking the play button opens the web view full screen.
 
-type DialogWelcomeProps = {
-  team: Team
+type DialogWelcomeLoadingProps = {
   level: Level
   pixelRatio: number
-  onPress?: () => void
 }
 
-export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
+export function DialogWelcomeLoading(
+  props: DialogWelcomeLoadingProps,
+): JSX.Element {
   const levelName = levelPascalCase[props.level]
 
   return (
     <Dialog
       {...props}
-      buttonLabel={props.level === 0 ? 'BEGIN' : `Play r/${levelName}`}
-      backgroundElement={<GameScreen {...props} />}
+      buttonLabel='LOADING'
+      buttonColor={cssHex(paletteDisabled)}
     >
       <BorderedContainer
         height={96}
@@ -77,7 +75,8 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
         </>
       )}
 
-      <TeamBadge {...props} />
+      {/* TeamBadge placeholder */}
+      <spacer height='40px' />
 
       {props.level > 0 && (
         <>
@@ -87,9 +86,8 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
               IS CURRENTLY IN
             </PixelText>
             {/* to-do: add actual data */}
-            <PixelText size={20} color={cssHex(paletteWhite)} {...props}>
-              3rd
-            </PixelText>
+            {/* Team Standing Placeholder */}
+            <spacer height='25px' />
           </vstack>
         </>
       )}

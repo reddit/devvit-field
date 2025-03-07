@@ -42,8 +42,6 @@ export const minCanvasWH: Readonly<WH> = {w: 288, h: 320}
 export const fontSSize: number = 10
 export const fontMSize: number = 14
 
-export const playButtonWidth: number = 240
-
 export const thinStroke: number = 2 // to-do: fix.
 
 export const radiusPx: number = spacePx / 2
