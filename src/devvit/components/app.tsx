@@ -32,10 +32,10 @@ import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
 } from '../server/core/user.js'
+import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
-//import { DialogBanned } from './DialogBanned.tsx';
 // import { CountdownController } from './CountdownController.tsx';
 
 export function App(ctx: Devvit.Context): JSX.Element {
@@ -46,7 +46,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
   ) {
     // TODO: add conditional to render countdown... not sure about timing yet.
     //return <CountdownController />;
-    //return <DialogBanned level={1} targetLevel={2} pixelRatio={pixelRatio} />;
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
@@ -74,9 +73,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   if (appState.status === 'notAllowed') {
     return (
-      <vstack alignment='center middle'>
-        <text>Sorry, you can't access this post</text>
-      </vstack>
+      <DialogNotAllowed
+        level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+        pixelRatio={pixelRatio}
+      />
     )
   }
 

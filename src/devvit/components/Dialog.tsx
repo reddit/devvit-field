@@ -14,6 +14,7 @@ import {StyledButton} from './StyledButton'
 type DialogProps = {
   height?: number
   width?: number
+  button?: boolean
   buttonLabel?: string
   buttonColor?: `#${string}`
   onPress?: () => void
@@ -21,6 +22,7 @@ type DialogProps = {
   children: JSX.Element | JSX.Element[]
   level: Level
   backgroundElement?: JSX.Element
+  marketing?: boolean
 }
 
 export function Dialog(props: DialogProps): JSX.Element {
@@ -71,19 +73,25 @@ export function Dialog(props: DialogProps): JSX.Element {
           </vstack>
         </zstack>
 
-        <StyledButton
-          color={
-            props.buttonColor
-              ? props.buttonColor
-              : cssHex(levelHighlightColor[level])
-          }
-          {...props}
-        >
-          {buttonLabel}
-        </StyledButton>
-        <spacer height='24px' />
+        {props.button !== false && (
+          <StyledButton
+            color={
+              props.buttonColor
+                ? props.buttonColor
+                : cssHex(levelHighlightColor[level])
+            }
+            {...props}
+          >
+            {buttonLabel}
+          </StyledButton>
+        )}
 
-        <GamesOnRedditBanner {...props} />
+        {props.marketing !== false && (
+          <>
+            <spacer height='24px' />
+            <GamesOnRedditBanner {...props} />
+          </>
+        )}
       </vstack>
     </zstack>
   )
