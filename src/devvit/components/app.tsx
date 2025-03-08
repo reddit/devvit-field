@@ -51,7 +51,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
   }
   const session = useSession(ctx)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
-  console.log('appState', appState)
   const [activeConnections, setActiveConnections] = useState2<PartitionKey[]>(
     [],
   )
