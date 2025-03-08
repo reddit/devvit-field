@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import type {Team} from '../../shared/team'
 import {
   cssHex,
@@ -36,7 +37,13 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
   return (
     <Dialog
       {...props}
-      buttonLabel={props.level === 0 ? 'BEGIN' : `Play r/${levelName}`}
+      buttonLabel={
+        props.level === 0
+          ? localize('welcome-dialog-button-label-first')
+          : `${localize(
+              'welcome-dialog-button-label-subsequent',
+            )} r/${levelName}`
+      }
       backgroundElement={<GameScreen {...props} />}
     >
       <BorderedContainer
@@ -52,7 +59,7 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
           size={fontMSize}
           color={cssHex(levelHighlightColor[props.level])}
         >
-          WELCOME TO
+          {localize('welcome-dialog-greeting')}
         </PixelText>
         <PixelText
           {...props}
@@ -71,7 +78,7 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
       {props.level === 0 && (
         <>
           <PixelText size={fontMSize} color={cssHex(paletteWhite)} {...props}>
-            YOU ARE ON TEAM
+            {localize('welcome-dialog-team-allocation')}
           </PixelText>
           <spacer size='small' />
         </>
@@ -84,7 +91,7 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
           <spacer size='small' />
           <vstack width='100%' alignment='center middle'>
             <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
-              IS CURRENTLY IN
+              {localize('welcome-dialog-team-standing')}
             </PixelText>
             {/* to-do: add actual data */}
             <PixelText size={20} color={cssHex(paletteWhite)} {...props}>

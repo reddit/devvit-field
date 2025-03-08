@@ -1,4 +1,5 @@
 import {type Context, Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
@@ -9,14 +10,6 @@ import {
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
 import {PixelText} from './PixelText'
-
-const LEVEL_COPY = [
-  ['Nice try, but you', 'are still banned.'],
-  ['Easy, tiger. You know', `you don't belong here.`],
-  [`Buddy, you're not allowed`, 'in this community.'],
-  ['Excuse me. What do you', `think you're doing here?`],
-  ['Looks like you took a', 'wrong turn somewhere.'],
-]
 
 type DialogUnauthorizedProps = {
   pixelRatio: number
@@ -36,7 +29,9 @@ export function DialogUnauthorized(
         )
       }
       {...props}
-      buttonLabel={`Go To r/${levelPascalCase[props.currentLevel]}`}
+      buttonLabel={`${localize('unauthorized-dialog-button-label')} r/${
+        levelPascalCase[props.currentLevel]
+      }`}
     >
       <BorderedContainer
         height={180}
@@ -49,7 +44,10 @@ export function DialogUnauthorized(
       >
         <vstack height='100%' width='100%' alignment='center middle'>
           <spacer height='16px' />
-          {LEVEL_COPY[props.level]?.map(copy => (
+          {[
+            localize(`unauthorized-dialog-level-${props.level}-Line-0`),
+            localize(`unauthorized-dialog-level-${props.level}-Line-1`),
+          ].map(copy => (
             <PixelText
               key={copy}
               {...props}

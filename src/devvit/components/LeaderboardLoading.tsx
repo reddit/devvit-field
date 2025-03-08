@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale.ts'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
 import {
   cssHex,
@@ -61,17 +62,17 @@ export function LeaderboardLoading(
 
         {/* Online Status */}
         <PixelText {...props} size={16} color={cssHex(paletteOffline)}>
-          {'•OFFLINE'}
+          {`•${localize('leaderboard-offline')}`}
         </PixelText>
         <spacer height='24px' />
 
         <StyledButton width={200} {...props} color={cssHex(paletteDisabled)}>
-          LOADING
+          {localize('leaderboard-play-button-loading')}
         </StyledButton>
         <spacer height='24px' />
 
         <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
-          CURRENT TEAM SCORES
+          {localize('leaderboard-teams-header')}
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
@@ -87,13 +88,13 @@ export function LeaderboardLoading(
         <spacer height='24px' />
 
         <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
-          GAME STATS
+          {localize('leaderboard-stats-header')}
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
-          <StatTile {...props} label='PLAYERS' />
-          <StatTile {...props} label='BANS' />
-          <StatTile {...props} label='FIELDS' />
+          <StatTile {...props} label={localize('leaderboard-stats-players')} />
+          <StatTile {...props} label={localize('leaderboard-stats-bans')} />
+          <StatTile {...props} label={localize('leaderboard-stats-fields')} />
         </hstack>
 
         <spacer height='24px' />

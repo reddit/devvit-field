@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {type Team, teamColor, teams} from '../../shared/team'
 import {
   cssHex,
@@ -99,7 +100,7 @@ z" fill="${cssHex(paletteBlack)}" />
 
         <spacer size='xsmall' />
         <StyledButton {...props} color={cssHex(paletteDisabled)}>
-          LOADING
+          {localize('game-claim-button-label-loading')}
         </StyledButton>
         <spacer size='xsmall' />
         <StatusBar {...props} />

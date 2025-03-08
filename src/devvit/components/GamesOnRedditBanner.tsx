@@ -1,4 +1,5 @@
 import {type Context, Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {cssHex, paletteWhite} from '../../shared/theme'
 import type {Level} from '../../shared/types/level'
 import {PixelText} from './PixelText'
@@ -21,7 +22,7 @@ export function GamesOnRedditBanner(
       }
     >
       <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
-        BROUGHT TO YOU BY
+        {localize('games-on-reddit-header')}
       </PixelText>
       <image
         imageWidth='680px'

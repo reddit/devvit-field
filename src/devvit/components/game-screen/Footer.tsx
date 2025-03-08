@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../../shared/locale'
 import {cssHex, paletteBlack, paletteWhite} from '../../../shared/theme'
 import {PixelText} from '../PixelText'
 
@@ -76,7 +77,7 @@ Z" fill="${backgroundColor}" />
       {/* Content Layer */}
       <vstack height='100%' width='100%' alignment='center middle'>
         <PixelText {...props} size={12} color={textColor}>
-          Full Leaderboard on r/GamesOnReddit
+          {localize('game-footer-attribution')}
         </PixelText>
       </vstack>
     </zstack>

@@ -1,5 +1,6 @@
 import {Devvit} from '@devvit/public-api'
 import {abbreviateNumber} from '../../shared/format.js'
+import {localize} from '../../shared/locale.ts'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
 import {
   cssHex,
@@ -66,7 +67,9 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
           size={16}
           color={cssHex(props.online ? paletteFieldLight : paletteOffline)}
         >
-          {props.online ? '•ONLINE' : '•OFFLINE'}
+          {`•${localize(
+            props.online ? 'leaderboard-online' : 'leaderboard-offline',
+          )}`}
         </PixelText>
         <spacer height='24px' />
 
@@ -80,7 +83,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         <spacer height='24px' />
 
         <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
-          CURRENT TEAM SCORES
+          {localize('leaderboard-teams-header')}
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
@@ -97,13 +100,25 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         <spacer height='24px' />
 
         <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
-          GAME STATS
+          {localize('leaderboard-stats-header')}
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
-          <StatTile {...props} label='PLAYERS' value={1001923} />
-          <StatTile {...props} label='BANS' value={12334} />
-          <StatTile {...props} label='FIELDS' value={15} />
+          <StatTile
+            {...props}
+            label={localize('leaderboard-stats-players')}
+            value={1001923}
+          />
+          <StatTile
+            {...props}
+            label={localize('leaderboard-stats-bans')}
+            value={12334}
+          />
+          <StatTile
+            {...props}
+            label={localize('leaderboard-stats-fields')}
+            value={15}
+          />
         </hstack>
 
         <spacer height='24px' />

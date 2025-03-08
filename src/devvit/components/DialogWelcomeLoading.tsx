@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {
   cssHex,
   fontMSize,
@@ -34,7 +35,7 @@ export function DialogWelcomeLoading(
   return (
     <Dialog
       {...props}
-      buttonLabel='LOADING'
+      buttonLabel={localize('welcome-dialog-button-label-loading')}
       buttonColor={cssHex(paletteDisabled)}
     >
       <BorderedContainer
@@ -50,7 +51,7 @@ export function DialogWelcomeLoading(
           size={fontMSize}
           color={cssHex(levelHighlightColor[props.level])}
         >
-          WELCOME TO
+          {localize('welcome-dialog-greeting')}
         </PixelText>
         <PixelText
           {...props}
@@ -69,7 +70,7 @@ export function DialogWelcomeLoading(
       {props.level === 0 && (
         <>
           <PixelText size={fontMSize} color={cssHex(paletteWhite)} {...props}>
-            YOU ARE ON TEAM
+            {localize('welcome-dialog-team-allocation')}
           </PixelText>
           <spacer size='small' />
         </>
@@ -83,7 +84,7 @@ export function DialogWelcomeLoading(
           <spacer size='small' />
           <vstack width='100%' alignment='center middle'>
             <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
-              IS CURRENTLY IN
+              {localize('welcome-dialog-team-standing')}
             </PixelText>
             {/* to-do: add actual data */}
             {/* Team Standing Placeholder */}

@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {cssHex, paletteBlack} from '../../shared/theme'
 import {
   type Level,
@@ -17,7 +18,10 @@ type DialogVerifyEmailProps = {
 
 export function DialogVerifyEmail(props: DialogVerifyEmailProps): JSX.Element {
   return (
-    <Dialog {...props} buttonLabel='CHECK AGAIN'>
+    <Dialog
+      {...props}
+      buttonLabel={localize('verify-email-dialog-button-label')}
+    >
       <BorderedContainer
         height={200}
         width={256}
@@ -26,27 +30,20 @@ export function DialogVerifyEmail(props: DialogVerifyEmailProps): JSX.Element {
         backgroundColor={cssHex(paletteBlack)}
         borderColor={cssHex(levelBaseColor[props.level])}
       >
-        <PixelText
-          {...props}
-          size={24}
-          color={cssHex(levelHighlightColor[props.level])}
-        >
-          Please verify
-        </PixelText>
-        <PixelText
-          {...props}
-          size={24}
-          color={cssHex(levelHighlightColor[props.level])}
-        >
-          your email
-        </PixelText>
-        <PixelText
-          {...props}
-          size={24}
-          color={cssHex(levelHighlightColor[props.level])}
-        >
-          to continue
-        </PixelText>
+        {[
+          localize('verify-email-dialog-line-0'),
+          localize('verify-email-dialog-line-1'),
+          localize('verify-email-dialog-line-2'),
+        ].map(copy => (
+          <PixelText
+            key={copy}
+            {...props}
+            size={24}
+            color={cssHex(levelHighlightColor[props.level])}
+          >
+            {copy}
+          </PixelText>
+        )) ?? null}
       </BorderedContainer>
     </Dialog>
   )

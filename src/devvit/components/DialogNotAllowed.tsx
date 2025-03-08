@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {cssHex, paletteBlack} from '../../shared/theme'
 import {
   type Level,
@@ -25,20 +26,19 @@ export function DialogNotAllowed(props: DialogNotAllowedProps): JSX.Element {
         backgroundColor={cssHex(paletteBlack)}
         borderColor={cssHex(levelBaseColor[props.level])}
       >
-        <PixelText
-          {...props}
-          size={24}
-          color={cssHex(levelHighlightColor[props.level])}
-        >
-          ACCESS
-        </PixelText>
-        <PixelText
-          {...props}
-          size={24}
-          color={cssHex(levelHighlightColor[props.level])}
-        >
-          DENIED
-        </PixelText>
+        {[
+          localize('not-allowed-dialog-line-0'),
+          localize('not-allowed-dialog-line-1'),
+        ].map(copy => (
+          <PixelText
+            key={copy}
+            {...props}
+            size={24}
+            color={cssHex(levelHighlightColor[props.level])}
+          >
+            {copy}
+          </PixelText>
+        )) ?? null}
       </BorderedContainer>
     </Dialog>
   )

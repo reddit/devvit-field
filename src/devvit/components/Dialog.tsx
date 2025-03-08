@@ -1,4 +1,5 @@
 import {Devvit} from '@devvit/public-api'
+import {localize} from '../../shared/locale'
 import {cssHex, paletteBlack, paletteConsole} from '../../shared/theme'
 import {
   type Level,
@@ -28,7 +29,7 @@ type DialogProps = {
 export function Dialog(props: DialogProps): JSX.Element {
   const DEFAULT_HEIGHT = 240
   const DEFAULT_WIDTH = 288
-  const buttonLabel = props.buttonLabel ?? 'OK'
+  const buttonLabel = props.buttonLabel ?? localize('dialog-button-label')
   const level = props.level ?? 0
   return (
     <zstack
