@@ -4,6 +4,7 @@ import {
   type TemplateResult,
   css,
   html,
+  unsafeCSS,
 } from 'lit'
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
@@ -19,6 +20,24 @@ import {cssReset} from './css-reset.ts'
 
 import './bf-dialog.ts'
 import './bf-terminal.ts'
+import {
+  cssHex,
+  paletteBananaField,
+  paletteBananaFieldDark,
+  paletteBananaFieldLight,
+  paletteBannedField,
+  paletteBannedFieldDark,
+  paletteBannedFieldLight,
+  paletteField,
+  paletteFieldDark,
+  paletteFieldLight,
+  paletteVeryBannedField,
+  paletteVeryBannedFieldDark,
+  paletteVeryBannedFieldLight,
+  paletteWhatIsField,
+  paletteWhatIsFieldDark,
+  paletteWhatIsFieldLight,
+} from '../../shared/theme.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -55,8 +74,7 @@ export class BFGame extends LitElement {
     ${cssReset}
 
     :host {
-      display: flex;
-      flex-direction: column;
+      display: block;
       height: 100%;
     }
 
@@ -65,6 +83,8 @@ export class BFGame extends LitElement {
       overflow: auto;
       background: #fff;
     }
+
+    .box {display: flex; flex-direction: column; height: 100%;}
   `
 
   @property({reflect: true}) accessor ui: UI = 'Loading'
@@ -166,43 +186,82 @@ export class BFGame extends LitElement {
         this.ui satisfies never
     }
 
+    const theme =
+      this.#game.sub == null
+        ? undefined
+        : {
+            0: paletteField,
+            1: paletteBannedField,
+            2: paletteVeryBannedField,
+            3: paletteBananaField,
+            4: paletteWhatIsField,
+          }[this.#game.sub]
+    const themeDark =
+      this.#game.sub == null
+        ? undefined
+        : {
+            0: paletteFieldDark,
+            1: paletteBannedFieldDark,
+            2: paletteVeryBannedFieldDark,
+            3: paletteBananaFieldDark,
+            4: paletteWhatIsFieldDark,
+          }[this.#game.sub]
+    const themeLight =
+      this.#game.sub == null
+        ? undefined
+        : {
+            0: paletteFieldLight,
+            1: paletteBannedFieldLight,
+            2: paletteVeryBannedFieldLight,
+            3: paletteBananaFieldLight,
+            4: paletteWhatIsFieldLight,
+          }[this.#game.sub]
     const boxes = this.#game.fieldConfig
       ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h
       : 0
     return html`
-      ${dialog}
-      <bf-terminal
-        @game-debug='${(ev: CustomEvent<string>) => {
-          this.#dbgLog += `\n${ev.detail}`
-          this.requestUpdate()
-        }}'
-        @game-ui='${(ev: CustomEvent<{ui: UI; msg: DialogMessage}>) => {
-          this.ui = ev.detail.ui
-          this.#msg = ev.detail.msg
-        }}'
-        @game-update='${() => this.requestUpdate()}'
-        @claim='${this.#onClaim}'
-        @open-leaderboard='${() => this.#game.postMessage({type: 'OpenLeaderboard'})}'
-        bannedPlayers='${this.#game.bannedPlayers}'
-        challenge='${ifDefined(this.#game.challenge)}'
-        ?online='${this.#game.connected}'
-        ?cooldown='${this.#game.isCooldown()}'
-        fieldBans='${ifDefined(this.#game.fieldConfig?.bans)}'
-        fieldBoxes='${boxes}'
-        level='${ifDefined(this.#game.subLvl)}'
-        ?loading='${this.ui === 'Loading'}'
-        p1Boxes='${ifDefined(this.#game.p1BoxCount)}'
-        sub='${ifDefined(this.#game.sub)}'
-        players='${this.#game.players}'
-        flamingo='${ifDefined(this.#game.teamBoxCounts?.[0])}'
-        juiceBox='${ifDefined(this.#game.teamBoxCounts?.[1])}'
-        lasagna='${ifDefined(this.#game.teamBoxCounts?.[2])}'
-        sunshine='${ifDefined(this.#game.teamBoxCounts?.[3])}'
-        team='${ifDefined(team)}'
-        x='${this.#game.select.x}'
-        y='${this.#game.select.y}'
-      ></bf-terminal>
-      ${this.#dbgLog ? html`<pre>${this.#dbgLog}</pre>` : ''}
+      <div
+        class='box'
+        style='
+          --color-theme: ${theme ? unsafeCSS(cssHex(theme)) : 'initial'};
+          --color-theme-dark: ${themeDark ? unsafeCSS(cssHex(themeDark)) : 'initial'};
+          --color-theme-light: ${themeLight ? unsafeCSS(cssHex(themeLight)) : 'initial'};
+        '
+      >
+        ${dialog}
+        <bf-terminal
+          @game-debug='${(ev: CustomEvent<string>) => {
+            this.#dbgLog += `\n${ev.detail}`
+            this.requestUpdate()
+          }}'
+          @game-ui='${(ev: CustomEvent<{ui: UI; msg: DialogMessage}>) => {
+            this.ui = ev.detail.ui
+            this.#msg = ev.detail.msg
+          }}'
+          @game-update='${() => this.requestUpdate()}'
+          @claim='${this.#onClaim}'
+          @open-leaderboard='${() => this.#game.postMessage({type: 'OpenLeaderboard'})}'
+          bannedPlayers='${this.#game.bannedPlayers}'
+          challenge='${ifDefined(this.#game.challenge)}'
+          ?online='${this.#game.connected}'
+          ?cooldown='${this.#game.isCooldown()}'
+          fieldBans='${ifDefined(this.#game.fieldConfig?.bans)}'
+          fieldBoxes='${boxes}'
+          level='${ifDefined(this.#game.subLvl)}'
+          ?loading='${this.ui === 'Loading'}'
+          p1Boxes='${ifDefined(this.#game.p1BoxCount)}'
+          sub='${ifDefined(this.#game.sub)}'
+          players='${this.#game.players}'
+          flamingo='${ifDefined(this.#game.teamBoxCounts?.[0])}'
+          juiceBox='${ifDefined(this.#game.teamBoxCounts?.[1])}'
+          lasagna='${ifDefined(this.#game.teamBoxCounts?.[2])}'
+          sunshine='${ifDefined(this.#game.teamBoxCounts?.[3])}'
+          team='${ifDefined(team)}'
+          x='${this.#game.select.x}'
+          y='${this.#game.select.y}'
+        ></bf-terminal>
+        ${this.#dbgLog ? html`<pre>${this.#dbgLog}</pre>` : ''}
+      </div>
     `
   }
 

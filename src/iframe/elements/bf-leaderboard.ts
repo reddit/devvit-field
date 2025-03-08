@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontSSize, radiusPx, spacePx} from '../../shared/theme.ts'
+import {fontSSize, spacePx} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -22,54 +22,33 @@ export class BFLeaderboard extends LitElement {
 
     :host {
       display: flex;
-      flex-direction: column;
+      color: var(--color-theme);
+      font-size: ${fontSSize}px;
       width: 100%;
+      align-items: center;
+    }
+
+    .board {
+      display: flex;
+      height: ${fontSSize}px;
+      column-gap: 2px;
+      width: 100%;
+      background-color: var(--color-another-grey);
+      margin-inline-start: ${spacePx / 2}px;
+      margin-inline-end: ${spacePx / 2}px;
     }
 
     .bar {
-      height: ${fontSSize}px;
-      width: 100%;
-    }
-    .bar > div {
       height: 100%;
-      border-end-end-radius: ${radiusPx}px;
-      border-start-end-radius: ${radiusPx}px;
       transition-property: width;
       transition-duration: 0.3s;
       transition-timing-function: ease;
     }
 
-    .chart { border-collapse: collapse; }
-    .chart > tr {
-      padding-inline-start: 0;
-      padding-inline-end: 0;
-      padding-block-start: 0;
-      padding-block-end: 0;
-    }
-
-    .percent {
-      font-size: ${fontSSize}px;
-      text-align: end;
-      width: auto;
-      padding-inline-end: ${spacePx}px;
-    }
-
-    .flamingo { color: var(--color-flamingo); }
-    .flamingo .bar > div {
-      background-color: var(--color-flamingo);
-    }
-    .juice-box { color: var(--color-juice-box); }
-    .juice-box .bar > div {
-      background-color: var(--color-juice-box);
-    }
-    .lasagna { color: var(--color-lasagna); }
-    .lasagna .bar > div {
-      background-color: var(--color-lasagna);
-    }
-    .sunshine { color: var(--color-sunshine); }
-    .sunshine .bar > div {
-      background-color: var(--color-sunshine);
-    }
+    .flamingo {background-color: var(--color-flamingo);}
+    .juice-box {background-color: var(--color-juice-box);}
+    .lasagna {background-color: var(--color-lasagna);}
+    .sunshine {background-color: var(--color-sunshine);}
   `
 
   @property({type: Number}) accessor bans: number = 0
@@ -82,29 +61,19 @@ export class BFLeaderboard extends LitElement {
 
   protected override render(): TemplateResult {
     const boxes = this.boxes - this.bans || 1
+    const claimed = this.flamingo + this.juiceBox + this.lasagna + this.sunshine
     const flamingo = (this.flamingo / boxes) * 100
     const juiceBox = (this.juiceBox / boxes) * 100
     const lasagna = (this.lasagna / boxes) * 100
     const sunshine = (this.sunshine / boxes) * 100
     return html`
-      <table class='chart'>
-        <tr class='flamingo'>
-          <td class='percent'>${flamingo.toFixed(1)}%</td>
-          <td class='bar'><div style='width: ${flamingo}%;'></div></td>
-        </tr>
-        <tr class='juice-box'>
-          <td class='percent'>${juiceBox.toFixed(1)}%</td>
-          <td class='bar'><div style='width: ${juiceBox}%;'></div></td>
-        </tr>
-        <tr class='lasagna'>
-          <td class='percent'>${lasagna.toFixed(1)}%</td>
-          <td class='bar'><div style='width: ${lasagna}%;'></div></td>
-        </tr>
-        <tr class='sunshine'>
-          <td class='percent'>${sunshine.toFixed(1)}%</td>
-          <td class='bar'><div style='width: ${sunshine}%;'></div></td>
-        </tr>
-      </table>
+      ${`${Math.trunc((claimed * 100) / boxes)}`.padStart(2, ' ')}%
+      <div class='board'>
+        <div class='bar flamingo' style='width: ${flamingo}%;'></div>
+        <div class='bar juice-box' style='width: ${juiceBox}%;'></div>
+        <div class='bar lasagna' style='width: ${lasagna}%;'></div>
+        <div class='bar sunshine' style='width: ${sunshine}%;'></div>
+      </div>
     `
   }
 }

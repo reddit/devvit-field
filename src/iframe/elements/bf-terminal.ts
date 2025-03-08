@@ -188,6 +188,14 @@ export class BFTerminal extends LitElement {
             <div class='status'>${this.online ? html`&nbsp;` : '• Offline'}</div>
             <div class='your-boxes-num'>${this.p1Boxes}</div>
           </div>
+          <bf-leaderboard
+            bans='${this.fieldBans}'
+            boxes='${this.fieldBoxes}'
+            flamingo='${this.flamingo}'
+            juiceBox='${this.juiceBox}'
+            lasagna='${this.lasagna}'
+            sunshine='${this.sunshine}'
+          ></bf-leaderboard>
         </div>
         <div class='canvas-box'>
           <!--- Set tabIndex to propagate key events. -->
@@ -202,14 +210,6 @@ export class BFTerminal extends LitElement {
           style='--width: 256px;'
         ></bf-button>
         <div class='panel'>
-          <bf-leaderboard
-            bans='${this.fieldBans}'
-            boxes='${this.fieldBoxes}'
-            flamingo='${this.flamingo}'
-            juiceBox='${this.juiceBox}'
-            lasagna='${this.lasagna}'
-            sunshine='${this.sunshine}'
-          ></bf-leaderboard>
           <table class='stats'>
             <tr>
               <td class='label'>Banned</td>

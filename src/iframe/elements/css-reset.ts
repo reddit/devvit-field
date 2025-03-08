@@ -62,6 +62,7 @@ export const cssReset: CSSResult = css`
     --color-flamingo-dark: #9a2564;
     --color-flamingo-light: #df659f;
     --color-flamingo: ${unsafeCSS(cssHex(paletteFlamingo))};
+    --color-another-grey: #3a3a3a;
     --color-grey: #696969;
     --color-juice-box-dark: #5772c9;
     --color-juice-box-light: #91b1ff;

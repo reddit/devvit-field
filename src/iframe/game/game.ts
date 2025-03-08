@@ -329,9 +329,7 @@ export class Game {
           },
         }
 
-    const sub = devMode
-      ? Object.values(levelPascalCase)[Math.trunc(rnd.num * 5)]!
-      : ''
+    const lvl = Math.trunc(rnd.num * 5) as Level
     const partSize = 128
     const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
     // to-do: randomize bans.
@@ -358,12 +356,12 @@ export class Game {
           connected: true,
           debug: true,
           field,
-          lvl: Math.trunc(rnd.num * 5) as Level,
+          lvl,
           p1,
           p1BoxCount: Math.trunc(Math.random() * (visible + 1)),
           players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
-          sub,
+          sub: levelPascalCase[lvl],
           team,
           teamBoxCounts,
           type: 'Init',
