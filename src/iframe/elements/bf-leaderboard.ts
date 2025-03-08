@@ -43,6 +43,7 @@ export class BFLeaderboard extends LitElement {
       transition-property: width;
       transition-duration: 0.3s;
       transition-timing-function: ease;
+      min-width: 1px;
     }
 
     .flamingo {background-color: var(--color-flamingo);}
