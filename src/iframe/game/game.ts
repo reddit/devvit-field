@@ -183,22 +183,24 @@ export class Game {
 
   moveTo(xy: Readonly<XY>): void {
     if (!this.fieldConfig) return
-    this.cam.x = Math.max(
-      -this.cam.w / 2 / this.cam.scale / this.cam.fieldScale,
-      Math.min(
-        xy.x,
-        this.fieldConfig.wh.w -
-          this.cam.w / 2 / this.cam.scale / this.cam.fieldScale,
-      ),
-    )
-    this.cam.y = Math.max(
-      -this.cam.h / 2 / this.cam.scale / this.cam.fieldScale,
-      Math.min(
-        xy.y,
-        this.fieldConfig.wh.h -
-          this.cam.h / 2 / this.cam.scale / this.cam.fieldScale,
-      ),
-    )
+    this.cam.x =
+      Math.max(
+        -this.cam.w / 2 / this.cam.scale / this.cam.fieldScale,
+        Math.min(
+          xy.x,
+          this.fieldConfig.wh.w -
+            this.cam.w / 2 / this.cam.scale / this.cam.fieldScale,
+        ),
+      ) || 0
+    this.cam.y =
+      Math.max(
+        -this.cam.h / 2 / this.cam.scale / this.cam.fieldScale,
+        Math.min(
+          xy.y,
+          this.fieldConfig.wh.h -
+            this.cam.h / 2 / this.cam.scale / this.cam.fieldScale,
+        ),
+      ) || 0
   }
 
   selectBox(xy: Readonly<XY>): void {
