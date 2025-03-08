@@ -28,7 +28,7 @@ void main() {
     intXY.y >= uViewfinder.y && intXY.y <= (uViewfinder.y + uViewfinder.w) &&
     (intXY.x == uViewfinder.x || intXY.x == (uViewfinder.x + uViewfinder.z))
   ) {
-    oFrag = rgbaToVec4(uRGBAByColor[1]);
+    oFrag = rgbaToVec4(uRGBAByColor[2]);
     return;
   }
 

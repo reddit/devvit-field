@@ -135,13 +135,13 @@ export class Renderer {
     if (lvl != null) {
       const pascalLvl = levelWord[lvl]
       this.#idByColor = new Uint32Array([
+        0, // Loading, unused.
         0, // Hidden, unused.
         atlas.anim[`box--Ban${pascalLvl}`].id,
         atlas.anim['box--Flamingo'].id,
         atlas.anim['box--JuiceBox'].id,
         atlas.anim['box--Lasagna'].id,
         atlas.anim['box--Sunshine'].id,
-        0, // Pending, unused.
       ])
       const theme = {
         0: paletteField,
@@ -151,6 +151,7 @@ export class Renderer {
         4: paletteWhatIsField,
       }[lvl]
       this.#rgbaByColor = new Uint32Array([
+        paletteBlack,
         paletteBlack,
         theme,
         paletteFlamingo,

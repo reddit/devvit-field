@@ -7,10 +7,10 @@ import type {FieldConfig} from '../../shared/types/field-config.ts'
  *
  * ccc: color.
  */
-export const fieldArrayColorHidden: number = 0
-export const fieldArrayColorBan: number = 1
-export const fieldArrayColorTeamOffset: number = 2 // 2 - 5.
-export const fieldArrayColorPending: number = 6 // For state only.
+export const fieldArrayColorLoading: number = 0
+export const fieldArrayColorHidden: number = 1
+export const fieldArrayColorBan: number = 2
+export const fieldArrayColorTeamOffset: number = 3 // 3 - 6.
 
 export function fieldArrayIndex(
   config: Readonly<FieldConfig>,
@@ -19,16 +19,16 @@ export function fieldArrayIndex(
   return xy.y * config.wh.w + xy.x
 }
 
-export function fieldArrayGetPending(field: Uint8Array, i: number): boolean {
-  return field[i] === fieldArrayColorPending
+export function fieldArrayIsLoading(field: Uint8Array, i: number): boolean {
+  return field[i] === fieldArrayColorLoading
 }
 
-export function fieldArraySetPending(field: Uint8Array, i: number): void {
-  field[i] = fieldArrayColorPending
+export function fieldArraySetHidden(field: Uint8Array, i: number): void {
+  field[i] = fieldArrayColorHidden
 }
 
-export function fieldArrayGetVisible(field: Uint8Array, i: number): boolean {
-  return field[i] !== fieldArrayColorHidden
+export function fieldArrayIsVisible(field: Uint8Array, i: number): boolean {
+  return field[i]! > fieldArrayColorHidden
 }
 
 export function fieldArraySetBan(field: Uint8Array, i: number): void {

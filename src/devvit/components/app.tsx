@@ -103,6 +103,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
         ),
       )
 
+      for (const key of activeConnections)
+        iframe.postMessage({type: 'PartitionLoaded', xy: parsePartitionXY(key)})
+
       return deltas.flat()
     },
     {

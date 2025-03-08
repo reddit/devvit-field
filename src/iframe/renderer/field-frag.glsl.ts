@@ -8,7 +8,7 @@ uniform mediump uvec2 uFieldWH;
 uniform mediump sampler2D uTex;
 uniform mediump uvec2 uTexWH;
 uniform highp usampler2D uField;
-uniform highp uint uIDByColor[6];
+uniform highp uint uIDByColor[7];
 uniform highp uint uGridRGBA;
 
 in highp vec2 vUV;
@@ -25,6 +25,8 @@ vec4 rgbaToVec4(highp uint rgba) {
 
 void main() {
   highp vec2 xy = vUV * uCam.zw + uCam.xy;
+  lowp uint color = texelFetch(uField, ivec2(xy), 0).r;
+
   if (
     xy.x < 0. || xy.x >= float(uFieldWH.x) ||
     xy.y < 0. || xy.y >= float(uFieldWH.y)
@@ -37,13 +39,11 @@ void main() {
     (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
      fracXY.y < borderW || fracXY.y > 1.0 - borderW)
   ) {
-    oFrag = rgbaToVec4(uGridRGBA);
+    bool loading = color == ${fieldArrayColorLoading}u;
+    highp vec4 alpha = loading ? vec4(1, 1, 1, abs(float(uFrame % 120u) / 60. - 1.)) : vec4(1, 1, 1, 1);
+    oFrag = rgbaToVec4(uGridRGBA) * alpha;
     return;
   }
-
-  lowp uint color = texelFetch(uField, ivec2(xy), 0).r;
-  if (color == ${fieldArrayColorHidden}u || color == ${fieldArrayColorPending}u)
-    discard;
 
   lowp uint id = uIDByColor[color];
   mediump uvec4 texXYWH = texelFetch(uCels, ivec2(0, id), 0);
@@ -53,4 +53,4 @@ void main() {
   oFrag = texture(uTex, px / vec2(uTexWH));
 }`
 
-import {fieldArrayColorHidden, fieldArrayColorPending} from './field-array.ts'
+import {fieldArrayColorLoading} from './field-array.ts'

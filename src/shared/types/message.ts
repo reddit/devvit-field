@@ -21,6 +21,11 @@ export type DevvitMessage =
   | ClaimBoxesResponse
   | RealtimeMessage
   | DialogMessage
+  /**
+   * to-do: remove. This is needed right now to inform the ifram what partitions
+   *        have been loaded. It won't be needed once PartitionUpdate is used.
+   */
+  | {type: 'PartitionLoaded'; xy: XY}
 
 export type InitDevvitMessage = {
   appConfig: AppConfig
@@ -100,6 +105,7 @@ export type RealtimeMessage =
   | ChallengeCompleteMessage
   | PartitionUpdate
 
+/** Sent on realtime patch AND in response to claiming a box. */
 type ClaimBoxesResponse = {
   type: 'Box'
   deltas: Delta[]

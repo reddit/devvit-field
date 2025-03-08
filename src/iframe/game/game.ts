@@ -1,3 +1,4 @@
+import {parsePartitionXY} from '../../shared/partition.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
@@ -37,11 +38,11 @@ import {type DefaultButton, Input} from '../input/input.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
 import {
-  fieldArrayGetPending,
-  fieldArrayGetVisible,
   fieldArrayIndex,
+  fieldArrayIsLoading,
+  fieldArrayIsVisible,
   fieldArraySetBan,
-  fieldArraySetPending,
+  fieldArraySetHidden,
   fieldArraySetTeam,
 } from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
@@ -152,9 +153,6 @@ export class Game {
     // to-do: this is overlapping with claimed.
     // audioPlay(this.ac, this.audio.cool, 600)
     this.claimed = this.now
-    const i = fieldArrayIndex(this.fieldConfig, xy)
-    fieldArraySetPending(this.field, i)
-    this.renderer.setBox(xy, this.field[i]!)
     this.postMessage({type: 'ClaimBoxes', boxes: [xy]})
     this.canvas.dispatchEvent(Bubble('game-update', undefined))
     setTimeout(
@@ -171,10 +169,7 @@ export class Game {
   isClaimable(xy: Readonly<XY>): boolean {
     if (!this.fieldConfig) return false
     const i = fieldArrayIndex(this.fieldConfig, xy)
-    return (
-      !fieldArrayGetPending(this.field, i) &&
-      !fieldArrayGetVisible(this.field, i)
-    )
+    return !this.#findPending(xy) && !fieldArrayIsVisible(this.field, i)
   }
 
   isCooldown(): boolean {
@@ -207,17 +202,9 @@ export class Game {
     if (!this.fieldConfig) return
     // to-do: move this mutation to a centralized store so it's easier to see
     // //     how state changes.
-    {
-      const i = fieldArrayIndex(this.fieldConfig, this.select)
-      this.renderer.setBox(this.select, this.field[i]!)
-    }
     this.select.x = xy.x
     this.select.y = xy.y
     this.canvas.dispatchEvent(Bubble('game-update', undefined))
-    {
-      const i = fieldArrayIndex(this.fieldConfig, this.select)
-      this.renderer.setBox(this.select, this.field[i]!)
-    }
   }
 
   async start(): Promise<void> {
@@ -287,18 +274,51 @@ export class Game {
   }
 
   #applyDeltas(deltas: Delta[]): void {
-    if (!this.fieldConfig || this.subLvl == null) return
+    if (!this.fieldConfig || this.subLvl == null || !deltas[0]) return
+    this.#clearLoadingForPart(deltas)
+
     for (const {globalXY, isBan, team} of deltas) {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
-      if (fieldArrayGetPending(this.field, i)) {
-        const box = this.#pending.find(pend => xyEq(pend.fieldXY, globalXY))
-        if (box) box.resolve(this, isBan, team, this.subLvl)
-      }
+      const pend = this.#findPending(globalXY)
+      if (pend) pend.resolve(this, isBan, team, this.subLvl)
       if (isBan) fieldArraySetBan(this.field, i)
       else fieldArraySetTeam(this.field, i, team)
       // to-do: it may be faster to send the entire array for many changes.
       this.renderer.setBox(globalXY, this.field[i]!)
     }
+  }
+
+  #clearLoadingForPart(deltas: readonly Readonly<Delta>[]): void {
+    if (!this.fieldConfig || !deltas[0]) return
+
+    // to-do: Assume all patches are from the same partition and only check the
+    //        first one. Right now the deltas come in a mega load. In the
+    //        future, deltas will be applied one partition at a time.
+    const partLoading = fieldArrayIsLoading(
+      this.field,
+      fieldArrayIndex(this.fieldConfig, deltas[0].globalXY),
+    )
+    if (partLoading) {
+      const partXY = {
+        x:
+          deltas[0].globalXY.x -
+          (deltas[0].globalXY.x % this.fieldConfig.partSize),
+        y:
+          deltas[0].globalXY.y -
+          (deltas[0].globalXY.y % this.fieldConfig.partSize),
+      }
+
+      for (let y = partXY.y; y < partXY.y + this.fieldConfig.partSize; y++)
+        for (let x = partXY.x; x < partXY.x + this.fieldConfig.partSize; x++) {
+          const i = fieldArrayIndex(this.fieldConfig, {x, y})
+          fieldArraySetHidden(this.field, i)
+          this.renderer.setBox({x, y}, this.field[i]!)
+        }
+    }
+  }
+
+  #findPending(xy: Readonly<XY>): BoxEnt | undefined {
+    return this.#pending.find(box => xyEq(box.fieldXY, xy))
   }
 
   #initDevMode(): void {
@@ -548,10 +568,35 @@ export class Game {
       case 'Dialog':
         this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'Barred', msg}))
         break
-      case 'PartitionUpdate':
-        if (!this.p1) return
+      case 'PartitionLoaded':
+        if (!this.fieldConfig) return
+        this.#clearLoadingForPart([
+          {
+            globalXY: {
+              x: msg.xy.x * this.fieldConfig.partSize,
+              y: msg.xy.y * this.fieldConfig.partSize,
+            },
+            isBan: false,
+            team: 0,
+          },
+        ])
+        break
+      case 'PartitionUpdate': {
+        if (!this.fieldConfig) return
+        const xy = parsePartitionXY(msg.partitionKey)
+        this.#clearLoadingForPart([
+          {
+            globalXY: {
+              x: xy.x * this.fieldConfig.partSize,
+              y: xy.y * this.fieldConfig.partSize,
+            },
+            isBan: false,
+            team: 0,
+          },
+        ])
         this.#applyDeltas(msg.deltas)
         break
+      }
       case 'ConfigUpdate':
         this.appConfig = msg.config
         break
