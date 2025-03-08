@@ -1,3 +1,4 @@
+import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Input} from '../input/input.ts'
 import type {AttribBuffer} from '../renderer/attrib-buffer.ts'
 import type {Cam} from '../renderer/cam.ts'
@@ -52,11 +53,21 @@ export class Looper {
     if (op === 'add') this.#renderer.initGL()
   }
 
-  render(bmps: Readonly<AttribBuffer>, loop: (() => void) | undefined): void {
+  render(
+    bmps: Readonly<AttribBuffer>,
+    fieldConfig: Readonly<FieldConfig>,
+    loop: (() => void) | undefined,
+  ): void {
     this.#loop = loop
     if (document.hidden || !this.#renderer.hasContext()) return
     if (this.#loop) this.#frame ??= requestAnimationFrame(this.#onFrame)
-    this.#renderer.render(this.#cam, this.frame, bmps, this.#cam.fieldScale)
+    this.#renderer.render(
+      this.#cam,
+      fieldConfig,
+      this.frame,
+      bmps,
+      this.#cam.fieldScale,
+    )
   }
 
   #onEvent = (ev: Event): void => {

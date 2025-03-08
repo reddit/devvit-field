@@ -417,7 +417,11 @@ export class Game {
     this.zoo.update(this)
     this.zoo.draw(this)
 
-    this.looper.render(this.bmps, this.#onLoop)
+    this.looper.render(
+      this.bmps,
+      this.fieldConfig ?? {bans: 0, partSize: 1, wh: {w: 1, h: 1}},
+      this.#onLoop,
+    )
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
@@ -493,17 +497,17 @@ export class Game {
                 }
               }
 
-          for (let y = 0; y < mapSize; y++)
-            for (let x = 0; x < mapSize; x++) {
-              const i = fieldArrayIndex(
-                {bans: 0, partSize: mapSize, wh: {w: mapSize, h: mapSize}},
-                {x, y},
-              )
-              if (rnd.num < 0.8) continue
-              if (rnd.num < 0.2) fieldArraySetBan(this.map, i)
-              else
-                fieldArraySetTeam(this.map, i, Math.trunc(rnd.num * 4) as Team)
-            }
+          // for (let y = 0; y < mapSize; y++)
+          //   for (let x = 0; x < mapSize; x++) {
+          //     const i = fieldArrayIndex(
+          //       {bans: 0, partSize: mapSize, wh: {w: mapSize, h: mapSize}},
+          //       {x, y},
+          //     )
+          //     if (rnd.num < 0.8) continue
+          //     if (rnd.num < 0.2) fieldArraySetBan(this.map, i)
+          //     else
+          //       fieldArraySetTeam(this.map, i, Math.trunc(rnd.num * 4) as Team)
+          //   }
         }
 
         this.selectBox(msg.initialGlobalXY)

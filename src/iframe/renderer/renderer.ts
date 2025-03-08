@@ -171,6 +171,7 @@ export class Renderer {
 
   render(
     cam: Readonly<Cam>,
+    fieldConfig: Readonly<FieldConfig>,
     frame: number,
     bmps: Readonly<AttribBuffer>,
     fieldScale: number,
@@ -181,7 +182,7 @@ export class Renderer {
 
     this.#renderField(cam, frame, fieldScale)
     this.#renderSprites(cam, frame, bmps)
-    this.#renderMap(cam)
+    this.#renderMap(cam, fieldConfig)
   }
 
   setBox(xy: Readonly<XY>, val: number): void {
@@ -255,7 +256,7 @@ export class Renderer {
     this.#gl.bindVertexArray(null)
   }
 
-  #renderMap(cam: Readonly<Cam>): void {
+  #renderMap(cam: Readonly<Cam>, fieldConfig: Readonly<FieldConfig>): void {
     if (!this.#gl || !this.#mapShader) return
 
     this.#gl.useProgram(this.#mapShader.pgm)
@@ -275,6 +276,19 @@ export class Renderer {
     this.#gl.uniform1uiv(
       this.#mapShader.uniforms.uRGBAByColor!,
       this.#rgbaByColor,
+    )
+    const viewportWH = {
+      w: cam.w / cam.scale / cam.fieldScale,
+      h: cam.h / cam.scale / cam.fieldScale,
+    }
+    this.#gl.uniform4i(
+      this.#mapShader.uniforms.uViewfinder!,
+      cam.x / cam.scale / (fieldConfig.wh.w / mapSize / devicePixelRatio) -
+        viewportWH.w / 2,
+      cam.y / cam.scale / (fieldConfig.wh.h / mapSize / devicePixelRatio) -
+        viewportWH.h / 2,
+      viewportWH.w,
+      viewportWH.h,
     )
 
     for (const [i, tex] of this.#mapShader.textures.entries()) {

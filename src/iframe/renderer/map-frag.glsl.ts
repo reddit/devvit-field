@@ -4,6 +4,7 @@ precision highp float;
 uniform highp usampler2D uMap;
 uniform highp float uSize;
 uniform highp uint uRGBAByColor[6];
+uniform highp ivec4 uViewfinder;
 
 in vec2 vXY;
 
@@ -18,10 +19,14 @@ vec4 rgbaToVec4(uint rgba) {
 }
 
 void main() {
-  // if (int(vXY.x) % 10 == 0 || int(vXY.y) % 10 == 0) {
+  mediump ivec2 intXY = ivec2(vXY);
   if (
-    vXY.x <= 1. || vXY.x >= (uSize - 1.) ||
-    vXY.y <= 1. || vXY.y >= (uSize - 1.)
+    intXY.x == 0 || intXY.x == (int(uSize) - 1) ||
+    intXY.y == 0 || intXY.y == (int(uSize) - 1) ||
+    intXY.x >= uViewfinder.x && intXY.x <= (uViewfinder.x + uViewfinder.z) &&
+    (intXY.y == uViewfinder.y || intXY.y == (uViewfinder.y + uViewfinder.w)) ||
+    intXY.y >= uViewfinder.y && intXY.y <= (uViewfinder.y + uViewfinder.w) &&
+    (intXY.x == uViewfinder.x || intXY.x == (uViewfinder.x + uViewfinder.z))
   ) {
     oFrag = rgbaToVec4(uRGBAByColor[1]);
     return;
