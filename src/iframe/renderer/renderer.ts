@@ -278,15 +278,21 @@ export class Renderer {
       this.#rgbaByColor,
     )
     const viewportWH = {
-      w: cam.w / cam.scale / cam.fieldScale,
-      h: cam.h / cam.scale / cam.fieldScale,
+      w: Math.trunc(
+        (cam.w / cam.scale / cam.fieldScale / fieldConfig.wh.w) *
+          mapSize *
+          devicePixelRatio,
+      ),
+      h: Math.trunc(
+        (cam.h / cam.scale / cam.fieldScale / fieldConfig.wh.h) *
+          mapSize *
+          devicePixelRatio,
+      ),
     }
     this.#gl.uniform4i(
       this.#mapShader.uniforms.uViewfinder!,
-      cam.x / cam.scale / (fieldConfig.wh.w / mapSize / devicePixelRatio) -
-        viewportWH.w / 2,
-      cam.y / cam.scale / (fieldConfig.wh.h / mapSize / devicePixelRatio) -
-        viewportWH.h / 2,
+      cam.x / cam.scale / (fieldConfig.wh.w / mapSize / devicePixelRatio),
+      cam.y / cam.scale / (fieldConfig.wh.h / mapSize / devicePixelRatio),
       viewportWH.w,
       viewportWH.h,
     )
