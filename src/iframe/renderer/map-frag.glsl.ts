@@ -10,7 +10,7 @@ in vec2 vXY;
 
 out highp vec4 oFrag;
 
-vec4 rgbaToVec4(uint rgba) {
+vec4 rgbaToVec4(highp uint rgba) {
   float r = float((rgba >> 24u) & 0xffu);
   float g = float((rgba >> 16u) & 0xffu);
   float b = float((rgba >>  8u) & 0xffu);
