@@ -1,9 +1,10 @@
-import {Devvit} from '@devvit/public-api'
+import {type Context, Devvit} from '@devvit/public-api'
 import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
   levelHighlightColor,
+  levelPascalCase,
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
@@ -20,16 +21,22 @@ const LEVEL_COPY = [
 type DialogUnauthorizedProps = {
   pixelRatio: number
   level: Level
+  currentLevel: Level
 }
 
 export function DialogUnauthorized(
   props: DialogUnauthorizedProps,
+  ctx: Context,
 ): JSX.Element {
   return (
     <Dialog
-      onPress={() => console.log('do something')}
+      onPress={() =>
+        ctx.ui.navigateTo(
+          `https://www.reddit.com/r/${levelPascalCase[props.currentLevel]}/`,
+        )
+      }
       {...props}
-      buttonLabel='Go To r/Level'
+      buttonLabel={`Go To r/${levelPascalCase[props.currentLevel]}`}
     >
       <BorderedContainer
         height={180}

@@ -32,10 +32,10 @@ import {
   userAttemptToClaimSpecialPointForTeam,
   userGet,
 } from '../server/core/user.js'
+import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
 //import { DialogBanned } from './DialogBanned.tsx';
-// import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 // import { CountdownController } from './CountdownController.tsx';
 
 export function App(ctx: Devvit.Context): JSX.Element {
@@ -46,12 +46,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
   ) {
     // TODO: add conditional to render countdown... not sure about timing yet.
     //return <CountdownController />;
-    // return <DialogUnauthorized level={2} />
     //return <DialogBanned level={1} targetLevel={2} pixelRatio={pixelRatio} />;
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
+  console.log('appState', appState)
   const [activeConnections, setActiveConnections] = useState2<PartitionKey[]>(
     [],
   )
@@ -77,6 +77,16 @@ export function App(ctx: Devvit.Context): JSX.Element {
       <vstack alignment='center middle'>
         <text>Sorry, you can't access this post</text>
       </vstack>
+    )
+  }
+
+  if (appState.status === 'dialog') {
+    return (
+      <DialogUnauthorized
+        level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+        currentLevel={appState.profile.currentLevel}
+        pixelRatio={pixelRatio}
+      />
     )
   }
 

@@ -137,6 +137,7 @@ DevvitTest.it(
         'You are not on the correct level. You should be at level 0, not 1.',
       status: 'dialog',
       redirectURL: expect.any(String),
+      profile: expect.any(Object),
     })
   },
 )

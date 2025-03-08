@@ -35,6 +35,7 @@ export type AppState =
   /** Show a dialog inside of the webview */
   | ({
       status: 'dialog'
+      profile: Awaited<ReturnType<typeof userGetOrSet>>
     } & Omit<DialogMessage, 'type'>)
   /** User has to verify email  */
   | {
@@ -66,7 +67,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   })
   if (result.pass === false) {
     const {pass: _pass, ...rest} = result
-    return {status: 'dialog', ...rest}
+    return {status: 'dialog', ...rest, profile}
   }
 
   const [challengeConfig, initialCellsClaimed, minesHitByTeam] =
