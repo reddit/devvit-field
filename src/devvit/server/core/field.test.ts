@@ -629,7 +629,7 @@ DevvitTest.it(
   },
 )
 
-DevvitTest.it.only(
+DevvitTest.it(
   'fieldClaimCells - claims should not shift other bits',
   async ctx => {
     await userSet({

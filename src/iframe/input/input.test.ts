@@ -3,6 +3,10 @@ import {Cam} from '../renderer/cam.js'
 import {Input} from './input.js'
 import type {DefaultButton} from './input.js'
 
+// to-do: is this test leaking?
+// (node:99686) MaxListenersExceededWarning: Possible EventTarget memory leak detected. 11 blur listeners added to EventTarget. MaxListeners is 10. Use events.setMaxListeners() to increase limit
+// (Use `node --trace-warnings ...` to show where the warning was created)
+
 const cam: Cam = new Cam()
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>(<unknown>{
   addEventListener() {},
