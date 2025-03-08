@@ -311,6 +311,7 @@ export class Game {
       for (let y = partXY.y; y < partXY.y + this.fieldConfig.partSize; y++)
         for (let x = partXY.x; x < partXY.x + this.fieldConfig.partSize; x++) {
           const i = fieldArrayIndex(this.fieldConfig, {x, y})
+          if (!fieldArrayIsLoading(this.field, i)) continue
           fieldArraySetHidden(this.field, i)
           this.renderer.setBox({x, y}, this.field[i]!)
         }
