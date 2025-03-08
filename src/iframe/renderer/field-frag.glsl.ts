@@ -8,7 +8,6 @@ uniform mediump uvec2 uFieldWH;
 uniform mediump sampler2D uTex;
 uniform mediump uvec2 uTexWH;
 uniform highp usampler2D uField;
-uniform highp float uScale;
 uniform highp uint uIDByColor[6];
 uniform highp uint uGridRGBA;
 
@@ -35,7 +34,6 @@ void main() {
   highp vec2 fracXY = fract(xy);
   highp float borderW = 0.05;
   if (
-    uScale >= 10. &&
     (fracXY.x < borderW || fracXY.x > 1.0 - borderW ||
      fracXY.y < borderW || fracXY.y > 1.0 - borderW)
   ) {
