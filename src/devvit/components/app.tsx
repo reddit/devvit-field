@@ -34,6 +34,7 @@ import {
 } from '../server/core/user.js'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
+import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
 // import { CountdownController } from './CountdownController.tsx';
@@ -57,17 +58,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   if (appState.status === 'needsToVerifyEmail') {
     return (
-      <vstack alignment='center middle'>
-        <text>You need to verify your email before playing</text>
-        {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-        <button
-          onPress={async () => {
-            console.log('not yet implemented!')
-          }}
-        >
-          Check status
-        </button>
-      </vstack>
+      <DialogVerifyEmail
+        level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+        pixelRatio={pixelRatio}
+        onPress={async () => {
+          console.log('to-do: not yet implemented!')
+        }}
+      />
     )
   }
 
