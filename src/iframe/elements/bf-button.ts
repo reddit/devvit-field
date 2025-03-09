@@ -31,6 +31,22 @@ export class BFButton extends LitElement {
       width: var(--width);
     }
 
+    /* Pre-compute keyframe animations for consistency. */
+    @keyframes button-press {
+      100% {
+        transform: translateY(9px);
+        box-shadow: 0 3px var(--color-black);
+      }
+    }
+
+    @keyframes button-after-press {
+      100% {
+		    height: 3px;
+		    bottom: -5px;
+		    box-shadow: 0 3px var(--color-shade-50);
+      }
+    }
+
     button {
       display: flex;
       flex-direction: row;
@@ -41,15 +57,13 @@ export class BFButton extends LitElement {
       /* white-space: nowrap; */
       border-style: none;
       justify-content: center;
-      border-width: 2px;
       border-style: solid;
       border-color: var(--color-black);
       border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
       margin-block-start: ${spacePx / 2}px;
-      margin-block-end: ${10 + spacePx / 2}px;
+      margin-block-end: ${13 + spacePx / 2}px;
       text-transform: inherit;
-
       /* Gleam. */
       background-image: linear-gradient(
         to bottom,
@@ -76,9 +90,6 @@ export class BFButton extends LitElement {
       font-weight: 600;
       line-height: 26px;
       letter-spacing: -0.3px;
-      transition-property: background-color, transform, box-shadow;
-      transition-duration: .1s;
-      transition-timing-function: ease;
     }
 
     button.icon-button {
@@ -89,32 +100,30 @@ export class BFButton extends LitElement {
     button::after {
       display: block;
       content: '';
-      width: 100%;
-      height: 10px;
-      transition-property: height, border-width, bottom, box-shadow;
-      transition-duration: .1s;
-      transition-timing-function: ease;
+      width: calc(100% + 4px);
+      left: -2px;
+      height: 12px;
       position: absolute;
-      bottom: -10px;
+      bottom: -13px;
       border-color: var(--color-black);
-      border-inline-start-width: 0;
-      border-inline-end-width: 0;
+      border-inline-start-width: 2px;
+      border-inline-end-width: 2px;
       border-end-start-radius: ${radiusPx}px;
       border-end-end-radius: ${radiusPx}px;
       border-style: solid;
       box-shadow: 0 4px var(--color-shade-50);
+      background-color: var(--color-grey);
     }
 
     button:active {
-      transform: translateY(7px);
-      box-shadow: 0 3px var(--color-black);
+      animation-name: button-press;
+      animation-duration: .06s;
+      animation-fill-mode: both;
     }
-
     button:active::after {
-      border-width: 0;
-      height: 0px;
-      bottom: -3px;
-      box-shadow: 0 3px var(--color-shade-50);
+      animation-name: button-after-press;
+      animation-duration: .06s;
+      animation-fill-mode: both;
     }
 
     button:disabled {
