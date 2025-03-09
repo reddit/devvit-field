@@ -47,7 +47,7 @@ export class BFButton extends LitElement {
       border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
       margin-block-start: ${spacePx / 2}px;
-      margin-block-end: ${5 + spacePx / 2}px;
+      margin-block-end: ${10 + spacePx / 2}px;
       text-transform: inherit;
 
       /* Gleam. */
@@ -76,6 +76,9 @@ export class BFButton extends LitElement {
       font-weight: 600;
       line-height: 26px;
       letter-spacing: -0.3px;
+      transition-property: background-color, transform, box-shadow;
+      transition-duration: .1s;
+      transition-timing-function: ease;
     }
 
     button.icon-button {
@@ -87,27 +90,29 @@ export class BFButton extends LitElement {
       display: block;
       content: '';
       width: 100%;
-      height: 9px;
-      background-color: var(--color-grey);
+      height: 10px;
+      transition-property: height, border-width, bottom, box-shadow;
+      transition-duration: .1s;
+      transition-timing-function: ease;
       position: absolute;
-      bottom: -9px;
+      bottom: -10px;
       border-color: var(--color-black);
-      border-width: 2px;
       border-inline-start-width: 0;
       border-inline-end-width: 0;
-      border-radius: ${radiusPx}px;
+      border-end-start-radius: ${radiusPx}px;
+      border-end-end-radius: ${radiusPx}px;
       border-style: solid;
       box-shadow: 0 4px var(--color-shade-50);
     }
 
     button:active {
-      transform: translateY(4px);
+      transform: translateY(7px);
       box-shadow: 0 3px var(--color-black);
     }
 
     button:active::after {
       border-width: 0;
-      height: 1px;
+      height: 0px;
       bottom: -3px;
       box-shadow: 0 3px var(--color-shade-50);
     }
@@ -141,6 +146,9 @@ export class BFButton extends LitElement {
     :host([appearance='Flamingo']) button {
       background-color: var(--color-flamingo);
     }
+    :host([appearance='Flamingo']) button::after {
+      background-color: var(--color-flamingo-dark);
+    }
     :host([appearance='Flamingo']:hover) button {
       background-color: var(--color-flamingo-light);
     }
@@ -150,10 +158,16 @@ export class BFButton extends LitElement {
     :host([appearance='Flamingo']) button:disabled {
       background-color: var(--color-grey);
     }
+    :host([appearance='Flamingo']) button:disabled::after {
+      background-color: var(--color-grey);
+    }
 
     /* Appearance: juice box.  */
     :host([appearance='JuiceBox']) button {
       background-color: var(--color-juice-box);
+    }
+    :host([appearance='JuiceBox']) button::after {
+      background-color: var(--color-juice-box-dark);
     }
     :host([appearance='JuiceBox']:hover) button {
       background-color: var(--color-juice-box-light);
@@ -164,10 +178,16 @@ export class BFButton extends LitElement {
     :host([appearance='JuiceBox']) button:disabled {
       background-color: var(--color-grey);
     }
+    :host([appearance='JuiceBox']) button:disabled::after {
+      background-color: var(--color-grey);
+    }
 
     /* Appearance: lasagna.  */
     :host([appearance='Lasagna']) button {
       background-color: var(--color-lasagna);
+    }
+    :host([appearance='Lasagna']) button::after {
+      background-color: var(--color-lasagna-dark);
     }
     :host([appearance='Lasagna']:hover) button {
       background-color: var(--color-lasagna-light);
@@ -178,10 +198,16 @@ export class BFButton extends LitElement {
     :host([appearance='Lasagna']) button:disabled {
       background-color: var(--color-grey);
     }
+    :host([appearance='Lasagna']) button:disabled::after {
+      background-color: var(--color-grey);
+    }
 
     /* Appearance: sunshine.  */
     :host([appearance='Sunshine']) button {
       background-color: var(--color-sunshine);
+    }
+    :host([appearance='Sunshine']) button::after {
+      background-color: var(--color-sunshine-dark);
     }
     :host([appearance='Sunshine']:hover) button {
       background-color: var(--color-sunshine-light);
@@ -190,6 +216,9 @@ export class BFButton extends LitElement {
       background-color: var(--color-sunshine-dark);
     }
     :host([appearance='Sunshine']) button:disabled {
+      background-color: var(--color-grey);
+    }
+    :host([appearance='Sunshine']) button:disabled::after {
       background-color: var(--color-grey);
     }
 
