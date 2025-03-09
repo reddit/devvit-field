@@ -98,7 +98,10 @@ export class PointerPoller {
       this.#canvas[fn](type, this.#onPoint as EventListener, opts)
     }
     // to-do: should be part of pointer? If so, why bother separating key poll?
-    this.#canvas[fn]('wheel', this.#onWheel as EventListener, opts)
+    this.#canvas[fn]('wheel', this.#onWheel as EventListener, {
+      capture: true,
+      passive: false,
+    })
     this.#canvas[fn]('contextmenu', this.#onContextMenu, {capture: true})
 
     // Disable long press vibration. Non-passive must be explicit for touchstart.
@@ -222,6 +225,7 @@ export class PointerPoller {
     this.#wheel.next.x = ev.shiftKey ? ev.deltaY : ev.deltaX
     this.#wheel.next.y = ev.shiftKey ? ev.deltaX : ev.deltaY
     this.#wheel.next.z = ev.deltaZ
+    ev.preventDefault() // Disable scaling.
   }
 
   #evButtonsToBits(buttons: number): number {
