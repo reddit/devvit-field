@@ -35,7 +35,7 @@ cp tools/devvit.template.yaml devvit.dev.yaml
 # Edit the name field to be uniquely associated to you such as fieldfoo; it
 # must be 16 characters or less.
 
-cp src/devvit/server/core/config.template.json src/devvit/server/core/config.dev.json
+cp src/shared/config/config.template.json src/shared/config/config.dev.json
 # Edit the T3 and T5 IDs at least.
 
 # Un/comment the imports in src/devvit/server/core/levels.ts.
@@ -97,7 +97,7 @@ npx devvit settings set aws-secret --config=devvit.dev.yaml
 - `run test:unit`: run the unit tests. Pass `--update` to update all test
   snapshots.
 - `run devvit:install:dev`: install `@next` to all dev subs specified in
-  `src/devvit/server/core/config.dev.json`.
+  `src/shared/config/config.dev.json`.
 - `run devvit:install:prod`: build, upload, and install a new version to prod
   subs.
 - `run format`: apply lint fixes automatically where available.

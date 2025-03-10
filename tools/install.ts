@@ -1,7 +1,7 @@
 #!/usr/bin/env -S node --experimental-strip-types --no-warnings=ExperimentalWarning
 // Installs an app to all subs in config.
 //
-// install.ts src/devvit/server/core/config.dev.json
+// install.ts src/shared/config/config.dev.json
 
 import {spawn} from 'node:child_process'
 import fs from 'node:fs'
