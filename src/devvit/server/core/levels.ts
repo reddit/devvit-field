@@ -1,16 +1,11 @@
 import type {Devvit} from '@devvit/public-api'
-import configRaw from '../../../shared/config/config.dev.json'
 import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
-import type {FieldFixtureData} from '../../../shared/types/level'
+import {type FieldFixtureData, config} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {challengeGetCurrentChallengeNumber} from './challenge'
-// to-do: Uncomment me for prod!!
-// import configRaw from '../../../shared/config/config.prod.json'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
 import {userAscendLevel, userSet} from './user'
-
-const config: Readonly<FieldFixtureData> = configRaw as FieldFixtureData
 
 export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
   config.leaderboard

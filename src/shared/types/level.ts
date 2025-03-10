@@ -1,6 +1,6 @@
-// NOTE: I don't put the level config in here since it's bundled
-// to the client. We want the levels to be a surprise!
-
+// to-do: Uncomment me for prod!!
+// import configRaw from '../config/config.prod.json'
+import configRaw from '../config/config.dev.json'
 import {
   paletteBananaField,
   paletteBananaFieldDark,
@@ -129,3 +129,5 @@ export const levelHighlightColor: {
   3: paletteBananaFieldLight,
   4: paletteWhatIsFieldLight,
 }
+
+export const config: Readonly<FieldFixtureData> = configRaw as FieldFixtureData
