@@ -57,7 +57,10 @@ export class BoxEnt implements Ent {
       if (next === 'Banned' || next === 'Claimed' || next === 'Lost') {
         if (game.audio && next === 'Claimed')
           audioPlay(game, game.audio.claimed)
-        if (next === 'Banned') vibrateBan()
+        if (next === 'Banned') {
+          if (game.audio) audioPlay(game, game.audio.banned)
+          vibrateBan()
+        }
 
         game.zoo.remove(this)
         return

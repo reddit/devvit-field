@@ -5,25 +5,25 @@ export type Audio = AudioBufferByName & {ctx: AudioContext}
 export type AudioBufferByName = {
   [name in
     | '16ItemsInThe15OrLessAtA60sGroceryStore'
+    | 'banned'
     | 'claim'
-    | 'claimed'
-    | 'cool']: AudioBuffer
+    | 'claimed']: AudioBuffer
 }
 
 export async function Audio(assets: Readonly<AssetMap>): Promise<Audio> {
   const ctx = new AudioContext()
-  const [items, claim, claimed, cool] = await Promise.all([
+  const [items, banned, claim, claimed] = await Promise.all([
     ctx.decodeAudioData(assets.audio['16ItemsInThe15OrLessAtA60sGroceryStore']),
+    ctx.decodeAudioData(assets.audio.banned),
     ctx.decodeAudioData(assets.audio.claim),
     ctx.decodeAudioData(assets.audio.claimed),
-    ctx.decodeAudioData(assets.audio.cool),
   ])
   return {
+    banned,
     ctx,
     '16ItemsInThe15OrLessAtA60sGroceryStore': items,
     claim,
     claimed,
-    cool,
   }
 }
 
