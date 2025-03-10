@@ -105,6 +105,7 @@ export type RealtimeMessage =
   | ConfigUpdateMessage
   | ChallengeCompleteMessage
   | PartitionUpdate
+  | LeaderboardUpdate
 
 /** Sent on realtime patch AND in response to claiming a box. */
 type ClaimBoxesResponse = {
@@ -132,6 +133,13 @@ export type ChallengeCompleteMessage = {
   type: 'ChallengeComplete'
   challengeNumber: number
   standings: {member: Team; score: number}[]
+}
+
+export type LeaderboardUpdate = {
+  type: 'LeaderboardUpdate'
+  teamBoxCounts: TeamBoxCounts
+  bannedPlayers: number
+  activePlayers: number
 }
 
 export type ConfigUpdateMessage = {

@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, useAsync} from '@devvit/public-api'
+import {Devvit, useAsync, useInterval} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
@@ -23,6 +23,7 @@ import type {
 } from '../../shared/types/message.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
+import {activePlayersIncrement} from '../server/core/activePlayers.js'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
 import {
@@ -88,6 +89,14 @@ export function App(ctx: Devvit.Context): JSX.Element {
       />
     )
   }
+
+  const activePlayerInterval = useInterval(async () => {
+    await activePlayersIncrement({
+      redis: ctx.redis,
+      team: appState.team,
+    })
+  }, 30_000)
+  activePlayerInterval.start()
 
   // TODO: Remove this once the webview can get this from S3
   useAsync<Delta[]>(

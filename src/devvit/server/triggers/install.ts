@@ -18,6 +18,12 @@ export const initialize = async (ctx: TriggerContext): Promise<void> => {
     name: 'FIELD_UPDATE',
     data: {},
   })
+
+  await ctx.scheduler.runJob({
+    cron: '* * * * * *', // non-standard cron, every second
+    name: 'LEADERBOARD_UPDATE',
+    data: {},
+  })
 }
 
 Devvit.addTrigger({

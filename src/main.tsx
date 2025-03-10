@@ -1,5 +1,6 @@
 // Keep these imports last
 import './devvit/server/scheduler/emitDeltas.js'
+import './devvit/server/scheduler/leaderboardUpdate.js'
 import './devvit/server/triggers/install.js'
 import './devvit/server/triggers/upgrade.js'
 

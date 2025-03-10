@@ -4,6 +4,7 @@ import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {LevelConfig} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
+import {activePlayersIncrement} from './activePlayers'
 import {
   challengeConfigGet,
   challengeGetCurrentChallengeNumber,
@@ -115,6 +116,15 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   )
   const visible = totalCellsForField - totalCellsClaimed
 
+  const team = getTeamFromUserId(profile.t2)
+
+  // TODO: Only call on initial init?
+  await activePlayersIncrement({
+    redis: ctx.redis,
+    // TODO: Get from app state after jasmine's PR
+    team,
+  })
+
   return {
     status: 'pass',
     appConfig,
@@ -128,6 +138,6 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     visible,
     level,
     minesHitByTeam,
-    team: getTeamFromUserId(profile.t2),
+    team,
   }
 }

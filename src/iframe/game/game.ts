@@ -482,6 +482,7 @@ export class Game {
           this.ac = new AudioContext()
           this.#pending.length = 0
           if (!this.assets) throw Error('no assets')
+          this.p1BoxCount = 0
           this.renderer.load(
             this.atlas,
             this.assets.img.atlas,
@@ -546,6 +547,9 @@ export class Game {
       }
       case 'Box':
         if (!this.p1) return
+        if (msg.realtime === false) {
+          this.p1BoxCount += msg.deltas.length
+        }
         this.#applyDeltas(msg.deltas, !msg.realtime)
         break
       case 'Connected':
@@ -599,6 +603,12 @@ export class Game {
       }
       case 'ConfigUpdate':
         this.appConfig = msg.config
+        break
+      case 'LeaderboardUpdate':
+        this.teamBoxCounts = msg.teamBoxCounts
+        this.bannedPlayers = msg.bannedPlayers
+        this.players = msg.activePlayers
+        this.canvas.dispatchEvent(Bubble('game-update', undefined))
         break
       default:
         msg satisfies never
