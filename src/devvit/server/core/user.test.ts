@@ -380,24 +380,22 @@ DevvitTest.it('userAttemptToClaimGlobalPointForTeam - succeeds', async ctx => {
 
   await expect(
     leaderboardGet({redis: ctx.redis, sort: 'DESC'}),
-  ).resolves.toStrictEqual(
-    [
-      {
-        member: 2,
-        score: 1,
-      },
-      {
-        member: 3,
-        score: 0,
-      },
-      {
-        member: 1,
-        score: 0,
-      },
-      {
-        member: 0,
-        score: 0,
-      },
-    ],
-  )
+  ).resolves.toStrictEqual([
+    {
+      member: 2,
+      score: 1,
+    },
+    {
+      member: 3,
+      score: 0,
+    },
+    {
+      member: 1,
+      score: 0,
+    },
+    {
+      member: 0,
+      score: 0,
+    },
+  ])
 })

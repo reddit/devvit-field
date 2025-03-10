@@ -429,9 +429,8 @@ export class Game {
 
     this.bmps.size = 0
 
-    // Don't await; this can hang.
     if (this.ctrl.gestured && this.ac.state !== 'running')
-      void this.ac.resume().catch(console.warn)
+      void this.ac.resume().catch(console.warn) // Don't await; this can hang.
 
     this.now = utcMillisNow()
 
