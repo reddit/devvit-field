@@ -1,7 +1,7 @@
 import type {Devvit} from '@devvit/public-api'
 import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
-import type {BanFieldConfig} from '../../../shared/types/level'
+import type {FieldFixtureData} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {challengeGetCurrentChallengeNumber} from './challenge'
 import configRaw from './config.dev.json'
@@ -10,12 +10,12 @@ import configRaw from './config.dev.json'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
 import {userAscendLevel, userSet} from './user'
 
-const config: Readonly<BanFieldConfig> = configRaw as BanFieldConfig
+const config: Readonly<FieldFixtureData> = configRaw as FieldFixtureData
 
-export const LEADERBOARD_CONFIG: Readonly<BanFieldConfig['leaderboard']> =
+export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
   config.leaderboard
 
-export const levels: Readonly<BanFieldConfig['levels']> = config.levels
+export const levels: Readonly<FieldFixtureData['levels']> = config.levels
 
 /**
  * Make sure the user has access to:

@@ -14,6 +14,7 @@ import {PixelText} from './PixelText'
 type DialogUnauthorizedProps = {
   pixelRatio: number
   level: Level
+  redirectURL: string
   currentLevel: Level
 }
 
@@ -23,11 +24,7 @@ export function DialogUnauthorized(
 ): JSX.Element {
   return (
     <Dialog
-      onPress={() =>
-        ctx.ui.navigateTo(
-          `https://www.reddit.com/r/${levelPascalCase[props.currentLevel]}/`,
-        )
-      }
+      onPress={() => ctx.ui.navigateTo(props.redirectURL)}
       {...props}
       buttonLabel={`${localize('unauthorized-dialog-button-label')} r/${
         levelPascalCase[props.currentLevel]

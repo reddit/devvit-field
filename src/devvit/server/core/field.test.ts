@@ -78,6 +78,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -144,6 +145,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -208,6 +210,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
       username: 'foo',
       superuser: false,
       hasVerifiedEmail: true,
+      globalPointCount: 0,
     },
   })
 
@@ -274,6 +277,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
     await userSet({
@@ -286,6 +290,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -358,6 +363,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -413,6 +419,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -458,6 +465,8 @@ DevvitTest.it(
       t2: 't2_4cgfmlvzgq',
       username: 'foo',
       hasVerifiedEmail: true,
+      startedPlayingAt: expect.any(String),
+      globalPointCount: 0,
     } satisfies Profile)
 
     await expect(
@@ -494,6 +503,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -642,6 +652,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
     await userSet({
@@ -654,6 +665,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 

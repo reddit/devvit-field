@@ -21,7 +21,7 @@
     "node": ">=22.6"
   },
   "license": "BSD-3-Clause",
-  "name": "banfield",
+  "name": "field",
   "private": true,
   "scripts": {
     "build": "tools/build.ts --minify",

@@ -4,7 +4,8 @@
     "title": "Leaderboard",
     "subredditName": "GamesOnRedditDev",
     "subredditId": "t5_",
-    "postId": "t3_"
+    "postId": "t3_",
+    "url": "https://www.reddit.com/r/GamesOnRedditDev/"
   },
   "levels": [
     {
@@ -13,7 +14,7 @@
       "url": "https://www.reddit.com/r/",
       "subredditName": "Field",
       "theme": {},
-      "title": "Denial"
+      "title": "Field"
     },
     {
       "id": 1,
@@ -21,7 +22,7 @@
       "url": "https://www.reddit.com/r/",
       "subredditName": "BannedField",
       "theme": {},
-      "title": "Anger"
+      "title": "BannedField"
     },
     {
       "id": 2,
@@ -29,7 +30,7 @@
       "url": "https://www.reddit.com/r/",
       "subredditName": "VeryBannedField",
       "theme": {},
-      "title": "Bargaining"
+      "title": "VeryBannedField"
     },
     {
       "id": 3,
@@ -37,7 +38,7 @@
       "url": "https://www.reddit.com/r/",
       "subredditName": "BananaField",
       "theme": {},
-      "title": "Depression"
+      "title": "BananaField"
     },
     {
       "id": 4,
@@ -45,7 +46,7 @@
       "url": "https://www.reddit.com/r/",
       "subredditName": "WhatIsField",
       "theme": {},
-      "title": "Acceptance"
+      "title": "WhatIsField"
     }
   ]
 }

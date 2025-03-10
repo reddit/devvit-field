@@ -29,7 +29,7 @@ import {
   levelsIsUserInRightPlace,
 } from '../server/core/levels.js'
 import {
-  userAttemptToClaimSpecialPointForTeam,
+  userAttemptToClaimGlobalPointForTeam,
   userGet,
 } from '../server/core/user.js'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
@@ -81,6 +81,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       <DialogUnauthorized
         level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
         currentLevel={appState.profile.currentLevel}
+        redirectURL={appState.redirectURL}
         pixelRatio={pixelRatio}
       />
     )
@@ -266,17 +267,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
           // Attempt to claim a global point if on the last level
           if (lastLevel.id === profile.currentLevel) {
-            const {success} = await userAttemptToClaimSpecialPointForTeam({
+            await userAttemptToClaimGlobalPointForTeam({
               ctx,
               userId: profile.t2,
             })
 
-            if (success) {
-              ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
-              ctx.ui.navigateTo(levels[0]!.url)
-            } else {
-              ctx.ui.showToast('Global claim fail, try again.')
-            }
+            ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
+            ctx.ui.navigateTo(levels[0]!.url)
 
             return
           }

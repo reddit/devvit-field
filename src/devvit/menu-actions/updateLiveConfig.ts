@@ -88,7 +88,7 @@ function validateLiveConfig(newConfig: AppConfig) {
 
 export const updateLiveConfigMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] Update Live Config',
+  label: '[Field] Update Live Config',
   location: ['post', 'subreddit'],
   onPress: async (_ev, ctx) => {
     const currentLiveConfig = await liveSettingsGet({

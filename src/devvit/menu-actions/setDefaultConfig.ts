@@ -74,7 +74,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
 
 export const setDefaultConfigMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] Set Default Config',
+  label: '[Field] Set Default Config',
   location: ['post', 'subreddit'],
   onPress: async (_ev, ctx) => {
     try {

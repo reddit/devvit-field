@@ -3,7 +3,7 @@ import {defaultChallengeConfigMaybeGet} from '../server/core/defaultChallengeCon
 
 export const getDefaultConfigMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] Get Default Config',
+  label: '[Field] Get Default Config',
   location: ['post', 'subreddit'],
   onPress: async (_ev, ctx) => {
     const defaultConfig = await defaultChallengeConfigMaybeGet({

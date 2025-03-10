@@ -83,6 +83,7 @@ DevvitTest.it(
       profile: {
         currentLevel: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         lastPlayedChallengeNumberForLevel: 0,
         superuser: false,

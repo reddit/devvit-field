@@ -22,6 +22,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
     const profile = await userGet({
@@ -59,6 +60,7 @@ DevvitTest.it('should pass if user has never played on level 0', async ctx => {
       username: 'foo',
       superuser: false,
       hasVerifiedEmail: true,
+      globalPointCount: 0,
     },
   })
   const profile = await userGet({
@@ -97,6 +99,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -144,6 +147,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -158,6 +162,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -256,6 +261,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -270,6 +276,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -359,6 +366,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -429,6 +437,7 @@ DevvitTest.it('should not pass if user is on the wrong level', async ctx => {
       username: 'foo',
       superuser: false,
       hasVerifiedEmail: true,
+      globalPointCount: 0,
     },
   })
 
@@ -469,6 +478,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 
@@ -483,6 +493,7 @@ DevvitTest.it(
         username: 'foo',
         superuser: false,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     })
 

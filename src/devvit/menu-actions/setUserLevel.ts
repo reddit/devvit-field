@@ -52,7 +52,7 @@ export const setUserLevelFormKey: FormKey = Devvit.createForm(
 
 export const setUserLevelMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] Set User Level',
+  label: '[Field] Set User Level',
   location: ['post', 'subreddit'],
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(setUserLevelFormKey)

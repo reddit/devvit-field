@@ -5,14 +5,14 @@
 
 import {spawn} from 'node:child_process'
 import fs from 'node:fs'
-import type {BanFieldConfig} from '../src/shared/types/level.js'
+import type {FieldFixtureData} from '../src/shared/types/level.js'
 
 const configFilename = process.argv
   .slice(2)
   .filter(arg => !arg.startsWith('--'))[0]
 if (!configFilename) throw Error('no config')
 
-const config: BanFieldConfig = JSON.parse(
+const config: FieldFixtureData = JSON.parse(
   fs.readFileSync(configFilename, 'utf-8'),
 )
 

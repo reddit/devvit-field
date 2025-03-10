@@ -53,7 +53,7 @@ export const blockUsersKey: FormKey = Devvit.createForm(
 
 export const blockUsersMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] Block Users',
+  label: '[Field] Block Users',
   location: ['post', 'subreddit'],
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(blockUsersKey)

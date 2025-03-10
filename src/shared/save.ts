@@ -22,8 +22,12 @@ export type Profile = {
   lastPlayedChallengeNumberCellsClaimed: number
   /** Does the user have a verified email  */
   hasVerifiedEmail: boolean
-  /** Is the user blocked. Will be a UTC date string if defined of the time they've been banned */
+  /** Is the user permanently blocked from playing. Will be a UTC date string if defined of the time they've been banned */
   blocked?: string
+  /** Has the user claimed a global point. A global point is also known as "cycling" */
+  globalPointCount: number
+  /** The date the user first claimed a square. Will be a UTC date string if defined of the time they've been banned */
+  startedPlayingAt?: string
 }
 
 export type Player = {profile: Profile; sid: SID}

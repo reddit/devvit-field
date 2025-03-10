@@ -17,12 +17,13 @@ export function noProfile(): Profile {
     lastPlayedChallengeNumberForLevel: 0,
     lastPlayedChallengeNumberCellsClaimed: 0,
     hasVerifiedEmail: true,
+    globalPointCount: 0,
   }
 }
 
 // 2 because I switch this over to a hash and we don't have a way
 // to truncate redis for an app at the moment
-const getUserKey = (userId: T2) => `user3:${userId}` as const
+const getUserKey = (userId: T2) => `user4:${userId}` as const
 
 export const userMaybeGet = async ({
   redis,
@@ -64,6 +65,24 @@ export const userSet = async ({
   await redis.global.hSet(getUserKey(user.t2), serialize(user))
 }
 
+/**
+ * Sets a UTC date string for when the user started playing the game. This is
+ * set globally and once for the entire lifecycle of the user.
+ */
+export const userSetPlayedIfNotExists = async ({
+  redis,
+  userId,
+}: {
+  redis: Devvit.Context['redis']
+  userId: T2
+}): Promise<void> => {
+  await redis.global.hSetNX(
+    getUserKey(userId),
+    'startedPlayingAt' satisfies keyof Profile,
+    new Date().toISOString(),
+  )
+}
+
 export const userGetOrSet = async ({
   ctx,
 }: {
@@ -91,6 +110,7 @@ export const userGetOrSet = async ({
     lastPlayedChallengeNumberForLevel: 0,
     lastPlayedChallengeNumberCellsClaimed: 0,
     hasVerifiedEmail: userProfile.hasVerifiedEmail,
+    globalPointCount: 0,
   }
 
   await userSet({
@@ -286,13 +306,13 @@ export const userUnblock = async ({
   ] satisfies (keyof Profile)[])
 }
 
-export const userAttemptToClaimSpecialPointForTeam = async ({
+export const userAttemptToClaimGlobalPointForTeam = async ({
   ctx,
   userId,
 }: {
   ctx: Devvit.Context
   userId: T2
-}): Promise<{success: boolean}> => {
+}): Promise<void> => {
   const user = await userGet({redis: ctx.redis, userId})
 
   const lastLevel = levels[levels.length - 1]!
@@ -304,7 +324,7 @@ export const userAttemptToClaimSpecialPointForTeam = async ({
 
   // Not on the last level
   if (levelForUser.id !== lastLevel.id) {
-    return {success: false}
+    throw new Error('User is not on the last level')
   }
 
   // We pull off of context and do this extra check in case someone tries to forge
@@ -316,7 +336,7 @@ export const userAttemptToClaimSpecialPointForTeam = async ({
 
   // Subreddit is not the last level
   if (lastLevel.id !== levelForSub.id) {
-    return {success: false}
+    throw new Error('Subreddit is not the last level')
   }
 
   await leaderboardIncrementForTeam({
@@ -332,7 +352,11 @@ export const userAttemptToClaimSpecialPointForTeam = async ({
     userId,
   })
 
-  return {success: true}
+  await ctx.redis.global.hIncrBy(
+    getUserKey(userId),
+    'globalPointCount' satisfies keyof Profile,
+    1,
+  )
 }
 
 function serialize(config: Partial<Profile>): Record<string, string> {
@@ -355,6 +379,7 @@ function deserialize(config: Record<string, string>): Profile {
         'currentLevel',
         'lastPlayedChallengeNumberCellsClaimed',
         'lastPlayedChallengeNumberForLevel',
+        'globalPointCount',
       ]
       if (numberKeys.includes(key as keyof Profile)) {
         val = parseFloat(value)

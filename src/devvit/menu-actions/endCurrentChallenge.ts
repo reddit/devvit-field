@@ -49,7 +49,7 @@ export const endGameFormKey: FormKey = Devvit.createForm(
 
 export const endCurrentChallengeMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] End Current Challenge',
+  label: '[Field] End Current Challenge',
   location: ['post', 'subreddit'],
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(endGameFormKey)

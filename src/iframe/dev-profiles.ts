@@ -10,6 +10,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_vw5x123d',
@@ -19,6 +20,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_t1mxkn9d',
@@ -28,6 +30,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_reyi3nllt',
@@ -37,6 +40,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_1bgenlvxgq',
@@ -46,6 +50,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_uxu53cio',
@@ -55,6 +60,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_7u315kgs',
@@ -64,6 +70,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_hbbuxlhe5',
@@ -73,6 +80,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_k6ldbjh3',
@@ -82,6 +90,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
       {
         t2: 't2_3kh50',
@@ -91,6 +100,7 @@ export const devProfiles: readonly Readonly<Profile>[] = devMode
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         hasVerifiedEmail: true,
+        globalPointCount: 0,
       },
     ]
   : []

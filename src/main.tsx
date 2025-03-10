@@ -52,7 +52,7 @@ const newPostFormKey = Devvit.createForm(
     return {
       title: 'New BanField Post',
       description:
-        'Used for development purposes only! In production, there will only be one banfield post per subreddit.',
+        'Used for development purposes only! In production, there will only be one field post per subreddit.',
       fields: [
         {
           type: 'number',
@@ -143,7 +143,7 @@ const newPostFormKey = Devvit.createForm(
 
 Devvit.addMenuItem({
   forUserType: ['moderator'],
-  label: '[BanField] New Post',
+  label: '[Field] New Post',
   location: ['post', 'subreddit'],
   onPress: async (_ev, ctx) => {
     try {

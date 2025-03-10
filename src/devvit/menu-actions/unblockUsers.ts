@@ -53,7 +53,7 @@ export const unblockUserKey: FormKey = Devvit.createForm(
 
 export const unblockUsersMenuAction = (): MenuItem => ({
   forUserType: ['moderator'],
-  label: '[BanField] Unblock Users',
+  label: '[Field] Unblock Users',
   location: ['post', 'subreddit'],
   onPress: (_ev, ctx) => {
     ctx.ui.showForm(unblockUserKey)

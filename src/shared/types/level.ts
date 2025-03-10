@@ -35,7 +35,7 @@ export type LevelPascalCase =
   | 'BananaField'
   | 'WhatIsField'
 
-export type BanFieldConfig = {
+export type FieldFixtureData = {
   /** Path to Devvit config file from root of repo. Eg, 'devvit.dev.yaml'. */
   devvitConfig: string
   levels: LevelConfig[]
@@ -44,6 +44,7 @@ export type BanFieldConfig = {
     subredditName: string
     subredditId: T5
     postId: T3
+    url: string
   }
 }
 

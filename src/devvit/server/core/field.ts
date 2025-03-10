@@ -26,6 +26,7 @@ import {
   userDescendLevel,
   userIncrementLastPlayedChallengeClaimedCells,
   userSetLastPlayedChallenge,
+  userSetPlayedIfNotExists,
 } from './user'
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
@@ -159,6 +160,13 @@ export const _fieldClaimCellsSuccess = async ({
   })
 
   const isGameOverForUser = deltas.some(delta => delta.isBan)
+
+  // Set this when they've claimed any cell, regardless of ban or not to
+  // track the "play" state of the user
+  await userSetPlayedIfNotExists({
+    redis: ctx.redis,
+    userId,
+  })
 
   // User stats
   let newLevel: Level | undefined = undefined
