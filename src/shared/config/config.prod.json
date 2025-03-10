@@ -2,10 +2,10 @@
   "devvitConfig": "devvit.prod.yaml",
   "leaderboard": {
     "title": "Leaderboard",
-    "subredditName": "GamesOnReddit",
+    "subredditName": "GamesOnRedditDev",
     "subredditId": "t5_dsfv4q",
-    "postId": "t3_1j46hhc",
-    "url": "https://www.reddit.com/r/GamesOnReddit/"
+    "postId": "t3_1j89azk",
+    "url": "https://www.reddit.com/r/GamesOnRedditDev/"
   },
   "levels": [
     {
