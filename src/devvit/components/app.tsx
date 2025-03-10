@@ -37,7 +37,6 @@ import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
-// import { CountdownController } from './CountdownController.tsx';
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
@@ -45,8 +44,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
     ctx.subredditId === LEADERBOARD_CONFIG.subredditId &&
     ctx.postId === LEADERBOARD_CONFIG.postId
   ) {
-    // TODO: add conditional to render countdown... not sure about timing yet.
-    //return <CountdownController />;
+    // to-do: avoid postId in above checks. Not great having to submit a post, then hardcode the postId in the app code and upload a new version.
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
@@ -105,7 +103,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
       )
 
       for (const key of activeConnections)
-        iframe.postMessage({type: 'PartitionLoaded', xy: parsePartitionXY(key)})
+        iframe.postMessage({
+          type: 'PartitionLoaded',
+          xy: parsePartitionXY(key),
+        })
 
       return deltas.flat()
     },
