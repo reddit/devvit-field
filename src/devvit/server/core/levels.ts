@@ -1,16 +1,16 @@
 import type {Devvit} from '@devvit/public-api'
 import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
-import {type FieldFixtureData, config} from '../../../shared/types/level'
+import {type FieldFixtureData, config2} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {challengeGetCurrentChallengeNumber} from './challenge'
 import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
 import {userAscendLevel, userSet} from './user'
 
 export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
-  config.leaderboard
+  config2.leaderboard
 
-export const levels: Readonly<FieldFixtureData['levels']> = config.levels
+export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
 /**
  * Make sure the user has access to:

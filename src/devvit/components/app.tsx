@@ -12,7 +12,7 @@ import {getTeamFromUserId} from '../../shared/team.ts'
 import {fallbackPixelRatio} from '../../shared/theme.ts'
 import type {PartitionKey} from '../../shared/types/2d.ts'
 import type {Delta} from '../../shared/types/field.ts'
-import {config} from '../../shared/types/level.ts'
+import {config2} from '../../shared/types/level.ts'
 import type {
   DevvitMessage,
   IframeMessage,
@@ -350,7 +350,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         break
       }
       case 'OpenLeaderboard':
-        ctx.ui.navigateTo(config.leaderboard.url)
+        ctx.ui.navigateTo(config2.leaderboard.url)
         break
       case 'Dialog':
         ctx.ui.navigateTo(msg.redirectURL)

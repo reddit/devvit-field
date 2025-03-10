@@ -1,7 +1,7 @@
 import {type Context, Devvit} from '@devvit/public-api'
 import {localize} from '../../shared/locale.ts'
 import {cssHex, paletteWhite} from '../../shared/theme.ts'
-import {type Level, config} from '../../shared/types/level.ts'
+import {type Level, config2} from '../../shared/types/level.ts'
 import {PixelText} from './PixelText.tsx'
 
 type GamesOnRedditBannerProps = {
@@ -17,7 +17,7 @@ export function GamesOnRedditBanner(
     <vstack
       width='100%'
       alignment='center middle'
-      onPress={() => context.ui.navigateTo(config.leaderboard.url)}
+      onPress={() => context.ui.navigateTo(config2.leaderboard.url)}
     >
       <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
         {localize('games-on-reddit-header')}
