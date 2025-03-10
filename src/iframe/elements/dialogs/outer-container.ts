@@ -14,9 +14,9 @@ import type {
 import {cssReset} from '../css-reset.ts'
 
 import './inner-container.ts'
+import type {Team} from '../../../shared/team.ts'
 import type {Level} from '../../../shared/types/level.ts'
 import {getOuterText} from './helpers/getOuterText.ts'
-import type {Team} from '../../../shared/team.ts'
 
 declare global {
   interface HTMLElementTagNameMap {

@@ -14,7 +14,6 @@ import type {
   ChallengeCompleteMessage,
   DialogMessage,
 } from '../../shared/types/message.ts'
-import type {Game} from '../game/game.ts'
 import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -81,7 +80,7 @@ export class BFDialog extends LitElement {
     | DialogMessage
     | ChallengeCompleteMessage
     | undefined
-  @property({type: Object}) accessor subLvl: Level | undefined
+  @property({type: Number}) accessor subLvl: Level | undefined
   @property({type: Array}) accessor winners: Team[] | undefined
 
   @query('dialog') private accessor _dialog!: HTMLDialogElement

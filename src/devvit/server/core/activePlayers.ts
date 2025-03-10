@@ -6,13 +6,6 @@ const activePlayersLookBackWindow = 3
 
 const getActivePlayersKey = (team: Team) => `active_players:${team}` as const
 
-function getTruncatedIntervalWindow(intervalSeconds: number): number {
-  const now = Date.now()
-  const intervalMs = intervalSeconds * 1000
-
-  return Math.floor(now / intervalMs)
-}
-
 function getIntervalStartTimestamp(
   intervalSeconds: number,
   offset: number = 0,

@@ -165,7 +165,7 @@ export class BFGame extends LitElement {
           .filter(standing => standing.score === max)
           .map(standing => standing.member)
         dialog = html`
-          <bf-dialog open .msg=${this.#msg} .game=${this.#game} .winners=${winners}>
+          <bf-dialog open .msg=${this.#msg} .winners=${winners}>
             <bf-button
               @click='${() => {
                 if (this.#msg?.type !== 'ChallengeComplete')
