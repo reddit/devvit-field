@@ -2,7 +2,7 @@
   "devvitConfig": "devvit.prod.yaml",
   "leaderboard": {
     "title": "Leaderboard",
-    "subredditName": "GamesOnRedditDev",
+    "subredditName": "GamesOnReddit",
     "subredditId": "t5_dsfv4q",
     "postId": "t3_1j46hhc",
     "url": "https://www.reddit.com/r/GamesOnReddit/"
