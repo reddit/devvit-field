@@ -10,7 +10,7 @@ import {
   type Metadata,
   type PingMessage,
 } from '@devvit/protos'
-import {Devvit} from '@devvit/public-api'
+import {Devvit, SettingScope} from '@devvit/public-api'
 import {makeAPIClients} from '@devvit/public-api/apis/makeAPIClients.js'
 import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/context.js'
 import type {Config} from '@devvit/shared-types/Config.js'
@@ -39,7 +39,7 @@ import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
 
-Devvit.configure({redditAPI: true, redis: true, realtime: true})
+Devvit.configure({http: true, redditAPI: true, redis: true, realtime: true})
 
 Devvit.addCustomPostType({name: '', height: 'tall', render: App})
 
@@ -175,6 +175,44 @@ Devvit.addMenuItem(updateLiveConfigMenuAction())
 Devvit.addMenuItem(endCurrentChallengeMenuAction())
 Devvit.addMenuItem(blockUsersMenuAction())
 Devvit.addMenuItem(unblockUsersMenuAction())
+
+Devvit.addSettings([
+  {
+    scope: SettingScope.App,
+    name: 'aws-access-key',
+    label: 'AWS Access Key',
+    type: 'string',
+    isSecret: true,
+  },
+  {
+    scope: SettingScope.App,
+    name: 'aws-secret',
+    label: 'AWS Secret',
+    type: 'string',
+    isSecret: true,
+  },
+  {
+    scope: SettingScope.App,
+    name: 's3-bucket',
+    label: 'S3 bucket',
+    type: 'string',
+    defaultValue: 'reddit-service-devvit-webview-assets-a1',
+  },
+  {
+    scope: SettingScope.App,
+    name: 's3-region',
+    label: 'S3 region',
+    type: 'string',
+    defaultValue: 'us-east-1',
+  },
+  {
+    scope: SettingScope.App,
+    name: 's3-path-prefix',
+    label: 'S3 path prefix',
+    type: 'string',
+    defaultValue: 'platform/a1/dev/default',
+  },
+])
 
 /** Returns whole numbers in [min, max). */
 function getRandomIntBetween(min: number, max: number): number {

@@ -17,7 +17,7 @@ import {
   fieldGet,
   fieldGetDeltas,
 } from './field'
-import {teamStatsCellsClaimedForTeam} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsCellsClaimedForTeamPartitioned} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 import {userGet, userSet} from './user'
 
@@ -101,7 +101,7 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 1, y: 1}, isBan: false, team: 2}]
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       deltas,
     })
 
@@ -112,7 +112,7 @@ DevvitTest.it(
         redis: ctx.redis,
         partitionXY: {x: 0, y: 0},
       }),
-    ).resolves.toEqual(deltas)
+    ).resolves.toStrictEqual(deltas)
 
     expect(
       toMatrix({
@@ -125,7 +125,7 @@ DevvitTest.it(
         cols: 2,
         rows: 2,
       }),
-    ).toEqual([
+    ).toStrictEqual([
       ['_', '_'],
       ['_', '2'],
     ])
@@ -168,7 +168,7 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 8, y: 8}, isBan: false, team: 2}]
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       deltas,
     })
 
@@ -179,7 +179,7 @@ DevvitTest.it(
         redis: ctx.redis,
         partitionXY: {x: 4, y: 4},
       }),
-    ).resolves.toEqual(deltas)
+    ).resolves.toStrictEqual(deltas)
 
     expect(
       toMatrix({
@@ -192,7 +192,7 @@ DevvitTest.it(
         cols: 2,
         rows: 2,
       }),
-    ).toEqual([
+    ).toStrictEqual([
       ['2', '_'],
       ['_', '_'],
     ])
@@ -216,13 +216,13 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 
   const {challengeNumber} = await challengeMakeNew({
     ctx,
-    config: {size: 2, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
+    config: {size: 4, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
   })
 
   const result = await fieldClaimCells({
     coords: [
       {x: 0, y: 0},
-      {x: 1, y: 1},
+      {x: 2, y: 2},
     ],
     userId: USER_IDS.TEAM_2_PLAYER_1,
     challengeNumber,
@@ -231,10 +231,10 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 
   const deltas: Delta[] = [
     {globalXY: {x: 0, y: 0}, isBan: false, team: 2},
-    {globalXY: {x: 1, y: 1}, isBan: false, team: 2},
+    {globalXY: {x: 2, y: 2}, isBan: false, team: 2},
   ]
 
-  expect(result).toEqual({
+  expect(result).toStrictEqual({
     deltas,
   })
 
@@ -245,7 +245,15 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
       redis: ctx.redis,
       partitionXY: {x: 0, y: 0},
     }),
-  ).resolves.toEqual(deltas)
+  ).resolves.toStrictEqual(deltas.slice(0, 1))
+  await expect(
+    fieldGetDeltas({
+      challengeNumber,
+      subredditId: ctx.subredditId,
+      redis: ctx.redis,
+      partitionXY: {x: 1, y: 1},
+    }),
+  ).resolves.toStrictEqual(deltas.slice(1, 2))
 
   expect(
     toMatrix({
@@ -258,9 +266,24 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
       cols: 2,
       rows: 2,
     }),
-  ).toEqual([
+  ).toStrictEqual([
     ['2', '_'],
-    ['_', '2'],
+    ['_', '_'],
+  ])
+  expect(
+    toMatrix({
+      result: await fieldGet({
+        challengeNumber,
+        subredditId: ctx.subredditId,
+        redis: ctx.redis,
+        partitionXY: {x: 1, y: 1},
+      }),
+      cols: 2,
+      rows: 2,
+    }),
+  ).toStrictEqual([
+    ['2', '_'],
+    ['_', '_'],
   ])
 })
 
@@ -319,7 +342,7 @@ DevvitTest.it(
       ctx,
     })
 
-    expect(result).toEqual({deltas: []})
+    expect(result).toStrictEqual({deltas: []})
 
     const newFieldState = await fieldGet({
       challengeNumber,
@@ -397,7 +420,7 @@ DevvitTest.it(
       ctx,
     })
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       deltas: [
         {globalXY: {x: 0, y: 0}, isBan: false, team: 2},
         {globalXY: {x: 0, y: 1}, isBan: false, team: 2},
@@ -449,15 +472,15 @@ DevvitTest.it(
     })
 
     await expect(
-      deltasGet({challengeNumber, redis: ctx.redis}),
-    ).resolves.toEqual(deltas)
+      deltasGet(ctx.redis, challengeNumber, {x: 0, y: 0}),
+    ).resolves.toStrictEqual(deltas)
 
     await expect(
       userGet({
         redis: ctx.redis,
         userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual({
+    ).resolves.toStrictEqual({
       currentLevel: 1,
       lastPlayedChallengeNumberForLevel: 0,
       lastPlayedChallengeNumberCellsClaimed: 0,
@@ -470,12 +493,13 @@ DevvitTest.it(
     } satisfies Profile)
 
     await expect(
-      teamStatsCellsClaimedForTeam({
-        redis: ctx.redis,
+      teamStatsCellsClaimedForTeamPartitioned(
+        ctx.redis,
         challengeNumber,
-        team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
-      }),
-    ).resolves.toEqual(2)
+        {x: 0, y: 0},
+        getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
+      ),
+    ).resolves.toStrictEqual(2)
 
     await expect(
       teamStatsMinesHitForTeam({
@@ -483,7 +507,7 @@ DevvitTest.it(
         challengeNumber,
         team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
-    ).resolves.toEqual(1)
+    ).resolves.toStrictEqual(1)
 
     // Not called because game is technically not over at 50% claimed
     expect(ctx.realtime.send).toHaveBeenCalledTimes(0)
@@ -534,25 +558,37 @@ DevvitTest.it(
     })
 
     await expect(
-      deltasGet({challengeNumber, redis: ctx.redis}),
-    ).resolves.toEqual(deltas)
+      deltasGet(ctx.redis, challengeNumber, {x: 0, y: 0}),
+    ).resolves.toStrictEqual(deltas.slice(0, 2))
+    await expect(
+      deltasGet(ctx.redis, challengeNumber, {x: 0, y: 1}),
+    ).resolves.toStrictEqual(deltas.slice(2, 3))
 
     await expect(
       userGet({
         redis: ctx.redis,
         userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(
+    ).resolves.toStrictEqual(
       expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 3}),
     )
 
     await expect(
-      teamStatsCellsClaimedForTeam({
-        redis: ctx.redis,
+      teamStatsCellsClaimedForTeamPartitioned(
+        ctx.redis,
         challengeNumber,
-        team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
-      }),
-    ).resolves.toEqual(3)
+        {x: 0, y: 0},
+        getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
+      ),
+    ).resolves.toStrictEqual(2)
+    await expect(
+      teamStatsCellsClaimedForTeamPartitioned(
+        ctx.redis,
+        challengeNumber,
+        {x: 0, y: 1},
+        getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
+      ),
+    ).resolves.toStrictEqual(1)
 
     await expect(
       teamStatsMinesHitForTeam({
@@ -560,9 +596,7 @@ DevvitTest.it(
         challengeNumber,
         team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
-    ).resolves.toEqual(0)
-
-    expect(ctx.realtime.send).toHaveBeenCalledTimes(1)
+    ).resolves.toStrictEqual(0)
   },
 )
 
@@ -588,7 +622,7 @@ DevvitTest.it(
         partitionXY: {x: 0, y: 0},
         redis: ctx.redis,
       }),
-    ).resolves.toEqual([])
+    ).resolves.toStrictEqual([])
   },
 )
 
@@ -613,10 +647,10 @@ DevvitTest.it(
       '7',
     )
 
-    expect(await redis.bitfield(key, 'GET', 'u3', 0)).toEqual([7])
-    expect(await redis.bitfield(key, 'GET', 'u3', 3)).toEqual([0])
-    expect(await redis.bitfield(key, 'GET', 'u3', 6)).toEqual([0])
-    expect(await redis.bitfield(key, 'GET', 'u3', 9)).toEqual([7])
+    expect(await redis.bitfield(key, 'GET', 'u3', 0)).toStrictEqual([7])
+    expect(await redis.bitfield(key, 'GET', 'u3', 3)).toStrictEqual([0])
+    expect(await redis.bitfield(key, 'GET', 'u3', 6)).toStrictEqual([0])
+    expect(await redis.bitfield(key, 'GET', 'u3', 9)).toStrictEqual([7])
 
     const commands: BitfieldCommand[] = []
 
@@ -630,12 +664,14 @@ DevvitTest.it(
       ...commands.flat(),
     )
 
-    expect(result).toEqual([7, 0, 0, 7])
+    expect(result).toStrictEqual([7, 0, 0, 7])
 
     const buffer = await redis.getBuffer(key)
 
     // Fails because the function returns this: [0,4,3,0]
-    expect(parseBitfieldToFlatArray(buffer!, cols, rows)).toEqual([7, 0, 0, 7])
+    expect(parseBitfieldToFlatArray(buffer!, cols, rows)).toStrictEqual([
+      7, 0, 0, 7,
+    ])
   },
 )
 

@@ -1,4 +1,10 @@
 import type {PartitionKey, XY} from './types/2d'
+import type {ChallengeConfig} from './types/challenge-config'
+
+export type Layout = {
+  size: number
+  partitionSize: number
+}
 
 export const parsePartitionXY = (partitionKey: PartitionKey): XY => {
   const [_, partitionX, partitionY] =
@@ -87,17 +93,38 @@ export function getGlobalCoords(
 }
 
 export function generatePartitionKeys(
-  gridSize: number,
-  partitionSize: number,
+  config: Pick<ChallengeConfig, 'size' | 'partitionSize'>,
 ): PartitionKey[] {
-  const partitionsPerSide = gridSize / partitionSize
+  const pps = partitionsPerSide(config)
   const partitionKeys: PartitionKey[] = []
 
-  for (let x = 0; x < partitionsPerSide; x++) {
-    for (let y = 0; y < partitionsPerSide; y++) {
+  for (let x = 0; x < pps; x++) {
+    for (let y = 0; y < pps; y++) {
       partitionKeys.push(`px_${x}__py_${y}`)
     }
   }
 
   return partitionKeys
+}
+
+export function partitionsPerSide({
+  size,
+  partitionSize,
+}: {size: number; partitionSize: number}): number {
+  return size / partitionSize
+}
+
+export function* partitionKeys(layout: Layout): IterableIterator<PartitionKey> {
+  for (const {x, y} of partitionXYs(layout)) {
+    yield `px_${x}__py_${y}`
+  }
+}
+
+export function* partitionXYs(layout: Layout): IterableIterator<XY> {
+  const pps = partitionsPerSide(layout)
+  for (let x = 0; x < pps; x++) {
+    for (let y = 0; y < pps; y++) {
+      yield {x, y}
+    }
+  }
 }

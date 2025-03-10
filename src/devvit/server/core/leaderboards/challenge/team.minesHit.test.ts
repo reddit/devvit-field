@@ -41,17 +41,6 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
   await teamStatsMinesHitIncrementForMember({
     redis: ctx.redis,
     challengeNumber: 0,
-    member: 1,
-  })
-  await teamStatsMinesHitIncrementForMember({
-    redis: ctx.redis,
-    challengeNumber: 0,
-    member: 1,
-    incrementBy: -1,
-  })
-  await teamStatsMinesHitIncrementForMember({
-    redis: ctx.redis,
-    challengeNumber: 0,
     member: 2,
   })
 

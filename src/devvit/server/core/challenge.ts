@@ -8,7 +8,6 @@ import {
 } from '../../../shared/types/challenge-config'
 import {validateChallengeConfig} from '../../../shared/validateChallengeConfig'
 import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
-import {teamStatsCellsClaimedInit} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 import {minefieldGetTotalMineCount} from './minefield'
 
@@ -185,11 +184,6 @@ export const challengeMakeNew = async ({
     redis: ctx.redis,
     challengeNumber: newChallengeNumber,
     config,
-  })
-
-  await teamStatsCellsClaimedInit({
-    challengeNumber: newChallengeNumber,
-    redis: ctx.redis,
   })
 
   await teamStatsMinesHitInit({

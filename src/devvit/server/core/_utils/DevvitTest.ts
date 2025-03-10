@@ -31,6 +31,24 @@ const redisServer = new RedisMemoryServer()
 const host = await redisServer.getHost()
 const port = await redisServer.getPort()
 
+class MockSettings {
+  // biome-ignore lint/suspicious/noExplicitAny: settings can be any type
+  #settings: Record<string, any> = {}
+
+  async get<T>(key: string): Promise<T | undefined> {
+    return this.#settings[key]
+  }
+
+  async getAll<T>(): Promise<T> {
+    return this.#settings as T
+  }
+
+  // biome-ignore lint/suspicious/noExplicitAny: settings can be any type
+  update(settings: Record<string, any>) {
+    this.#settings = settings
+  }
+}
+
 /**
  * A test harness for Devvit applications. This module attempts to provide a high
  * quality, in-memory implement of the Devvit API to allow for reliable testing.
@@ -44,6 +62,13 @@ export namespace DevvitTest {
     host,
     port,
   })
+
+  const mockSettings = new MockSettings()
+
+  // biome-ignore lint/suspicious/noExplicitAny: settings can be any type
+  export function updateSettings(settings: Record<string, any>): void {
+    mockSettings.update(settings)
+  }
 
   /**
    * Completely resets the Redis instance. Useful when you are writing
@@ -253,33 +278,100 @@ export namespace DevvitTest {
         _key: string,
         start: number | string,
         stop: number | string,
-        options = {by: 'rank' as 'rank' | 'score' | 'lex', reverse: false},
+        options = {
+          by: 'rank' as 'rank' | 'score' | 'lex',
+          reverse: false,
+        },
       ) {
         let val: string[] = []
         const key = makeKey(_key)
+        const lim = options.limit
 
         if (options.by === 'score') {
           if (options.reverse) {
             // zrevrangebyscore expects (max, min)
-            val = await con.zrevrangebyscore(key, stop, start, 'WITHSCORES')
+            if (lim) {
+              val = await con.zrevrangebyscore(
+                key,
+                stop,
+                start,
+                'WITHSCORES',
+                'LIMIT',
+                lim.offset,
+                lim.count,
+              )
+            } else {
+              val = await con.zrevrangebyscore(key, stop, start, 'WITHSCORES')
+            }
           } else {
             // zrangebyscore expects (min, max)
-            val = await con.zrangebyscore(key, start, stop, 'WITHSCORES')
+            if (lim) {
+              val = await con.zrangebyscore(
+                key,
+                start,
+                stop,
+                'WITHSCORES',
+                'LIMIT',
+                lim.offset,
+                lim.count,
+              )
+            } else {
+              val = await con.zrangebyscore(key, start, stop, 'WITHSCORES')
+            }
           }
         } else if (options.by === 'rank') {
           // For rank-based queries, we use zrange / zrevrange with numeric ranks
           if (options.reverse) {
-            val = await con.zrevrange(key, start, stop, 'WITHSCORES')
+            if (lim) {
+              // Not supported by ioredis!
+              val = await con.zrevrange(key, start, stop, 'WITHSCORES')
+            } else {
+              val = await con.zrevrange(key, start, stop, 'WITHSCORES')
+            }
           } else {
-            val = await con.zrange(key, start, stop, 'WITHSCORES')
+            if (lim) {
+              val = await con.zrange(
+                key,
+                start,
+                stop,
+                'LIMIT',
+                lim.offset,
+                lim.count,
+                'WITHSCORES',
+              )
+            } else {
+              val = await con.zrange(key, start, stop, 'WITHSCORES')
+            }
           }
         } else if (options.by === 'lex') {
           // For lex-based queries, use zrangebylex / zrevrangebylex
           // These expect lex ordering, e.g. [ or ( as part of start/stop
           if (options.reverse) {
-            val = await con.zrevrangebylex(key, start, stop)
+            if (lim) {
+              val = await con.zrevrangebylex(
+                key,
+                start,
+                stop,
+                'LIMIT',
+                lim.offset,
+                lim.count,
+              )
+            } else {
+              val = await con.zrevrangebylex(key, start, stop)
+            }
           } else {
-            val = await con.zrangebylex(key, start, stop)
+            if (lim) {
+              val = await con.zrangebylex(
+                key,
+                start,
+                stop,
+                'LIMIT',
+                lim.offset,
+                lim.count,
+              )
+            } else {
+              val = await con.zrangebylex(key, start, stop)
+            }
           }
         }
 
@@ -363,10 +455,6 @@ export namespace DevvitTest {
     }
   }
 
-  // const mockRedditClient = (): Devvit.Context['reddit'] => {
-  // return mockClass(RedditAPIClient)
-  // }
-
   interface ContextMap {
     ui: Devvit.Context
     job: JobContext
@@ -410,6 +498,7 @@ export namespace DevvitTest {
         cancelJob: vi.fn(),
         listJobs: vi.fn(async () => []),
       },
+      settings: mockSettings,
       reddit: {
         getUserById(_id) {
           throw new Error('Not implemented in test')

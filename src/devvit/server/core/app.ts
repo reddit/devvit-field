@@ -11,7 +11,7 @@ import {
   makeSafeChallengeConfig,
 } from './challenge'
 import {fieldGetDeltas} from './field'
-import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
 import {levels, levelsIsUserInRightPlace} from './levels'
 import {liveSettingsGet} from './live-settings'
@@ -28,7 +28,9 @@ export type AppState =
       challengeConfig: Awaited<ReturnType<typeof makeSafeChallengeConfig>>
       profile: Awaited<ReturnType<typeof userGetOrSet>>
       initialDeltas: Awaited<ReturnType<typeof fieldGetDeltas>>
-      initialCellsClaimed: Awaited<ReturnType<typeof teamStatsCellsClaimedGet>>
+      initialCellsClaimed: Awaited<
+        ReturnType<typeof teamStatsCellsClaimedGetTotal>
+      >
       minesHitByTeam: Awaited<ReturnType<typeof teamStatsMinesHitGet>>
       initialGlobalXY: XY
       visible: number
@@ -80,11 +82,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
         subredditId: ctx.subredditId,
         challengeNumber,
       }),
-      teamStatsCellsClaimedGet({
-        challengeNumber,
-        redis: ctx.redis,
-        sort: 'DESC',
-      }),
+      teamStatsCellsClaimedGetTotal(ctx.redis, challengeNumber, 'DESC'),
       teamStatsMinesHitGet({
         challengeNumber,
         redis: ctx.redis,

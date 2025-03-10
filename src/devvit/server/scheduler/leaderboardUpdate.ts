@@ -9,8 +9,11 @@ import type {
   TeamBoxCounts,
 } from '../../../shared/types/message'
 import {activePlayersGet} from '../core/activePlayers'
-import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
-import {teamStatsCellsClaimedGet} from '../core/leaderboards/challenge/team.cellsClaimed'
+import {
+  challengeConfigGet,
+  challengeMaybeGetCurrentChallengeNumber,
+} from '../core/challenge'
+import {teamStatsCellsClaimedGet} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
 import {teamStatsMinesHitGet} from '../core/leaderboards/challenge/team.minesHit'
 
 /**
@@ -26,12 +29,14 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   })
   if (!currentChallengeNumber) return
 
+  const config = await challengeConfigGet({
+    challengeNumber: currentChallengeNumber,
+    subredditId: ctx.subredditId,
+    redis: ctx.redis,
+  })
+
   const [leaderboard, banned, activePlayers] = await Promise.all([
-    teamStatsCellsClaimedGet({
-      redis: ctx.redis,
-      sort: 'DESC',
-      challengeNumber: currentChallengeNumber,
-    }),
+    teamStatsCellsClaimedGet(ctx.redis, config, currentChallengeNumber, 'DESC'),
     teamStatsMinesHitGet({
       challengeNumber: currentChallengeNumber,
       redis: ctx.redis,

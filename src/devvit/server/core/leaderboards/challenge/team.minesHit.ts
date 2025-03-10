@@ -1,5 +1,6 @@
 import type {Devvit} from '@devvit/public-api'
 import {type Team, teams} from '../../../../../shared/team'
+import {parseTeam} from './team'
 
 const getRedisKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:stats:team:mines_hit` as const
@@ -24,12 +25,7 @@ export const teamStatsMinesHitGet = async ({
   })
 
   return result.map(({member: memberString, score}) => {
-    const member = parseInt(memberString, 10) as Team
-
-    if (Number.isNaN(member)) {
-      throw Error(`invalid member: ${member}. Members must be a valid number!`)
-    }
-
+    const member = parseTeam(memberString)
     return {
       member,
       score,
@@ -41,18 +37,12 @@ export const teamStatsMinesHitIncrementForMember = async ({
   redis,
   challengeNumber,
   member,
-  incrementBy = 1,
 }: {
   redis: Devvit.Context['redis']
   challengeNumber: number
   member: Team
-  incrementBy?: number
 }): Promise<void> => {
-  await redis.zIncrBy(
-    getRedisKey(challengeNumber),
-    member.toString(),
-    incrementBy,
-  )
+  await redis.zIncrBy(getRedisKey(challengeNumber), member.toString(), 1)
 }
 
 /**

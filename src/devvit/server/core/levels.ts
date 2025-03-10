@@ -4,7 +4,7 @@ import {getTeamFromUserId} from '../../../shared/team'
 import {type FieldFixtureData, config2} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {challengeGetCurrentChallengeNumber} from './challenge'
-import {teamStatsCellsClaimedGet} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {userAscendLevel, userSet} from './user'
 
 export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
@@ -65,11 +65,11 @@ export const levelsIsUserInRightPlace = async ({
     return {pass: true}
   }
 
-  const standings = await teamStatsCellsClaimedGet({
-    challengeNumber: profile.lastPlayedChallengeNumberForLevel,
-    redis: ctx.redis,
-    sort: 'DESC',
-  })
+  const standings = await teamStatsCellsClaimedGetTotal(
+    ctx.redis,
+    profile.lastPlayedChallengeNumberForLevel,
+    'DESC',
+  )
 
   // If there are no standings for some reason, just pass
   if (standings.length === 0) {

@@ -3,10 +3,12 @@ import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
   getGlobalCoords,
   getPartitionAndLocalCoords,
+  getPartitionCoords,
   makePartitionKey,
+  parsePartitionXY,
 } from '../../../shared/partition'
 import {type Team, getTeamFromUserId} from '../../../shared/team'
-import type {XY} from '../../../shared/types/2d'
+import type {PartitionKey, XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta} from '../../../shared/types/field'
 import type {Level} from '../../../shared/types/level'
@@ -15,13 +17,9 @@ import type {T2} from '../../../shared/types/tid'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {deltasAdd} from './deltas'
-import {
-  teamStatsCellsClaimedGet,
-  teamStatsCellsClaimedIncrementForMember,
-} from './leaderboards/challenge/team.cellsClaimed'
+import {teamStatsCellsClaimedIncrementForMemberPartitioned} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
 import {minefieldIsMine} from './minefield'
-import {computeScore} from './score'
 import {
   userDescendLevel,
   userIncrementLastPlayedChallengeClaimedCells,
@@ -147,15 +145,31 @@ export const _fieldClaimCellsSuccess = async ({
   ctx: Devvit.Context
   fieldConfig: ChallengeConfig
 }): Promise<{newLevel: Level | undefined}> => {
-  // TODO: Everything in a transaction?
+  // Deltas need to be applied by partition. Sort them out to start so
+  // we can update the correct partitioned accumulators.
+  const deltasByPartitionKey = new Map<PartitionKey, Delta[]>()
+  for (const delta of deltas) {
+    const partitionXY = getPartitionCoords(
+      delta.globalXY,
+      fieldConfig.partitionSize,
+    )
+    const partitionKey = makePartitionKey(partitionXY)
+    const partitionDeltas = deltasByPartitionKey.get(partitionKey) ?? []
+    partitionDeltas.push(delta)
+    deltasByPartitionKey.set(partitionKey, partitionDeltas)
+  }
 
   // Save deltas first since we have a job running consuming them and
   // stuff below could take a little bit of time
-  await deltasAdd({
-    redis: ctx.redis,
-    challengeNumber,
-    deltas,
-  })
+  // Deltas are added by partition
+  const deltasPromises = []
+  for (const [partitionKey, partitionDeltas] of deltasByPartitionKey) {
+    const partitionXY = parsePartitionXY(partitionKey)
+    deltasPromises.push(
+      deltasAdd(ctx.redis, challengeNumber, partitionXY, partitionDeltas),
+    )
+  }
+  await Promise.all(deltasPromises)
 
   const isGameOverForUser = deltas.some(delta => delta.isBan)
 
@@ -191,34 +205,30 @@ export const _fieldClaimCellsSuccess = async ({
   }
 
   const teamNumber = getTeamFromUserId(userId)
-  // Team stats
-  await teamStatsMinesHitIncrementForMember({
-    challengeNumber,
-    member: teamNumber,
-    redis: ctx.redis,
-    incrementBy: isGameOverForUser ? 1 : 0,
-  })
-  await teamStatsCellsClaimedIncrementForMember({
-    challengeNumber,
-    member: teamNumber,
-    redis: ctx.redis,
-    // Mines count as claims since the scoring algorithm counts all squares
-    incrementBy: deltas.length,
-  })
-
-  const standings = await teamStatsCellsClaimedGet({
-    challengeNumber,
-    redis: ctx.redis,
-  })
-
-  const {isOver} = computeScore({
-    size: fieldConfig.size,
-    teams: standings,
-  })
-
-  if (isOver) {
-    await fieldEndGame(ctx, challengeNumber, standings)
+  if (isGameOverForUser) {
+    await teamStatsMinesHitIncrementForMember({
+      challengeNumber,
+      member: teamNumber,
+      redis: ctx.redis,
+    })
   }
+
+  // Team stats are incremented by partition
+  const teamStatsPromises = []
+  for (const [partitionKey, partitionDeltas] of deltasByPartitionKey) {
+    const partitionXY = parsePartitionXY(partitionKey)
+    teamStatsPromises.push(
+      teamStatsCellsClaimedIncrementForMemberPartitioned(
+        ctx.redis,
+        challengeNumber,
+        partitionXY,
+        teamNumber,
+        // Mines count as claims since the scoring algorithm counts all squares
+        partitionDeltas.length,
+      ),
+    )
+  }
+  await Promise.all(teamStatsPromises)
 
   return {
     newLevel,
@@ -468,13 +478,11 @@ export const fieldGet = async ({
   }
 
   // TODO: Is there a limit here? Should we chunk?
-  const result = await redis.bitfield(
+  return await redis.bitfield(
     createFieldPartitionKey(challengeNumber, partitionXY),
     // @ts-expect-error - not sure
     ...commands.flat(),
   )
-
-  return result
 }
 
 export const fieldGetDeltas = async ({

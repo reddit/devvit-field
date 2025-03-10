@@ -1,4 +1,8 @@
-import {parsePartitionXY} from '../../shared/partition.ts'
+import {
+  DeltaCodec,
+  type DeltaSnapshotKey,
+  deltaAssetPath,
+} from '../../shared/codecs/deltacodec.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
@@ -271,6 +275,47 @@ export class Game {
     this.looper?.cancel()
     this.looper?.register('remove')
     this.ctrl?.register('remove')
+  }
+
+  #fetchAndApplyDeltas(snapshotKey: DeltaSnapshotKey): void {
+    if (!this.fieldConfig) {
+      return
+    }
+    // TODO: these may pile up. Will move into DeltasStream.
+
+    const url = deltaAssetPath(snapshotKey)
+    const partSize = this.fieldConfig.partSize
+    fetch(url).then(async rsp => {
+      if (!rsp.ok) {
+        // TODO: retries
+        console.warn(
+          `failed to fetch deltas at ${url}: ${rsp.status} ${rsp.statusText}`,
+        )
+        return
+      }
+
+      // TODO: verify content-type, etc.
+
+      // TODO: move the partition size to the key?
+      const codec = new DeltaCodec(
+        snapshotKey.partitionXY,
+        this.fieldConfig?.partSize!,
+      )
+      const deltas = codec.decode(await rsp.bytes())
+
+      const xy = snapshotKey.partitionXY
+      this.#clearLoadingForPart([
+        {
+          globalXY: {
+            x: xy.x * partSize,
+            y: xy.y * partSize,
+          },
+          isBan: false,
+          team: 0,
+        },
+      ])
+      this.#applyDeltas(deltas, false)
+    })
   }
 
   #applyDeltas(deltas: Delta[], isFromP1: boolean): void {
@@ -586,19 +631,7 @@ export class Game {
         ])
         break
       case 'PartitionUpdate': {
-        if (!this.fieldConfig) return
-        const xy = parsePartitionXY(msg.partitionKey)
-        this.#clearLoadingForPart([
-          {
-            globalXY: {
-              x: xy.x * this.fieldConfig.partSize,
-              y: xy.y * this.fieldConfig.partSize,
-            },
-            isBan: false,
-            team: 0,
-          },
-        ])
-        this.#applyDeltas(msg.deltas, false)
+        this.#fetchAndApplyDeltas(msg.ref)
         break
       }
       case 'ConfigUpdate':

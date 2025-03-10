@@ -1,6 +1,7 @@
+import type {DeltaSnapshotKey} from '../codecs/deltacodec.ts'
 import type {Player, Profile} from '../save.ts'
 import type {Team} from '../team.ts'
-import type {PartitionKey, XY} from './2d.ts'
+import type {XY} from './2d.ts'
 import type {AppConfig} from './app-config.ts'
 import type {FieldConfig} from './field-config.ts'
 import type {Delta} from './field.ts'
@@ -117,9 +118,7 @@ type ClaimBoxesResponse = {
 
 export type PartitionUpdate = {
   type: 'PartitionUpdate'
-  partitionKey: PartitionKey
-  sequenceNumber: number
-  deltas: Delta[]
+  ref: DeltaSnapshotKey
 }
 
 /** Broadcasted by server when a box has changed. */

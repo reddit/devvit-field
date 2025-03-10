@@ -1,7 +1,7 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
 import {challengeGetCurrentChallengeNumber} from '../server/core/challenge'
 import {fieldEndGame} from '../server/core/field'
-import {teamStatsCellsClaimedGet} from '../server/core/leaderboards/challenge/team.cellsClaimed'
+import {teamStatsCellsClaimedGetTotal} from '../server/core/leaderboards/challenge/team.cellsClaimed'
 
 export const endGameFormKey: FormKey = Devvit.createForm(
   {
@@ -28,10 +28,10 @@ export const endGameFormKey: FormKey = Devvit.createForm(
       const challengeNumber = await challengeGetCurrentChallengeNumber({
         redis: ctx.redis,
       })
-      const standings = await teamStatsCellsClaimedGet({
+      const standings = await teamStatsCellsClaimedGetTotal(
+        ctx.redis,
         challengeNumber,
-        redis: ctx.redis,
-      })
+      )
       await fieldEndGame(ctx, challengeNumber, standings)
 
       ctx.ui.showToast(`Challenge #${challengeNumber} has been ended.`)
