@@ -1,5 +1,6 @@
 import type {Devvit} from '@devvit/public-api'
 import {getPartitionCoords} from '../../../shared/partition'
+import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import type {LevelConfig} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
@@ -31,6 +32,7 @@ export type AppState =
       initialGlobalXY: XY
       visible: number
       level: LevelConfig
+      team: Team
     }
   /** Show a dialog inside of the webview */
   | ({
@@ -126,5 +128,6 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     visible,
     level,
     minesHitByTeam,
+    team: getTeamFromUserId(profile.t2),
   }
 }

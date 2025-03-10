@@ -113,13 +113,11 @@ export const fieldEndGame = async (
     member: Team
     score: number
   }[],
-  p1BoxCount: number,
 ): Promise<void> => {
   const msg: ChallengeCompleteMessage = {
     challengeNumber,
     standings,
     type: 'ChallengeComplete',
-    p1BoxCount,
   }
   // TODO: Increment user stats here or do it somewhere else?
   await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
@@ -219,8 +217,7 @@ export const _fieldClaimCellsSuccess = async ({
   })
 
   if (isOver) {
-    const p1BoxCount = 0 // to-do: fill me out.
-    await fieldEndGame(ctx, challengeNumber, standings, p1BoxCount)
+    await fieldEndGame(ctx, challengeNumber, standings)
   }
 
   return {
@@ -358,7 +355,12 @@ export const fieldClaimCells = async ({
   userId: T2
   challengeNumber: number
   ctx: Devvit.Context
-}): Promise<{deltas: Delta[]; newLevel: Level | undefined}> => {
+}): Promise<{
+  /** The new boxes claimed */
+  deltas: Delta[]
+  /** If the user hits a ban box, this will be defined with the new level a user should be at */
+  newLevel: Level | undefined
+}> => {
   if (coords.length === 0) return {deltas: [], newLevel: undefined}
 
   // We need a lookup here instead of passing in the config from blocks land

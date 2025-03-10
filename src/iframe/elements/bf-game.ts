@@ -9,17 +9,6 @@ import {
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {teamPascalCase} from '../../shared/team.ts'
-import type {XY} from '../../shared/types/2d.ts'
-import type {
-  ChallengeCompleteMessage,
-  DialogMessage,
-} from '../../shared/types/message.ts'
-import {Game} from '../game/game.ts'
-import type {BFTerminal} from './bf-terminal.ts'
-import {cssReset} from './css-reset.ts'
-
-import './bf-dialog.ts'
-import './bf-terminal.ts'
 import {
   cssHex,
   paletteBananaField,
@@ -38,6 +27,18 @@ import {
   paletteWhatIsFieldDark,
   paletteWhatIsFieldLight,
 } from '../../shared/theme.ts'
+import type {XY} from '../../shared/types/2d.ts'
+import type {
+  ChallengeCompleteMessage,
+  DialogMessage,
+} from '../../shared/types/message.ts'
+import {Game} from '../game/game.ts'
+import type {BFTerminal} from './bf-terminal.ts'
+import {cssReset} from './css-reset.ts'
+
+import './bf-dialog.ts'
+import './bf-terminal.ts'
+import './dialogs/outer-container.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -135,21 +136,26 @@ export class BFGame extends LitElement {
       case 'Barred':
         if (this.#msg?.type !== 'Dialog') throw Error('no dialog message')
         dialog = html`
-          <bf-dialog open>
-            <h2>Whoa, you're not allowed here.</h2>
-            <p>${this.#msg.message}</p>
+          <bf-dialog open .msg=${this.#msg} .subLvl=${this.#game.subLvl}>
             <bf-button
               @click='${() => {
                 if (this.#msg?.type !== 'Dialog')
                   throw Error('no dialog message')
-                this.#game.postMessage(this.#msg)
-                // to-do: clear this.#msg.
+                if (!this.#game) throw Error('no game')
+
+                if (this.#msg?.code === 'ChallengeEndedStay') {
+                  this.#game.postMessage({type: 'OnNextChallengeClicked'})
+                } else {
+                  this.#game.postMessage(this.#msg)
+                }
+                // to-do: clear this.msg.
               }}'
             >Go to a better place</bf-button>
           </bf-dialog>
         `
         break
       case 'NextLevel': {
+        //TODO: remove, we don't need this case anymore
         if (this.#msg?.type !== 'ChallengeComplete')
           throw Error('no challenge message')
         const max = Math.max(
@@ -159,8 +165,7 @@ export class BFGame extends LitElement {
           .filter(standing => standing.score === max)
           .map(standing => standing.member)
         dialog = html`
-          <bf-dialog open>
-            <h2>The board has been claimed by ${winners.join(' and ')}.</h2>
+          <bf-dialog open .msg=${this.#msg} .game=${this.#game} .winners=${winners}>
             <bf-button
               @click='${() => {
                 if (this.#msg?.type !== 'ChallengeComplete')

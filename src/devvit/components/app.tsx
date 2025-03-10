@@ -14,6 +14,7 @@ import type {PartitionKey} from '../../shared/types/2d.ts'
 import type {Delta} from '../../shared/types/field.ts'
 import {config2} from '../../shared/types/level.ts'
 import type {
+  ChallengeCompleteMessage,
   DevvitMessage,
   IframeMessage,
   PartitionUpdate,
@@ -49,6 +50,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
+  const [challengeEndedState, setChallengeEndedState] =
+    useState2<ChallengeCompleteMessage | null>(null)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
   const [activeConnections, setActiveConnections] = useState2<PartitionKey[]>(
     [],
@@ -129,6 +132,55 @@ export function App(ctx: Devvit.Context): JSX.Element {
     },
   )
 
+  // Since we can't circuit break in realtime, we need to use this hack
+  // in order to know where the player needs to be after the challenge ends.
+  //
+  // TODO: This could be a perf problem and we had originally said a button click
+  // would be required to do this. But, the comps want to show the computed state
+  // as part of the dialog so we need to do this. If it's a problem, we need a
+  // dialog that pops up on challenge complete and then a `Next` button that
+  // makes this check and then a final state that shows the dialog.
+  useAsync(
+    async () => {
+      if (!challengeEndedState) return null
+
+      const profile = await userGet({
+        redis: ctx.redis,
+        userId: appState.profile.t2,
+      })
+      const result = await levelsIsUserInRightPlace({
+        ctx,
+        profile,
+      })
+
+      // If they pass for some reason, just do nothing
+      if (result.pass) {
+        iframe.postMessage({
+          type: 'Dialog',
+          code: 'ChallengeEndedStay',
+          message:
+            'This round has ended. Please refresh to begin the next round.',
+          redirectURL: '',
+          profile,
+        }) //TODO: clean this up
+        return null
+      }
+
+      const {pass: _pass, ...rest} = result
+
+      iframe.postMessage(rest)
+
+      return null
+    },
+    {
+      depends: challengeEndedState,
+      finally() {
+        // Set back to null to handle this again when needed
+        setChallengeEndedState(null)
+      },
+    },
+  )
+
   const iframe = useWebView<IframeMessage, DevvitMessage>({onMessage: onMsg})
 
   function sendInitToIframe(
@@ -147,6 +199,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       initialCellsClaimed,
       visible,
       minesHitByTeam,
+      team,
     } = state
 
     const p1 = {profile, sid: session.sid}
@@ -167,7 +220,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       p1BoxCount: profile.lastPlayedChallengeNumberCellsClaimed,
       players: 0, // to-do: fill me out. useChannel2()?
       sub: ctx.subredditName ?? '',
-      team: getTeamFromUserId(profile.t2),
+      team,
       teamBoxCounts: initialCellsClaimed
         .sort((a, b) => a.member - b.member)
         .map(x => x.score) as TeamBoxCounts,
@@ -262,7 +315,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
           if (result.pass === false) {
             const {pass: _pass, ...rest} = result
-            iframe.postMessage({type: 'Dialog', ...rest})
+            iframe.postMessage(rest)
             return
           }
 
@@ -275,8 +328,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
               userId: profile.t2,
             })
 
-            ctx.ui.showToast('Global point claimed! Redirecting to level 0.')
-            ctx.ui.navigateTo(levels[0]!.url)
+            iframe.postMessage({
+              type: 'Dialog',
+              message: 'Global point claimed!',
+              code: 'GlobalPointClaimed',
+              redirectURL: levels[0]!.url,
+            })
 
             return
           }
@@ -314,7 +371,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
             if (result.pass === false) {
               const {pass: _pass, ...rest} = result
-              iframe.postMessage({type: 'Dialog', ...rest})
+              iframe.postMessage({
+                ...rest,
+                // levelsIsUserInRightPlace doesn't have enough information to make
+                // this determination so we stub it here
+                code: 'ClaimedABanBox',
+              })
               return
             }
 
@@ -355,6 +417,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'Dialog':
         ctx.ui.navigateTo(msg.redirectURL)
         break
+      case 'OnClaimGlobalPointClicked':
+        ctx.ui.navigateTo(levels[0]!.url)
+        break
 
       default:
         msg satisfies never
@@ -372,6 +437,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
               : 'app state no pass'
           } Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
+
+      if (msg.type === 'ChallengeComplete') {
+        setChallengeEndedState(msg)
+        return // Don't send the message to the iframe since we need to circuit break first
+      }
 
       iframe.postMessage(msg)
     },

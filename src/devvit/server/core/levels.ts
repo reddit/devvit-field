@@ -29,8 +29,7 @@ type LevelsIsUserInRightPlaceResponse =
     }
   | ({
       pass: false
-      redirectURL: string
-    } & Omit<DialogMessage, 'type'>)
+    } & DialogMessage)
 
 export const levelsIsUserInRightPlace = async ({
   profile,
@@ -51,9 +50,10 @@ export const levelsIsUserInRightPlace = async ({
   if (profile.currentLevel !== subredditLevel.id) {
     return {
       pass: false,
-      message: `You are not on the correct level. You should be at level ${profile.currentLevel}, not ${subredditLevel.id}.`,
+      message: `You have been permanently banned from r/${subredditLevel.subredditName}`,
       redirectURL: userLevel.url,
-      code: 'WrongLevel',
+      code: 'WrongLevelBanned',
+      type: 'Dialog',
     }
   }
 
@@ -95,8 +95,10 @@ export const levelsIsUserInRightPlace = async ({
     return {
       pass: false,
       message: `You were on the winning team and claimed more than one cell. You have ascended to level ${newLevelForUser}.`,
-      code: 'WrongLevel',
+      code: 'ChallengeEndedAscend',
       redirectURL: newLevelForUserConfig.url,
+      type: 'Dialog',
+      profile,
     }
   }
 

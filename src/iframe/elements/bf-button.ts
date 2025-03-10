@@ -90,6 +90,7 @@ export class BFButton extends LitElement {
       font-weight: 600;
       line-height: 26px;
       letter-spacing: -0.3px;
+      font-family: 'Departure Mono', 'Courier New', monospace;
     }
 
     button.icon-button {

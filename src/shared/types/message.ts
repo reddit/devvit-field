@@ -1,4 +1,4 @@
-import type {Player} from '../save.ts'
+import type {Player, Profile} from '../save.ts'
 import type {Team} from '../team.ts'
 import type {PartitionKey, XY} from './2d.ts'
 import type {AppConfig} from './app-config.ts'
@@ -96,6 +96,7 @@ export type IframeMessage =
   | DialogMessage
   /** Player has tapped the r/GamesOnReddit leaderboard open button. */
   | {type: 'OpenLeaderboard'}
+  | {type: 'OnClaimGlobalPointClicked'}
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
@@ -130,11 +131,6 @@ export type FieldBroadcast = {type: 'Field'; url: string}
 export type ChallengeCompleteMessage = {
   type: 'ChallengeComplete'
   challengeNumber: number
-  /**
-   * Number of boxes claimed by the player in the current level. If zero,
-   * player does not ascend with their team.
-   */
-  p1BoxCount: number
   standings: {member: Team; score: number}[]
 }
 
@@ -143,12 +139,24 @@ export type ConfigUpdateMessage = {
   config: AppConfig
 }
 
-export type DialogMessage = {
+type DialogMessageBase = {
   type: 'Dialog'
   redirectURL: string
   message: string
-  code: 'WrongLevel'
 }
+
+export type DialogMessage =
+  | (DialogMessageBase & {
+      code: 'WrongLevelBanned' | 'GlobalPointClaimed' | 'ClaimedABanBox'
+    })
+  | (DialogMessageBase & {
+      profile: Profile
+      code: 'ChallengeEndedAscend'
+    })
+  | (DialogMessageBase & {
+      profile: Profile
+      code: 'ChallengeEndedStay'
+    })
 
 // TODO: Remove if there are no peer to peer messages. We won't have peer for things like
 // scheduled jobs

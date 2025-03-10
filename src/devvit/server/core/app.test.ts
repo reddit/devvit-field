@@ -90,6 +90,7 @@ DevvitTest.it(
         t2: 't2_1cgemlvzgq',
         username: 'foo',
       },
+      team: 2,
       visible: 100,
     })
   },
@@ -133,7 +134,8 @@ DevvitTest.it(
     })
 
     await expect(appInitState(ctx)).resolves.toEqual({
-      code: 'WrongLevel',
+      type: 'Dialog',
+      code: 'WrongLevelBanned',
       message:
         'You are not on the correct level. You should be at level 0, not 1.',
       status: 'dialog',
