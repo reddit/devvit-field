@@ -273,14 +273,14 @@ export class Game {
     this.ctrl?.register('remove')
   }
 
-  #applyDeltas(deltas: Delta[]): void {
+  #applyDeltas(deltas: Delta[], isFromP1: boolean): void {
     if (!this.fieldConfig || this.subLvl == null || !deltas[0]) return
     this.#clearLoadingForPart(deltas)
 
     for (const {globalXY, isBan, team} of deltas) {
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
       const pend = this.#findPending(globalXY)
-      if (pend) pend.resolve(this, isBan, team, this.subLvl)
+      if (pend) pend.resolve(this, isBan, team, this.subLvl, isFromP1)
       if (isBan) fieldArraySetBan(this.field, i)
       else fieldArraySetTeam(this.field, i, team)
       // to-do: it may be faster to send the entire array for many changes.
@@ -532,7 +532,7 @@ export class Game {
 
         this.selectBox(msg.initialGlobalXY)
         this.centerBox(msg.initialGlobalXY)
-        this.#applyDeltas(msg.initialDeltas)
+        this.#applyDeltas(msg.initialDeltas, false)
         this.p1 = msg.p1
         if (this.debug) console.log('init')
         this.#fulfil()
@@ -546,7 +546,7 @@ export class Game {
       }
       case 'Box':
         if (!this.p1) return
-        this.#applyDeltas(msg.deltas)
+        this.#applyDeltas(msg.deltas, !msg.realtime)
         break
       case 'Connected':
         if (!this.p1) return
@@ -594,7 +594,7 @@ export class Game {
             team: 0,
           },
         ])
-        this.#applyDeltas(msg.deltas)
+        this.#applyDeltas(msg.deltas, false)
         break
       }
       case 'ConfigUpdate':

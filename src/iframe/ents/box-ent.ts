@@ -32,14 +32,20 @@ export class BoxEnt implements Ent {
     game.bmps.push(this.#sprite)
   }
 
-  resolve(game: Game, ban: boolean, team: Team, lvl: Level): void {
+  resolve(
+    game: Game,
+    ban: boolean,
+    team: Team,
+    lvl: Level,
+    isFromP1: boolean,
+  ): void {
     const pascalTeam = teamPascalCase[team]
     const pascalLvl = levelWord[lvl]
     // to-do: PascalCase basename in script.
     this.#seq.push(
       `box--${pascalTeam}Grow`,
       ban ? `box--BanFill${pascalLvl}` : `box--${pascalTeam}Fill`,
-      ban ? 'Banned' : game.team === team ? 'Claimed' : 'Lost',
+      ban && isFromP1 ? 'Banned' : game.team === team ? 'Claimed' : 'Lost',
     )
   }
 

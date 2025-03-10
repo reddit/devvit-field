@@ -121,6 +121,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         iframe.postMessage({
           type: 'Box',
           deltas: data,
+          realtime: true,
         })
       },
     },
@@ -285,6 +286,12 @@ export function App(ctx: Devvit.Context): JSX.Element {
             userId: appState.profile.t2,
           })
 
+          iframe.postMessage({
+            type: 'Box',
+            deltas,
+            realtime: false,
+          })
+
           // Before returning the result to the client, we need to check if the user hit a mine
           // and if they did we don't let them try to click again.
           //
@@ -312,11 +319,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
             // They passed, so even though we got a new level, we let it ride
             // since the next tap will validate before submit
           }
-
-          iframe.postMessage({
-            type: 'Box',
-            deltas,
-          })
         }
 
         break
