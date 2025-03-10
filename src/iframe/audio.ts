@@ -54,13 +54,9 @@ export function audioPlay(
   game: Game,
   buf: AudioBuffer,
   delayMillis: number = 0,
-  queue: 'Drop' | 'Queue' | 'Retry' = 'Retry',
+  queue: 'Drop' | 'Queue' = 'Drop',
 ): void {
-  if (queue !== 'Queue' && game.ac.state !== 'running') {
-    if (queue === 'Drop') return
-    // Audio may be resuming. Try again next frame.
-    setTimeout(() => audioPlay(game, buf, delayMillis, 'Drop'), 0)
-  }
+  if (queue !== 'Queue' && game.ac.state !== 'running') return
 
   const src = game.ac.createBufferSource()
   src.buffer = buf
