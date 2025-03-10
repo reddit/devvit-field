@@ -101,7 +101,7 @@ DevvitTest.it(
       mineDensity: 2,
     }
     const fieldAreaTooLarge: DefaultChallengeConfig = {
-      size: 100,
+      size: 3300,
       partitionSize: 5,
       mineDensity: 2,
     }
