@@ -1,4 +1,5 @@
 import {
+  consoleBorderW,
   paletteBananaField,
   paletteBananaFieldDark,
   paletteBannedField,
@@ -273,6 +274,10 @@ export class Renderer {
     this.#gl.uniform1f(
       this.#mapShader.uniforms.uSize!,
       mapSize * devicePixelRatio,
+    )
+    this.#gl.uniform1f(
+      this.#mapShader.uniforms.uBorderW!,
+      consoleBorderW * devicePixelRatio,
     )
     this.#gl.uniform1uiv(
       this.#mapShader.uniforms.uRGBAByColor!,

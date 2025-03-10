@@ -1,3 +1,4 @@
+import {consoleBorderW} from '../../../shared/theme.ts'
 import {boxHits} from '../../../shared/types/2d.ts'
 import {mapSize} from '../../../shared/types/app-config.ts'
 import type {LevelPascalCase} from '../../../shared/types/level.ts'
@@ -45,29 +46,55 @@ export class FieldLevel implements LevelEnt {
     const {cam, ctrl, fieldConfig} = game
     if (!fieldConfig) return
     const scaledMapSize = mapSize * devicePixelRatio
+    const scaledBorderW = consoleBorderW * devicePixelRatio
 
     if (
       fieldConfig &&
       !ctrl.pinch &&
       !ctrl.handled &&
       (ctrl.isOnStart('A') || ctrl.drag) &&
-      boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint)
+      boxHits(
+        {
+          w: scaledMapSize + 2 * scaledBorderW,
+          h: scaledMapSize + 2 * scaledBorderW,
+        },
+        ctrl.screenStartPoint,
+      )
     ) {
       ctrl.handled = true
+
+      if (
+        !boxHits(
+          {
+            x: scaledBorderW,
+            y: scaledBorderW,
+            w: scaledMapSize,
+            h: scaledMapSize,
+          },
+          ctrl.screenStartPoint,
+        )
+      )
+        return // Border.
 
       const xy = {
         x: Math.max(
           0,
           Math.min(
             fieldConfig.wh.w - 1,
-            Math.floor((ctrl.screenPoint.x * fieldConfig.wh.w) / scaledMapSize),
+            Math.floor(
+              ((ctrl.screenPoint.x - scaledBorderW) * fieldConfig.wh.w) /
+                scaledMapSize,
+            ),
           ),
         ),
         y: Math.max(
           0,
           Math.min(
             fieldConfig.wh.h - 1,
-            Math.floor((ctrl.screenPoint.y * fieldConfig.wh.h) / scaledMapSize),
+            Math.floor(
+              ((ctrl.screenPoint.y - scaledBorderW) * fieldConfig.wh.h) /
+                scaledMapSize,
+            ),
           ),
         ),
       }
@@ -104,12 +131,19 @@ export class FieldLevel implements LevelEnt {
   #updatePosition(game: Game): void {
     const {cam, ctrl, fieldConfig} = game
     const scaledMapSize = mapSize * devicePixelRatio
+    const scaledBorderW = consoleBorderW * devicePixelRatio
 
     if (
       fieldConfig &&
       ctrl.drag &&
       !ctrl.handled &&
-      !boxHits({w: scaledMapSize, h: scaledMapSize}, ctrl.screenStartPoint)
+      !boxHits(
+        {
+          w: scaledMapSize + 2 * scaledBorderW,
+          h: scaledMapSize + 2 * scaledBorderW,
+        },
+        ctrl.screenStartPoint,
+      )
     ) {
       ctrl.handled = true
 

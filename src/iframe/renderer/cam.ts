@@ -159,11 +159,10 @@ export class Cam {
 
   /** Scaled camera pixels but relative the top-left of the viewport. */
   toScreenXY(canvas: HTMLCanvasElement, clientXY: Readonly<XY>): XY {
-    // WH of body in CSS px; document.body.getBoundingClientRect() returns
-    // incorrectly large sizing on mobile that includes the address bar.
+    const wh = parentWH(canvas)
     return {
-      x: (clientXY.x / canvas.parentElement!.clientWidth) * this.w,
-      y: (clientXY.y / canvas.parentElement!.clientHeight) * this.h,
+      x: (clientXY.x / wh.w) * this.w,
+      y: (clientXY.y / wh.h) * this.h,
     }
   }
 
@@ -198,8 +197,19 @@ export function camScale(
 
 /** Returns dimensions in physical pixels. */
 export function camNativeWH(canvas: HTMLCanvasElement): WH {
+  const wh = parentWH(canvas)
   return {
-    w: Math.ceil(canvas.parentElement!.clientWidth * devicePixelRatio),
-    h: Math.ceil(canvas.parentElement!.clientHeight * devicePixelRatio),
+    w: Math.ceil(wh.w * devicePixelRatio),
+    h: Math.ceil(wh.h * devicePixelRatio),
+  }
+}
+
+function parentWH(canvas: HTMLCanvasElement): WH {
+  // WH of body in CSS px; document.body.getBoundingClientRect() returns
+  // incorrectly large sizing on mobile that includes the address bar. Less
+  // any border with border-box.
+  return {
+    w: canvas.parentElement!.clientWidth,
+    h: canvas.parentElement!.clientHeight,
   }
 }

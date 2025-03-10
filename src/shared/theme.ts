@@ -52,6 +52,8 @@ export const peerMaxSyncInterval: number = 1_000 // to-do: fix.
 
 export const partitionConnectionUpdateInterval: number = 5_000
 
+export const consoleBorderW: number = 16
+
 export function cssHex(val: number): `#${string}` {
   return `#${val.toString(16).padStart(8, '0')}`
 }
