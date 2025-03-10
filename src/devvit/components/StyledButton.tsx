@@ -2,7 +2,6 @@ import {Devvit} from '@devvit/public-api'
 
 import {
   cssHex,
-  fallbackPixelRatio,
   paletteBlack,
   paletteFieldLight,
   paletteWhite,
@@ -19,7 +18,6 @@ type StyledButtonProps = {
 
 export function StyledButton(props: StyledButtonProps): JSX.Element {
   const color = props.color ?? cssHex(paletteFieldLight)
-  const pixelRatio = props.pixelRatio ?? fallbackPixelRatio
   const height = 44
   const width = props.width ?? 256
 
@@ -28,13 +26,14 @@ export function StyledButton(props: StyledButtonProps): JSX.Element {
   return (
     <zstack width={`${width}px`} height={`${height}px`} onPress={props.onPress}>
       <image
-        imageHeight={Math.ceil(height * pixelRatio)}
-        imageWidth={Math.ceil(width * pixelRatio)}
+        imageHeight={Math.ceil(height * props.pixelRatio)}
+        imageWidth={Math.ceil(width * props.pixelRatio)}
         width='100%'
         height='100%'
+        resizeMode='fit'
         description={`"${props.children}" button`}
         url={`data:image/svg+xml;charset=UTF-8,
-  <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+  <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
   
   <!-- Button Shadow -->
   <rect x="0" y="10" width="${width}" height="34" rx="${RADIUS}" ry="${RADIUS}" fill="${cssHex(
@@ -77,7 +76,7 @@ export function StyledButton(props: StyledButtonProps): JSX.Element {
       <vstack height='100%' width='100%' alignment='top center'>
         <spacer height='6px' />
         <PixelText
-          pixelRatio={pixelRatio}
+          {...props}
           size={17}
           color={cssHex(paletteBlack)}
           opacity={0.6}

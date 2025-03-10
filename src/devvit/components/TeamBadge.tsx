@@ -16,19 +16,20 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
   const teamName = teamTitleCase[props.team]
   const textWidth = getTextSize(teamName, TEXT_SIZE).width
   const middleSegmentWidth = Math.ceil(textWidth + MARGIN * 2)
-  const imageHeight = Math.ceil(40 * props.pixelRatio)
+  const height = 40
 
   return (
     <hstack>
       {/* Left Cap */}
       <image
-        imageHeight={imageHeight}
+        imageHeight={height * props.pixelRatio}
         imageWidth={9 * props.pixelRatio}
         width='9px'
-        height='40px'
+        height={`${height}px`}
+        resizeMode='fill'
         description='Team Badge: Left End Cap'
         url={`data:image/svg+xml;charset=UTF-8,
-      <svg viewBox="0 0 9 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="9" height="40" viewBox="0 0 9 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M6 0V3H3V6H0V31H3V34H6V37H9V0H6Z" fill="${backgroundColor}"/>
 <path d="M6 0V3H3V6H0V31H3V34H6V37H9V31H6V28H3V9H6V6H9V0H6Z" fill="white" fill-opacity="0.6"/>
 </svg>`}
@@ -43,12 +44,13 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
         {/* Background */}
         <image
           imageWidth={middleSegmentWidth * props.pixelRatio}
-          imageHeight={imageHeight * props.pixelRatio}
+          imageHeight={height * props.pixelRatio}
           width={`${middleSegmentWidth}px`}
-          height='40px'
+          height={`${height}px`}
+          resizeMode='fill'
           description='Team Badge - Middle Section'
           url={`data:image/svg+xml;charset=UTF-8,
-      <svg viewBox="0 0 ${middleSegmentWidth} 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="${middleSegmentWidth}" height="40" viewBox="0 0 ${middleSegmentWidth} 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M0 0H${middleSegmentWidth}V37H0V0Z" fill="${backgroundColor}"/>
 <path d="M3 0H0V3H${middleSegmentWidth}V0Z" fill="white" fill-opacity="0.6"/>
 <path d="M3 34H0V37H${middleSegmentWidth}V34Z" fill="white" fill-opacity="0.6"/>
@@ -67,13 +69,14 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
 
       {/* Right Cap */}
       <image
-        imageHeight={imageHeight}
+        imageHeight={height * props.pixelRatio}
         imageWidth={12 * props.pixelRatio}
         width='12px'
-        height='40px'
+        height={`${height}px`}
+        resizeMode='fill'
         description='Team Badge: Right End Cap'
         url={`data:image/svg+xml;charset=UTF-8,
-      <svg viewBox="0 0 12 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="12" height="40" viewBox="0 0 12 40" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M3 37V34H6V31H9V6H6V3H3V0H0V37H3Z" fill="${backgroundColor}"/>
 <path d="M3 3V0H0V6H3V9H6V28H3V31H0V37H3V34H6V31H9V6H6V3H3Z" fill="white" fill-opacity="0.6"/>
 <path d="M12 6H9V31H6V34H3V37H0V40H6V37H9V34H12V6Z" fill="#05131D"/>
