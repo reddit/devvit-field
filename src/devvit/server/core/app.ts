@@ -2,7 +2,7 @@ import type {Devvit} from '@devvit/public-api'
 import {getPartitionCoords} from '../../../shared/partition'
 import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
-import type {LevelConfig} from '../../../shared/types/level'
+import {type LevelConfig, config2} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {activePlayersIncrement} from './activePlayers'
 import {
@@ -13,7 +13,7 @@ import {
 import {fieldGetDeltas} from './field'
 import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
-import {levels, levelsIsUserInRightPlace} from './levels'
+import {levelsIsUserInRightPlace} from './levels'
 import {liveSettingsGet} from './live-settings'
 import {userGetOrSet} from './user'
 
@@ -105,7 +105,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     ),
   })
 
-  const level = levels.find(x => x.id === profile.currentLevel)!
+  const level = config2.levels.find(x => x.id === profile.currentLevel)!
 
   const totalCellsForField = challengeConfig.size * challengeConfig.size
   const totalCellsClaimed = initialCellsClaimed.reduce(

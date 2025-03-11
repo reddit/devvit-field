@@ -38,8 +38,8 @@ export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 export function App(ctx: Devvit.Context): JSX.Element {
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
   if (
-    ctx.subredditId === LEADERBOARD_CONFIG.subredditId &&
-    ctx.postId === LEADERBOARD_CONFIG.postId
+    ctx.subredditId === config2.leaderboard.subredditId &&
+    ctx.postId === config2.leaderboard.postId
   ) {
     // to-do: avoid postId in above checks. Not great having to submit a post, then hardcode the postId in the app code and upload a new version.
     return <LeaderboardController pixelRatio={pixelRatio} />
@@ -52,7 +52,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
   if (appState.status === 'needsToVerifyEmail') {
     return (
       <DialogVerifyEmail
-        level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+        level={
+          config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
+          0
+        }
         pixelRatio={pixelRatio}
         onPress={async () => {
           console.log('to-do: not yet implemented!')
@@ -64,7 +67,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
   if (appState.status === 'notAllowed') {
     return (
       <DialogNotAllowed
-        level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+        level={
+          config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
+          0
+        }
         pixelRatio={pixelRatio}
       />
     )
@@ -73,7 +79,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
   if (appState.status === 'dialog') {
     return (
       <DialogUnauthorized
-        level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+        level={
+          config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
+          0
+        }
         currentLevel={appState.profile.currentLevel}
         redirectURL={appState.redirectURL}
         pixelRatio={pixelRatio}
@@ -260,7 +269,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
             return
           }
 
-          const lastLevel = levels[levels.length - 1]!
+          const lastLevel = config2.levels.at(-1)!
 
           // Attempt to claim a global point if on the last level
           if (lastLevel.id === profile.currentLevel) {
@@ -273,7 +282,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
               type: 'Dialog',
               message: 'Global point claimed!',
               code: 'GlobalPointClaimed',
-              redirectURL: levels[0]!.url,
+              redirectURL: config2.levels[0]!.url,
             })
 
             return
@@ -359,7 +368,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         ctx.ui.navigateTo(msg.redirectURL)
         break
       case 'OnClaimGlobalPointClicked':
-        ctx.ui.navigateTo(levels[0]!.url)
+        ctx.ui.navigateTo(config2.levels[0]!.url)
         break
 
       default:
@@ -394,7 +403,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
   return (
     <DialogWelcome
       team={getTeamFromUserId(session.t2)}
-      level={levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0}
+      level={
+        config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0
+      }
       pixelRatio={pixelRatio}
       onPress={() => iframe.mount()}
     />

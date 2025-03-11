@@ -1,6 +1,5 @@
 import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
-import type {Level} from '../../shared/types/level'
-import {levels} from '../server/core/levels'
+import {type Level, config2} from '../../shared/types/level'
 import {userSetLevel} from '../server/core/user'
 
 export const setUserLevelFormKey: FormKey = Devvit.createForm(
@@ -40,7 +39,7 @@ export const setUserLevelFormKey: FormKey = Devvit.createForm(
       userId: user.id,
     })
 
-    const newLevelConfig = levels.find(x => x.id === newLevel)
+    const newLevelConfig = config2.levels.find(x => x.id === newLevel)
     if (!newLevelConfig) {
       ctx.ui.showToast(`Level ${newLevel} not found`)
       return

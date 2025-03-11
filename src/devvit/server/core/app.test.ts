@@ -1,12 +1,12 @@
 import type {User} from '@devvit/public-api'
 import {expect, vi} from 'vitest'
+import {config2} from '../../../shared/types/level.js'
 import type {T2} from '../../../shared/types/tid'
 import {initialize} from '../triggers/install'
 import {DevvitTest} from './_utils/DevvitTest'
 import {setCtxLevel} from './_utils/utils'
 import {appInitState} from './app'
 import {challengeMakeNew} from './challenge'
-import {levels} from './levels'
 
 DevvitTest.it(
   'app state should pass if the user is on the right level and NOT return the seed',
@@ -62,7 +62,7 @@ DevvitTest.it(
         x: expect.any(Number),
         y: expect.any(Number),
       },
-      level: levels[0],
+      level: config2.levels[0],
       profile: {
         currentLevel: 0,
         hasVerifiedEmail: true,

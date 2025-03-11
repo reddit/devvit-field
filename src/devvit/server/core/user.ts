@@ -2,11 +2,10 @@
 import type {Devvit} from '@devvit/public-api'
 import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
-import type {Level} from '../../../shared/types/level'
+import {type Level, config2} from '../../../shared/types/level'
 import {type T2, noT2, noUsername} from '../../../shared/types/tid'
 import {globalStatsIncrement} from './globalStats'
 import {leaderboardIncrementForTeam} from './leaderboards/global/leaderboard'
-import {levels} from './levels'
 
 export function noProfile(): Profile {
   return {
@@ -189,7 +188,7 @@ export const userDescendLevel = async ({
   const user = await userGet({redis, userId})
 
   let newLevel = user.currentLevel + 1
-  const lastLevel = Object.keys(levels).length - 1
+  const lastLevel = Object.keys(config2.levels).length - 1
   if (newLevel > lastLevel) {
     newLevel = lastLevel
   }
@@ -220,7 +219,7 @@ export const userSetLevel = async ({
 }): Promise<Level> => {
   const user = await userGet({redis, userId})
 
-  const levelExists = levels.find(x => x.id === level)
+  const levelExists = config2.levels.find(x => x.id === level)
 
   if (!levelExists) {
     throw new Error('Level does not exist')
@@ -315,9 +314,9 @@ export const userAttemptToClaimGlobalPointForTeam = async ({
 }): Promise<void> => {
   const user = await userGet({redis: ctx.redis, userId})
 
-  const lastLevel = levels[levels.length - 1]!
+  const lastLevel = config2.levels.at(-1)!
 
-  const levelForUser = levels.find(x => x.id === user.currentLevel)
+  const levelForUser = config2.levels.find(x => x.id === user.currentLevel)
   if (!levelForUser) {
     throw new Error(`No level found for current level ${user.currentLevel}`)
   }
@@ -329,7 +328,9 @@ export const userAttemptToClaimGlobalPointForTeam = async ({
 
   // We pull off of context and do this extra check in case someone tries to forge
   // the subreddit ID. I hope that gateway prevents context spoofing.
-  const levelForSub = levels.find(x => x.subredditId === ctx.subredditId)
+  const levelForSub = config2.levels.find(
+    x => x.subredditId === ctx.subredditId,
+  )
   if (!levelForSub) {
     throw new Error(`No level found for subreddit ${ctx.subredditId}`)
   }

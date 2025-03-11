@@ -1,16 +1,11 @@
 import type {Devvit} from '@devvit/public-api'
 import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
-import {type FieldFixtureData, config2} from '../../../shared/types/level'
+import {config2} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
 import {challengeGetCurrentChallengeNumber} from './challenge'
 import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {userAscendLevel, userSet} from './user'
-
-export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
-  config2.leaderboard
-
-export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
 /**
  * Make sure the user has access to:
@@ -39,13 +34,15 @@ export const levelsIsUserInRightPlace = async ({
   ctx: Devvit.Context
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
   // Make sure the level config exists for the subreddit before anything
-  const subredditLevel = levels.find(x => x.subredditId === ctx.subredditId)
+  const subredditLevel = config2.levels.find(
+    x => x.subredditId === ctx.subredditId,
+  )
   if (!subredditLevel) {
     throw new Error(
       `No level config found for subreddit ${ctx.subredditId}. Please make sure you are using the right config.{env}.json (or update it for the new sub you installed this app to)!`,
     )
   }
-  const userLevel = levels.find(x => x.id === profile.currentLevel)!
+  const userLevel = config2.levels.find(x => x.id === profile.currentLevel)!
 
   if (profile.currentLevel !== subredditLevel.id) {
     return {
@@ -83,14 +80,16 @@ export const levelsIsUserInRightPlace = async ({
     winningTeam === userTeam &&
     profile.lastPlayedChallengeNumberCellsClaimed > 0 &&
     // You can't ascend from the first level
-    subredditLevel.id !== levels[0]!.id
+    subredditLevel.id !== config2.levels[0]!.id
   ) {
     const newLevelForUser = await userAscendLevel({
       redis: ctx.redis,
       userId: profile.t2,
     })
 
-    const newLevelForUserConfig = levels.find(x => x.id === newLevelForUser)!
+    const newLevelForUserConfig = config2.levels.find(
+      x => x.id === newLevelForUser,
+    )!
 
     return {
       pass: false,

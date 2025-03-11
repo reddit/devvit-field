@@ -1,7 +1,6 @@
 import type {Devvit} from '@devvit/public-api'
-import type {Level} from '../../../../shared/types/level'
+import {type Level, config2} from '../../../../shared/types/level'
 import {decodeVTT} from '../bitfieldHelpers'
-import {levels} from '../levels'
 
 interface MatrixConfig {
   result: number[]
@@ -33,7 +32,7 @@ export function toMatrix({result, cols, rows}: MatrixConfig): string[][] {
 }
 
 export const setCtxLevel = (ctx: Devvit.Context, level: Level): void => {
-  const config = levels.find(x => x.id === level)
+  const config = config2.levels.find(x => x.id === level)
   if (!config) {
     throw new Error(`Level ${level} not found`)
   }

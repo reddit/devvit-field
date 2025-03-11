@@ -32,9 +32,8 @@ import {
 } from './devvit/server/core/challenge.js'
 import {defaultChallengeConfigMaybeGet} from './devvit/server/core/defaultChallengeConfig.js'
 import {fieldClaimCells} from './devvit/server/core/field.js'
-import {LEADERBOARD_CONFIG, levels} from './devvit/server/core/levels.js'
 import {fallbackPixelRatio} from './shared/theme.js'
-import type {Level} from './shared/types/level.js'
+import {type Level, config2} from './shared/types/level.js'
 import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
@@ -103,16 +102,16 @@ const newPostFormKey = Devvit.createForm(
       if (!ctx.subredditName) throw Error('no sub name')
 
       const lvl =
-        ctx.subredditName === LEADERBOARD_CONFIG.subredditName
-          ? LEADERBOARD_CONFIG
-          : levels.find(lvl => lvl.subredditName === ctx.subredditName)
+        ctx.subredditName === config2.leaderboard.subredditName
+          ? config2.leaderboard
+          : config2.levels.find(lvl => lvl.subredditName === ctx.subredditName)
       if (!lvl)
         throw Error(
           'Cannot find level, please add the subreddit name to the config file, upload, make a post, and fill in the rest of the config to continue.',
         )
 
       const isLeaderboard =
-        ctx.subredditName === LEADERBOARD_CONFIG.subredditName
+        ctx.subredditName === config2.leaderboard.subredditName
 
       const post = await ctx.reddit.submitPost({
         preview: isLeaderboard ? (
@@ -121,7 +120,7 @@ const newPostFormKey = Devvit.createForm(
           <DialogWelcomeLoading
             pixelRatio={fallbackPixelRatio}
             level={
-              levels.findIndex(
+              config2.levels.findIndex(
                 lvl => lvl.subredditId === ctx.subredditId,
               ) as Level
             }

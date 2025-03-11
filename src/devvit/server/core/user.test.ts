@@ -2,13 +2,13 @@ import type {User} from '@devvit/public-api'
 import {beforeEach, expect, vi} from 'vitest'
 import type {Profile} from '../../../shared/save'
 import {USER_IDS} from '../../../shared/test-utils'
+import {config2} from '../../../shared/types/level.js'
 import type {T2} from '../../../shared/types/tid'
 import {DevvitTest} from './_utils/DevvitTest'
 import {
   leaderboardGet,
   leaderboardInit,
 } from './leaderboards/global/leaderboard'
-import {levels} from './levels'
 import * as userMethods from './user'
 
 beforeEach(() => {
@@ -297,7 +297,7 @@ DevvitTest.it(
   'userAttemptToClaimGlobalPointForTeam - fails when subreddit id is not the last level',
   async ctx => {
     // Spoofing the subreddit id on context!
-    ctx.subredditId = levels[0]!.subredditId
+    ctx.subredditId = config2.levels[0]!.subredditId
 
     vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
       username: 'foo',
@@ -331,7 +331,7 @@ DevvitTest.it(
 )
 
 DevvitTest.it('userAttemptToClaimGlobalPointForTeam - succeeds', async ctx => {
-  ctx.subredditId = levels[levels.length - 1]!.subredditId
+  ctx.subredditId = config2.levels.at(-1)!.subredditId
   ctx.userId = USER_IDS.TEAM_2_PLAYER_1
 
   await leaderboardInit({redis: ctx.redis})
