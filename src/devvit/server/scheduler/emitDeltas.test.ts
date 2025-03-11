@@ -22,6 +22,7 @@ describe('emitDeltas', async () => {
     DevvitTest.updateSettings({
       's3-path-prefix': 'dev',
       'skip-s3': true,
+      'workqueue-debug': true,
     })
 
     const fieldConfig: ChallengeConfig = {

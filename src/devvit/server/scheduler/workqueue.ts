@@ -20,11 +20,23 @@ const maxConcurrentClaims = 48 // Enough to serve 16 partitions x 3 tasks per pa
 const maxAttempts = 5
 const maxTransactionAttempts = 10
 
+type WorkQueueSettings = {
+  'workqueue-debug'?: boolean
+}
+
+export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
+  const settings = await ctx.settings.getAll<WorkQueueSettings>()
+  const wq = new WorkQueue(ctx)
+  wq.setDebugEnabled(settings['workqueue-debug'] ?? false)
+  return wq
+}
+
 export class WorkQueue {
   // biome-ignore lint/suspicious/noExplicitAny: type of task varies
   static #handlers: Record<string, Handler<any>> = {}
   readonly ctx: JobContext
   #id: string
+  #debugEnabled = false
 
   static register<T extends Task>(
     type: T['type'],
@@ -41,7 +53,13 @@ export class WorkQueue {
 
   // biome-ignore lint/suspicious/noExplicitAny: just wrapping console.log here
   #debug(...args: any) {
-    console.log(...[this.#id, ...args])
+    if (this.#debugEnabled) {
+      console.log(...[this.#id, ...args])
+    }
+  }
+
+  setDebugEnabled(enabled: boolean): void {
+    this.#debugEnabled = enabled
   }
 
   async enqueue<T extends Task>(task: T): Promise<void> {
@@ -57,12 +75,14 @@ export class WorkQueue {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  async runUntil(deadline: Date): Promise<void> {:1
+  async runUntil(deadline: Date): Promise<void> {
     let inFlight = 0
 
     const handleTasks = (tasks: Task[]) => {
       inFlight += tasks.length
-      this.#debug(`taking on ${tasks.length} tasks (total of ${inFlight} in flight)`)
+      this.#debug(
+        `taking on ${tasks.length} tasks (total of ${inFlight} in flight)`,
+      )
       //this.#debug(`increment inFlight to ${inFlight}`)
       const resolve = async () => {
         inFlight--

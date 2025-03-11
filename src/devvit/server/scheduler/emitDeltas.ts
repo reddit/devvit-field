@@ -16,7 +16,7 @@ import {getSequenceRedisKey} from '../core/data/sequence.ts'
 import {type Uploader, deltasPublish, deltasRotate} from '../core/deltas.ts'
 import {teamStatsCellsClaimedRotate} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
 import {type ClientOptions, Client as S3Client} from '../core/s3.ts'
-import {type Task, WorkQueue} from './workqueue.ts'
+import {type Task, WorkQueue, newWorkQueue} from './workqueue.ts'
 
 /**
  * EmitDeltas tasks drive the snapshot/rotate of each partition's delta
@@ -101,7 +101,7 @@ WorkQueue.register<PublishDeltasTask>(
       async upload(key: DeltaSnapshotKey, body: Buffer): Promise<void> {
         const client = new S3Client(settings)
         if (!settings['skip-s3']) {
-          console.log(`s3 upload to ${key}`)
+          //console.log(`s3 upload to ${deltaS3Path(key)}`)
           await client.send({
             path: deltaS3Path(key),
             body,
@@ -169,7 +169,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   _,
   ctx,
 ): Promise<void> => {
-  const wq = new WorkQueue(ctx)
+  const wq = await newWorkQueue(ctx)
   const start = Date.now()
   await heartbeatAllPartitions(ctx, wq)
   await wq.runUntil(new Date(start + 10_000))

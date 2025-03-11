@@ -212,6 +212,13 @@ Devvit.addSettings([
     type: 'string',
     defaultValue: 'dev/default',
   },
+  {
+    scope: SettingScope.App,
+    name: 'workqueue-debug',
+    label: 'Set to true to enable workqueue debug logging',
+    type: 'boolean',
+    defaultValue: false,
+  },
 ])
 
 /** Returns whole numbers in [min, max). */

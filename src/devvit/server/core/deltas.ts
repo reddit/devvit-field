@@ -168,11 +168,8 @@ export async function deltasPublish(
   }
 
   const encoded = Buffer.from(encodedB64, 'base64')
-  const path = `/${challengeNumber}/${partitionXY.x}/${partitionXY.y}/${sequenceNumber}`
-  console.log(`will upload ${encoded!.length} bytes to ${path}`)
   // TODO: return the url from upload directly
   // TODO: get path prefix from settings
-  //const url = `https://webview.devvit.net/a1/dev/logan${path}`
 
   // For some reason the S3 request is getting corrupted if I don't use a fresh copy.
   const copy = Buffer.alloc(encoded.length)
