@@ -14,6 +14,7 @@ import type {Delta} from '../../../shared/types/field'
 import type {Level} from '../../../shared/types/level'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
+import {validateFieldArea} from '../../../shared/validateFieldArea.js'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {deltasAdd} from './deltas'
@@ -460,11 +461,7 @@ export const fieldGet = async ({
   const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
   const area = meta.size * meta.size
 
-  if (area > 5_000) {
-    throw new Error(
-      `Challenge size too large! This is only for testing right now until we find a more efficient way to return all items in a bitfield. At a minimum, we need to the partition a required command so we don't risk sending 10 million bits at once.`,
-    )
-  }
+  validateFieldArea(area)
 
   const data = await redis.strLen(
     createFieldPartitionKey(challengeNumber, partitionXY),
