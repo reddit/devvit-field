@@ -20,7 +20,7 @@ describe('emitDeltas', async () => {
     }
 
     DevvitTest.updateSettings({
-      's3-path-prefix': 'platform/a1/dev',
+      's3-path-prefix': 'dev',
       'skip-s3': true,
     })
 

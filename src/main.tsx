@@ -210,7 +210,7 @@ Devvit.addSettings([
     name: 's3-path-prefix',
     label: 'S3 path prefix',
     type: 'string',
-    defaultValue: 'platform/a1/dev/default',
+    defaultValue: 'dev/default',
   },
 ])
 

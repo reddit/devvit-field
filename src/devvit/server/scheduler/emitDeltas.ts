@@ -95,9 +95,7 @@ WorkQueue.register<PublishDeltasTask>(
 
     // Due to a quirk in how we set up Fastly in front of our S3 bucket, we're
     // only going to be able to read keys that begin with "/platform/a1/".
-    if (!pathPrefix.startsWith('platform/a1/')) {
-      throw new Error('s3-path-prefix must begin with "platform/a1/"')
-    }
+    pathPrefix = `platform/a1/${pathPrefix}`
 
     const uploader: Uploader = {
       async upload(key: DeltaSnapshotKey, body: Buffer): Promise<void> {
