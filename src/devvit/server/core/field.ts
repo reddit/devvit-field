@@ -467,18 +467,46 @@ export const fieldGet = async ({
   )
   if (data === 0) return []
 
-  const commands: BitfieldCommand[] = []
-
-  for (let i = 0; i < meta.size * meta.size; i++) {
-    commands.push(['get', 'u3', i * FIELD_CELL_BITS])
-  }
-
-  // TODO: Is there a limit here? Should we chunk?
-  return await redis.bitfield(
+  const bytes = await redis.getBuffer(
     createFieldPartitionKey(challengeNumber, partitionXY),
-    // @ts-expect-error - not sure
-    ...commands.flat(),
   )
+  if (!bytes) {
+    return []
+  }
+  const expectedLength = Math.ceil(
+    (meta.partitionSize * meta.partitionSize) / 8,
+  )
+  if (bytes.length < expectedLength) {
+    throw new Error(
+      `bitfield is smaller than partition size: ${bytes.length} vs ${expectedLength}`,
+    )
+  }
+  const nums = new Array<number>(meta.partitionSize * meta.partitionSize)
+
+  const getu3 = (idx: number) => {
+    const bitIdx = idx * 3
+    const msbIdx = Math.floor(bitIdx / 8)
+    switch (bitIdx % 8) {
+      case 6: {
+        // Overflows by 1 bit into next byte.
+        const b0 = bytes[msbIdx]!
+        const b1 = bytes[msbIdx + 1]!
+        return ((b0 & 3) << 1) | ((b1 >> 7) & 1)
+      }
+      case 7: {
+        // Overflows by 2 bits into next byte.
+        const b0 = bytes[msbIdx]!
+        const b1 = bytes[msbIdx + 1]!
+        return ((b0 & 1) << 2) | ((b1 >> 6) & 3)
+      }
+      default:
+        return (bytes[msbIdx]! >> (5 - (bitIdx % 8))) & 7
+    }
+  }
+  for (let i = 0; i < nums.length; i++) {
+    nums[i] = getu3(i)
+  }
+  return nums
 }
 
 export const fieldGetDeltas = async ({
