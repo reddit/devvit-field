@@ -4,7 +4,6 @@ import {mapSize} from '../../../shared/types/app-config.ts'
 import type {LevelPascalCase} from '../../../shared/types/level.ts'
 import {audioPlayMusic} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
-import {RealtimeConnector} from '../../realtime-connector.ts'
 import {CursorEnt} from '../cursor-ent.ts'
 import type {EID} from '../eid.ts'
 import {ReticleEnt} from '../reticle-ent.ts'
@@ -12,7 +11,6 @@ import type {LevelEnt} from './level-ent.ts'
 
 export class FieldLevel implements LevelEnt {
   readonly eid: EID
-  readonly #rtConnector: RealtimeConnector = new RealtimeConnector()
   #zoomLvl: number
 
   constructor(game: Game) {
@@ -33,7 +31,6 @@ export class FieldLevel implements LevelEnt {
         true,
         true,
       )
-    this.#rtConnector.update(game)
   }
 
   update(game: Game): void {
@@ -151,8 +148,6 @@ export class FieldLevel implements LevelEnt {
         x: cam.x - ctrl.delta.x / cam.scale / cam.fieldScale,
         y: cam.y - ctrl.delta.y / cam.scale / cam.fieldScale,
       })
-
-      this.#rtConnector.update(game)
     }
 
     if (game.ctrl.isAnyOn('L', 'R', 'U', 'D') && !ctrl.handled) {
@@ -167,8 +162,6 @@ export class FieldLevel implements LevelEnt {
       const speed =
         (dir.x && dir.y ? Math.sqrt(25 / 2) : 5) / cam.scale / cam.fieldScale
       game.moveTo({x: cam.x + dir.x * speed, y: cam.y + dir.y * speed})
-
-      this.#rtConnector.update(game)
     }
   }
 
@@ -184,8 +177,6 @@ export class FieldLevel implements LevelEnt {
       )
       // to-do: centralize cam movements.
       game.moveTo(game.cam)
-
-      this.#rtConnector.update(game)
     }
 
     if (game.ctrl.pinch && !game.ctrl.handled) {
@@ -197,8 +188,6 @@ export class FieldLevel implements LevelEnt {
         !!game.p1?.profile.superuser,
       )
       game.moveTo(game.cam)
-
-      this.#rtConnector.update(game)
     } else this.#zoomLvl = game.cam.fieldScaleLevel
   }
 }

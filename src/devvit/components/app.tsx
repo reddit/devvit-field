@@ -3,15 +3,8 @@ import {Devvit, useAsync, useInterval} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
-import {
-  getPartitionCoords,
-  makePartitionKey,
-  parsePartitionXY,
-} from '../../shared/partition.ts'
 import {getTeamFromUserId} from '../../shared/team.ts'
 import {fallbackPixelRatio} from '../../shared/theme.ts'
-import type {PartitionKey} from '../../shared/types/2d.ts'
-import type {Delta} from '../../shared/types/field.ts'
 import {config2} from '../../shared/types/level.ts'
 import type {
   ChallengeCompleteMessage,
@@ -25,7 +18,7 @@ import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {activePlayersIncrement} from '../server/core/activePlayers.js'
 import {type AppState, appInitState} from '../server/core/app.js'
-import {fieldClaimCells, fieldGetDeltas} from '../server/core/field.js'
+import {fieldClaimCells} from '../server/core/field.js'
 import {
   LEADERBOARD_CONFIG,
   levels,
@@ -54,9 +47,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
   const [challengeEndedState, setChallengeEndedState] =
     useState2<ChallengeCompleteMessage | null>(null)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
-  const [activeConnections, setActiveConnections] = useState2<PartitionKey[]>(
-    [],
-  )
 
   if (appState.status === 'needsToVerifyEmail') {
     return (
@@ -97,49 +87,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
     })
   }, 30_000)
   activePlayerInterval.start()
-
-  // TODO: Remove this once the webview can get this from S3
-  useAsync<Delta[]>(
-    async () => {
-      if (appState.status !== 'pass' || activeConnections.length === 0)
-        return []
-
-      const deltas = await Promise.all(
-        activeConnections.map(key =>
-          fieldGetDeltas({
-            challengeNumber: appState.challengeNumber,
-            subredditId: ctx.subredditId,
-            redis: ctx.redis,
-            partitionXY: parsePartitionXY(key),
-          }),
-        ),
-      )
-
-      for (const key of activeConnections)
-        iframe.postMessage({
-          type: 'PartitionLoaded',
-          xy: parsePartitionXY(key),
-        })
-
-      return deltas.flat()
-    },
-    {
-      // Depends is a JSON.stringify check so order matters!
-      depends: activeConnections.sort(),
-      finally(data, error) {
-        if (error) {
-          console.error('useAsync get deltas error:', error)
-        }
-        if (!data) return
-
-        iframe.postMessage({
-          type: 'Box',
-          deltas: data,
-          realtime: true,
-        })
-      },
-    },
-  )
 
   // Since we can't circuit break in realtime, we need to use this hack
   // in order to know where the player needs to be after the challenge ends.
@@ -263,22 +210,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
       )
 
     switch (msg.type) {
-      case 'ConnectPartitions': {
-        if (appState.status !== 'pass') return
-
-        const newConnections = msg.parts.map(part =>
-          makePartitionKey(
-            getPartitionCoords(part, appState.challengeConfig.partitionSize),
-          ),
-        )
-
-        // Note, I don't circuit break here because I think it may slow the experience
-        // for the user. Instead, I set state and use `useAsync` to get the current
-        // state of the partitions since realtime is only the deltas
-        setActiveConnections(newConnections.sort())
-
-        break
-      }
       case 'Loaded':
         break
       case 'Registered': {
