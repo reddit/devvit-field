@@ -15,7 +15,6 @@
     "lit": "3.2.1",
     "redis-memory-server": "0.12.1",
     "typescript": "5.8.2",
-    "uuid": "11.1.0",
     "vitest": "3.0.8"
   },
   "engines": {
