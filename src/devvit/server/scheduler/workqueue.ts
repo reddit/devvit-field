@@ -21,13 +21,13 @@ const maxAttempts = 5
 const maxTransactionAttempts = 10
 
 type WorkQueueSettings = {
-  'workqueue-debug'?: boolean
+  'workqueue-debug'?: string
 }
 
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
   const settings = await ctx.settings.getAll<WorkQueueSettings>()
   const wq = new WorkQueue(ctx)
-  wq.setDebugEnabled(settings['workqueue-debug'] ?? false)
+  wq.setDebugEnabled(settings['workqueue-debug'] === 'true')
   return wq
 }
 

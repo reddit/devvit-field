@@ -7,6 +7,9 @@
   "[typescript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
   "typescript.preferences.autoImportSpecifierExcludeRegexes": ["^node:test"],
   "cSpell.words": [
     "BanField",

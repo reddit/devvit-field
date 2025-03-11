@@ -5,7 +5,7 @@ import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
 import {getTeamFromUserId} from '../../shared/team.ts'
 import {fallbackPixelRatio} from '../../shared/theme.ts'
-import {config2} from '../../shared/types/level.ts'
+import {type FieldFixtureData, config2} from '../../shared/types/level.ts'
 import type {
   ChallengeCompleteMessage,
   DevvitMessage,
@@ -19,11 +19,7 @@ import {useState2} from '../hooks/use-state2.ts'
 import {activePlayersIncrement} from '../server/core/activePlayers.js'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells} from '../server/core/field.js'
-import {
-  LEADERBOARD_CONFIG,
-  levels,
-  levelsIsUserInRightPlace,
-} from '../server/core/levels.js'
+import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
   userAttemptToClaimGlobalPointForTeam,
   userGet,
@@ -33,6 +29,11 @@ import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
+
+export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
+  config2.leaderboard
+
+export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
