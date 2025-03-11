@@ -26,19 +26,18 @@ export function DialogNotAllowed(props: DialogNotAllowedProps): JSX.Element {
         backgroundColor={cssHex(paletteBlack)}
         borderColor={cssHex(levelBaseColor[props.level])}
       >
-        {[
-          localize('not-allowed-dialog-line-0'),
-          localize('not-allowed-dialog-line-1'),
-        ].map(copy => (
-          <PixelText
-            key={copy}
-            {...props}
-            size={24}
-            color={cssHex(levelHighlightColor[props.level])}
-          >
-            {copy}
-          </PixelText>
-        )) ?? null}
+        {localize('not-allowed-dialog')
+          .split('↵')
+          .map(copy => (
+            <PixelText
+              key={copy}
+              {...props}
+              size={24}
+              color={cssHex(levelHighlightColor[props.level])}
+            >
+              {copy}
+            </PixelText>
+          )) ?? null}
       </BorderedContainer>
     </Dialog>
   )

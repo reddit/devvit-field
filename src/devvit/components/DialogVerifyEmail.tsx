@@ -30,20 +30,18 @@ export function DialogVerifyEmail(props: DialogVerifyEmailProps): JSX.Element {
         backgroundColor={cssHex(paletteBlack)}
         borderColor={cssHex(levelBaseColor[props.level])}
       >
-        {[
-          localize('verify-email-dialog-line-0'),
-          localize('verify-email-dialog-line-1'),
-          localize('verify-email-dialog-line-2'),
-        ].map(copy => (
-          <PixelText
-            key={copy}
-            {...props}
-            size={24}
-            color={cssHex(levelHighlightColor[props.level])}
-          >
-            {copy}
-          </PixelText>
-        )) ?? null}
+        {localize('verify-email-dialog')
+          .split('↵')
+          .map(copy => (
+            <PixelText
+              key={copy}
+              {...props}
+              size={24}
+              color={cssHex(levelHighlightColor[props.level])}
+            >
+              {copy}
+            </PixelText>
+          )) ?? null}
       </BorderedContainer>
     </Dialog>
   )

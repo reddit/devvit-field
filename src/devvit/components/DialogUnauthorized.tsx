@@ -41,19 +41,18 @@ export function DialogUnauthorized(
       >
         <vstack height='100%' width='100%' alignment='center middle'>
           <spacer height='16px' />
-          {[
-            localize(`unauthorized-dialog-level-${props.level}-Line-0`),
-            localize(`unauthorized-dialog-level-${props.level}-Line-1`),
-          ].map(copy => (
-            <PixelText
-              key={copy}
-              {...props}
-              size={16}
-              color={cssHex(levelHighlightColor[props.level])}
-            >
-              {copy}
-            </PixelText>
-          )) ?? null}
+          {localize(`unauthorized-dialog-level-${props.level}`)
+            .split('↵')
+            .map(copy => (
+              <PixelText
+                key={copy}
+                {...props}
+                size={16}
+                color={cssHex(levelHighlightColor[props.level])}
+              >
+                {copy}
+              </PixelText>
+            )) ?? null}
           <spacer height='16px' />
         </vstack>
       </BorderedContainer>
