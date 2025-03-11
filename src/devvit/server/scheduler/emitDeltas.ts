@@ -101,9 +101,10 @@ WorkQueue.register<PublishDeltasTask>(
       async upload(key: DeltaSnapshotKey, body: Buffer): Promise<void> {
         const client = new S3Client(settings)
         if (!settings['skip-s3']) {
-          //console.log(`s3 upload to ${deltaS3Path(key)}`)
+          const path = deltaS3Path(key)
+          // console.log(`s3 upload to ${path}`)
           await client.send({
-            path: deltaS3Path(key),
+            path,
             body,
             contentType: 'application/binary',
           })
