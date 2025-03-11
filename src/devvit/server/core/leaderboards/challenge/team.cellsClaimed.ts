@@ -12,14 +12,14 @@ const getRedisKey = (challengeNumber: number) =>
   `challenge:${challengeNumber}:stats:team:cells_claimed` as const
 
 const getPartitionRedisKey = (challengeNumber: number, partitionXY: XY) =>
-  `challenge:${challengeNumber}:stats:team:cells_claimed:${makePartitionKey(partitionXY)}` as const
+  `{challenge:${challengeNumber}:stats:team:cells_claimed:${makePartitionKey(partitionXY)}}` as const
 
 const getPartitionRedisVersionKey = (
   challengeNumber: number,
   partitionXY: XY,
   sequenceNumber: number,
 ) =>
-  `{${getPartitionRedisKey(challengeNumber, partitionXY)}}:${sequenceNumber}` as const
+  `${getPartitionRedisKey(challengeNumber, partitionXY)}:${sequenceNumber}` as const
 
 export async function teamStatsCellsClaimedGet(
   redis: Devvit.Context['redis'],
@@ -176,6 +176,7 @@ export async function teamStatsCellsClaimedRotate(
   )
   try {
     await redis.rename(accumKey, snapshotKey)
+    await redis.expire(snapshotKey, 3600)
   } catch (error) {
     if (error instanceof Error && error.message.includes('ERR no such key')) {
       return

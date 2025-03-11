@@ -12,14 +12,14 @@ export interface Uploader {
 }
 
 const getChallengeDeltasKey = (challengeNumber: number, partitionXY: XY) =>
-  `challenge:${challengeNumber}:deltas:${makePartitionKey(partitionXY)}` as const
+  `{challenge:${challengeNumber}:deltas:${makePartitionKey(partitionXY)}}` as const
 
 const getChallengeDeltasSnapshotKey = (
   challengeNumber: number,
   partitionXY: XY,
   sequenceNumber: number,
 ) =>
-  `{${getChallengeDeltasKey(challengeNumber, partitionXY)}}:${sequenceNumber}` as const
+  `${getChallengeDeltasKey(challengeNumber, partitionXY)}:${sequenceNumber}` as const
 
 export const getChallengeDeltasEncodedSnapshotKey = (
   challengeNumber: number,
