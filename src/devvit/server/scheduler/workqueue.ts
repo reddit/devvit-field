@@ -16,7 +16,7 @@ export const claimsKey = '{workqueue}:claims'
 export const lockKey = '{workqueue}:lock'
 
 // TODO: make into settings
-const maxConcurrentClaims = 32
+const maxConcurrentClaims = 48 // Enough to serve 16 partitions x 3 tasks per partition
 const maxAttempts = 5
 const maxTransactionAttempts = 10
 
@@ -53,31 +53,19 @@ export class WorkQueue {
     })
   }
 
-  async runUntil(deadline: Date): Promise<void> {
-    let resolveAllDone: (() => void) | null
-    const allDone = new Promise(resolve => {
-      resolveAllDone = () => resolve(undefined)
-    })
+  async #sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  async runUntil(deadline: Date): Promise<void> {:1
     let inFlight = 0
 
     const handleTasks = (tasks: Task[]) => {
       inFlight += tasks.length
+      this.#debug(`taking on ${tasks.length} tasks (total of ${inFlight} in flight)`)
       //this.#debug(`increment inFlight to ${inFlight}`)
       const resolve = async () => {
         inFlight--
-        //this.#debug(`decrement inFlight to ${inFlight}`)
-        if (new Date() < deadline) {
-          const nextTasks = await this.#claimOneBatch(1)
-          for (const next of nextTasks) {
-            handleTasks([next])
-          }
-          //this.#debug(`claimed ${nextTasks.length} new tasks, leaving inFlight at ${inFlight}`)
-        }
-        if (inFlight === 0 && resolveAllDone !== null) {
-          this.#debug('all tasks completed')
-          resolveAllDone()
-          resolveAllDone = null
-        }
       }
       for (const task of tasks) {
         //this.#debug('registering in flight task')
@@ -85,11 +73,19 @@ export class WorkQueue {
       }
     }
 
-    const tasks = await this.#claimOneBatch(maxConcurrentClaims)
-    handleTasks(tasks)
-
-    this.#debug(`initialized with ${inFlight} tasks`)
-    await allDone
+    while (new Date() < deadline) {
+      const avail = maxConcurrentClaims - inFlight
+      if (avail <= 0) {
+        await this.#sleep(100)
+        continue
+      }
+      const nextTasks = await this.#claimOneBatch(avail)
+      if (inFlight === 0 && !nextTasks.length) {
+        break
+      }
+      handleTasks(nextTasks)
+      await this.#sleep(100)
+    }
   }
 
   async #claimOneBatch(n: number): Promise<Task[]> {
@@ -124,15 +120,15 @@ export class WorkQueue {
     while (attempts < maxTransactionAttempts) {
       attempts++
       const res = await this.ctx.redis.hSetNX(lockKey, 'lock', '')
-      await this.ctx.redis.expire(lockKey, 1)
       if (res > 0) {
+        await this.ctx.redis.expire(lockKey, 1)
         try {
           return await fn()
         } finally {
           await this.ctx.redis.hDel(lockKey, ['lock'])
         }
       }
-      await new Promise(resolve => setTimeout(resolve, 50 * Math.random()))
+      await this.#sleep(attempts * 100 + 50 * Math.random())
     }
     this.#debug('gave up acquiring lock')
     return orElse
