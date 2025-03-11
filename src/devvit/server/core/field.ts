@@ -459,9 +459,8 @@ export const fieldGet = async ({
   partitionXY: XY
 }): Promise<number[]> => {
   const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
-  const area = meta.size * meta.size
 
-  validateFieldArea(area)
+  validateFieldArea(meta.size)
 
   const data = await redis.strLen(
     createFieldPartitionKey(challengeNumber, partitionXY),
