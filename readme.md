@@ -64,6 +64,7 @@ app. Reach out to a team member for dev credentials.
 ```sh
 npx devvit settings set aws-access-key --config=devvit.dev.yaml
 npx devvit settings set aws-secret --config=devvit.dev.yaml
+npx devvit settings set s3-path-prefix --config=devvit.dev.yaml # "dev-username"
 ```
 
 ## Production Installs
