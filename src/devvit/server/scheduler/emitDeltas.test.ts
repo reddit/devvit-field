@@ -39,6 +39,7 @@ describe('emitDeltas', async () => {
       redis: ctx.redis,
       user: {
         currentLevel: 0,
+        globalPointCount: 0,
         lastPlayedChallengeNumberForLevel: 0,
         lastPlayedChallengeNumberCellsClaimed: 0,
         t2: USER_IDS.TEAM_2_PLAYER_1,

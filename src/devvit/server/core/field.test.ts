@@ -101,9 +101,7 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 1, y: 1}, isBan: false, team: 2}]
 
-    expect(result).toStrictEqual({
-      deltas,
-    })
+    expect(result).toStrictEqual({deltas, newLevel: undefined})
 
     await expect(
       fieldGetDeltas({
@@ -168,9 +166,7 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 8, y: 8}, isBan: false, team: 2}]
 
-    expect(result).toStrictEqual({
-      deltas,
-    })
+    expect(result).toStrictEqual({deltas, newLevel: undefined})
 
     await expect(
       fieldGetDeltas({
@@ -234,9 +230,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
     {globalXY: {x: 2, y: 2}, isBan: false, team: 2},
   ]
 
-  expect(result).toStrictEqual({
-    deltas,
-  })
+  expect(result).toStrictEqual({deltas, newLevel: undefined})
 
   await expect(
     fieldGetDeltas({
@@ -342,7 +336,7 @@ DevvitTest.it(
       ctx,
     })
 
-    expect(result).toStrictEqual({deltas: []})
+    expect(result).toStrictEqual({deltas: [], newLevel: undefined})
 
     const newFieldState = await fieldGet({
       challengeNumber,
@@ -425,6 +419,7 @@ DevvitTest.it(
         {globalXY: {x: 0, y: 0}, isBan: false, team: 2},
         {globalXY: {x: 0, y: 1}, isBan: false, team: 2},
       ],
+      newLevel: undefined,
     })
   },
 )
