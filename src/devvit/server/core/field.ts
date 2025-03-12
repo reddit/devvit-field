@@ -1,4 +1,5 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
+import {MapCodec} from '../../../shared/codecs/mapcodec.js'
 import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
   getGlobalCoords,
@@ -10,7 +11,7 @@ import {
 import {type Team, getTeamFromUserId} from '../../../shared/team'
 import type {PartitionKey, XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
-import type {Delta} from '../../../shared/types/field'
+import type {Delta, FieldMap} from '../../../shared/types/field'
 import type {Level} from '../../../shared/types/level'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
@@ -442,8 +443,6 @@ export const fieldClaimCells = async ({
  * way to return all items in a bitfield. At a minimum, we need to the
  * partition a required command so we don't risk sending 10 million bits at once.
  *
- * TODO: Replace this with redis.getBuffer when it's available.
- *
  * @returns Array of numbers (you need to decode with decodeVTT). If the partition
  * does not yet exist in redis, returns empty array!
  */
@@ -508,6 +507,61 @@ export const fieldGet = async ({
   }
   return nums
 }
+export async function fieldGetPartitionMapEncoded(
+  redis: Devvit.Context['redis'],
+  subredditId: string,
+  challengeNumber: number,
+  partitionXY: XY,
+): Promise<string> {
+  const codec = new MapCodec()
+  const map = await fieldGetPartitionMap(
+    redis,
+    subredditId,
+    challengeNumber,
+    partitionXY,
+  )
+  const bytes = codec.encode(map.values())
+  return Buffer.from(bytes).toString('base64')
+}
+
+export async function fieldGetPartitionMap(
+  redis: Devvit.Context['redis'],
+  subredditId: string,
+  challengeNumber: number,
+  partitionXY: XY,
+): Promise<FieldMap> {
+  const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
+  const n = meta.partitionSize * meta.partitionSize
+  const cells: FieldMap = new Array<FieldMap[number]>(n)
+
+  const fieldData = await fieldGet({
+    challengeNumber,
+    subredditId,
+    redis,
+    partitionXY,
+  })
+  for (let i = 0; i < n; i++) {
+    const {claimed, team} = decodeVTT(fieldData[i]!)
+    if (!claimed) {
+      continue
+    }
+    const localXY = {
+      x: i % meta.partitionSize,
+      y: Math.floor(i / meta.partitionSize),
+    }
+    const globalXY = getGlobalCoords(partitionXY, localXY, meta.partitionSize)
+    cells[i] = {
+      team,
+      isBan: minefieldIsMine({
+        seed: meta.seed,
+        coord: globalXY,
+        cols: meta.size,
+        config: {mineDensity: meta.mineDensity},
+      }),
+    }
+  }
+  return cells
+}
 
 export const fieldGetDeltas = async ({
   challengeNumber,
@@ -521,39 +575,29 @@ export const fieldGetDeltas = async ({
   partitionXY: XY
 }): Promise<Delta[]> => {
   const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
-  const fieldData = await fieldGet({
-    challengeNumber,
-    subredditId,
-    redis,
-    partitionXY,
-  })
-
-  if (fieldData.length === 0) return []
-
   const deltas: Delta[] = []
-
-  for (let i = 0; i < meta.partitionSize * meta.partitionSize; i++) {
-    const {claimed, team} = decodeVTT(fieldData[i]!)
-
-    if (claimed === 0) continue
-
+  const map = await fieldGetPartitionMap(
+    redis,
+    subredditId,
+    challengeNumber,
+    partitionXY,
+  )
+  for (let i = 0; i < map.length; i++) {
+    const cell = map[i]
+    if (!cell) {
+      // Not yet revealed!
+      continue
+    }
     const localXY = {
       x: i % meta.partitionSize,
       y: Math.floor(i / meta.partitionSize),
     }
     const globalXY = getGlobalCoords(partitionXY, localXY, meta.partitionSize)
-
     deltas.push({
       globalXY,
-      isBan: minefieldIsMine({
-        seed: meta.seed,
-        coord: globalXY,
-        cols: meta.size,
-        config: {mineDensity: meta.mineDensity},
-      }),
-      team,
+      isBan: cell.isBan,
+      team: cell.team!,
     })
   }
-
   return deltas
 }

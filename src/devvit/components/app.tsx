@@ -160,7 +160,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       profile,
       challengeConfig,
       challengeNumber,
-      initialDeltas,
+      initialMapEncoded,
       initialGlobalXY,
       initialCellsClaimed,
       visible,
@@ -192,7 +192,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
         .map(x => x.score) as TeamBoxCounts,
       type: 'Init',
       visible,
-      initialDeltas,
+      initialMapEncoded,
       initialGlobalXY,
       reinit,
     })

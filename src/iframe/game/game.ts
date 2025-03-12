@@ -3,6 +3,8 @@ import {
   type DeltaSnapshotKey,
   deltaAssetPath,
 } from '../../shared/codecs/deltacodec.ts'
+import {MapCodec} from '../../shared/codecs/mapcodec.ts'
+import {getPartitionCoords} from '../../shared/partition.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
@@ -13,7 +15,7 @@ import {
   mapSize,
 } from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
-import type {Delta} from '../../shared/types/field.ts'
+import type {Delta, FieldMap} from '../../shared/types/field.ts'
 import {
   type Level,
   type LevelPascalCase,
@@ -333,6 +335,42 @@ export class Game {
     }
   }
 
+  #applyMap(map: FieldMap, globalXY: XY): void {
+    if (
+      !this.fieldConfig ||
+      this.subLvl == null ||
+      !map.length ||
+      !this.fieldConfig.partSize
+    )
+      return
+    const partitionXY = getPartitionCoords(globalXY, this.fieldConfig.partSize)
+    const topLeft = {
+      x: partitionXY.x * this.fieldConfig.partSize,
+      y: partitionXY.y * this.fieldConfig.partSize,
+    }
+    console.log(
+      `applying map, partSize = ${this.fieldConfig.partSize}, partitionXY =`,
+      partitionXY,
+    )
+    // to-do: it may be faster to send the entire array at once
+    for (let i = 0; i < map.length; i++) {
+      const cell = map[i]
+      const globalXY = {
+        x: topLeft.x + (i % this.fieldConfig.partSize),
+        y: topLeft.y + Math.floor(i / this.fieldConfig.partSize),
+      }
+      const j = fieldArrayIndex(this.fieldConfig, globalXY)
+      if (cell) {
+        const pend = this.#findPending(globalXY)
+        if (pend) pend.resolve(this, cell.isBan, cell.team, this.subLvl, false)
+      }
+      if (cell?.isBan) fieldArraySetBan(this.field, j)
+      else if (cell?.team) fieldArraySetTeam(this.field, j, cell.team)
+      else fieldArraySetHidden(this.field, j)
+      this.renderer.setBox(globalXY, this.field[j]!)
+    }
+  }
+
   #clearLoadingForPart(deltas: readonly Readonly<Delta>[]): void {
     if (!this.fieldConfig || !deltas[0]) return
 
@@ -433,7 +471,7 @@ export class Game {
           type: 'Init',
           visible,
           initialGlobalXY: {x: 0, y: 0},
-          initialDeltas: [],
+          initialMapEncoded: '',
         })
       },
       Math.trunc(rnd.num * 1000),
@@ -578,7 +616,19 @@ export class Game {
 
         this.selectBox(msg.initialGlobalXY)
         this.centerBox(msg.initialGlobalXY)
-        this.#applyDeltas(msg.initialDeltas, false)
+        console.log('decoding map from', msg.initialMapEncoded)
+        const bin = atob(msg.initialMapEncoded)
+        const bytes = new Uint8Array(bin.length)
+        for (let i = 0; i < bin.length; i++) {
+          bytes[i] = bin.charCodeAt(i)
+        }
+        const codec = new MapCodec()
+        const initialMap: FieldMap = []
+        for (const cell of codec.decode(bytes)) {
+          initialMap.push(cell)
+        }
+        console.log('got map of size', initialMap.length)
+        this.#applyMap(initialMap, msg.initialGlobalXY)
         this.p1 = msg.p1
         if (this.debug) console.log('init')
         this.#fulfil()

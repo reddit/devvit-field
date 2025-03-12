@@ -61,7 +61,7 @@ export type InitDevvitMessage = {
   /** The starting global coordinates for the player */
   initialGlobalXY: XY
   /** The deltas for the partition the user starts in */
-  initialDeltas: Delta[]
+  initialMapEncoded: string
   /** Will be true if this is the init message to play a new challenge */
   reinit?: boolean
 }

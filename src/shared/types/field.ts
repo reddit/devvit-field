@@ -6,3 +6,12 @@ export type Delta = {
   isBan: boolean
   team: Team
 }
+
+export type FieldMap = Cell[]
+
+export type Cell =
+  | undefined
+  | {
+      isBan: boolean
+      team: Team
+    }

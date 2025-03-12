@@ -10,7 +10,7 @@ import {
   challengeGetCurrentChallengeNumber,
   makeSafeChallengeConfig,
 } from './challenge'
-import {fieldGetDeltas} from './field'
+import {fieldGetPartitionMapEncoded} from './field'
 import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
 import {levelsIsUserInRightPlace} from './levels'
@@ -27,7 +27,7 @@ export type AppState =
       >
       challengeConfig: Awaited<ReturnType<typeof makeSafeChallengeConfig>>
       profile: Awaited<ReturnType<typeof userGetOrSet>>
-      initialDeltas: Awaited<ReturnType<typeof fieldGetDeltas>>
+      initialMapEncoded: Awaited<ReturnType<typeof fieldGetPartitionMapEncoded>>
       initialCellsClaimed: Awaited<
         ReturnType<typeof teamStatsCellsClaimedGetTotal>
       >
@@ -95,15 +95,12 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     y: Math.trunc(Math.random() * challengeConfig.size),
   }
 
-  const deltas = await fieldGetDeltas({
+  const mapEncoded = await fieldGetPartitionMapEncoded(
+    ctx.redis,
+    ctx.subredditId,
     challengeNumber,
-    subredditId: ctx.subredditId,
-    redis: ctx.redis,
-    partitionXY: getPartitionCoords(
-      initialGlobalXY,
-      challengeConfig.partitionSize,
-    ),
-  })
+    getPartitionCoords(initialGlobalXY, challengeConfig.partitionSize),
+  )
 
   const level = config2.levels.find(x => x.id === profile.currentLevel)!
 
@@ -131,7 +128,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     // DO NOT RETURN THE SEED
     challengeConfig: makeSafeChallengeConfig(challengeConfig),
     initialGlobalXY,
-    initialDeltas: deltas,
+    initialMapEncoded: mapEncoded,
     initialCellsClaimed,
     visible,
     level,
