@@ -13,7 +13,7 @@ import {
   challengeConfigGet,
   challengeMaybeGetCurrentChallengeNumber,
 } from '../core/challenge'
-import {teamStatsCellsClaimedGet} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
+import {teamStatsCellsClaimedGetTotal} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
 import {teamStatsMinesHitGet} from '../core/leaderboards/challenge/team.minesHit'
 
 /**
@@ -29,14 +29,8 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   })
   if (!currentChallengeNumber) return
 
-  const config = await challengeConfigGet({
-    challengeNumber: currentChallengeNumber,
-    subredditId: ctx.subredditId,
-    redis: ctx.redis,
-  })
-
   const [leaderboard, banned, activePlayers] = await Promise.all([
-    teamStatsCellsClaimedGet(ctx.redis, config, currentChallengeNumber, 'DESC'),
+    teamStatsCellsClaimedGetTotal(ctx.redis, currentChallengeNumber, 'DESC'),
     teamStatsMinesHitGet({
       challengeNumber: currentChallengeNumber,
       redis: ctx.redis,

@@ -8,7 +8,7 @@ import {DevvitTest} from '../core/_utils/DevvitTest'
 import {challengeMakeNew} from '../core/challenge'
 import {deltasGet, getChallengeDeltasEncodedSnapshotKey} from '../core/deltas'
 import {_fieldClaimCellsSuccess} from '../core/field'
-import {teamStatsCellsClaimedGetPartitionedAndVersioned} from '../core/leaderboards/challenge/team.cellsClaimed'
+import {teamStatsCellsClaimedGetTotal} from '../core/leaderboards/challenge/team.cellsClaimed'
 import {userSet} from '../core/user'
 import {onRun} from './emitDeltas'
 
@@ -103,14 +103,12 @@ describe('emitDeltas', async () => {
     retrieved = codec.decode(Buffer.from(encoded!, 'base64'))
     expect(retrieved).toStrictEqual(deltas.slice(2, 3))
 
-    // Team stats should've been moved too.
-    const members = await teamStatsCellsClaimedGetPartitionedAndVersioned(
+    // Team stats should've been moved and accumulated.
+    const members = await teamStatsCellsClaimedGetTotal(
       ctx.redis,
       challengeNumber,
-      {x: 0, y: 0},
-      1,
     )
-    expect(members).toStrictEqual([{member: 2, score: 2}])
+    expect(members).toStrictEqual([{member: 2, score: 3}])
 
     // Finally, one more delta
     const deltasTwo: Delta[] = [

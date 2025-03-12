@@ -1,9 +1,5 @@
 import type {Devvit} from '@devvit/public-api'
-import {
-  type Layout,
-  makePartitionKey,
-  partitionXYs,
-} from '../../../../../shared/partition'
+import {makePartitionKey} from '../../../../../shared/partition'
 import type {Team} from '../../../../../shared/team'
 import type {XY} from '../../../../../shared/types/2d'
 import {parseTeam} from './team'
@@ -20,42 +16,6 @@ const getPartitionRedisVersionKey = (
   sequenceNumber: number,
 ) =>
   `${getPartitionRedisKey(challengeNumber, partitionXY)}:${sequenceNumber}` as const
-
-export async function teamStatsCellsClaimedGet(
-  redis: Devvit.Context['redis'],
-  layout: Layout,
-  challengeNumber: number,
-  sort: 'ASC' | 'DESC' = 'DESC',
-): Promise<
-  {
-    member: Team
-    score: number
-  }[]
-> {
-  const promises: Promise<{member: Team; score: number}[]>[] = []
-  for (const partitionXY of partitionXYs(layout)) {
-    promises.push(
-      teamStatsCellsClaimedGetPartitioned(
-        redis,
-        challengeNumber,
-        partitionXY,
-        sort,
-      ),
-    )
-  }
-  const sum = new Map<Team, number>()
-  for (const result of await Promise.all(promises)) {
-    for (const entry of result) {
-      sum.set(entry.member, (sum.get(entry.member) ?? 0) + entry.score)
-    }
-  }
-
-  const results: {member: Team; score: number}[] = []
-  for (const [team, score] of sum.entries()) {
-    results.push({member: team, score})
-  }
-  return results
-}
 
 export async function teamStatsCellsClaimedGetPartitioned(
   redis: Devvit.Context['redis'],
@@ -176,7 +136,7 @@ export async function teamStatsCellsClaimedRotate(
   )
   try {
     await redis.rename(accumKey, snapshotKey)
-    await redis.expire(snapshotKey, 3600)
+    await redis.expire(snapshotKey, 60)
   } catch (error) {
     if (error instanceof Error && error.message.includes('ERR no such key')) {
       return
@@ -187,36 +147,7 @@ export async function teamStatsCellsClaimedRotate(
   // Update global stats.
   const globalKey = getRedisKey(challengeNumber)
   const members = await redis.zRange(snapshotKey, 0, -1)
-  await redis.zAdd(globalKey, ...members)
-}
-
-export async function teamStatsCellsClaimedGetPartitionedAndVersioned(
-  redis: Devvit.Context['redis'],
-  challengeNumber: number,
-  partitionXY: XY,
-  sequenceNumber: number,
-  sort: 'ASC' | 'DESC' = 'DESC',
-): Promise<
-  {
-    member: Team
-    score: number
-  }[]
-> {
-  const result = await redis.zRange(
-    getPartitionRedisVersionKey(challengeNumber, partitionXY, sequenceNumber),
-    0,
-    -1,
-    {
-      by: 'rank',
-      reverse: sort === 'DESC',
-    },
-  )
-
-  return result.map(({member: memberString, score}) => {
-    const member = parseTeam(memberString)
-    return {
-      member,
-      score,
-    }
-  })
+  for (const member of members) {
+    await redis.zIncrBy(globalKey, member.member, member.score)
+  }
 }
