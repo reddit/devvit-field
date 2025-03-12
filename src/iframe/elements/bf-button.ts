@@ -59,6 +59,7 @@ export class BFButton extends LitElement {
       justify-content: center;
       border-style: solid;
       border-color: var(--color-black);
+      color: var(--color-black);
       border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
       margin-block-start: ${spacePx / 2}px;
