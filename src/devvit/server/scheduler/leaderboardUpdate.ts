@@ -9,10 +9,7 @@ import type {
   TeamBoxCounts,
 } from '../../../shared/types/message'
 import {activePlayersGet} from '../core/activePlayers'
-import {
-  challengeConfigGet,
-  challengeMaybeGetCurrentChallengeNumber,
-} from '../core/challenge'
+import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
 import {teamStatsCellsClaimedGetTotal} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
 import {teamStatsMinesHitGet} from '../core/leaderboards/challenge/team.minesHit'
 

@@ -57,11 +57,11 @@ DevvitTest.it(
           score: 0,
         },
       ],
-      initialDeltas: [],
       initialGlobalXY: {
         x: expect.any(Number),
         y: expect.any(Number),
       },
+      initialMapEncoded: 'AAAZAAAC/RA=',
       level: config2.levels[0],
       profile: {
         currentLevel: 0,
