@@ -29,5 +29,6 @@
   "game-claim-button-label-loading": "LOADING",
   "game-footer-attribution": "Full Leaderboard on r/GamesOnReddit",
   "ascension-dialog": "Team {teamName} claimed↵this round. As a↵surviving participant,↵you ascend upward!",
-  "ascension-dialog-button-label": "UPWARD!"
+  "ascension-dialog-button-label": "UPWARD!",
+  "error-dialog": "An error occurred.↵Please try again later."
 }
