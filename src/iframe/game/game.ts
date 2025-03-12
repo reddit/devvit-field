@@ -712,12 +712,12 @@ export class Game {
         ])
         break
       case 'PartitionUpdate': {
-        switch (msg.snapshotKey.kind) {
+        switch (msg.key.kind) {
           case 'deltas':
-            this.#fetchAndApplyDeltas(msg.snapshotKey)
+            this.#fetchAndApplyDeltas(msg.key)
             break
           case 'partition':
-            this.#fetchAndApplyPartition(msg.snapshotKey)
+            this.#fetchAndApplyPartition(msg.key)
             break
         }
         break

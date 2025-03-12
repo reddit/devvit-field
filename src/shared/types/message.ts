@@ -107,7 +107,7 @@ type ClaimBoxesResponse = {
 
 export type PartitionUpdate = {
   type: 'PartitionUpdate'
-  snapshotKey: DeltaSnapshotKey
+  key: DeltaSnapshotKey
 }
 
 /** Broadcasted by server when a box has changed. */

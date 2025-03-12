@@ -113,7 +113,7 @@ WorkQueue.register<AnnouncePartitionTask>(
   async (wq: WorkQueue, task: AnnouncePartitionTask): Promise<void> => {
     await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
       type: 'PartitionUpdate',
-      snapshotKey: task.ref,
+      key: task.ref,
     } satisfies PartitionUpdate)
   },
 )

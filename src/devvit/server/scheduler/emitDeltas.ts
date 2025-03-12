@@ -125,7 +125,7 @@ WorkQueue.register<AnnounceDeltasTask>(
   async (wq: WorkQueue, task: AnnounceDeltasTask): Promise<void> => {
     await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
       type: 'PartitionUpdate',
-      snapshotKey: task.ref,
+      key: task.ref,
     } satisfies PartitionUpdate)
   },
 )
