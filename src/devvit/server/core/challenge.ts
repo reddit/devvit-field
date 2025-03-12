@@ -152,7 +152,7 @@ export const challengeMakeNew = async ({
   ctx,
   config: configParams,
 }: {
-  ctx: Devvit.Context
+  ctx: Pick<Devvit.Context, 'redis' | 'subredditName'>
   config?: Partial<ChallengeConfig>
 }): Promise<{challengeNumber: number}> => {
   if (!ctx.subredditName) {

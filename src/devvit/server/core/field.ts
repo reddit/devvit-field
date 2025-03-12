@@ -107,7 +107,7 @@ const produceValidBatch = ({
 }
 
 export const fieldEndGame = async (
-  ctx: Devvit.Context,
+  ctx: Pick<Devvit.Context, 'realtime' | 'redis' | 'subredditName'>,
   challengeNumber: number,
   standings: {
     member: Team
