@@ -13,10 +13,14 @@ import {partitionXYs} from '../../../shared/partition.js'
 import type {XY} from '../../../shared/types/2d.js'
 import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
 import {challengeConfigGet} from '../core/challenge'
-import {getSequenceRedisKey} from '../core/data/sequence.ts'
+import {getDeltaSequenceNumber} from '../core/data/sequence.ts'
 import {type Uploader, deltasPublish, deltasRotate} from '../core/deltas.ts'
 import {teamStatsCellsClaimedRotate} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
-import {type ClientOptions, Client as S3Client} from '../core/s3.ts'
+import {
+  type ClientOptions,
+  Client as S3Client,
+  getPathPrefix,
+} from '../core/s3.ts'
 import {type Task, WorkQueue, newWorkQueue} from './workqueue.ts'
 
 /**
@@ -33,8 +37,8 @@ type EmitDeltasTask = Task & {
   type: 'EmitDeltas'
   challengeNumber: number
   partitionXY: XY
-  partitionSize: number
   sequenceNumber: number
+  partitionSize: number
 }
 
 WorkQueue.register<EmitDeltasTask>(
@@ -80,24 +84,6 @@ WorkQueue.register<PublishDeltasTask>(
       's3-path-prefix': string
     } = await wq.ctx.settings.getAll()
 
-    let pathPrefix = settings['s3-path-prefix']!
-
-    // Remove any trailing '/' from the path prefix, since we're requiring the
-    // given key to start with '/'.
-    while (pathPrefix.endsWith('/')) {
-      pathPrefix = pathPrefix.substring(0, pathPrefix.length - 1)
-    }
-
-    // We have Fastly set up in front of our S3 bucket, and it will request the
-    // key without a leading '/'.
-    while (pathPrefix.startsWith('/')) {
-      pathPrefix = pathPrefix.substring(1)
-    }
-
-    // Due to a quirk in how we set up Fastly in front of our S3 bucket, we're
-    // only going to be able to read keys that begin with "/platform/a1/".
-    pathPrefix = `platform/a1/${pathPrefix}`
-
     const uploader: Uploader = {
       async upload(key: DeltaSnapshotKey, body: Buffer): Promise<void> {
         const client = new S3Client(settings)
@@ -115,7 +101,7 @@ WorkQueue.register<PublishDeltasTask>(
 
     const key = await deltasPublish(
       uploader,
-      pathPrefix,
+      await getPathPrefix(wq.ctx.settings),
       wq.ctx.redis,
       task.challengeNumber,
       task.sequenceNumber,
@@ -136,19 +122,9 @@ type AnnounceDeltasTask = Task & {
 WorkQueue.register<AnnounceDeltasTask>(
   'AnnounceDeltas',
   async (wq: WorkQueue, task: AnnounceDeltasTask): Promise<void> => {
-    // Due to a quirk of our Fastly VCL, we need to prefix the S3 key with "platform",
-    // but must omit it from the URL.
-    let pathPrefix = task.ref.pathPrefix
-    const prefix = 'platform/'
-    if (pathPrefix.startsWith(prefix)) {
-      pathPrefix = pathPrefix.slice(prefix.length)
-    }
     await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
       type: 'PartitionUpdate',
-      ref: {
-        ...task.ref,
-        pathPrefix,
-      },
+      snapshotKey: task.ref,
     })
   },
 )
@@ -173,11 +149,11 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 ): Promise<void> => {
   const wq = await newWorkQueue(ctx)
   const start = Date.now()
-  await heartbeatAllPartitions(ctx, wq)
+  await emitAllPartitions(ctx, wq)
   await wq.runUntil(new Date(start + 10_000))
 }
 
-async function heartbeatAllPartitions(ctx: JobContext, wq: WorkQueue) {
+async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
   const currentChallengeNumber = await challengeMaybeGetCurrentChallengeNumber({
     redis: ctx.redis,
   })
@@ -189,17 +165,28 @@ async function heartbeatAllPartitions(ctx: JobContext, wq: WorkQueue) {
     redis: ctx.redis,
   })
   const sequenceNumber = await ctx.redis.incrBy(
-    getSequenceRedisKey(currentChallengeNumber),
+    getDeltaSequenceNumber(currentChallengeNumber),
     1,
   )
+
+  const alsoEmitPartitions = sequenceNumber % 10 === 0
   for (const partitionXY of partitionXYs(config)) {
     await wq.enqueue({
       type: 'EmitDeltas',
       challengeNumber: currentChallengeNumber,
       partitionXY,
-      partitionSize: config.partitionSize,
       sequenceNumber,
+      partitionSize: config.partitionSize,
     })
+    if (alsoEmitPartitions) {
+      await wq.enqueue({
+        type: 'EmitPartition',
+        challengeNumber: currentChallengeNumber,
+        partitionXY,
+        partitionSize: config.partitionSize,
+        sequenceNumber,
+      })
+    }
   }
 }
 

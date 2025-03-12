@@ -61,7 +61,7 @@ export type InitDevvitMessage = {
   /** The starting global coordinates for the player */
   initialGlobalXY: XY
   /** The deltas for the partition the user starts in */
-  initialMapEncoded: string
+  initialMapKey?: DeltaSnapshotKey
   /** Will be true if this is the init message to play a new challenge */
   reinit?: boolean
 }
@@ -107,7 +107,7 @@ type ClaimBoxesResponse = {
 
 export type PartitionUpdate = {
   type: 'PartitionUpdate'
-  ref: DeltaSnapshotKey
+  snapshotKey: DeltaSnapshotKey
 }
 
 /** Broadcasted by server when a box has changed. */

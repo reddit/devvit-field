@@ -10,6 +10,7 @@ import type {
   ChallengeCompleteMessage,
   DevvitMessage,
   IframeMessage,
+  InitDevvitMessage,
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
@@ -165,7 +166,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       profile,
       challengeConfig,
       challengeNumber,
-      initialMapEncoded,
+      initialMapKey,
       initialGlobalXY,
       initialCellsClaimed,
       visible,
@@ -175,7 +176,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
     const p1 = {profile, sid: session.sid}
 
-    iframe.postMessage({
+    const msg: InitDevvitMessage = {
       appConfig,
       bannedPlayers: minesHitByTeam.reduce((acc, v) => acc + v.score, 0),
       challenge: challengeNumber,
@@ -197,10 +198,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
         .map(x => x.score) as TeamBoxCounts,
       type: 'Init',
       visible,
-      initialMapEncoded,
       initialGlobalXY,
       reinit,
-    })
+    }
+    if (initialMapKey) {
+      msg.initialMapKey = initialMapKey
+    }
+    iframe.postMessage(msg)
   }
 
   async function onMsg(msg: IframeMessage): Promise<void> {

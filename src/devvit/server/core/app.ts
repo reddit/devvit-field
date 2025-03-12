@@ -10,11 +10,12 @@ import {
   challengeGetCurrentChallengeNumber,
   makeSafeChallengeConfig,
 } from './challenge'
-import {fieldGetPartitionMapEncoded} from './field'
+import {fieldGetPartitionMapLatestSnapshotKey} from './field'
 import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
 import {levelsIsUserInRightPlace} from './levels'
 import {liveSettingsGet} from './live-settings'
+import {getPathPrefix} from './s3.ts'
 import {userGetOrSet} from './user'
 
 export type AppState =
@@ -27,7 +28,9 @@ export type AppState =
       >
       challengeConfig: Awaited<ReturnType<typeof makeSafeChallengeConfig>>
       profile: Awaited<ReturnType<typeof userGetOrSet>>
-      initialMapEncoded: Awaited<ReturnType<typeof fieldGetPartitionMapEncoded>>
+      initialMapKey: Awaited<
+        ReturnType<typeof fieldGetPartitionMapLatestSnapshotKey>
+      >
       initialCellsClaimed: Awaited<
         ReturnType<typeof teamStatsCellsClaimedGetTotal>
       >
@@ -95,9 +98,10 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     y: Math.trunc(Math.random() * challengeConfig.size),
   }
 
-  const mapEncoded = await fieldGetPartitionMapEncoded(
+  const pathPrefix = await getPathPrefix(ctx.settings)
+  const mapKey = await fieldGetPartitionMapLatestSnapshotKey(
     ctx.redis,
-    ctx.subredditId,
+    pathPrefix,
     challengeNumber,
     getPartitionCoords(initialGlobalXY, challengeConfig.partitionSize),
   )
@@ -128,7 +132,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     // DO NOT RETURN THE SEED
     challengeConfig: makeSafeChallengeConfig(challengeConfig),
     initialGlobalXY,
-    initialMapEncoded: mapEncoded,
+    initialMapKey: mapKey,
     initialCellsClaimed,
     visible,
     level,

@@ -4,6 +4,7 @@ import {
   type PutObjectCommandOutput,
   S3Client,
 } from '@aws-sdk/client-s3'
+import type {SettingsClient} from '@devvit/public-api'
 import type {StreamingBlobPayloadInputTypes} from '@smithy/types'
 
 export type ClientOptions = {
@@ -43,4 +44,14 @@ export class Client {
     }
     return this.#client.send(new PutObjectCommand(inp))
   }
+}
+
+export async function getPathPrefix(settings: SettingsClient): Promise<string> {
+  const pathPrefix = await settings.get<string>('s3-path-prefix')
+  if (!pathPrefix) {
+    throw new Error('s3-path-prefix not configured in settings')
+  }
+
+  // Remove any trailing '/' from the path prefix, since we're requiring the
+  return pathPrefix.replace(/^\/*(.*?)\/*$/, 'platform/a1/$1')
 }

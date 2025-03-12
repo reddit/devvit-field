@@ -7,6 +7,7 @@ const b0BanMask = 32
 const b0PosMask = b0BanMask - 1
 
 export type DeltaSnapshotKey = {
+  kind: 'deltas' | 'partition'
   pathPrefix: string
   challengeNumber: number
   partitionXY: XY
@@ -19,7 +20,28 @@ export function deltaS3Path(key: DeltaSnapshotKey): string {
 }
 
 export function deltaAssetPath(key: DeltaSnapshotKey): string {
-  return `https://webview.devvit.net/${deltaS3Path(key)}`
+  const path = deltaS3Path(key)
+  return `https://webview.devvit.net/${publicPath(path)}`
+}
+
+export function fieldPartitionS3Path(key: DeltaSnapshotKey): string {
+  const pkey = makePartitionKey(key.partitionXY)
+  return `${key.pathPrefix}/p/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
+}
+
+export function fieldPartitionAssetPath(key: DeltaSnapshotKey): string {
+  const path = fieldPartitionS3Path(key)
+  return `https://webview.devvit.net/${publicPath(path)}`
+}
+
+function publicPath(path: string): string {
+  // Due to a quirk of our Fastly VCL, we need to prefix the S3 key with "platform",
+  // but must omit it from the URL.
+  const prefix = 'platform/'
+  if (path.startsWith(prefix)) {
+    path = path.slice(prefix.length)
+  }
+  return path
 }
 
 /**

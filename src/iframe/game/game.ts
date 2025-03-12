@@ -2,9 +2,9 @@ import {
   DeltaCodec,
   type DeltaSnapshotKey,
   deltaAssetPath,
+  fieldPartitionAssetPath,
 } from '../../shared/codecs/deltacodec.ts'
 import {MapCodec} from '../../shared/codecs/mapcodec.ts'
-import {getPartitionCoords} from '../../shared/partition.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
@@ -281,6 +281,7 @@ export class Game {
 
   #fetchAndApplyDeltas(snapshotKey: DeltaSnapshotKey): void {
     if (!this.fieldConfig) {
+      console.log('no field config')
       return
     }
     // TODO: these may pile up. Will move into DeltasStream.
@@ -303,7 +304,7 @@ export class Game {
         snapshotKey.partitionXY,
         this.fieldConfig?.partSize!,
       )
-      const deltas = codec.decode(await rsp.bytes())
+      const deltas = codec.decode(await responseBodyAsBytes(rsp))
 
       const xy = snapshotKey.partitionXY
       this.#clearLoadingForPart([
@@ -335,7 +336,50 @@ export class Game {
     }
   }
 
-  #applyMap(map: FieldMap, globalXY: XY): void {
+  #fetchAndApplyPartition(snapshotKey: DeltaSnapshotKey): void {
+    if (!this.fieldConfig) {
+      return
+    }
+    // TODO: these may pile up.
+
+    const url = fieldPartitionAssetPath(snapshotKey)
+    const partSize = this.fieldConfig.partSize
+    fetch(url).then(async rsp => {
+      if (!rsp.ok) {
+        // TODO: retries
+        console.warn(
+          `failed to fetch partition at ${url}: ${rsp.status} ${rsp.statusText}`,
+        )
+        return
+      }
+
+      // TODO: verify content-type, etc.
+
+      // TODO: move the partition size to the key?
+      const codec = new MapCodec()
+      const cells = codec.decode(await responseBodyAsBytes(rsp))
+      const xy = snapshotKey.partitionXY
+
+      this.#clearLoadingForPart([
+        {
+          globalXY: {
+            x: xy.x * partSize,
+            y: xy.y * partSize,
+          },
+          isBan: false,
+          team: 0,
+        },
+      ])
+
+      const fmap: FieldMap = []
+      for (const cell of cells) {
+        fmap.push(cell)
+      }
+      this.#applyMap(fmap, xy)
+    })
+  }
+
+  #applyMap(map: FieldMap, partitionXY: XY): void {
     if (
       !this.fieldConfig ||
       this.subLvl == null ||
@@ -343,15 +387,10 @@ export class Game {
       !this.fieldConfig.partSize
     )
       return
-    const partitionXY = getPartitionCoords(globalXY, this.fieldConfig.partSize)
     const topLeft = {
       x: partitionXY.x * this.fieldConfig.partSize,
       y: partitionXY.y * this.fieldConfig.partSize,
     }
-    console.log(
-      `applying map, partSize = ${this.fieldConfig.partSize}, partitionXY =`,
-      partitionXY,
-    )
     // to-do: it may be faster to send the entire array at once
     for (let i = 0; i < map.length; i++) {
       const cell = map[i]
@@ -471,7 +510,6 @@ export class Game {
           type: 'Init',
           visible,
           initialGlobalXY: {x: 0, y: 0},
-          initialMapEncoded: '',
         })
       },
       Math.trunc(rnd.num * 1000),
@@ -616,19 +654,12 @@ export class Game {
 
         this.selectBox(msg.initialGlobalXY)
         this.centerBox(msg.initialGlobalXY)
-        console.log('decoding map from', msg.initialMapEncoded)
-        const bin = atob(msg.initialMapEncoded)
-        const bytes = new Uint8Array(bin.length)
-        for (let i = 0; i < bin.length; i++) {
-          bytes[i] = bin.charCodeAt(i)
+
+        if (msg.initialMapKey) {
+          console.log('initial map key:', msg.initialMapKey)
+          this.#fetchAndApplyPartition(msg.initialMapKey)
         }
-        const codec = new MapCodec()
-        const initialMap: FieldMap = []
-        for (const cell of codec.decode(bytes)) {
-          initialMap.push(cell)
-        }
-        console.log('got map of size', initialMap.length)
-        this.#applyMap(initialMap, msg.initialGlobalXY)
+
         this.p1 = msg.p1
         if (this.debug) console.log('init')
         this.#fulfil()
@@ -681,7 +712,14 @@ export class Game {
         ])
         break
       case 'PartitionUpdate': {
-        this.#fetchAndApplyDeltas(msg.ref)
+        switch (msg.snapshotKey.kind) {
+          case 'deltas':
+            this.#fetchAndApplyDeltas(msg.snapshotKey)
+            break
+          case 'partition':
+            this.#fetchAndApplyPartition(msg.snapshotKey)
+            break
+        }
         break
       }
       case 'ConfigUpdate':
@@ -713,4 +751,29 @@ export class Game {
     // to-do: peer messages: game.devPeerChan?.postMessage(msg)
     parent.postMessage(msg, document.referrer || '*')
   }
+}
+
+async function responseBodyAsBytes(rsp: Response): Promise<Uint8Array> {
+  if (!rsp.body) {
+    return new Uint8Array(0)
+  }
+  const reader = rsp.body.getReader()
+  const chunks = []
+  let length = 0
+  while (true) {
+    const {done, value} = await reader.read()
+    if (done) {
+      break
+    }
+    chunks.push(value)
+    length += value.length
+  }
+
+  const bytes = new Uint8Array(length)
+  let pos = 0
+  for (const chunk of chunks) {
+    bytes.set(chunk, pos)
+    pos += chunk.length
+  }
+  return bytes
 }

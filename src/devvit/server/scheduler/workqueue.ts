@@ -239,6 +239,9 @@ export class WorkQueue {
     } catch (error) {
       failed = true
       console.error(`workqueue: error handling ${task.key}: ${error}`)
+      if (error instanceof Error && error.stack) {
+        console.log(`workqueue: stack trace:\n${error.stack}`)
+      }
       await this.ctx.redis.zRem(claimsKey, [task.key!])
       // Update retry count and reassign key, to mark for immediate stealing.
       task.attempts = (task.attempts ?? 0) + 1

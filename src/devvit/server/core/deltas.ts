@@ -158,7 +158,6 @@ export async function deltasPublish(
     if (encodedB64 !== undefined) {
       break
     }
-    // TODO: Fix getBuffer so it returns a new array that isn't reused elsewhere.
     await new Promise(resolve => setTimeout(resolve, attempts * 10))
   }
   if (encodedB64 === undefined) {
@@ -168,13 +167,12 @@ export async function deltasPublish(
   }
 
   const encoded = Buffer.from(encodedB64, 'base64')
-  // TODO: return the url from upload directly
-  // TODO: get path prefix from settings
 
   // For some reason the S3 request is getting corrupted if I don't use a fresh copy.
   const copy = Buffer.alloc(encoded.length)
   encoded.copy(copy)
   const key: DeltaSnapshotKey = {
+    kind: 'deltas',
     pathPrefix,
     challengeNumber,
     partitionXY,

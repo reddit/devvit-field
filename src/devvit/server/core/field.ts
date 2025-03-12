@@ -1,4 +1,5 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
+import type {DeltaSnapshotKey} from '../../../shared/codecs/deltacodec.js'
 import {MapCodec} from '../../../shared/codecs/mapcodec.js'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
@@ -18,7 +19,7 @@ import type {T2} from '../../../shared/types/tid'
 import {validateFieldArea} from '../../../shared/validateFieldArea.js'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {challengeConfigGet, challengeMakeNew} from './challenge'
-import {deltasAdd} from './deltas'
+import {type Uploader, deltasAdd} from './deltas'
 import {teamStatsCellsClaimedIncrementForMemberPartitioned} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
 import {minefieldIsMine} from './minefield'
@@ -31,6 +32,18 @@ import {
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
   `challenge:${challengeNumber}:field:${makePartitionKey(partitionXY)}` as const
+
+export const createFieldPartitionSnapshotKey = (
+  challengeNumber: number,
+  partitionXY: XY,
+  sequenceNumber: number,
+) =>
+  `${createFieldPartitionKey(challengeNumber, partitionXY)}:snapshot:${sequenceNumber}`
+
+const createFieldPartitionLatestSnapshotKey = (
+  challengeNumber: number,
+  partitionXY: XY,
+) => `${createFieldPartitionKey(challengeNumber, partitionXY)}:latest`
 
 export const FIELD_CELL_BITS = 3
 
@@ -466,7 +479,7 @@ export const fieldGet = async ({
   )
   if (data === 0) return []
 
-  const bytes = await redis.getBuffer(
+  let bytes = await redis.getBuffer(
     createFieldPartitionKey(challengeNumber, partitionXY),
   )
   if (!bytes) {
@@ -476,9 +489,10 @@ export const fieldGet = async ({
     (meta.partitionSize * meta.partitionSize) / 8,
   )
   if (bytes.length < expectedLength) {
-    throw new Error(
-      `bitfield is smaller than partition size: ${bytes.length} vs ${expectedLength}`,
-    )
+    // Pad with zeros so we don't have to worry about bounds checking.
+    const trunc = bytes
+    bytes = new Buffer(expectedLength)
+    bytes.set(trunc)
   }
   const nums = new Array<number>(meta.partitionSize * meta.partitionSize)
 
@@ -507,6 +521,7 @@ export const fieldGet = async ({
   }
   return nums
 }
+
 export async function fieldGetPartitionMapEncoded(
   redis: Devvit.Context['redis'],
   subredditId: string,
@@ -522,6 +537,94 @@ export async function fieldGetPartitionMapEncoded(
   )
   const bytes = codec.encode(map.values())
   return Buffer.from(bytes).toString('base64')
+}
+
+export async function fieldSetPartitionMapLatestSnapshotKey(
+  redis: Devvit.Context['redis'],
+  key: DeltaSnapshotKey,
+): Promise<void> {
+  await redis.set(
+    createFieldPartitionLatestSnapshotKey(key.challengeNumber, key.partitionXY),
+    String(key.sequenceNumber),
+  )
+}
+
+export async function fieldGetPartitionMapLatestSnapshotKey(
+  redis: Devvit.Context['redis'],
+  pathPrefix: string,
+  challengeNumber: number,
+  partitionXY: XY,
+): Promise<DeltaSnapshotKey | undefined> {
+  try {
+    const latestSequenceNumber = (await redis.get(
+      createFieldPartitionLatestSnapshotKey(challengeNumber, partitionXY),
+    )) as number | undefined
+    if (latestSequenceNumber !== undefined) {
+      return {
+        kind: 'partition',
+        pathPrefix,
+        challengeNumber,
+        partitionXY,
+        sequenceNumber: latestSequenceNumber,
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('ERR no such key')) {
+      return undefined
+    }
+    throw error
+  }
+}
+
+export async function fieldPartitionPublish(
+  uploader: Uploader,
+  pathPrefix: string,
+  redis: Devvit.Context['redis'],
+  challengeNumber: number,
+  sequenceNumber: number,
+  partitionXY: XY,
+): Promise<DeltaSnapshotKey> {
+  // Attempt up to 5 times to read the precomputed encoding of the partition.
+  // This is a read-after-write, so there's always some chance that we're
+  // trying to read this through a stale replica.
+  let encodedB64: string | undefined = undefined
+  let attempts = 0
+  const maxAttempts = 5
+  while (attempts < maxAttempts) {
+    attempts++
+    // TODO: Use getBuffer to avoid base64 encoding.
+    encodedB64 = await redis.get(
+      createFieldPartitionSnapshotKey(
+        challengeNumber,
+        partitionXY,
+        sequenceNumber,
+      ),
+    )
+    if (encodedB64 !== undefined) {
+      break
+    }
+    await new Promise(resolve => setTimeout(resolve, attempts * 10))
+  }
+  if (encodedB64 === undefined) {
+    throw new Error(
+      `unable to get buffer for challengeNumber=${challengeNumber}, sequenceNumber=${sequenceNumber}`,
+    )
+  }
+
+  const encoded = Buffer.from(encodedB64, 'base64')
+
+  // For some reason the S3 request is getting corrupted if I don't use a fresh copy.
+  const copy = Buffer.alloc(encoded.length)
+  encoded.copy(copy)
+  const key: DeltaSnapshotKey = {
+    kind: 'partition',
+    pathPrefix,
+    challengeNumber,
+    partitionXY,
+    sequenceNumber,
+  }
+  await uploader.upload(key, copy)
+  return key
 }
 
 export async function fieldGetPartitionMap(
