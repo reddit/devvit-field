@@ -106,7 +106,7 @@ export function useChannel2<T extends JSONObject>(
     unsubscribe: () => chan.unsubscribe(),
     peers: peers,
     async send(msg) {
-      chan.send({
+      await chan.send({
         ...msg,
         peer: opts.p1,
         version: opts.version,
