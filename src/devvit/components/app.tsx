@@ -2,7 +2,7 @@
 import {Devvit, useAsync, useInterval} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
-import {GLOBAL_REALTIME_CHANNEL} from '../../shared/const.ts'
+import {INSTALL_REALTIME_CHANNEL} from '../../shared/const.ts'
 import {getTeamFromUserId} from '../../shared/team.ts'
 import {fallbackPixelRatio} from '../../shared/theme.ts'
 import {type FieldFixtureData, config2} from '../../shared/types/level.ts'
@@ -10,7 +10,6 @@ import type {
   ChallengeCompleteMessage,
   DevvitMessage,
   IframeMessage,
-  PartitionUpdate,
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
@@ -30,6 +29,11 @@ import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
 
+/** @ret true if code is executing locally on device, false if remotely on server. */
+function isLocal(): boolean {
+  return !`${fetch}`.includes('getHttpPlugin')
+}
+
 export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
   config2.leaderboard
 
@@ -37,6 +41,7 @@ export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
 export function App(ctx: Devvit.Context): JSX.Element {
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
+
   if (
     ctx.subredditId === config2.leaderboard.subredditId &&
     ctx.postId === config2.leaderboard.postId
@@ -197,17 +202,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
       reinit,
     })
   }
-
-  const partitionUpdateChannel = useChannel<Omit<PartitionUpdate, 'type'>>({
-    name: 'partition_update',
-    onMessage(msg) {
-      iframe.postMessage({
-        type: 'PartitionUpdate',
-        ...msg,
-      })
-    },
-  })
-  partitionUpdateChannel.subscribe()
 
   async function onMsg(msg: IframeMessage): Promise<void> {
     if (session.debug)
@@ -377,7 +371,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   }
 
   const chan = useChannel<RealtimeMessage>({
-    name: GLOBAL_REALTIME_CHANNEL,
+    name: INSTALL_REALTIME_CHANNEL,
     onMessage(msg) {
       if (session.debug)
         console.log(
@@ -398,7 +392,9 @@ export function App(ctx: Devvit.Context): JSX.Element {
     onSubscribed: () => iframe.postMessage({type: 'Connected'}),
     onUnsubscribed: () => iframe.postMessage({type: 'Disconnected'}),
   })
-  chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
+  if (isLocal()) {
+    chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
+  }
 
   return (
     <DialogWelcome

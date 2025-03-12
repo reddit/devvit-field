@@ -1,6 +1,6 @@
 import type {BitfieldCommand, Devvit} from '@devvit/public-api'
 import {MapCodec} from '../../../shared/codecs/mapcodec.js'
-import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
+import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
   getGlobalCoords,
   getPartitionAndLocalCoords,
@@ -120,7 +120,7 @@ export const fieldEndGame = async (
     type: 'ChallengeComplete',
   }
   // TODO: Increment user stats here or do it somewhere else?
-  await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, msg)
+  await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, msg)
 
   // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
   // Make a new game immediately, because yolo

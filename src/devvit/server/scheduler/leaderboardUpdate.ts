@@ -3,7 +3,7 @@ import {
   type JSONObject,
   type ScheduledJobHandler,
 } from '@devvit/public-api'
-import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
+import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
 import type {
   LeaderboardUpdate,
   TeamBoxCounts,
@@ -47,7 +47,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
     activePlayers,
   }
 
-  await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, message)
+  await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, message)
 }
 
 Devvit.addSchedulerJob({

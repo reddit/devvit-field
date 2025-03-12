@@ -8,6 +8,7 @@ import {
   type DeltaSnapshotKey,
   deltaS3Path,
 } from '../../../shared/codecs/deltacodec.js'
+import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import {partitionXYs} from '../../../shared/partition.js'
 import type {XY} from '../../../shared/types/2d.js'
 import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
@@ -142,7 +143,7 @@ WorkQueue.register<AnnounceDeltasTask>(
     if (pathPrefix.startsWith(prefix)) {
       pathPrefix = pathPrefix.slice(prefix.length)
     }
-    await wq.ctx.realtime.send('partition_update', {
+    await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
       type: 'PartitionUpdate',
       ref: {
         ...task.ref,

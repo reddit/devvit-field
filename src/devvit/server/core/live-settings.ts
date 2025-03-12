@@ -1,5 +1,5 @@
 import type {Context} from '@devvit/public-api'
-import {GLOBAL_REALTIME_CHANNEL} from '../../../shared/const'
+import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
 import {
   type AppConfig,
   getDefaultAppConfig,
@@ -43,7 +43,7 @@ export async function liveSettingsUpdate(
   // TODO: does this only send within the current installation?
   // If so, do we really have a way to configure global settings at all???
   // I guess that would just need a cron, with a counter per installation.
-  await ctx.realtime.send(GLOBAL_REALTIME_CHANNEL, configRealtimeMessage)
+  await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, configRealtimeMessage)
   console.log('Settings changed and sent:', newSettings)
 }
 
