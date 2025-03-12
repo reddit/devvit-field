@@ -36,9 +36,13 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
     activePlayersGet({redis: ctx.redis}),
   ])
 
+  const teamBoxCounts = [0, 0, 0, 0] as TeamBoxCounts
+  for (const team of leaderboard) {
+    teamBoxCounts[team.member] = team.score
+  }
   const message: LeaderboardUpdate = {
     type: 'LeaderboardUpdate',
-    teamBoxCounts: leaderboard.map(x => x.score) as TeamBoxCounts,
+    teamBoxCounts,
     bannedPlayers: banned.reduce((acc, x) => acc + x.score, 0),
     activePlayers,
   }
