@@ -4,6 +4,7 @@ import {
 } from '../../../shared/codecs/deltacodec.js'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import type {XY} from '../../../shared/types/2d.js'
+import type {PartitionUpdate} from '../../../shared/types/message.js'
 import type {Uploader} from '../core/deltas.ts'
 import {
   createFieldPartitionSnapshotKey,
@@ -113,6 +114,6 @@ WorkQueue.register<AnnouncePartitionTask>(
     await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
       type: 'PartitionUpdate',
       snapshotKey: task.ref,
-    })
+    } satisfies PartitionUpdate)
   },
 )

@@ -11,6 +11,7 @@ import {
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import {partitionXYs} from '../../../shared/partition.js'
 import type {XY} from '../../../shared/types/2d.js'
+import type {PartitionUpdate} from '../../../shared/types/message.js'
 import {challengeMaybeGetCurrentChallengeNumber} from '../core/challenge'
 import {challengeConfigGet} from '../core/challenge'
 import {getDeltaSequenceNumber} from '../core/data/sequence.ts'
@@ -125,7 +126,7 @@ WorkQueue.register<AnnounceDeltasTask>(
     await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
       type: 'PartitionUpdate',
       snapshotKey: task.ref,
-    })
+    } satisfies PartitionUpdate)
   },
 )
 
