@@ -30,3 +30,7 @@ export function localize(key: keyof typeof en, localeId?: LocaleId): string {
   const DEFAULT_LOCALE = 0
   return localesMap[localeId ?? DEFAULT_LOCALE][key] ?? EMPTY_RESULT
 }
+
+export const lineBreakToken = '↵'
+export const variableStartToken = '{'
+export const variableEndToken = '}'

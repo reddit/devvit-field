@@ -6,6 +6,7 @@
   "unauthorized-dialog-level-2": "Buddy, you're not allowed↵in this community.",
   "unauthorized-dialog-level-3": "Excuse me. What do you↵think you're doing here?",
   "unauthorized-dialog-level-4": "Looks like you took a↵wrong turn somewhere.",
+  "unauthorized-dialog-metadata": "YOUR TEAM NEEDS YOU HERE:",
   "unauthorized-dialog-button-label": "Go To",
   "verify-email-dialog": "Please verify↵your email↵to continue.",
   "verify-email-dialog-button-label": "CHECK AGAIN",
@@ -26,5 +27,7 @@
   "welcome-dialog-button-label-subsequent": "Play",
   "games-on-reddit-header": "BROUGHT TO YOU BY",
   "game-claim-button-label-loading": "LOADING",
-  "game-footer-attribution": "Full Leaderboard on r/GamesOnReddit"
+  "game-footer-attribution": "Full Leaderboard on r/GamesOnReddit",
+  "ascension-dialog": "Team {teamName} claimed↵this round. As a↵surviving participant,↵you ascend upward!",
+  "ascension-dialog-button-label": "UPWARD!"
 }

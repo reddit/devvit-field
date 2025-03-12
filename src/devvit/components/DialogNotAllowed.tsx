@@ -1,5 +1,5 @@
 import {Devvit} from '@devvit/public-api'
-import {localize} from '../../shared/locale'
+import {lineBreakToken, localize} from '../../shared/locale'
 import {cssHex, paletteBlack} from '../../shared/theme'
 import {
   type Level,
@@ -27,7 +27,7 @@ export function DialogNotAllowed(props: DialogNotAllowedProps): JSX.Element {
         borderColor={cssHex(levelBaseColor[props.level])}
       >
         {localize('not-allowed-dialog')
-          .split('↵')
+          .split(lineBreakToken)
           .map(copy => (
             <PixelText
               key={copy}

@@ -1,5 +1,5 @@
 import {Devvit} from '@devvit/public-api'
-import {localize} from '../../shared/locale'
+import {lineBreakToken, localize} from '../../shared/locale'
 import {cssHex, paletteBlack} from '../../shared/theme'
 import {
   type Level,
@@ -31,7 +31,7 @@ export function DialogVerifyEmail(props: DialogVerifyEmailProps): JSX.Element {
         borderColor={cssHex(levelBaseColor[props.level])}
       >
         {localize('verify-email-dialog')
-          .split('↵')
+          .split(lineBreakToken)
           .map(copy => (
             <PixelText
               key={copy}

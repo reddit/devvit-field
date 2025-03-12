@@ -1,7 +1,7 @@
 import {Devvit} from '@devvit/public-api'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team'
 import {cssHex, paletteWhite} from '../../shared/theme'
-import {PixelText, getTextSize} from './PixelText'
+import {PixelText, getBoundingBoxWidth} from './PixelText'
 
 type TeamBadgeProps = {
   team: Team
@@ -14,7 +14,7 @@ export function TeamBadge(props: TeamBadgeProps): JSX.Element {
 
   const backgroundColor = cssHex(teamColor[props.team])
   const teamName = teamTitleCase[props.team]
-  const textWidth = getTextSize(teamName, TEXT_SIZE).width
+  const textWidth = getBoundingBoxWidth(teamName, TEXT_SIZE)
   const middleSegmentWidth = Math.ceil(textWidth + MARGIN * 2)
   const height = 40
 

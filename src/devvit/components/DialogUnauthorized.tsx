@@ -1,5 +1,5 @@
 import {type Context, Devvit} from '@devvit/public-api'
-import {localize} from '../../shared/locale'
+import {lineBreakToken, localize} from '../../shared/locale'
 import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
@@ -42,7 +42,7 @@ export function DialogUnauthorized(
         <vstack height='100%' width='100%' alignment='center middle'>
           <spacer height='16px' />
           {localize(`unauthorized-dialog-level-${props.level}`)
-            .split('↵')
+            .split(lineBreakToken)
             .map(copy => (
               <PixelText
                 key={copy}
@@ -59,7 +59,7 @@ export function DialogUnauthorized(
       <spacer grow />
 
       <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
-        YOUR TEAM NEEDS YOU HERE:
+        {localize('unauthorized-dialog-metadata')}
       </PixelText>
       <spacer grow />
     </Dialog>

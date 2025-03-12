@@ -84,22 +84,18 @@ export function PixelText(props: PixelTextProps): JSX.Element {
   )
 }
 
-/**
- * Get the size of the text in pixels
- * @param text The text to measure
- * @param size The size of the text
- * @returns The width and height of the text
- * @example
- * const {width, height} = getTextSize('Hello, World!', 16)
- * console.log(width, height)
- * // => 112, 16
- */
+export function getGlyphWidth(size: number): number {
+  return GLYPH_WIDTH * (size / DEFAULT_SIZE)
+}
 
-export function getTextSize(
-  text: string,
-  size: number,
-): {width: number; height: number} {
-  const width = text.length * GLYPH_WIDTH * (size / DEFAULT_SIZE)
-  const height = GLYPH_HEIGHT * (size / DEFAULT_SIZE)
-  return {width, height}
+export function getGlyphHeight(size: number): number {
+  return GLYPH_HEIGHT * (size / DEFAULT_SIZE)
+}
+
+export function getBoundingBoxWidth(text: string, size: number): number {
+  return text.length * GLYPH_WIDTH * (size / DEFAULT_SIZE)
+}
+
+export function getBoundingBoxHeight(size: number): number {
+  return GLYPH_HEIGHT * (size / DEFAULT_SIZE)
 }
