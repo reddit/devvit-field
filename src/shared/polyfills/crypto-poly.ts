@@ -1,5 +1,7 @@
 import type {V4} from '../types/v4.ts'
 
+// @ts-expect-error
+globalThis.crypto ??= {}
 crypto.randomUUID ??= (): V4 => {
   const bytes = new Uint8Array(16)
   for (let i = 0; i < 16; i++) bytes[i] = Math.trunc(Math.random() * 256)
