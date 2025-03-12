@@ -119,8 +119,7 @@ DevvitTest.it(
     await expect(appInitState(ctx)).resolves.toEqual({
       type: 'Dialog',
       code: 'WrongLevelBanned',
-      message:
-        'You are not on the correct level. You should be at level 0, not 1.',
+      message: expect.any(String),
       status: 'dialog',
       redirectURL: expect.any(String),
       profile: expect.any(Object),

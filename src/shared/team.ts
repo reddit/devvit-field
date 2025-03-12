@@ -25,13 +25,17 @@ export const teamPascalCase: {readonly [team in Team]: TeamPascalCase} = {
 
 /**
  * Produces a deterministic team number from a user ID. Randomness is determined
- * by the assembling a number from the character codes of the user ID and returning
- * the remainder of the number divided by 4.
- *
- * TODO: Pull 100,00 userIds and test the distribution
+ * by creating a simple hash from the last 4 characters of the user ID.
  */
 export function getTeamFromUserId(id: T2): Team {
-  return (Number.parseInt(id.slice(3), 36) & 3) as Team
+  let hash = 0
+  const input = id.slice(id.length - 4)
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash << 5) - hash + input.charCodeAt(i)
+    hash |= 0 // Convert to 32-bit integer
+  }
+
+  return (Math.abs(hash) % 4) as Team
 }
 
 /**
