@@ -360,6 +360,16 @@ export const userAttemptToClaimGlobalPointForTeam = async ({
   )
 }
 
+export const userDeleteStartedPlayingAt = async ({
+  redis,
+  userId,
+}: {
+  redis: Devvit.Context['redis']
+  userId: T2
+}): Promise<void> => {
+  await redis.global.hDel(getUserKey(userId), ['startedPlayingAt'])
+}
+
 function serialize(config: Partial<Profile>): Record<string, string> {
   return Object.fromEntries(
     Object.entries(config).map(([key, value]) => {

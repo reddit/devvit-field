@@ -24,6 +24,7 @@ import {
   userAttemptToClaimGlobalPointForTeam,
   userGet,
 } from '../server/core/user.js'
+import {DialogFirstTimePlayer} from './DialogFirstTimePlayer.tsx'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
@@ -58,6 +59,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
   // These states are used to manage the reload process.
   const [isIframeMounted, setIsIframeMounted] = useState2(false)
   const [isWaitingToReload, setIsWaitingToReload] = useState2(false)
+
+  const [showHowToPlay, setShowHowToPlay] = useState2(false)
 
   if (appState.status === 'needsToVerifyEmail') {
     return (
@@ -450,6 +453,19 @@ export function App(ctx: Devvit.Context): JSX.Element {
     chan.subscribe() // to-do: verify platform unsubscribes hidden posts.
   }
 
+  if (showHowToPlay) {
+    return (
+      <DialogFirstTimePlayer
+        pixelRatio={pixelRatio}
+        level={0}
+        onPress={() => {
+          setShowHowToPlay(false)
+          iframe.mount()
+        }}
+      />
+    )
+  }
+
   return (
     <DialogWelcome
       team={getTeamFromUserId(session.t2)}
@@ -457,7 +473,11 @@ export function App(ctx: Devvit.Context): JSX.Element {
         config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0
       }
       pixelRatio={pixelRatio}
-      onPress={() => iframe.mount()}
+      onPress={() =>
+        appState.status === 'pass' && appState.profile.startedPlayingAt
+          ? iframe.mount()
+          : setShowHowToPlay(true)
+      }
     />
   )
 }
