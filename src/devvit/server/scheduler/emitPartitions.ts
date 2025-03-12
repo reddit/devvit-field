@@ -2,7 +2,7 @@ import {
   type DeltaSnapshotKey,
   fieldPartitionS3Path,
 } from '../../../shared/codecs/deltacodec.js'
-import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.ts'
+import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import type {XY} from '../../../shared/types/2d.js'
 import type {Uploader} from '../core/deltas.ts'
 import {
@@ -44,6 +44,7 @@ WorkQueue.register<EmitPartitionTask>(
     )
 
     const key: DeltaSnapshotKey = {
+      kind: 'partition',
       pathPrefix: await getPathPrefix(wq.ctx.settings),
       ...task,
     }

@@ -4,7 +4,7 @@ import {
   type ScheduledJobHandler,
 } from '@devvit/public-api'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
-import type {Team} from '../../../shared/team.ts'
+import type {Team} from '../../../shared/team.js'
 import type {
   LeaderboardUpdate,
   TeamBoxCounts,
