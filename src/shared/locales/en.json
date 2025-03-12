@@ -30,5 +30,6 @@
   "game-footer-attribution": "Full Leaderboard on r/GamesOnReddit",
   "ascension-dialog": "Team {teamName} claimed↵this round. As a↵surviving participant,↵you ascend upward!",
   "ascension-dialog-button-label": "UPWARD!",
-  "error-dialog": "An error occurred.↵Please try again later."
+  "error-dialog": "An error occurred.↵Please try again later.",
+  "unsupported-client-dialog": "Your Reddit client↵is not supported.↵Please use the latest↵Reddit app or website."
 }
