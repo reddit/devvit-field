@@ -1,5 +1,5 @@
 import {type Context, Devvit} from '@devvit/public-api'
-import {lineBreakToken, localize} from '../../shared/locale'
+import {lineBreakToken, localize, variableStartToken} from '../../shared/locale'
 import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
@@ -22,13 +22,22 @@ export function DialogUnauthorized(
   props: DialogUnauthorizedProps,
   ctx: Context,
 ): JSX.Element {
+  const words = localize('unauthorized-dialog-button-label').split(' ')
+  const tokenIndex = words.findIndex(word =>
+    word.startsWith(variableStartToken),
+  )
+
+  const buttonLabel = [
+    ...words.slice(0, tokenIndex),
+    `r/${levelPascalCase[props.currentLevel]}`,
+    ...words.slice(tokenIndex + 1),
+  ].join(' ')
+
   return (
     <Dialog
       onPress={() => ctx.ui.navigateTo(props.redirectURL)}
       {...props}
-      buttonLabel={`${localize('unauthorized-dialog-button-label')} r/${
-        levelPascalCase[props.currentLevel]
-      }`}
+      buttonLabel={buttonLabel}
     >
       <BorderedContainer
         height={180}
