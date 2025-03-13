@@ -284,6 +284,8 @@ export class Game {
       console.log('no field config')
       return
     }
+    if (snapshotKey.noChange) return
+
     // TODO: these may pile up. Will move into DeltasStream.
 
     const url = deltaAssetPath(snapshotKey)

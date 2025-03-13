@@ -13,4 +13,12 @@ describe('DeltaCodec', () => {
     const decoded = codec.decode(encoded)
     expect(decoded).toStrictEqual(orig)
   })
+
+  test('zero deltas', () => {
+    const codec = new DeltaCodec({x: 1, y: 2}, 800)
+    const encoded = codec.encode([])
+    expect(encoded.toString()).toStrictEqual('')
+    const decoded = codec.decode(encoded)
+    expect(decoded).toStrictEqual([])
+  })
 })

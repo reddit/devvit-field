@@ -12,6 +12,7 @@ export type DeltaSnapshotKey = {
   challengeNumber: number
   partitionXY: XY
   sequenceNumber: number
+  noChange?: boolean
 }
 
 export function deltaS3Path(key: DeltaSnapshotKey): string {

@@ -177,6 +177,7 @@ export async function deltasPublish(
     challengeNumber,
     partitionXY,
     sequenceNumber,
+    noChange: encodedB64 === '',
   }
   await uploader.upload(key, copy)
   return key
