@@ -1,5 +1,5 @@
 import type {ZMember} from '@devvit/protos'
-import type {JobContext} from '@devvit/public-api'
+import type {JobContext, TriggerContext} from '@devvit/public-api'
 
 export const taskDeadlineMillis = 5000
 
@@ -11,9 +11,9 @@ export type Task = {
 
 export type Handler<T extends Task> = (wq: WorkQueue, task: T) => Promise<void>
 
-export const tasksKey = '{workqueue}:tasks'
-export const claimsKey = '{workqueue}:claims'
-export const lockKey = '{workqueue}:lock'
+const tasksKey = '{workqueue}:tasks'
+const claimsKey = '{workqueue}:claims'
+const lockKey = '{workqueue}:lock'
 
 // TODO: make into settings
 const maxConcurrentClaims = 48 // Enough to serve 16 partitions x 3 tasks per partition
@@ -22,6 +22,11 @@ const maxTransactionAttempts = 10
 
 type WorkQueueSettings = {
   'workqueue-debug'?: string
+}
+
+export async function workQueueInit(ctx: TriggerContext): Promise<void> {
+  // Ensure the workqueue lock key has an expiration, to avoid total deadlock.
+  await ctx.redis.expire(lockKey, 1)
 }
 
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
