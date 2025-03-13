@@ -13,6 +13,11 @@ DevvitTest.it(
   async ctx => {
     setCtxLevel(ctx, 0)
 
+    DevvitTest.updateSettings({
+      's3-path-prefix': 'dev',
+      'skip-s3': true,
+    })
+
     vi.spyOn(ctx.reddit, 'getUserById').mockResolvedValue({
       username: 'foo',
       id: ctx.userId as T2,

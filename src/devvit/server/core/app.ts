@@ -15,7 +15,7 @@ import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cells
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
 import {levelsIsUserInRightPlace} from './levels'
 import {liveSettingsGet} from './live-settings'
-import {getPathPrefix} from './s3.ts'
+import {getPathPrefix} from './s3'
 import {userGetOrSet} from './user'
 
 export type AppState =
