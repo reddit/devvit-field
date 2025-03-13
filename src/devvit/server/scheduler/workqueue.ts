@@ -1,5 +1,5 @@
 import type {ZMember} from '@devvit/protos'
-import type {JobContext, TriggerContext} from '@devvit/public-api'
+import type {Context, JobContext, TriggerContext} from '@devvit/public-api'
 
 export const taskDeadlineMillis = 5000
 
@@ -27,6 +27,10 @@ type WorkQueueSettings = {
 export async function workQueueInit(ctx: TriggerContext): Promise<void> {
   // Ensure the workqueue lock key has an expiration, to avoid total deadlock.
   await ctx.redis.expire(lockKey, 1)
+}
+
+export async function flushWorkQueue(ctx: Context): Promise<void> {
+  await ctx.redis.del(tasksKey, claimsKey, lockKey)
 }
 
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {

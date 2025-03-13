@@ -40,6 +40,7 @@ import {type Level, config2} from './shared/types/level.js'
 import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
+import {flushWorkQueueAction} from './devvit/menu-actions/flushWorkQueue.ts'
 
 Devvit.configure({http: true, redditAPI: true, redis: true, realtime: true})
 
@@ -177,6 +178,7 @@ Devvit.addMenuItem(updateLiveConfigMenuAction())
 Devvit.addMenuItem(endCurrentChallengeMenuAction())
 Devvit.addMenuItem(blockUsersMenuAction())
 Devvit.addMenuItem(unblockUsersMenuAction())
+Devvit.addMenuItem(flushWorkQueueAction())
 
 Devvit.addSettings([
   {
