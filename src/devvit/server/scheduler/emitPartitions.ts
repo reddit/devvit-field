@@ -21,6 +21,7 @@ import {type Task, WorkQueue} from './workqueue.ts'
 
 type EmitPartitionTask = Task & {
   type: 'EmitPartition'
+  subredditId: string
   challengeNumber: number
   partitionXY: XY
   sequenceNumber: number
@@ -90,6 +91,7 @@ WorkQueue.register<PublishPartitionTask>(
       uploader,
       await getPathPrefix(wq.ctx.settings),
       wq.ctx.redis,
+      task.ref.subredditId,
       task.ref.challengeNumber,
       task.ref.sequenceNumber,
       task.ref.partitionXY,

@@ -552,6 +552,7 @@ export async function fieldSetPartitionMapLatestSnapshotKey(
 export async function fieldGetPartitionMapLatestSnapshotKey(
   redis: Devvit.Context['redis'],
   pathPrefix: string,
+  subredditId: string,
   challengeNumber: number,
   partitionXY: XY,
 ): Promise<DeltaSnapshotKey | undefined> {
@@ -562,6 +563,7 @@ export async function fieldGetPartitionMapLatestSnapshotKey(
     if (latestSequenceNumber !== undefined) {
       return {
         kind: 'partition',
+        subredditId,
         pathPrefix,
         challengeNumber,
         partitionXY,
@@ -580,6 +582,7 @@ export async function fieldPartitionPublish(
   uploader: Uploader,
   pathPrefix: string,
   redis: Devvit.Context['redis'],
+  subredditId: string,
   challengeNumber: number,
   sequenceNumber: number,
   partitionXY: XY,
@@ -619,6 +622,7 @@ export async function fieldPartitionPublish(
   const key: DeltaSnapshotKey = {
     kind: 'partition',
     pathPrefix,
+    subredditId,
     challengeNumber,
     partitionXY,
     sequenceNumber,

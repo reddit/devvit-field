@@ -135,6 +135,7 @@ export async function deltasPublish(
   uploader: Uploader,
   pathPrefix: string,
   redis: Devvit.Context['redis'],
+  subredditId: string,
   challengeNumber: number,
   sequenceNumber: number,
   partitionXY: XY,
@@ -174,6 +175,7 @@ export async function deltasPublish(
   const key: DeltaSnapshotKey = {
     kind: 'deltas',
     pathPrefix,
+    subredditId,
     challengeNumber,
     partitionXY,
     sequenceNumber,

@@ -9,6 +9,7 @@ const b0PosMask = b0BanMask - 1
 export type DeltaSnapshotKey = {
   kind: 'deltas' | 'partition'
   pathPrefix: string
+  subredditId: string
   challengeNumber: number
   partitionXY: XY
   sequenceNumber: number
@@ -17,7 +18,7 @@ export type DeltaSnapshotKey = {
 
 export function deltaS3Path(key: DeltaSnapshotKey): string {
   const pkey = makePartitionKey(key.partitionXY)
-  return `${key.pathPrefix}/d/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
+  return `${key.pathPrefix}/${key.subredditId}/d/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
 }
 
 export function deltaAssetPath(key: DeltaSnapshotKey): string {
@@ -27,7 +28,7 @@ export function deltaAssetPath(key: DeltaSnapshotKey): string {
 
 export function fieldPartitionS3Path(key: DeltaSnapshotKey): string {
   const pkey = makePartitionKey(key.partitionXY)
-  return `${key.pathPrefix}/p/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
+  return `${key.pathPrefix}/${key.subredditId}/p/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
 }
 
 export function fieldPartitionAssetPath(key: DeltaSnapshotKey): string {

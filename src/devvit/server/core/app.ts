@@ -102,6 +102,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   const mapKey = await fieldGetPartitionMapLatestSnapshotKey(
     ctx.redis,
     pathPrefix,
+    ctx.subredditId,
     challengeNumber,
     getPartitionCoords(initialGlobalXY, challengeConfig.partitionSize),
   )

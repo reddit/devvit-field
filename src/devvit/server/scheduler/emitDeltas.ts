@@ -36,6 +36,7 @@ import {type Task, WorkQueue, newWorkQueue} from './workqueue.ts'
 
 type EmitDeltasTask = Task & {
   type: 'EmitDeltas'
+  subredditId: string
   challengeNumber: number
   partitionXY: XY
   sequenceNumber: number
@@ -63,6 +64,7 @@ WorkQueue.register<EmitDeltasTask>(
     // Schedule followup tasks.
     await wq.enqueue({
       type: 'PublishDeltas',
+      subredditId: task.subredditId,
       challengeNumber: task.challengeNumber,
       partitionXY: task.partitionXY,
       sequenceNumber: task.sequenceNumber,
@@ -72,6 +74,7 @@ WorkQueue.register<EmitDeltasTask>(
 
 type PublishDeltasTask = Task & {
   type: 'PublishDeltas'
+  subredditId: string
   challengeNumber: number
   partitionXY: XY
   sequenceNumber: number
@@ -104,6 +107,7 @@ WorkQueue.register<PublishDeltasTask>(
       uploader,
       await getPathPrefix(wq.ctx.settings),
       wq.ctx.redis,
+      task.subredditId,
       task.challengeNumber,
       task.sequenceNumber,
       task.partitionXY,
@@ -174,6 +178,7 @@ async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
   for (const partitionXY of partitionXYs(config)) {
     await wq.enqueue({
       type: 'EmitDeltas',
+      subredditId: ctx.subredditId,
       challengeNumber: currentChallengeNumber,
       partitionXY,
       sequenceNumber,
@@ -182,6 +187,7 @@ async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
     if (alsoEmitPartitions) {
       await wq.enqueue({
         type: 'EmitPartition',
+        subredditId: ctx.subredditId,
         challengeNumber: currentChallengeNumber,
         partitionXY,
         partitionSize: config.partitionSize,
