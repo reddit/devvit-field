@@ -7,10 +7,19 @@ import {
 import type {ConfigUpdateMessage} from '../../../shared/types/message'
 
 // Global settings key
-const globalSettingsKey = 'global:settings' as const
+const globalSettingsKey: string = 'global:settings'
+
+// Global settings sequence number. This gets incremented every time
+// settings is updated, regardless of the originating installation.
+const globalSettingsSeqNoKey: string = 'global:settings:seqno'
 
 // Installation settings key
-const installationSettingsKey = 'installation:settings' as const
+const installationSettingsKey: string = 'installation:settings'
+
+// Current installation's sequence number. If this is ever behind
+// the global sequence number, the installation should emit a config update
+// and increment this.
+const currentInstallSeqnoKey: string = 'installation:settings:seqno'
 
 export async function liveSettingsUpdate(
   ctx: Pick<Context, 'redis' | 'realtime'>,
@@ -27,7 +36,8 @@ export async function liveSettingsUpdate(
   }
 
   // Store in Redis, _then_ send to realtime to avoid client race condition.
-  await Promise.all([
+  const [newSeqNo, _unused, _unused2] = await Promise.all([
+    ctx.redis.global.incrBy(globalSettingsSeqNoKey, 1),
     ctx.redis.global.set(globalSettingsKey, JSON.stringify(globalSettings)),
     ctx.redis.set(
       installationSettingsKey,
@@ -35,16 +45,36 @@ export async function liveSettingsUpdate(
     ),
   ])
 
-  const configRealtimeMessage: ConfigUpdateMessage = {
-    type: 'ConfigUpdate',
-    config: newSettings,
+  // Emit to the current installation, and update the current installation's
+  // settings sequence number
+  await Promise.all([
+    ctx.redis.set(currentInstallSeqnoKey, `${newSeqNo}`),
+    ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
+      type: 'ConfigUpdate',
+      config: newSettings,
+    } satisfies ConfigUpdateMessage),
+  ])
+}
+
+export async function liveSettingsEmitForCurrentInstallationIfNeeded(
+  ctx: Pick<Context, 'redis' | 'realtime'>,
+): Promise<void> {
+  const globalSeqNo =
+    Number(await ctx.redis.global.get(globalSettingsSeqNoKey)) || 0
+  const currentInstallSeqNo =
+    Number(await ctx.redis.get(currentInstallSeqnoKey)) || 0
+  if (globalSeqNo >= currentInstallSeqNo) {
+    return
   }
 
-  // TODO: does this only send within the current installation?
-  // If so, do we really have a way to configure global settings at all???
-  // I guess that would just need a cron, with a counter per installation.
-  await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, configRealtimeMessage)
-  console.log('Settings changed and sent:', newSettings)
+  const currentSettings = await liveSettingsGet(ctx)
+  await Promise.all([
+    ctx.redis.set(currentInstallSeqnoKey, `${globalSeqNo}`),
+    ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
+      type: 'ConfigUpdate',
+      config: currentSettings,
+    } satisfies ConfigUpdateMessage),
+  ])
 }
 
 export async function liveSettingsGet(

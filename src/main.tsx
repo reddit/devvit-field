@@ -1,6 +1,7 @@
 import './shared/polyfills/crypto-poly.ts'
 
 import './devvit/server/scheduler/emitDeltas.js'
+import './devvit/server/scheduler/emitLiveConfig.js'
 import './devvit/server/scheduler/emitPartitions.js'
 import './devvit/server/scheduler/leaderboardUpdate.js'
 import './devvit/server/triggers/install.js'

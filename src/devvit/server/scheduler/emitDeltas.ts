@@ -187,6 +187,9 @@ async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
         partitionSize: config.partitionSize,
         sequenceNumber,
       })
+
+      // Every ten seconds, also do a live config push if needed
+      await wq.enqueue({type: 'EmitLiveConfig'})
     }
   }
 }
