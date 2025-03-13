@@ -12,6 +12,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
   (data: {
     currentClickCooldownMillis?: number
     currentServerPollingTimeMillis?: number
+    currentReloadSequence?: number
   }) => {
     const defaults = getDefaultAppConfig()
     return {
@@ -41,6 +42,16 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
             'How long clients should wait before polling the server for updates.',
           required: true,
         },
+        {
+          type: 'number',
+          name: 'globalReloadSequence',
+          label: 'Reload sequence',
+          defaultValue:
+            data.currentReloadSequence ?? defaults.globalReloadSequence,
+          helpText:
+            'Change this to a different, >0 value to force clients to reload. USE WITH CARE.',
+          required: true,
+        },
       ],
     }
   },
@@ -49,6 +60,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
       const newLiveConfig: AppConfig = {
         globalClickCooldownMillis: values.globalClickCooldownMillis,
         globalServerPollingTimeMillis: values.globalServerPollingTimeMillis,
+        globalReloadSequence: values.globalReloadSequence,
       }
 
       validateLiveConfig(newLiveConfig)
@@ -70,13 +82,20 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
 function validateLiveConfig(newConfig: AppConfig) {
   if (
     !Number.isInteger(newConfig.globalClickCooldownMillis) ||
-    !Number.isInteger(newConfig.globalServerPollingTimeMillis)
+    !Number.isInteger(newConfig.globalServerPollingTimeMillis) ||
+    !Number.isInteger(newConfig.globalReloadSequence)
   ) {
-    throw new Error('Click cooldown and server polling time must be integers')
+    throw new Error(
+      'Click cooldown, server polling time, reload sequence must be integers',
+    )
   }
 
   if (newConfig.globalClickCooldownMillis < 0) {
     throw new Error('Click cooldown must be greater than or equal to 0')
+  }
+
+  if (newConfig.globalReloadSequence < 0) {
+    throw new Error('Reload sequence must be greater than or equal to 0')
   }
 
   if (newConfig.globalServerPollingTimeMillis < 250) {
@@ -98,6 +117,7 @@ export const updateLiveConfigMenuAction = (): MenuItem => ({
       currentClickCooldownMillis: currentLiveConfig.globalClickCooldownMillis,
       currentServerPollingTimeMillis:
         currentLiveConfig.globalServerPollingTimeMillis,
+      currentReloadSequence: currentLiveConfig.globalReloadSequence,
     })
   },
 })

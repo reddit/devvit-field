@@ -493,6 +493,7 @@ export class Game {
           appConfig: {
             globalClickCooldownMillis: 1000,
             globalServerPollingTimeMillis: 60_000,
+            globalReloadSequence: 0,
           },
           bannedPlayers: Math.trunc(rnd.num * 5_000_000),
           challenge: Math.trunc(rnd.num * 10_000),
@@ -724,6 +725,11 @@ export class Game {
       }
       case 'ConfigUpdate':
         this.appConfig = msg.config
+        break
+      case 'SetTimeout':
+        setTimeout(() => {
+          this.postMessage(msg.message)
+        }, msg.timeoutMillis)
         break
       case 'LeaderboardUpdate':
         this.teamBoxCounts = msg.teamBoxCounts

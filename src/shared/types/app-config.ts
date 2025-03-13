@@ -14,6 +14,13 @@ export type AppConfig = {
    * Configured globally.
    */
   globalServerPollingTimeMillis: number
+
+  /**
+   * If this counter is changed, all clients should reload the page.
+   * The specific value doesn't matter.
+   * Configured globally.
+   */
+  globalReloadSequence: number
 }
 
 /** Number of boxes per side of the minimap. */
@@ -23,5 +30,6 @@ export function getDefaultAppConfig(): AppConfig {
   return {
     globalClickCooldownMillis: 1000,
     globalServerPollingTimeMillis: 60_000,
+    globalReloadSequence: 0,
   }
 }

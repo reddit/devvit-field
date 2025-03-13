@@ -22,6 +22,7 @@ export type DevvitMessage =
   | ClaimBoxesResponse
   | RealtimeMessage
   | DialogMessage
+  | SetTimeoutMessage
   /**
    * to-do: remove. This is needed right now to inform the ifram what partitions
    *        have been loaded. It won't be needed once PartitionUpdate is used.
@@ -87,6 +88,8 @@ export type IframeMessage =
   /** Player has tapped the r/GamesOnReddit leaderboard open button. */
   | {type: 'OpenLeaderboard'}
   | {type: 'OnClaimGlobalPointClicked'}
+  /** The entire app should be reloaded. */
+  | {type: 'ReloadApp'}
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
@@ -133,6 +136,13 @@ export type LeaderboardUpdate = {
 export type ConfigUpdateMessage = {
   type: 'ConfigUpdate'
   config: AppConfig
+}
+
+/** Trigger an event later, by sending it to the iframe to schedule. */
+export type SetTimeoutMessage = {
+  type: 'SetTimeout'
+  timeoutMillis: number
+  message: IframeMessage
 }
 
 type DialogMessageBase = {

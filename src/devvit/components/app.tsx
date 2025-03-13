@@ -55,6 +55,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
     useState2<ChallengeCompleteMessage | null>(null)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))
 
+  // These states are used to manage the reload process.
+  const [isIframeMounted, setIsIframeMounted] = useState2(false)
+  const [isWaitingToReload, setIsWaitingToReload] = useState2(false)
+
   if (appState.status === 'needsToVerifyEmail') {
     return (
       <DialogVerifyEmail
@@ -153,7 +157,25 @@ export function App(ctx: Devvit.Context): JSX.Element {
     },
   )
 
-  const iframe = useWebView<IframeMessage, DevvitMessage>({onMessage: onMsg})
+  const iframe = useWebView<IframeMessage, DevvitMessage>({
+    onMessage: onMsg,
+    onUnmount: () => {
+      setIsIframeMounted(false)
+      // If we were waiting for a reload when the user unmounts the iframe, then
+      // we should just execute the reload immediately.
+      if (isWaitingToReload) {
+        reloadApp()
+      }
+    },
+  })
+
+  function reloadApp() {
+    // "reload" by navigating to current level
+    const currentUrl = config2.levels.find(
+      lvl => lvl.subredditId === ctx.subredditId,
+    )?.url
+    ctx.ui.navigateTo(currentUrl || '')
+  }
 
   function sendInitToIframe(
     state: AppState,
@@ -219,6 +241,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
     switch (msg.type) {
       case 'Loaded':
+        setIsIframeMounted(true)
         break
       case 'Registered': {
         if (appState.status === 'dialog') {
@@ -368,6 +391,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'OnClaimGlobalPointClicked':
         ctx.ui.navigateTo(config2.levels[0]!.url)
         break
+      case 'ReloadApp': {
+        reloadApp()
+        break
+      }
 
       default:
         msg satisfies never
@@ -385,6 +412,29 @@ export function App(ctx: Devvit.Context): JSX.Element {
               : 'app state no pass'
           } Devvit ← realtime msg=${JSON.stringify(msg)}`,
         )
+
+      if (
+        msg.type === 'ConfigUpdate' &&
+        msg.config.globalReloadSequence >
+          appState.appConfig.globalReloadSequence &&
+        appState.appConfig.globalReloadSequence > 0
+      ) {
+        // If globalReloadSequence has changed, schedule an event to reload the app.
+        if (isIframeMounted) {
+          setIsWaitingToReload(true)
+          // Ideally, we schedule this sometime in the next 30 seconds (for jitter reasons),
+          // but we can only use setTimeout if the iframe is mounted.
+          const timeoutMillis = Math.random() * 30_000
+          iframe.postMessage({
+            type: 'SetTimeout',
+            timeoutMillis,
+            message: {type: 'ReloadApp'},
+          })
+        } else {
+          // without the iframe, we can't use setTimeout. just immediately reload.
+          reloadApp()
+        }
+      }
 
       if (msg.type === 'ChallengeComplete') {
         setChallengeEndedState(msg)

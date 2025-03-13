@@ -36,6 +36,7 @@ DevvitTest.it(
       appConfig: {
         globalClickCooldownMillis: 1000,
         globalServerPollingTimeMillis: 60000,
+        globalReloadSequence: 0,
       },
       challengeConfig: {
         partitionSize: 5,
