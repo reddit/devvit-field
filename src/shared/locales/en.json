@@ -46,5 +46,6 @@
   "ascend-dialog-title": "ROUND {RoundNumber} OVER↵{TeamName}↵claimed the field",
   "ascend-dialog-metadata-1": "YOU CLAIMED",
   "ascend-dialog-metadata-2": "BOXES WITHOUT GETTING BANNED",
-  "ascend-dialog-button-label": "BEGIN NEXT ROUND"
+  "ascend-dialog-button-label": "BEGIN NEXT ROUND",
+  "error-dialog-no-webgl": "WebGL 2 support↵is required to play.↵Try another device."
 }

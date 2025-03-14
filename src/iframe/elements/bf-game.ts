@@ -36,6 +36,7 @@ import {Game} from '../game/game.ts'
 import type {BFTerminal} from './bf-terminal.ts'
 import {cssReset} from './css-reset.ts'
 
+import './dialogs/dialog-webgl.ts'
 import './dialogs/dialog-ascended.ts'
 import './dialogs/dialog-banned.ts'
 import './bf-dialog.ts'
@@ -144,8 +145,10 @@ export class BFGame extends LitElement {
               // to-do: clear this.msg.
             }}
           >
-        </dialog-banned>
-        `
+        </dialog-banned>`
+
+        // dialog = html`<dialog-webgl></dialog-webgl>`
+
         //   dialog = html`
         //   <dialog-ascended
         //     subLvl=${1}
@@ -158,6 +161,7 @@ export class BFGame extends LitElement {
         // </dialog-ascended>`
         break
       case 'NoWebGL':
+        // to-do: replce with dialog-webgl above.
         dialog = html`
           <bf-dialog>
             <h2>Error</h2>
