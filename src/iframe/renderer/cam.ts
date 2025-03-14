@@ -27,7 +27,7 @@ const fieldScaleLvls: readonly number[] = [
   82, 86, 90, 98, 106, 114, 122, 130, 138, 146, 154, 162, 170, 178, 186, 194,
   202, 210, 218, 226, 234, 242, 250,
 ]
-const minUserFieldScaleLvl: number = fieldScaleLvls.indexOf(40)!
+const minUserFieldScaleLvl: number = fieldScaleLvls.indexOf(20)!
 const defaultFieldScaleLvl: number = fieldScaleLvls.indexOf(98)!
 
 export class Cam {
