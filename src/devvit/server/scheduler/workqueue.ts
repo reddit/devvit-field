@@ -247,10 +247,6 @@ export class WorkQueue {
       await handler(this, task)
     } catch (error) {
       failed = true
-      console.error(`workqueue: error handling ${task.key}: ${error}`)
-      if (error instanceof Error && error.stack) {
-        console.log(`workqueue: stack trace:\n${error.stack}`)
-      }
       await this.ctx.redis.zRem(claimsKey, [task.key!])
       // Update retry count and reassign key, to mark for immediate stealing.
       task.attempts = (task.attempts ?? 0) + 1
@@ -258,6 +254,9 @@ export class WorkQueue {
       task.key = JSON.stringify(task)
       if (task.attempts >= maxAttempts) {
         console.error(`workqueue: permanent failure: ${task.key}`)
+        if (error instanceof Error && error.stack) {
+          console.log(`workqueue: stack trace:\n${error.stack}`)
+        }
       } else {
         await this.#sleep(task.attempts * 100 + 50 * Math.random())
         await this.ctx.redis.zAdd(claimsKey, {member: task.key!, score: 0})
