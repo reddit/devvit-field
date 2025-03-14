@@ -1,4 +1,4 @@
-import type {BitfieldCommand, Devvit} from '@devvit/public-api'
+import type {BitfieldCommand, Devvit, JobContext} from '@devvit/public-api'
 import type {DeltaSnapshotKey} from '../../../shared/codecs/deltacodec.js'
 import {MapCodec} from '../../../shared/codecs/mapcodec.js'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
@@ -157,7 +157,7 @@ export const _fieldClaimCellsSuccess = async ({
   challengeNumber: number
   userId: T2
   deltas: Delta[]
-  ctx: Devvit.Context
+  ctx: JobContext
   fieldConfig: ChallengeConfig
 }): Promise<{newLevel: Level | undefined}> => {
   // Deltas need to be applied by partition. Sort them out to start so
@@ -264,7 +264,7 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
 }: {
   batch: BatchItem[]
   fieldConfig: ChallengeConfig
-  ctx: Devvit.Context
+  ctx: JobContext
   userId: T2
   fieldPartitionKey: ReturnType<typeof createFieldPartitionKey>
 }): Promise<{
@@ -411,7 +411,7 @@ export const fieldClaimCells = async ({
   coords: XY[]
   userId: T2
   challengeNumber: number
-  ctx: Devvit.Context
+  ctx: JobContext
 }): Promise<{
   /** The results of the boxes claimed! */
   deltas: Delta[]

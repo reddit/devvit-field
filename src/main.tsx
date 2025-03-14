@@ -1,5 +1,6 @@
 import './shared/polyfills/crypto-poly.ts'
 
+import './devvit/server/scheduler/driveLoad.js'
 import './devvit/server/scheduler/emitDeltas.js'
 import './devvit/server/scheduler/emitLiveConfig.js'
 import './devvit/server/scheduler/emitPartitions.js'
@@ -31,15 +32,13 @@ import {setUserLevelMenuAction} from './devvit/menu-actions/setUserLevel.js'
 import {unblockUsersMenuAction} from './devvit/menu-actions/unblockUsers.js'
 import {updateLiveConfigMenuAction} from './devvit/menu-actions/updateLiveConfig.js'
 import {
-  challengeConfigGet,
   challengeMakeNew,
   makeFallbackDefaultChallengeConfig,
 } from './devvit/server/core/challenge.js'
 import {defaultChallengeConfigMaybeGet} from './devvit/server/core/defaultChallengeConfig.js'
-import {fieldClaimCells} from './devvit/server/core/field.js'
+import {generateClaim} from './devvit/server/core/loadgen.js'
 import {fallbackPixelRatio} from './shared/theme.js'
 import {type Level, config2} from './shared/types/level.js'
-import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
 
@@ -199,6 +198,14 @@ Devvit.addSettings([
   },
   {
     scope: SettingScope.App,
+    name: 'drive-load-claims-per-sec',
+    label:
+      'Set to positive number, and scheduled handler will generate this many random claims per second',
+    type: 'number',
+    defaultValue: 0,
+  },
+  {
+    scope: SettingScope.App,
     name: 's3-bucket',
     label: 'S3 bucket',
     type: 'string',
@@ -227,11 +234,6 @@ Devvit.addSettings([
   },
 ])
 
-/** Returns whole numbers in [min, max). */
-function getRandomIntBetween(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min) + min)
-}
-
 export default class extends Devvit implements Hello {
   constructor(config: Config) {
     super(config)
@@ -248,24 +250,7 @@ export default class extends Devvit implements Hello {
       getContextFromMetadata(meta ?? {}),
     )
 
-    const challenge = await challengeConfigGet({
-      challengeNumber: msg.delayMillis,
-      subredditId: ctx.subredditId,
-      redis: ctx.redis,
-    })
-
-    const x = getRandomIntBetween(0, challenge.size)
-    const y = getRandomIntBetween(0, challenge.size)
-
-    if (!ctx.userId) throw new Error('No user id')
-    console.log('claiming cell', x, y)
-
-    await fieldClaimCells({
-      coords: [{x, y}],
-      challengeNumber: msg.delayMillis,
-      ctx,
-      userId: T2(ctx.userId),
-    })
+    await generateClaim(ctx, msg.delayMillis)
 
     return msg
   }
