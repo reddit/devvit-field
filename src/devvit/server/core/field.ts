@@ -568,6 +568,7 @@ export async function fieldGetPartitionMapLatestSnapshotKey(
         challengeNumber,
         partitionXY,
         sequenceNumber: latestSequenceNumber,
+        noChange: false,
       }
     }
   } catch (error) {
@@ -626,6 +627,7 @@ export async function fieldPartitionPublish(
     challengeNumber,
     partitionXY,
     sequenceNumber,
+    noChange: false,
   }
   await uploader.upload(key, copy)
   return key
