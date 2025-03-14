@@ -267,7 +267,12 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   ctx: Devvit.Context
   userId: T2
   fieldPartitionKey: ReturnType<typeof createFieldPartitionKey>
-}): Promise<Delta[]> => {
+}): Promise<{
+  /** Results from the claim. May include cells they did not successfully claim if they lost the write race */
+  deltas: Delta[]
+  /** The number of cells successfully claimed */
+  cellsClaimed: number
+}> => {
   // Produce and operation for each coord that we want to claim. The return value
   // will be used to see if we successfully claimed the cell.
   const claimOps: BitfieldCommand[] = batch.map(
@@ -299,19 +304,17 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   }
 
   const teamNumber = getTeamFromUserId(userId)
-  const teamWriteOps: BitfieldCommand[] = []
-  // The index of the coord in the original coords array
-  // Used to look up XY after the bitfield operation
-  const teamWriteOpsBatchIndex: number[] = []
+  const bitfieldOps: BitfieldCommand[] = []
 
-  // Iterate over the results of the claims operations to filter out the ones that
-  // were successfully claimed and create the write operations for the team.
+  // Iterate over the results of the claims operations and either
+  // set (if value === 0) or get (if value === 1) so that the user
+  // can see the final state for the cell.
   claimOpsReturn.forEach((value, i) => {
-    const batchItem = batch[i]
+    const batchItem = batch[i]!
 
-    if (value === 0 && batchItem) {
-      teamWriteOpsBatchIndex.push(i)
-      teamWriteOps.push([
+    if (value === 0) {
+      // Edge case: It's possible this deviates if the set fails for some reason
+      bitfieldOps.push([
         'set',
         `u${FIELD_CELL_BITS}`,
         coordsToOffset(
@@ -324,30 +327,59 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
         ),
         encodeVTT(1, teamNumber),
       ])
+    } else {
+      bitfieldOps.push([
+        'get',
+        `u${FIELD_CELL_BITS}`,
+        coordsToOffset(
+          enforceBounds({
+            coord: batchItem.localXY,
+            cols: fieldConfig.partitionSize,
+            rows: fieldConfig.partitionSize,
+          }),
+          fieldConfig.partitionSize,
+        ),
+      ])
     }
   })
 
   const teamOpsReturn = await ctx.redis.bitfield(
     fieldPartitionKey,
     // @ts-expect-error - not sure
-    ...teamWriteOps.flat(),
+    ...bitfieldOps.flat(),
   )
 
   // Produce the deltas from the write operation to be stored somewhere
   const deltas: Delta[] = []
-  teamOpsReturn.forEach((_value, i) => {
-    const batchItem = batch[teamWriteOpsBatchIndex[i]!]
+  teamOpsReturn.forEach((value, i) => {
+    const batchItem = batch[i]
+    if (!batchItem) return
 
-    if (batchItem) {
+    const opType = bitfieldOps[i]![0]
+    if (!opType) return
+
+    if (opType === 'get') {
+      const decoded = decodeVTT(value)
+      deltas.push({
+        globalXY: batchItem.globalXY,
+        isBan: batchItem.isBan,
+        team: decoded.team,
+      })
+    } else if (opType === 'set') {
       deltas.push({
         globalXY: batchItem.globalXY,
         isBan: batchItem.isBan,
         team: teamNumber,
       })
+    } else {
+      throw new Error(`Unimplemented op type: ${opType}`)
     }
   })
 
-  return deltas
+  return {
+    deltas,
+    cellsClaimed: bitfieldOps.filter(([type]) => type === 'set').length,
+  }
 }
 
 /**
@@ -381,12 +413,15 @@ export const fieldClaimCells = async ({
   challengeNumber: number
   ctx: Devvit.Context
 }): Promise<{
-  /** The new boxes claimed */
+  /** The results of the boxes claimed! */
   deltas: Delta[]
   /** If the user hits a ban box, this will be defined with the new level a user should be at */
   newLevel: Level | undefined
+  /** The number of cells successfully claimed */
+  cellsClaimed: number
 }> => {
-  if (coords.length === 0) return {deltas: [], newLevel: undefined}
+  if (coords.length === 0)
+    return {deltas: [], newLevel: undefined, cellsClaimed: 0}
 
   // We need a lookup here instead of passing in the config from blocks land
   // because blocks doesn't have the seed and other backend only pieces
@@ -432,7 +467,11 @@ export const fieldClaimCells = async ({
     ),
   )
 
-  const deltas = fieldsOpsReturn.flat()
+  const deltas: Delta[] = fieldsOpsReturn.flatMap(({deltas}) => deltas)
+  const cellsClaimed = fieldsOpsReturn.reduce(
+    (acc, {cellsClaimed}) => acc + cellsClaimed,
+    0,
+  )
 
   const {newLevel} = await _fieldClaimCellsSuccess({
     challengeNumber,
@@ -445,6 +484,7 @@ export const fieldClaimCells = async ({
   // TODO: Where I return to client anything you need like user's scores and other things
   return {
     deltas,
+    cellsClaimed,
     newLevel,
   }
 }

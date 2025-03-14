@@ -68,7 +68,7 @@ DevvitTest.it(
 
     const defaultConfig = {
       size: 20,
-      partitionSize: 4,
+      partitionSize: 10,
       mineDensity: 10,
     }
     await defaultChallengeConfigSet({
@@ -124,7 +124,7 @@ DevvitTest.it(
 
     const defaultConfig = {
       size: 20,
-      partitionSize: 4,
+      partitionSize: 10,
       mineDensity: 10,
     }
     await defaultChallengeConfigSet({
@@ -133,8 +133,8 @@ DevvitTest.it(
     })
 
     const modConfig = {
-      size: 30,
-      partitionSize: 6,
+      size: 18,
+      partitionSize: 9,
       mineDensity: 5,
     }
 

@@ -673,7 +673,7 @@ export class Game {
       case 'Box':
         if (!this.p1) return
         if (msg.realtime === false) {
-          this.p1BoxCount += msg.deltas.length
+          this.p1BoxCount += msg.cellsClaimed
         }
         this.#applyDeltas(msg.deltas, !msg.realtime)
         break

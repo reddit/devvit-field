@@ -104,6 +104,7 @@ export type RealtimeMessage =
 type ClaimBoxesResponse = {
   type: 'Box'
   deltas: Delta[]
+  cellsClaimed: number
   /** @deprecated true if not actually a response but a realtime message. */
   realtime: boolean
 }

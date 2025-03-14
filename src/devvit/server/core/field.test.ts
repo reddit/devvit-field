@@ -101,7 +101,7 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 1, y: 1}, isBan: false, team: 2}]
 
-    expect(result).toStrictEqual({deltas, newLevel: undefined})
+    expect(result).toStrictEqual({cellsClaimed: 1, deltas, newLevel: undefined})
 
     await expect(
       fieldGetDeltas({
@@ -150,7 +150,7 @@ DevvitTest.it(
     const {challengeNumber} = await challengeMakeNew({
       ctx,
       config: {
-        size: 10,
+        size: 4,
         seed: makeRandomSeed(),
         mineDensity: 0,
         partitionSize: 2,
@@ -158,22 +158,22 @@ DevvitTest.it(
     })
 
     const result = await fieldClaimCells({
-      coords: [{x: 8, y: 8}],
+      coords: [{x: 2, y: 2}],
       challengeNumber,
       userId: USER_IDS.TEAM_2_PLAYER_1,
       ctx,
     })
 
-    const deltas: Delta[] = [{globalXY: {x: 8, y: 8}, isBan: false, team: 2}]
+    const deltas: Delta[] = [{globalXY: {x: 2, y: 2}, isBan: false, team: 2}]
 
-    expect(result).toStrictEqual({deltas, newLevel: undefined})
+    expect(result).toStrictEqual({cellsClaimed: 1, deltas, newLevel: undefined})
 
     await expect(
       fieldGetDeltas({
         challengeNumber,
         subredditId: ctx.subredditId,
         redis: ctx.redis,
-        partitionXY: {x: 4, y: 4},
+        partitionXY: {x: 1, y: 1},
       }),
     ).resolves.toStrictEqual(deltas)
 
@@ -183,7 +183,7 @@ DevvitTest.it(
           challengeNumber,
           subredditId: ctx.subredditId,
           redis: ctx.redis,
-          partitionXY: {x: 4, y: 4},
+          partitionXY: {x: 1, y: 1},
         }),
         cols: 2,
         rows: 2,
@@ -212,7 +212,12 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 
   const {challengeNumber} = await challengeMakeNew({
     ctx,
-    config: {size: 4, seed: makeRandomSeed(), mineDensity: 0, partitionSize: 2},
+    config: {
+      size: 4,
+      seed: makeRandomSeed(),
+      mineDensity: 0,
+      partitionSize: 2,
+    },
   })
 
   const result = await fieldClaimCells({
@@ -230,7 +235,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
     {globalXY: {x: 2, y: 2}, isBan: false, team: 2},
   ]
 
-  expect(result).toStrictEqual({deltas, newLevel: undefined})
+  expect(result).toStrictEqual({cellsClaimed: 2, deltas, newLevel: undefined})
 
   await expect(
     fieldGetDeltas({
@@ -282,7 +287,7 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
 })
 
 DevvitTest.it(
-  'fieldClaimCells - should not return if cell already claimed',
+  'fieldClaimCells - should return the claiming team if already claimed',
   async ctx => {
     await userSet({
       redis: ctx.redis,
@@ -336,7 +341,20 @@ DevvitTest.it(
       ctx,
     })
 
-    expect(result).toStrictEqual({deltas: [], newLevel: undefined})
+    expect(result).toStrictEqual({
+      cellsClaimed: 0,
+      deltas: [
+        {
+          globalXY: {
+            x: 1,
+            y: 1,
+          },
+          isBan: false,
+          team: 3,
+        },
+      ],
+      newLevel: undefined,
+    })
 
     const newFieldState = await fieldGet({
       challengeNumber,
@@ -346,7 +364,7 @@ DevvitTest.it(
     })
 
     const decodedFieldState = newFieldState.map(x => decodeVTT(x))
-    expect(decodedFieldState).toEqual([
+    expect(decodedFieldState).toStrictEqual([
       {
         claimed: 0,
         team: 0,
@@ -415,8 +433,13 @@ DevvitTest.it(
     })
 
     expect(result).toStrictEqual({
+      cellsClaimed: 2,
       deltas: [
         {globalXY: {x: 0, y: 0}, isBan: false, team: 2},
+        // Note that this is returned but cellClaims is only two
+        // since they technically did not claim in this request
+        // as it was already claimed in a previous
+        {globalXY: {x: 1, y: 1}, isBan: false, team: 2},
         {globalXY: {x: 0, y: 1}, isBan: false, team: 2},
       ],
       newLevel: undefined,
@@ -725,7 +748,7 @@ DevvitTest.it(
     })
     const decodedFieldState = newFieldState.map(x => decodeVTT(x))
 
-    expect(decodedFieldState).toEqual([
+    expect(decodedFieldState).toStrictEqual([
       {
         claimed: 0,
         team: 0,
@@ -759,7 +782,7 @@ DevvitTest.it(
     })
     const decodedFieldState1 = newFieldState1.map(x => decodeVTT(x))
 
-    expect(decodedFieldState1).toEqual([
+    expect(decodedFieldState1).toStrictEqual([
       {
         claimed: 0,
         team: 0,
@@ -812,7 +835,7 @@ DevvitTest.it(
       },
     ]
 
-    expect(decodedFieldState2).toEqual(finalState)
+    expect(decodedFieldState2).toStrictEqual(finalState)
 
     // This is just a write bit op to make sure that a singular write doesn't cause
     // weird shifts either
@@ -831,6 +854,6 @@ DevvitTest.it(
     })
     const decodedFieldState3 = newFieldState3.map(x => decodeVTT(x))
 
-    expect(decodedFieldState3).toEqual(finalState)
+    expect(decodedFieldState3).toStrictEqual(finalState)
   },
 )

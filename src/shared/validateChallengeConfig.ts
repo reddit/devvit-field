@@ -30,7 +30,7 @@ export function validateChallengeConfig(
   }
 
   if (config.partitionSize > 1448) {
-    throw new Error('Partition size must be less than or erqual to 1448')
+    throw new Error('Partition size must be less than or equal to 1448')
   }
 
   if (config.partitionSize > config.size) {

@@ -27,7 +27,7 @@ describe('emitDeltas', async () => {
 
     const fieldConfig: ChallengeConfig = {
       size: 100,
-      partitionSize: 20,
+      partitionSize: 25,
       mineDensity: 0,
       seed: makeRandomSeed(),
       totalNumberOfMines: 250,

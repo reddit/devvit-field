@@ -312,7 +312,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
             return
           }
 
-          const {deltas, newLevel} = await fieldClaimCells({
+          const {deltas, newLevel, cellsClaimed} = await fieldClaimCells({
             challengeNumber: appState.challengeNumber,
             coords: msg.boxes,
             ctx,
@@ -322,6 +322,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           iframe.postMessage({
             type: 'Box',
             deltas,
+            cellsClaimed,
             realtime: false,
           })
 

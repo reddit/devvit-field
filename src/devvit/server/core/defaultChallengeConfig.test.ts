@@ -11,7 +11,7 @@ DevvitTest.it(
   async ctx => {
     const config: DefaultChallengeConfig = {
       size: 15,
-      partitionSize: 3,
+      partitionSize: 5,
       mineDensity: 8,
     }
     await defaultChallengeConfigSet({
@@ -46,7 +46,7 @@ DevvitTest.it(
     }
     const updatedConfig: DefaultChallengeConfig = {
       size: 20,
-      partitionSize: 4,
+      partitionSize: 10,
       mineDensity: 5,
     }
 
@@ -102,7 +102,7 @@ DevvitTest.it(
     }
     const fieldAreaTooLarge: DefaultChallengeConfig = {
       size: 3300,
-      partitionSize: 5,
+      partitionSize: 1650,
       mineDensity: 2,
     }
 
@@ -143,8 +143,6 @@ DevvitTest.it(
         redis: ctx.redis,
         config: fieldAreaTooLarge,
       }),
-    ).rejects.toThrow(
-      `Challenge size too large! This is only for testing right now until we find a more efficient way to return all items in a bitfield. At a minimum, we need to the partition a required command so we don't risk sending 10 million bits at once.`,
-    )
+    ).rejects.toThrow('Partition size must be less than or equal to 1448')
   },
 )
