@@ -492,11 +492,7 @@ export class Game {
     setTimeout(
       () => {
         this.#onDevMsg({
-          appConfig: {
-            globalClickCooldownMillis: 1000,
-            globalServerPollingTimeMillis: 60_000,
-            globalReloadSequence: 0,
-          },
+          appConfig: getDefaultAppConfig(),
           bannedPlayers: Math.trunc(rnd.num * 5_000_000),
           challenge: Math.trunc(rnd.num * 10_000),
           connected: true,

@@ -1,5 +1,6 @@
 import type {User} from '@devvit/public-api'
 import {expect, vi} from 'vitest'
+import {getDefaultAppConfig} from '../../../shared/types/app-config.js'
 import {config2} from '../../../shared/types/level.js'
 import type {T2} from '../../../shared/types/tid'
 import {initialize} from '../triggers/install'
@@ -33,11 +34,7 @@ DevvitTest.it(
 
     await expect(appInitState(ctx)).resolves.toEqual({
       status: 'pass',
-      appConfig: {
-        globalClickCooldownMillis: 1000,
-        globalServerPollingTimeMillis: 60000,
-        globalReloadSequence: 0,
-      },
+      appConfig: getDefaultAppConfig(),
       challengeConfig: {
         partitionSize: 5,
         size: 10,
