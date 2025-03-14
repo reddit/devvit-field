@@ -6,6 +6,7 @@ import {Dialog} from './Dialog'
 
 type DialogHowToPlayProps = {
   pixelRatio: number
+  onPress: () => void
 }
 
 export function DialogHowToPlay(props: DialogHowToPlayProps): JSX.Element {
@@ -16,7 +17,6 @@ export function DialogHowToPlay(props: DialogHowToPlayProps): JSX.Element {
   return (
     <Dialog
       level={0}
-      onPress={() => console.log('do something')}
       {...props}
       buttonLabel={localize('how-to-play-dialog-button-label')}
     >

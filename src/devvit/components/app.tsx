@@ -24,7 +24,7 @@ import {
   userAttemptToClaimGlobalPointForTeam,
   userGet,
 } from '../server/core/user.js'
-import {DialogFirstTimePlayer} from './DialogFirstTimePlayer.tsx'
+import {DialogHowToPlay} from './DialogHowToPlay.tsx'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
@@ -455,9 +455,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   if (showHowToPlay) {
     return (
-      <DialogFirstTimePlayer
+      <DialogHowToPlay
         pixelRatio={pixelRatio}
-        level={0}
         onPress={() => {
           setShowHowToPlay(false)
           iframe.mount()
