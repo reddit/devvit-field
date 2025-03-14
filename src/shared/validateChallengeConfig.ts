@@ -1,8 +1,8 @@
+import {partitionsPerSide} from './partition.ts'
 import type {
   ChallengeConfig,
   DefaultChallengeConfig,
 } from './types/challenge-config'
-import {partitionsPerSide} from './partition.ts'
 
 /**
  * Validates challenge configuration parameters
@@ -49,7 +49,7 @@ export function validateChallengeConfig(
 
   if (partitionsPerSide(config) > 4) {
     throw new Error(
-      `Size ${config.size} divided by partitionSize ${config.partitionSize} must be <= 4`
+      `Size ${config.size} divided by partitionSize ${config.partitionSize} must be <= 4`,
     )
   }
 }
