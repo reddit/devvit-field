@@ -89,7 +89,6 @@ export class BFGame extends LitElement {
 
   @property({reflect: true}) accessor ui: UI = 'Loading'
   @queryAsync('bf-terminal') accessor _terminal!: Promise<BFTerminal>
-  #msg: DialogMessage | ChallengeCompleteMessage | undefined
 
   #dbgLog: string = ''
   #game: Game = new Game(this)
@@ -210,7 +209,6 @@ export class BFGame extends LitElement {
           }}'
           @game-ui='${(ev: CustomEvent<{ui: UI; msg: DialogMessage}>) => {
             this.ui = ev.detail.ui
-            this.#msg = ev.detail.msg
           }}'
           @game-update='${() => this.requestUpdate()}'
           @claim='${this.#onClaim}'
