@@ -42,7 +42,7 @@ export function DialogChallengeEndedAscend(
         backgroundColor={cssHex(paletteBlack)}
         borderColor={cssHex(levelBaseColor[props.level])}
       >
-        {localize('ascension-dialog')
+        {localize('ascension-dialog-title')
           .split(lineBreakToken)
           .map(copy => {
             const containsToken =
