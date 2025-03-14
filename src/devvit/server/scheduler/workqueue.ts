@@ -259,6 +259,7 @@ export class WorkQueue {
       if (task.attempts >= maxAttempts) {
         console.error(`workqueue: permanent failure: ${task.key}`)
       } else {
+        await this.#sleep(task.attempts * 100 + 50 * Math.random())
         await this.ctx.redis.zAdd(claimsKey, {member: task.key!, score: 0})
       }
     } finally {
