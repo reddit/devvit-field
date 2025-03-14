@@ -7,7 +7,7 @@ crypto.randomUUID ??= (): V4 => {
   for (let i = 0; i < 16; i++) bytes[i] = Math.trunc(Math.random() * 256)
   // @ts-expect-error Template literal too cumbersome and not a real V4 anyway.
   return (
-    // biome-ignore lint/style/useTemplate: <explanation>
+    // biome-ignore lint/style/useTemplate:
     hex(bytes[0]!) +
     hex(bytes[1]!) +
     hex(bytes[2]!) +
@@ -31,6 +31,6 @@ crypto.randomUUID ??= (): V4 => {
   )
 }
 
-function hex(byte: number) {
+function hex(byte: number): string {
   return byte.toString(16).padStart(2, '0')
 }
