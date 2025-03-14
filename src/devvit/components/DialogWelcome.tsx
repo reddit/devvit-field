@@ -1,13 +1,8 @@
 import {Devvit} from '@devvit/public-api'
-import {localize} from '../../shared/locale'
-import type {Team} from '../../shared/team'
-import {
-  cssHex,
-  fontMSize,
-  fontSSize,
-  paletteBlack,
-  paletteWhite,
-} from '../../shared/theme'
+import {hydrateString} from '../../shared/format'
+import {lineBreakToken, localize} from '../../shared/locale'
+import {type Team, teamColor, teamTitleCase} from '../../shared/team'
+import {cssHex, fontMSize, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -20,9 +15,12 @@ import {GameScreen} from './GameScreen'
 import {PixelText} from './PixelText'
 import {TeamBadge} from './TeamBadge'
 
-// This dialog is shown whenever a user transitions to a new level.
-// It displays the team the user is on and their current field standings.
-// Clicking the play button opens the web view full screen.
+/*
+ * This dialog is shown whenever a user transitions to a new level.
+ * On the first level it shows a greeting and the team assignment.
+ * On subsequent levels it shows a greeting and mentions acension.
+ * Clicking the button opens the web view full screen.
+ */
 
 type DialogWelcomeProps = {
   team: Team
@@ -34,20 +32,24 @@ type DialogWelcomeProps = {
 export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
   const levelName = levelPascalCase[props.level]
 
+  const opponentTeams = [0, 1, 2, 3].filter(
+    team => team !== props.team,
+  ) as Team[]
+
   return (
     <Dialog
       {...props}
       buttonLabel={
         props.level === 0
           ? localize('welcome-dialog-button-label-first')
-          : `${localize(
-              'welcome-dialog-button-label-subsequent',
-            )} r/${levelName}`
+          : hydrateString(localize('welcome-dialog-button-label-subsequent'), {
+              rSlashSubredditName: `r/${levelName}`,
+            })
       }
       backgroundElement={<GameScreen {...props} />}
     >
       <BorderedContainer
-        height={96}
+        height={80}
         width={256}
         {...props}
         lines
@@ -70,33 +72,84 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
         </PixelText>
       </BorderedContainer>
 
-      {/* Magic number to match graphic bottom border */}
-      <spacer height='10px' />
-
       <spacer grow />
 
       {props.level === 0 && (
         <>
-          <PixelText size={fontMSize} color={cssHex(paletteWhite)} {...props}>
-            {localize('welcome-dialog-team-allocation')}
-          </PixelText>
+          {localize('welcome-dialog-team-allocation')
+            .split(lineBreakToken)
+            .map(line => (
+              <PixelText
+                key={line}
+                size={12}
+                color={cssHex(paletteWhite)}
+                {...props}
+              >
+                {line}
+              </PixelText>
+            ))}
+
+          {/* Team Badge */}
+
           <spacer size='small' />
+          <TeamBadge {...props} />
+          <spacer size='small' />
+
+          {/* Team Overview */}
+
+          <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+            {localize('welcome-dialog-team-overview')}
+          </PixelText>
+          <hstack>
+            <PixelText
+              size={12}
+              color={cssHex(teamColor[opponentTeams[0]!])}
+              {...props}
+            >
+              {teamTitleCase[opponentTeams[0]!].toUpperCase()}
+            </PixelText>
+            <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+              {', '}
+            </PixelText>
+            <PixelText
+              size={12}
+              color={cssHex(teamColor[opponentTeams[1]!])}
+              {...props}
+            >
+              {teamTitleCase[opponentTeams[1]!].toUpperCase()}
+            </PixelText>
+            <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+              {', & '}
+            </PixelText>
+            <PixelText
+              size={12}
+              color={cssHex(teamColor[opponentTeams[2]!])}
+              {...props}
+            >
+              {teamTitleCase[opponentTeams[2]!].toUpperCase()}
+            </PixelText>
+          </hstack>
         </>
       )}
-
-      <TeamBadge {...props} />
 
       {props.level > 0 && (
         <>
           <spacer size='small' />
           <vstack width='100%' alignment='center middle'>
-            <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
-              {localize('welcome-dialog-team-standing')}
-            </PixelText>
-            {/* to-do: add actual data */}
-            <PixelText size={20} color={cssHex(paletteWhite)} {...props}>
-              3rd
-            </PixelText>
+            {hydrateString(localize('welcome-dialog-rules'), {
+              rSlashSubredditName: `r/${levelPascalCase[(props.level - 1) as Level]}`,
+            })
+              .split(lineBreakToken)
+              .map(line => (
+                <PixelText
+                  key={line}
+                  size={fontMSize}
+                  color={cssHex(paletteWhite)}
+                  {...props}
+                >
+                  {line}
+                </PixelText>
+              ))}
           </vstack>
         </>
       )}

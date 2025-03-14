@@ -7,4 +7,8 @@ describe('locale', () => {
     const result = localize('dialog-button-label', 0)
     expect(result).toBe(en['dialog-button-label'])
   })
+  it('should handle no locale', () => {
+    const result = localize('dialog-button-label')
+    expect(result).toBe(en['dialog-button-label'])
+  })
 })
