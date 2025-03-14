@@ -29,7 +29,7 @@
   "games-on-reddit-header": "BROUGHT TO YOU BY",
   "game-claim-button-label-loading": "LOADING",
   "game-footer-attribution": "Leaderboard in r/GamesOnReddit",
-  "ascension-dialog": "Team {teamName} claimed↵this round. As a↵surviving participant,↵you ascend upward!",
+  "ascension-dialog-title": "Team {TeamName} claimed↵this round. As a↵surviving participant,↵you ascend upward!",
   "ascension-dialog-button-label": "UPWARD!",
   "error-dialog": "An error occurred.↵Please try again later.",
   "unsupported-client-dialog": "Your Reddit client↵is not supported.↵Please use the latest↵Reddit app or website.",
@@ -43,9 +43,9 @@
   "banned-dialog-level-3-title": "BANANA BANNED!",
   "banned-dialog-level-3-metadata": "You’ve made it this far...↵WHAT’S ONE MORE BAN?!",
   "banned-dialog-button-label": "Proceed to {rSlashSubredditName}",
-  "ascend-dialog-title": "ROUND {RoundNumber} OVER↵{TeamName}↵claimed the field",
-  "ascend-dialog-metadata-1": "YOU CLAIMED",
-  "ascend-dialog-metadata-2": "BOXES WITHOUT GETTING BANNED",
-  "ascend-dialog-button-label": "BEGIN NEXT ROUND",
+  "staying-dialog-title": "ROUND {RoundNumber} OVER↵{TeamName}↵claimed the field",
+  "staying-dialog-metadata-1": "YOU CLAIMED",
+  "staying-dialog-metadata-2": "BOXES WITHOUT GETTING BANNED",
+  "staying-dialog-button-label": "BEGIN NEXT ROUND",
   "error-dialog-no-webgl": "WebGL 2 support↵is required to play.↵Try another device."
 }

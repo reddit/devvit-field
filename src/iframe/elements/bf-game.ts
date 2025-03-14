@@ -38,6 +38,7 @@ import {cssReset} from './css-reset.ts'
 
 import './dialogs/dialog-webgl.ts'
 import './dialogs/dialog-ascended.ts'
+import './dialogs/dialog-staying.ts'
 import './dialogs/dialog-banned.ts'
 import './bf-dialog.ts'
 import './bf-terminal.ts'
@@ -136,26 +137,37 @@ export class BFGame extends LitElement {
       case 'DialogMessage':
         // code: 'WrongLevelBanned' 'ChallengeEndedStay'
         // message: 'You are banned from this level.'
+
         dialog = html`
           <dialog-banned
             subLvl=${1}
             buttonLevel=${3}
             .buttonHandler=${() => {
               this.#game.postMessage({type: 'OnNextChallengeClicked'})
-              // to-do: clear this.msg.
             }}
           >
         </dialog-banned>`
 
+        // dialog = html`
+        //   <dialog-staying
+        //     subLvl=${1}
+        //     roundNumber=${42}
+        //     team=${0}
+        //     myPoints=${7}
+        //     .buttonHandler=${() => {
+        //       console.log('to-do: start again')
+        //     }}
+        //   >
+        // </dialog-staying>`
+
         // dialog = html`<dialog-webgl></dialog-webgl>`
 
-        //   dialog = html`
+        // dialog = html`
         //   <dialog-ascended
         //     subLvl=${1}
-        //     buttonLevel=${1}
+        //     buttonLevel=${2}
         //     .buttonHandler=${() => {
         //       console.log('to-do: navigate to new sub')
-        //       // to-do: clear this.msg.
         //     }}
         //   >
         // </dialog-ascended>`

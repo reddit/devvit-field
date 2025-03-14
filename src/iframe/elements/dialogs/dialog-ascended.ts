@@ -9,14 +9,13 @@ import {customElement, property} from 'lit/decorators.js'
 import {cssHex, fontMSize, spacePx} from '../../../shared/theme.ts'
 import {cssReset} from '../css-reset.ts'
 
-import {padNumber} from '../../../shared/format.ts'
 import {
   lineBreakToken,
   localize,
   variableStartToken,
 } from '../../../shared/locale.ts'
 import {type Team, teamTitleCase} from '../../../shared/team.ts'
-import {type Level, levelHighlightColor} from '../../../shared/types/level.ts'
+import {levelHighlightColor} from '../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -53,7 +52,6 @@ export class DialogAscended extends LitElement {
 
     .team {
       color: var(--color-white);
-      margin-top: -4px;
     }
 
     h1 {
@@ -62,10 +60,7 @@ export class DialogAscended extends LitElement {
     }`
 
   @property({type: Number}) accessor subLvl: 0 | 1 | 2 | 3 | undefined = 0
-  @property({type: Number}) accessor buttonLevel: Level = 0
-  @property({type: Number}) accessor roundNumber: number = 42
   @property({type: Number}) accessor team: Team = 0
-  @property({type: Number}) accessor myPoints: number = 7
 
   protected override render(): TemplateResult {
     this.style.setProperty(
@@ -75,29 +70,17 @@ export class DialogAscended extends LitElement {
 
     // Parse and hydrate the localized title string.
     const title: string[] = []
-    const lines = localize('ascend-dialog-title').split(lineBreakToken)
-
+    const lines = localize('ascension-dialog-title').split(lineBreakToken)
     for (const line of lines) {
-      const containesTokens = line.includes(variableStartToken)
-
-      if (containesTokens) {
-        // if the line contains a token (e.g. {0}), wrap the token in a span element, and replace the contents with a dynamic value.
+      const containesToken = line.includes(variableStartToken)
+      if (containesToken) {
         const words = line.split(' ')
         const tokenIndex = words.findIndex(word =>
           word.startsWith(variableStartToken),
         )
         if (tokenIndex !== -1) {
-          const token = words[tokenIndex]
-          let value = ''
-
-          if (token === '{TeamName}') {
-            value = teamTitleCase[this.team].toUpperCase()
-          }
-          if (token === '{RoundNumber}') {
-            value = this.roundNumber.toString()
-          }
-          words[tokenIndex] =
-            `<span class="${token === '{TeamName}' ? 'team' : ''}">${value}</span>`
+          const value = teamTitleCase[this.team].toUpperCase()
+          words[tokenIndex] = `<span class="team">${value}</span>`
         }
         title.push(`<h1>${words.join(' ')}</h1>`)
       } else {
@@ -108,18 +91,13 @@ export class DialogAscended extends LitElement {
     return html`
       <bf-dialog
         .subLvl=${this.subLvl}
-        buttonLabel=${localize('ascend-dialog-button-label')}
-        buttonLevel=${this.buttonLevel}
+        buttonLabel=${localize('ascension-dialog-button-label')}
+        buttonLevel=${this.subLvl ?? 0}
         .buttonHandler=${() => console.log('to-do: navigate to new sub')}>
         <div class="container">
-          <dialog-container .height=${96} .subLvl=${this.subLvl ?? 0}>
+          <dialog-container .height=${200} .subLvl=${this.subLvl ?? 0}>
             <div .innerHTML=${title.join('')}></div>
           </dialog-container>
-          <div class="metadata">
-            <p>${localize('ascend-dialog-metadata-1')}</p>
-            <p class="my-points">${padNumber(this.myPoints, 3)}</p>
-            <p>${localize('ascend-dialog-metadata-2')}</p>
-          </div>
         </div>
       </bf-dialog>`
   }
