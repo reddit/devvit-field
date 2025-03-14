@@ -62,9 +62,9 @@ You will need to add the following secrets to interact with some features of the
 app. Reach out to a team member for dev credentials.
 
 ```sh
-npx devvit settings set aws-access-key --config=devvit.dev.yaml
-npx devvit settings set aws-secret --config=devvit.dev.yaml
-npx devvit settings set s3-path-prefix --config=devvit.dev.yaml # "dev-username"
+npx devvit settings set --config=devvit.dev.yaml aws-access-key
+npx devvit settings set --config=devvit.dev.yaml aws-secret
+npx devvit settings set --config=devvit.dev.yaml s3-path-prefix # "dev-username"
 ```
 
 ## Production Installs
