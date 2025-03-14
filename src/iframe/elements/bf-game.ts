@@ -36,6 +36,7 @@ import {Game} from '../game/game.ts'
 import type {BFTerminal} from './bf-terminal.ts'
 import {cssReset} from './css-reset.ts'
 
+import './dialogs/dialog-ascended.ts'
 import './dialogs/dialog-banned.ts'
 import './bf-dialog.ts'
 import './bf-terminal.ts'
@@ -137,7 +138,7 @@ export class BFGame extends LitElement {
         dialog = html`
           <dialog-banned
             subLvl=${1}
-            currentLevel=${3}
+            buttonLevel=${3}
             .buttonHandler=${() => {
               this.#game.postMessage({type: 'OnNextChallengeClicked'})
               // to-do: clear this.msg.
@@ -145,6 +146,16 @@ export class BFGame extends LitElement {
           >
         </dialog-banned>
         `
+        //   dialog = html`
+        //   <dialog-ascended
+        //     subLvl=${1}
+        //     buttonLevel=${1}
+        //     .buttonHandler=${() => {
+        //       console.log('to-do: navigate to new sub')
+        //       // to-do: clear this.msg.
+        //     }}
+        //   >
+        // </dialog-ascended>`
         break
       case 'NoWebGL':
         dialog = html`

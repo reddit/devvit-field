@@ -50,7 +50,7 @@ export class DialogBanned extends LitElement {
     }`
 
   @property({type: Number}) accessor subLvl: 0 | 1 | 2 | 3 | undefined = 0
-  @property({type: Number}) accessor currentLevel: Level = 0
+  @property({type: Number}) accessor buttonLevel: Level = 0
 
   protected override render(): TemplateResult {
     const words = localize('unauthorized-dialog-button-label').split(' ')
@@ -60,14 +60,14 @@ export class DialogBanned extends LitElement {
 
     const buttonLabel = [
       ...words.slice(0, tokenIndex),
-      `r/${levelPascalCase[this.currentLevel ?? 0]}`,
+      `r/${levelPascalCase[this.buttonLevel ?? 0]}`,
       ...words.slice(tokenIndex + 1),
     ].join(' ')
 
     return html`
       <bf-dialog
         .subLvl=${this.subLvl}
-        currentLevel=${this.currentLevel}
+        buttonLevel=${this.buttonLevel}
         buttonLabel=${buttonLabel}
         .buttonHandler=${() => console.log('to-do: navigate to new sub')}>
         <div class="container">

@@ -47,6 +47,6 @@ export class OuterContainer extends LitElement {
     if (this.banned) {
       return html`<div class="ban-wrapper" .innerHTML=${createBanBoxBadge()}></div>`
     }
-    return html`<div class="non-ban-wrapper" .innerHTML=${createDialogBadge()}></div>`
+    return html`<div class="non-ban-wrapper" .innerHTML=${createDialogBadge(this.subLvl ?? 0)}></div>`
   }
 }

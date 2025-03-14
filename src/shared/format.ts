@@ -13,3 +13,7 @@ export function abbreviateNumber(value: number): string {
 
   return value.toString()
 }
+
+export function padNumber(value: number, length: number): string {
+  return value.toString().padStart(length, '0')
+}

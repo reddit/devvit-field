@@ -64,7 +64,7 @@ export class BFDialog extends LitElement {
     | undefined
 
   @property({type: Number}) accessor subLvl: Level | undefined = 0
-  @property({type: Number}) accessor currentLevel: Level = 0
+  @property({type: Number}) accessor buttonLevel: Level = 0
   @property({type: Boolean}) accessor showButton: boolean = true
   @property({type: String}) accessor buttonLabel: string = 'OK'
   @property({type: Boolean}) accessor showMarketing: boolean = true
@@ -92,7 +92,7 @@ export class BFDialog extends LitElement {
         this.showButton
           ? html`
           <bf-button
-            appearance=${this.currentLevel}
+            appearance=${this.buttonLevel}
             @click=${this.buttonHandler}>
           ${this.buttonLabel}
           </bf-button>`

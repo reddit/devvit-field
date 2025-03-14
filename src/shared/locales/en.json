@@ -42,5 +42,9 @@
   "banned-dialog-level-2-metadata": "You’re getting quite good at this.↵KEEP GOING",
   "banned-dialog-level-3-title": "BANANA BANNED!",
   "banned-dialog-level-3-metadata": "You’ve made it this far...↵WHAT’S ONE MORE BAN?!",
-  "banned-dialog-button-label": "Proceed to {rSlashSubredditName}"
+  "banned-dialog-button-label": "Proceed to {rSlashSubredditName}",
+  "ascend-dialog-title": "ROUND {RoundNumber} OVER↵{TeamName}↵claimed the field",
+  "ascend-dialog-metadata-1": "YOU CLAIMED",
+  "ascend-dialog-metadata-2": "BOXES WITHOUT GETTING BANNED",
+  "ascend-dialog-button-label": "BEGIN NEXT ROUND"
 }
