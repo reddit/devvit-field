@@ -12,7 +12,7 @@ export type Task = {
 export type Handler<T extends Task> = (wq: WorkQueue, task: T) => Promise<void>
 
 const tasksKey = '{workqueue}:tasks'
-const claimsKey = '{workqueue}:claims'
+export const claimsKey = '{workqueue}:claims'
 const lockKey = '{workqueue}:lock'
 
 // TODO: make into settings
