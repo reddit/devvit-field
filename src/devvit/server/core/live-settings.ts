@@ -68,13 +68,12 @@ export async function liveSettingsEmitForCurrentInstallationIfNeeded(
   }
 
   const currentSettings = await liveSettingsGet(ctx)
-  await Promise.all([
-    ctx.redis.set(currentInstallSeqnoKey, `${globalSeqNo}`),
-    ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
-      type: 'ConfigUpdate',
-      config: currentSettings,
-    } satisfies ConfigUpdateMessage),
-  ])
+  await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
+    type: 'ConfigUpdate',
+    config: currentSettings,
+  } satisfies ConfigUpdateMessage)
+  // Update Redis _after_ we have a successful realtime send
+  await ctx.redis.set(currentInstallSeqnoKey, `${globalSeqNo}`)
 }
 
 export async function liveSettingsGet(

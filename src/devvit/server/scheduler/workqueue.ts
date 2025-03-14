@@ -5,6 +5,7 @@ export const taskDeadlineMillis = 5000
 
 export type Task = {
   type: string
+  maxAttempts?: number
   key?: string
   attempts?: number
 }
@@ -17,7 +18,7 @@ const lockKey = '{workqueue}:lock'
 
 // TODO: make into settings
 const maxConcurrentClaims = 48 // Enough to serve 16 partitions x 3 tasks per partition
-const maxAttempts = 5
+const defaultMaxAttempts = 5
 const maxTransactionAttempts = 10
 
 type WorkQueueSettings = {
@@ -252,6 +253,7 @@ export class WorkQueue {
       task.attempts = (task.attempts ?? 0) + 1
       delete task.key
       task.key = JSON.stringify(task)
+      const maxAttempts = task.maxAttempts ?? defaultMaxAttempts
       if (task.attempts >= maxAttempts) {
         console.error(`workqueue: permanent failure: ${task.key}`)
         if (error instanceof Error && error.stack) {

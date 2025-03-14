@@ -114,6 +114,7 @@ WorkQueue.register<PublishDeltasTask>(
     )
     await wq.enqueue({
       type: 'AnnounceDeltas',
+      maxAttempts: 1, // Don't retry realtime sends
       ref: key,
     })
   },
@@ -195,7 +196,10 @@ async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
       })
 
       // Every ten seconds, also do a live config push if needed
-      await wq.enqueue({type: 'EmitLiveConfig'})
+      await wq.enqueue({
+        type: 'EmitLiveConfig',
+        maxAttempts: 1, // Don't retry realtime sends
+      })
     }
   }
 }
