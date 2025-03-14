@@ -48,6 +48,7 @@ WorkQueue.register<EmitPartitionTask>(
     const key: DeltaSnapshotKey = {
       kind: 'partition',
       pathPrefix: await getPathPrefix(wq.ctx.settings),
+      noChange: false,
       ...task,
     }
 
