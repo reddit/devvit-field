@@ -33,5 +33,14 @@
   "ascension-dialog-button-label": "UPWARD!",
   "error-dialog": "An error occurred.↵Please try again later.",
   "unsupported-client-dialog": "Your Reddit client↵is not supported.↵Please use the latest↵Reddit app or website.",
-  "how-to-play-dialog-button-label": "GOT IT. LET ME IN"
+  "how-to-play-dialog-button-label": "GOT IT. LET ME IN",
+  "banned-dialog-level-0-title": "YOU’RE BANNED",
+  "banned-dialog-level-0-metadata": "You found a ban box.↵No more r/Field for you.↵BUT WAIT, THERE’S MORE...",
+  "banned-dialog-level-1-title": "BANNED AGAIN!",
+  "banned-dialog-level-1-metadata": "We found you a field↵that’s a better fit.↵TIME TO MOVE ON",
+  "banned-dialog-level-2-title": "SO VERY BANNED!",
+  "banned-dialog-level-2-metadata": "You’re getting quite good at this.↵KEEP GOING",
+  "banned-dialog-level-3-title": "BANANA BANNED!",
+  "banned-dialog-level-3-metadata": "You’ve made it this far...↵WHAT’S ONE MORE BAN?!",
+  "banned-dialog-button-label": "Proceed to {rSlashSubredditName}"
 }

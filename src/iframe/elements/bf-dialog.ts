@@ -1,21 +1,21 @@
 import {
   type CSSResultGroup,
   LitElement,
-  type PropertyValues,
   type TemplateResult,
   css,
   html,
 } from 'lit'
-import {customElement, property, query} from 'lit/decorators.js'
-import type {Team} from '../../shared/team.ts'
-import {radiusPx, spacePx} from '../../shared/theme.ts'
-import type {Level} from '../../shared/types/level.ts'
+import {customElement, property} from 'lit/decorators.js'
+import {cssHex, spacePx} from '../../shared/theme.ts'
+import {type Level, levelShadowColor} from '../../shared/types/level.ts'
 import type {
   ChallengeCompleteMessage,
   DialogMessage,
 } from '../../shared/types/message.ts'
-import {Bubble} from './bubble.ts'
 import {cssReset} from './css-reset.ts'
+
+import './dialogs/parts/dialog-container.ts'
+import './dialogs/parts/dialog-marketing.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -32,86 +32,80 @@ export class BFDialog extends LitElement {
     ${cssReset}
 
     :host {
-      max-width: 320px;
-    }
-
-    dialog {
+      position: absolute;
+      inset: 0;
       padding: ${spacePx}px;
-      border-radius: ${radiusPx}px;
-      border-style: none;
-      box-shadow: 0 ${spacePx / 4}px ${spacePx}px var(--color-shade-19);
-      background-color: var(--color-console);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      gap: ${spacePx}px;
-      height: 100%;
-      width: 100%;
+      background-color: var(--color-shade-80);
       color: var(--color-white);
-      font-family: 'Departure Mono', 'Courier New', monospace;
     }
 
-    dialog::backdrop {
-      background-color: var(--color-shade-50);
-    }
-
-    .caps {
-      text-transform: uppercase;
-    }
-
-    .promo {
+    div {
+      margin-top: ${spacePx}px;
+      box-sizing: border-box;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: ${spacePx}px;
-      margin-top: 2rem;
-      max-width: 200px;
+      position: relative;
     }
-    .logo {
-      width: 200px;
+
+    bf-button {
+      margin-top: ${spacePx * 2}px;
     }
   `
 
-  @property({type: Boolean, reflect: true}) accessor open: boolean = false
   @property({type: Object}) accessor msg:
     | DialogMessage
     | ChallengeCompleteMessage
     | undefined
-  @property({type: Number}) accessor subLvl: Level | undefined
-  @property({type: Array}) accessor winners: Team[] | undefined
 
-  @query('dialog') private accessor _dialog!: HTMLDialogElement
-
-  protected override update(props: PropertyValues<this>): void {
-    super.update(props)
-    if (props.has('open'))
-      this.open ? this._dialog.showModal() : this._dialog.close()
-  }
+  @property({type: Number}) accessor subLvl: Level | undefined = 0
+  @property({type: Number}) accessor currentLevel: Level = 0
+  @property({type: Boolean}) accessor showButton: boolean = true
+  @property({type: String}) accessor buttonLabel: string = 'OK'
+  @property({type: Boolean}) accessor showMarketing: boolean = true
+  @property({attribute: false}) accessor buttonHandler: () => void = () => {}
 
   protected override render(): TemplateResult {
+    const height = 240
+    const width = 288
     return html`
-      <dialog @close='${this.#onClose}'>
-        <outer-container .msg=${this.msg}> .winners=${this.winners}</outer-container>
-
-        <slot></slot>
-
-        <div class="promo">
-          <span class="caps">Brought to you by</span>
-          <img
-            src="/assets/games-on-reddit-logo.svg"
-            alt="games on reddit logo"
-           class="logo"
-          />
+      <dialog-container
+        showBadge
+        .showLines=${false}
+        .subLvl=${this.subLvl}
+        height=${height}
+        width=${width}
+        verticalAlignment="top"
+        backgroundColor=${cssHex(levelShadowColor[this.subLvl ?? 0])}>
+        <div>
+          <slot></slot>
         </div>
-      </dialog>
-    `
-  }
+      </dialog-container>
 
-  #onClose(): void {
-    this.open = false
-    this.dispatchEvent(Bubble('close', undefined))
+      <!-- Primary Button -->
+      ${
+        this.showButton
+          ? html`
+          <bf-button
+            appearance=${this.currentLevel}
+            @click=${this.buttonHandler}>
+          ${this.buttonLabel}
+          </bf-button>`
+          : null
+      }
+
+      <!-- r/GamesOnRedit Marketing -->
+      ${
+        this.showMarketing
+          ? html`
+          <dialog-marketing .subLvl=${this.subLvl}></dialog-marketing>`
+          : null
+      }
+    `
   }
 }

@@ -691,11 +691,11 @@ export class Game {
         break
       case 'ChallengeComplete': {
         if (!this.p1) return
-        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'NextLevel', msg}))
+        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'DialogMessage', msg}))
         break
       }
       case 'Dialog':
-        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'Barred', msg}))
+        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'DialogMessage', msg}))
         break
       case 'PartitionLoaded':
         if (!this.fieldConfig) return

@@ -36,9 +36,9 @@ import {Game} from '../game/game.ts'
 import type {BFTerminal} from './bf-terminal.ts'
 import {cssReset} from './css-reset.ts'
 
+import './dialogs/dialog-banned.ts'
 import './bf-dialog.ts'
 import './bf-terminal.ts'
-import './dialogs/outer-container.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -57,10 +57,9 @@ declare global {
 
 // to-do: fill out the remaining states.
 export type UI =
-  | 'Barred' // to-do: rename DialogMessage?
+  | 'DialogMessage'
   | 'Loading'
   /** Promoted, replaying / stuck, or demoted. */
-  | 'NextLevel' // to-do: rename ChallengeCompleteMessage?
   | 'NoWebGL'
   | 'Playing'
   | 'Scored'
@@ -133,53 +132,24 @@ export class BFGame extends LitElement {
         break
       case 'Playing':
         break
-      case 'Barred':
-        if (this.#msg?.type !== 'Dialog') throw Error('no dialog message')
+      case 'DialogMessage':
+        // code: 'WrongLevelBanned' 'ChallengeEndedStay'
+        // message: 'You are banned from this level.'
         dialog = html`
-          <bf-dialog open .msg=${this.#msg} .subLvl=${this.#game.subLvl}>
-            <bf-button
-              @click='${() => {
-                if (this.#msg?.type !== 'Dialog')
-                  throw Error('no dialog message')
-                if (!this.#game) throw Error('no game')
-
-                if (this.#msg?.code === 'ChallengeEndedStay') {
-                  this.#game.postMessage({type: 'OnNextChallengeClicked'})
-                } else {
-                  this.#game.postMessage(this.#msg)
-                }
-                // to-do: clear this.msg.
-              }}'
-            >Go to a better place</bf-button>
-          </bf-dialog>
+          <dialog-banned
+            subLvl=${1}
+            currentLevel=${3}
+            .buttonHandler=${() => {
+              this.#game.postMessage({type: 'OnNextChallengeClicked'})
+              // to-do: clear this.msg.
+            }}
+          >
+        </dialog-banned>
         `
         break
-      case 'NextLevel': {
-        //TODO: remove, we don't need this case anymore
-        if (this.#msg?.type !== 'ChallengeComplete')
-          throw Error('no challenge message')
-        const max = Math.max(
-          ...this.#msg.standings.map(standing => standing.score),
-        )
-        const winners = this.#msg.standings
-          .filter(standing => standing.score === max)
-          .map(standing => standing.member)
-        dialog = html`
-          <bf-dialog open .msg=${this.#msg} .winners=${winners}>
-            <bf-button
-              @click='${() => {
-                if (this.#msg?.type !== 'ChallengeComplete')
-                  throw Error('no challenge message')
-                this.#game.postMessage({type: 'OnNextChallengeClicked'})
-              }}'
-            >Next</bf-button>
-          </bf-dialog>
-        `
-        break
-      }
       case 'NoWebGL':
         dialog = html`
-          <bf-dialog open>
+          <bf-dialog>
             <h2>Error</h2>
             WebGL 2 support is required to play. Try another device.
           </bf-dialog>
@@ -233,7 +203,6 @@ export class BFGame extends LitElement {
           --color-theme-light: ${themeLight ? unsafeCSS(cssHex(themeLight)) : 'initial'};
         '
       >
-        ${dialog}
         <bf-terminal
           @game-debug='${(ev: CustomEvent<string>) => {
             this.#dbgLog += `\n${ev.detail}`
@@ -266,6 +235,7 @@ export class BFGame extends LitElement {
           y='${this.#game.select.y}'
         ></bf-terminal>
         ${this.#dbgLog ? html`<pre>${this.#dbgLog}</pre>` : ''}
+        ${dialog}
       </div>
     `
   }

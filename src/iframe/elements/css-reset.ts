@@ -19,6 +19,7 @@ import {
   paletteShade19,
   paletteShade50,
   paletteShade60,
+  paletteShade80,
   paletteSunshine,
   paletteTint75,
   paletteVeryBannedField,
@@ -73,6 +74,7 @@ export const cssReset: CSSResult = css`
     --color-shade-19: ${unsafeCSS(cssHex(paletteShade19))};
     --color-shade-50: ${unsafeCSS(cssHex(paletteShade50))};
     --color-shade-60: ${unsafeCSS(cssHex(paletteShade60))};
+    --color-shade-80: ${unsafeCSS(cssHex(paletteShade80))};
     --color-sunshine-dark: #c18a28;
     --color-sunshine-light: #ffc96f;
     --color-sunshine: ${unsafeCSS(cssHex(paletteSunshine))};
