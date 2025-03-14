@@ -22,6 +22,7 @@ import {LeaderboardLoading} from './devvit/components/LeaderboardLoading.js'
 import {App} from './devvit/components/app.js'
 import {blockUsersMenuAction} from './devvit/menu-actions/blockUsers.js'
 import {endCurrentChallengeMenuAction} from './devvit/menu-actions/endCurrentChallenge.js'
+import {flushWorkQueueAction} from './devvit/menu-actions/flushWorkQueue.ts'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
 import {makeSuperUserMenuAction} from './devvit/menu-actions/makeSuperUser.js'
 import {setDefaultConfigMenuAction} from './devvit/menu-actions/setDefaultConfig.js'
@@ -40,7 +41,6 @@ import {type Level, config2} from './shared/types/level.js'
 import {T2} from './shared/types/tid.js'
 import {validateChallengeConfig} from './shared/validateChallengeConfig.js'
 import {validateFieldArea} from './shared/validateFieldArea.js'
-import {flushWorkQueueAction} from './devvit/menu-actions/flushWorkQueue.ts'
 
 Devvit.configure({http: true, redditAPI: true, redis: true, realtime: true})
 
