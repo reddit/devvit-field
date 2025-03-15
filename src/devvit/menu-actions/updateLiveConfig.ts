@@ -15,6 +15,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
     currentReloadSequence?: number
     currentMaxDroppedPatches?: number
     currentMaxParallelS3Fetches?: number
+    currentMaxSeqAgeMillis?: number
   }) => {
     const defaults = getDefaultAppConfig()
     return {
@@ -70,6 +71,15 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           helpText: `Maximum concurrent S3 field partition downloads ([0, ∞), default ${defaults.globalMaxParallelS3Fetches}).`,
           required: true,
         },
+        {
+          type: 'number',
+          name: 'globalMaxSeqAgeMillis',
+          label: 'Max sequence age (ms)',
+          defaultValue:
+            data.currentMaxSeqAgeMillis ?? defaults.globalMaxSeqAgeMillis,
+          helpText: `Maximum duration a partition waits for a realtime sequence update before considering artificial sequence number injection ([0, ∞), default ${defaults.globalMaxSeqAgeMillis}).`,
+          required: true,
+        },
       ],
     }
   },
@@ -81,6 +91,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
         globalReloadSequence: values.globalReloadSequence,
         globalMaxDroppedPatches: values.globalMaxDroppedPatches,
         globalMaxParallelS3Fetches: values.globalMaxParallelS3Fetches,
+        globalMaxSeqAgeMillis: values.globalMaxSeqAgeMillis,
       }
 
       validateLiveConfig(newLiveConfig)
@@ -128,10 +139,12 @@ function validateLiveConfig(newConfig: AppConfig) {
     !Number.isInteger(newConfig.globalMaxDroppedPatches) ||
     newConfig.globalMaxDroppedPatches < 0 ||
     !Number.isInteger(newConfig.globalMaxParallelS3Fetches) ||
-    newConfig.globalMaxParallelS3Fetches < 0
+    newConfig.globalMaxParallelS3Fetches < 0 ||
+    !Number.isInteger(newConfig.globalMaxSeqAgeMillis) ||
+    newConfig.globalMaxSeqAgeMillis < 0
   ) {
     throw Error(
-      'max dropped patches and max parallel S3 fetchs must be ints in [0, ∞)',
+      'max dropped patches, max parallel S3 fetches, and max sequence age must be ints in [0, ∞)',
     )
   }
 }

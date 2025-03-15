@@ -266,6 +266,8 @@ export class Game {
 
     this.lvl.init(this)
 
+    this.fieldFetcher.register()
+
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
@@ -279,6 +281,7 @@ export class Game {
   }
 
   stop(): void {
+    this.fieldFetcher.deregister()
     removeEventListener('message', this.#onMsg)
     this.looper?.cancel()
     this.looper?.register('remove')
@@ -490,13 +493,12 @@ export class Game {
             Bubble('game-ui', {ui: 'Playing', msg: undefined}),
           )
         }
-        this.fieldFetcher.init(
-          this.fieldConfig,
+        this.fieldFetcher.setLiveConfig(
           this.appConfig.globalMaxDroppedPatches,
           this.appConfig.globalMaxParallelS3Fetches,
-          this.t5,
-          msg.initialMapKey,
+          this.appConfig.globalMaxSeqAgeMillis,
         )
+        this.fieldFetcher.init(this.fieldConfig, this.t5, msg.initialMapKey)
 
         if (devMode) {
           const rnd = new Random(this.seed)
@@ -585,8 +587,9 @@ export class Game {
       case 'ConfigUpdate':
         this.appConfig = msg.config
         this.fieldFetcher.setLiveConfig(
-          msg.config.globalMaxDroppedPatches,
-          msg.config.globalMaxParallelS3Fetches,
+          this.appConfig.globalMaxDroppedPatches,
+          this.appConfig.globalMaxParallelS3Fetches,
+          this.appConfig.globalMaxSeqAgeMillis,
         )
         break
       case 'SetTimeout':

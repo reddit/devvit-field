@@ -18,6 +18,7 @@ import type {FieldConfig} from '../shared/types/field-config.ts'
 import type {Cell, Delta} from '../shared/types/field.ts'
 import type {PartitionUpdate} from '../shared/types/message.ts'
 import {type T5, noT5} from '../shared/types/tid.ts'
+import {type UTCMillis, utcMillisNow} from '../shared/types/time.ts'
 import type {Cam} from './renderer/cam.ts'
 
 // to-do: one interface.
@@ -49,6 +50,8 @@ type Part = {
    * fetch target and dropped messages.
    */
   seq: number
+  /** The last write to seq by message or artificially. */
+  seqUpdated: UTCMillis | 0
   /**
    * The latest sequence written to a partition (could be patch or replace). Use
    * pending and written to determine when to fetch.
@@ -57,6 +60,7 @@ type Part = {
   readonly xy: Readonly<XY>
 }
 
+const pollIntervalMillis: number = 250
 const noSeq: number = -1
 
 /**
@@ -70,15 +74,19 @@ export class FieldFetcher {
   #abortCtrl: AbortController = new AbortController()
   readonly #cam: Readonly<Cam>
   /** Camera partitions rectangle. */
-  #camPartBox: Readonly<Box> | undefined
+  #camPartBox: Readonly<Box> = {x: 0, y: 0, w: 0, h: 0}
   #challenge: number = 0
+  #config: Readonly<FieldConfig> | undefined // Implicitly used to test init.
   #maxDroppedPatches: number = getDefaultAppConfig().globalMaxDroppedPatches
   #maxPending: number = getDefaultAppConfig().globalMaxParallelS3Fetches
+  #maxSeqAgeMillis: number = getDefaultAppConfig().globalMaxSeqAgeMillis
   #pathPrefix: string = ''
-  #config: Readonly<FieldConfig> | undefined // Implicitly used to test init.
+  /** Greatest sequence number received across partitions. */
+  #maxSeq: number = noSeq
   #part: {[key: PartitionKey]: Part} = {}
   /** Number of inflight requests. */
   #pending: number = 0
+  #poller: number = 0
   #renderPatch: RenderPatch
   #renderReplace: RenderReplace
   #t5: T5 = noT5
@@ -97,21 +105,24 @@ export class FieldFetcher {
   deinit(): void {
     this.#abortCtrl.abort()
     this.#config = undefined
+    this.#maxSeq = noSeq
     this.#part = {}
+  }
+
+  /** Deregister sequence timer. */
+  deregister(): void {
+    clearInterval(this.#poller)
+    this.#poller = 0
   }
 
   /** Called on initial render and reinit to initialize the entire field. */
   init(
     config: Readonly<FieldConfig>,
-    maxDroppedPatches: number,
-    maxPending: number,
     t5: T5,
     key: Readonly<DeltaSnapshotKey> | undefined,
   ): void {
     this.#abortCtrl = new AbortController()
     this.#config = config
-    this.#maxDroppedPatches = maxDroppedPatches
-    this.#maxPending = maxPending
     this.#t5 = t5
 
     if (!key) return
@@ -134,10 +145,20 @@ export class FieldFetcher {
     if (this.#isPartFetchable(part)) void this.#fetchPart(part) // to-do: await on separate thread.
   }
 
+  /** Register sequence timer. */
+  register(): void {
+    this.#poller = setInterval(this.#onPoll, pollIntervalMillis)
+  }
+
   /** Adjust live config for future evaluations. */
-  setLiveConfig(maxDroppedPatches: number, maxPending: number): void {
+  setLiveConfig(
+    maxDroppedPatches: number,
+    maxPending: number,
+    maxSeqAgeMillis: number,
+  ): void {
     this.#maxDroppedPatches = maxDroppedPatches
     this.#maxPending = maxPending
+    this.#maxSeqAgeMillis = maxSeqAgeMillis
   }
 
   /** Called every render loop to respond to camera changes.  */
@@ -180,6 +201,7 @@ export class FieldFetcher {
     try {
       rsp = await fetchPart(key, this.#abortCtrl)
     } catch (err) {
+      // Don't retry. Assume another update is coming soon.
       if (!this.#abortCtrl.signal.aborted) console.warn(err)
       return
     } finally {
@@ -218,6 +240,23 @@ export class FieldFetcher {
     return boxHits(this.#camPartBox, part.xy)
   }
 
+  /** Called when the timer checks in. */
+  #onPoll = (): void => {
+    if (!this.#config || this.#maxSeq === noSeq) return
+    const now = utcMillisNow()
+    for (const xy of boxParts(this.#camPartBox, this.#config.partSize)) {
+      const partKey = makePartitionKey(xy)
+      const part = (this.#part[partKey] ??= Part(xy))
+      if (now - part.seqUpdated > this.#maxSeqAgeMillis) {
+        // console.log(
+        //   `artificial sequence xy=${xy.x}-${xy.y} old=${part.seq} new=${this.#maxSeq}`,
+        // )
+        part.seq = this.#maxSeq
+        part.seqUpdated = now
+      }
+    }
+  }
+
   #recordMessage(key: Readonly<DeltaSnapshotKey>): Part {
     this.#challenge = Math.max(this.#challenge, key.challengeNumber)
     this.#pathPrefix = key.pathPrefix
@@ -238,6 +277,8 @@ export class FieldFetcher {
         key.sequenceNumber -
         Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
     part.seq = Math.max(part.seq, key.sequenceNumber)
+    part.seqUpdated = utcMillisNow()
+    this.#maxSeq = Math.max(this.#maxSeq, part.seq)
 
     return part
   }
@@ -304,5 +345,12 @@ async function fetchPart(
 }
 
 function Part(xy: Readonly<XY>): Part {
-  return {dropped: 0, pending: noSeq, seq: noSeq, written: noSeq, xy}
+  return {
+    dropped: 0,
+    pending: noSeq,
+    seq: noSeq,
+    seqUpdated: 0,
+    written: noSeq,
+    xy,
+  }
 }
