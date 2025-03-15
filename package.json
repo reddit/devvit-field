@@ -2,7 +2,7 @@
   "author": "Developer Platform",
   "description": "",
   "devDependencies": {
-    "@aws-sdk/client-s3": "3.750.0",
+    "@aws-sdk/client-s3": "3.758.0",
     "@biomejs/biome": "1.9.4",
     "@devvit/protos": "0.11.10",
     "@devvit/public-api": "0.11.10",
