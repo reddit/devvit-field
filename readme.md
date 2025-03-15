@@ -67,6 +67,15 @@ npx devvit settings set --config=devvit.dev.yaml aws-secret
 npx devvit settings set --config=devvit.dev.yaml s3-path-prefix # "dev-username"
 ```
 
+### Settings
+
+Configure with `npx devvit settings set --config=devvit.dev.yaml <setting>`.
+
+- `drive-load-claims-per-sec`: simulate usage.
+- `workqueue-debug`: scheduler debug mode.
+
+See [secrets](#secrets) for additional settings.
+
 ## Production Installs
 
 > Note: Substitute `config.prod.json` to `config.dev.json` if you are trying to set up development environments.

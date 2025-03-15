@@ -53,8 +53,3 @@ excludesfile = ~/.gitignore
 ```
 
 </details>
-
-## Debugging the Scheduler
-
-Enable debug mode with
-`npx devvit settings set --config=devvit.dev.yaml workqueue-debug`.
