@@ -225,8 +225,12 @@ export class FieldFetcher {
     // only receive a replace but deduplicating reliably would be hard.
     if (key.kind === 'deltas')
       // Record dropped before fetching. Realtime updates always come in order
-      // but responses do not. noSeq is -1.
-      part.dropped += key.sequenceNumber - (part.seq + (key.noChange ? 1 : 0))
+      // but responses do not. noSeq is -1. Patch and replace messages can come
+      // in any order which means part.seq may or may not be equal to
+      // key.sequenceNumber.
+      part.dropped +=
+        key.sequenceNumber -
+        Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
     part.seq = Math.max(part.seq, key.sequenceNumber)
 
     return part
