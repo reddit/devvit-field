@@ -240,6 +240,7 @@ export class FieldFetcher {
 
   #isPartFetchable(part: Readonly<Part>): boolean {
     return (
+      this.#poller !== 0 && // Not paused.
       // Not back to back.
       utcMillisNow() - part.fetched > this.#live.globalFetcherFetchRestMillis &&
       // Not maxed out.

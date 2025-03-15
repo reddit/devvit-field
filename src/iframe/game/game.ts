@@ -618,6 +618,7 @@ export class Game {
   #onPause = (): void => {
     console.log('paused')
     void this.ac.suspend().catch(console.warn)
+    this.fieldFetcher.deregister()
   }
 
   #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
@@ -680,6 +681,7 @@ export class Game {
 
   #onResume = (): void => {
     console.log('resumed')
+    this.fieldFetcher.register()
   }
 
   postMessage(msg: Readonly<IframeMessage>): void {
