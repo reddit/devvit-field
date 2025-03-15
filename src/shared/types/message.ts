@@ -7,6 +7,7 @@ import type {FieldConfig} from './field-config.ts'
 import type {Delta} from './field.ts'
 import type {Level, LevelPascalCase} from './level.ts'
 import type {Seed} from './random.ts'
+import type {T5} from './tid.ts'
 
 /**
  * A message from Blocks to the iframe. Init doesn't necessarily arrive first.
@@ -23,11 +24,6 @@ export type DevvitMessage =
   | RealtimeMessage
   | DialogMessage
   | SetTimeoutMessage
-  /**
-   * to-do: remove. This is needed right now to inform the ifram what partitions
-   *        have been loaded. It won't be needed once PartitionUpdate is used.
-   */
-  | {type: 'PartitionLoaded'; xy: XY}
 
 export type InitDevvitMessage = {
   appConfig: AppConfig
@@ -54,6 +50,7 @@ export type InitDevvitMessage = {
    * when not in a dev sub.
    */
   sub: LevelPascalCase | string
+  t5: T5
   team: Team
   teamBoxCounts: TeamBoxCounts
   type: 'Init'
@@ -100,14 +97,8 @@ export type RealtimeMessage =
   | PartitionUpdate
   | LeaderboardUpdate
 
-/** Sent on realtime patch AND in response to claiming a box. */
-type ClaimBoxesResponse = {
-  type: 'Box'
-  deltas: Delta[]
-  cellsClaimed: number
-  /** @deprecated true if not actually a response but a realtime message. */
-  realtime: boolean
-}
+/** Sent on response to claiming a box. */
+type ClaimBoxesResponse = {type: 'Box'; cellsClaimed: number; deltas: Delta[]}
 
 export type PartitionUpdate = {
   type: 'PartitionUpdate'

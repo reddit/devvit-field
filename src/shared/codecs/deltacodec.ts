@@ -6,34 +6,35 @@ import type {Delta} from '../types/field.ts'
 const b0BanMask = 32
 const b0PosMask = b0BanMask - 1
 
-export type DeltaSnapshotKey = {
-  kind: 'deltas' | 'partition'
-  pathPrefix: string
-  subredditId: string
-  challengeNumber: number
+export type DeltaSnapshotKey = FieldS3Key & {
+  kind: S3Kind
+  /** Multiply by partition size ot get global. */
   partitionXY: XY
-  sequenceNumber: number
   noChange: boolean
 }
 
-export function deltaS3Path(key: DeltaSnapshotKey): string {
-  const pkey = makePartitionKey(key.partitionXY)
-  return `${key.pathPrefix}/${key.subredditId}/d/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
+export type S3Kind = 'deltas' | 'partition'
+
+/** All the variables needed to make an S3 request except the partition. */
+export type FieldS3Key = {
+  pathPrefix: string
+  challengeNumber: number
+  sequenceNumber: number
+  subredditId: string
 }
 
-export function deltaAssetPath(key: DeltaSnapshotKey): string {
-  const path = deltaS3Path(key)
+/** Every period partitions (replace / bitmap) are available. */
+export const partitionPeriod: number = 10
+
+export function fieldS3URL(key: DeltaSnapshotKey): string {
+  const path = fieldS3Path(key)
   return `https://webview.devvit.net/${publicPath(path)}`
 }
 
-export function fieldPartitionS3Path(key: DeltaSnapshotKey): string {
+export function fieldS3Path(key: DeltaSnapshotKey): string {
+  const kind = key.kind === 'deltas' ? 'd' : 'p'
   const pkey = makePartitionKey(key.partitionXY)
-  return `${key.pathPrefix}/${key.subredditId}/p/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
-}
-
-export function fieldPartitionAssetPath(key: DeltaSnapshotKey): string {
-  const path = fieldPartitionS3Path(key)
-  return `https://webview.devvit.net/${publicPath(path)}`
+  return `${key.pathPrefix}/${key.subredditId}/${kind}/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
 }
 
 function publicPath(path: string): string {

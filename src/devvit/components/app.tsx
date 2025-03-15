@@ -217,6 +217,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       p1BoxCount: profile.lastPlayedChallengeNumberCellsClaimed,
       players: 0, // to-do: fill me out. useChannel2()?
       sub: ctx.subredditName ?? '',
+      t5: state.level.subredditId,
       team,
       teamBoxCounts: initialCellsClaimed
         .sort((a, b) => a.member - b.member)
@@ -319,12 +320,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
             userId: appState.profile.t2,
           })
 
-          iframe.postMessage({
-            type: 'Box',
-            deltas,
-            cellsClaimed,
-            realtime: false,
-          })
+          iframe.postMessage({type: 'Box', deltas, cellsClaimed})
 
           // Before returning the result to the client, we need to check if the user hit a mine
           // and if they did we don't let them try to click again.

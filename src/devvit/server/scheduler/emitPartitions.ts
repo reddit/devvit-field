@@ -1,6 +1,6 @@
 import {
   type DeltaSnapshotKey,
-  fieldPartitionS3Path,
+  fieldS3Path,
 } from '../../../shared/codecs/deltacodec.js'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import type {XY} from '../../../shared/types/2d.js'
@@ -77,7 +77,7 @@ WorkQueue.register<PublishPartitionTask>(
       async upload(key: DeltaSnapshotKey, body: Buffer): Promise<void> {
         const client = new S3Client(settings)
         if (!settings['skip-s3']) {
-          const path = fieldPartitionS3Path(key)
+          const path = fieldS3Path(key)
           // console.log(`s3 upload to ${path}`)
           await client.send({
             path,

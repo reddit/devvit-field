@@ -1,10 +1,4 @@
-import {
-  DeltaCodec,
-  type DeltaSnapshotKey,
-  deltaAssetPath,
-  fieldPartitionAssetPath,
-} from '../../shared/codecs/deltacodec.ts'
-import {MapCodec} from '../../shared/codecs/mapcodec.ts'
+import {getPartitionCoords} from '../../shared/partition.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
@@ -15,7 +9,6 @@ import {
   mapSize,
 } from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
-import type {Delta, FieldMap} from '../../shared/types/field.ts'
 import {
   type Level,
   type LevelPascalCase,
@@ -29,6 +22,7 @@ import type {
 } from '../../shared/types/message.ts'
 import {Random, type Seed} from '../../shared/types/random.ts'
 import {SID} from '../../shared/types/sid.ts'
+import {type T5, noT5} from '../../shared/types/tid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
 import {Audio, type AudioBufferByName, audioPlay} from '../audio.ts'
@@ -39,6 +33,11 @@ import {BoxEnt} from '../ents/box-ent.ts'
 import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
+import {
+  FieldFetcher,
+  type RenderPatch,
+  type RenderReplace,
+} from '../field-fetcher.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
@@ -90,6 +89,7 @@ export class Game {
   eid: EIDFactory
   field: Uint8Array
   fieldConfig: Readonly<FieldConfig> | undefined
+  fieldFetcher: FieldFetcher
   img?: AssetMap['img']
   init: Promise<void>
   looper!: Looper
@@ -110,6 +110,7 @@ export class Game {
    */
   sub?: LevelPascalCase | string
   subLvl?: Level
+  t5: T5 = noT5
   team: Team | undefined
   teamBoxCounts: TeamBoxCounts | undefined
   ui: BFGame
@@ -131,6 +132,11 @@ export class Game {
     this.devPeerChan = devMode ? new BroadcastChannel('dev') : undefined
     this.eid = new EIDFactory()
     this.field = new Uint8Array()
+    this.fieldFetcher = new FieldFetcher(
+      this.cam,
+      this.#renderPatch,
+      this.#renderReplace,
+    )
     this.init = new Promise(fulfil => (this.#fulfil = fulfil))
     this.lvl = new FieldLevel(this)
     this.map = new Uint8Array()
@@ -279,167 +285,25 @@ export class Game {
     this.ctrl?.register('remove')
   }
 
-  #fetchAndApplyDeltas(snapshotKey: DeltaSnapshotKey): void {
-    if (!this.fieldConfig) {
-      console.log('no field config')
-      return
-    }
-    if (snapshotKey.noChange) return
-
-    // TODO: these may pile up. Will move into DeltasStream.
-
-    const url = deltaAssetPath(snapshotKey)
+  #clearLoadingForPart(partXY: Readonly<XY>): void {
+    if (!this.fieldConfig) return
     const partSize = this.fieldConfig.partSize
-    fetch(url).then(async rsp => {
-      if (!rsp.ok) {
-        // TODO: retries
-        console.warn(
-          `failed to fetch deltas at ${url}: ${rsp.status} ${rsp.statusText}`,
-        )
-        return
-      }
 
-      // TODO: verify content-type, etc.
+    const xy = {x: partXY.x * partSize, y: partXY.y * partSize}
 
-      // TODO: move the partition size to the key?
-      const codec = new DeltaCodec(
-        snapshotKey.partitionXY,
-        this.fieldConfig?.partSize!,
-      )
-      const deltas = codec.decode(await responseBodyAsBytes(rsp))
-
-      const xy = snapshotKey.partitionXY
-      this.#clearLoadingForPart([
-        {
-          globalXY: {
-            x: xy.x * partSize,
-            y: xy.y * partSize,
-          },
-          isBan: false,
-          team: 0,
-        },
-      ])
-      this.#applyDeltas(deltas, false)
-    })
-  }
-
-  #applyDeltas(deltas: Delta[], isFromP1: boolean): void {
-    if (!this.fieldConfig || this.subLvl == null || !deltas[0]) return
-    this.#clearLoadingForPart(deltas)
-
-    for (const {globalXY, isBan, team} of deltas) {
-      const i = fieldArrayIndex(this.fieldConfig, globalXY)
-      const pend = this.#findPending(globalXY)
-      if (pend) pend.resolve(this, isBan, team, this.subLvl, isFromP1)
-      if (isBan) fieldArraySetBan(this.field, i)
-      else fieldArraySetTeam(this.field, i, team)
-      // to-do: it may be faster to send the entire array for many changes.
-      this.renderer.setBox(globalXY, this.field[i]!)
-    }
-  }
-
-  #fetchAndApplyPartition(snapshotKey: DeltaSnapshotKey): void {
-    if (!this.fieldConfig) {
-      return
-    }
-    // TODO: these may pile up.
-
-    const url = fieldPartitionAssetPath(snapshotKey)
-    const partSize = this.fieldConfig.partSize
-    fetch(url).then(async rsp => {
-      if (!rsp.ok) {
-        // TODO: retries
-        console.warn(
-          `failed to fetch partition at ${url}: ${rsp.status} ${rsp.statusText}`,
-        )
-        return
-      }
-
-      // TODO: verify content-type, etc.
-
-      // TODO: move the partition size to the key?
-      const codec = new MapCodec()
-      const cells = codec.decode(await responseBodyAsBytes(rsp))
-      const xy = snapshotKey.partitionXY
-
-      this.#clearLoadingForPart([
-        {
-          globalXY: {
-            x: xy.x * partSize,
-            y: xy.y * partSize,
-          },
-          isBan: false,
-          team: 0,
-        },
-      ])
-
-      const fmap: FieldMap = []
-      for (const cell of cells) {
-        fmap.push(cell)
-      }
-      this.#applyMap(fmap, xy)
-    })
-  }
-
-  #applyMap(map: FieldMap, partitionXY: XY): void {
-    if (
-      !this.fieldConfig ||
-      this.subLvl == null ||
-      !map.length ||
-      !this.fieldConfig.partSize
-    )
-      return
-    const topLeft = {
-      x: partitionXY.x * this.fieldConfig.partSize,
-      y: partitionXY.y * this.fieldConfig.partSize,
-    }
-    // to-do: it may be faster to send the entire array at once
-    for (let i = 0; i < map.length; i++) {
-      const cell = map[i]
-      const globalXY = {
-        x: topLeft.x + (i % this.fieldConfig.partSize),
-        y: topLeft.y + Math.floor(i / this.fieldConfig.partSize),
-      }
-      const j = fieldArrayIndex(this.fieldConfig, globalXY)
-      if (cell) {
-        const pend = this.#findPending(globalXY)
-        if (pend) pend.resolve(this, cell.isBan, cell.team, this.subLvl, false)
-      }
-      if (cell?.isBan) fieldArraySetBan(this.field, j)
-      else if (cell?.team) fieldArraySetTeam(this.field, j, cell.team)
-      else fieldArraySetHidden(this.field, j)
-      this.renderer.setBox(globalXY, this.field[j]!)
-    }
-  }
-
-  #clearLoadingForPart(deltas: readonly Readonly<Delta>[]): void {
-    if (!this.fieldConfig || !deltas[0]) return
-
-    // to-do: Assume all patches are from the same partition and only check the
-    //        first one. Right now the deltas come in a mega load. In the
-    //        future, deltas will be applied one partition at a time.
     const partLoading = fieldArrayIsLoading(
       this.field,
-      fieldArrayIndex(this.fieldConfig, deltas[0].globalXY),
+      fieldArrayIndex(this.fieldConfig, xy),
     )
-    if (partLoading) {
-      const partXY = {
-        x:
-          deltas[0].globalXY.x -
-          (deltas[0].globalXY.x % this.fieldConfig.partSize),
-        y:
-          deltas[0].globalXY.y -
-          (deltas[0].globalXY.y % this.fieldConfig.partSize),
-      }
+    if (!partLoading) return
 
-      for (let y = partXY.y; y < partXY.y + this.fieldConfig.partSize; y++)
-        for (let x = partXY.x; x < partXY.x + this.fieldConfig.partSize; x++) {
-          const i = fieldArrayIndex(this.fieldConfig, {x, y})
-          if (!fieldArrayIsLoading(this.field, i)) continue
-          fieldArraySetHidden(this.field, i)
-          this.renderer.setBox({x, y}, this.field[i]!)
-        }
-    }
+    for (let y = xy.y; y < xy.y + partSize; y++)
+      for (let x = xy.x; x < xy.x + partSize; x++) {
+        const i = fieldArrayIndex(this.fieldConfig, {x, y})
+        if (!fieldArrayIsLoading(this.field, i)) continue
+        fieldArraySetHidden(this.field, i)
+        this.renderer.setBox({x, y}, this.field[i]!) // to-do: set array.
+      }
   }
 
   #findPending(xy: Readonly<XY>): BoxEnt | undefined {
@@ -504,6 +368,7 @@ export class Game {
           players: Math.trunc(rnd.num * 99_999_999),
           seed: seed as Seed,
           sub: levelPascalCase[lvl],
+          t5: noT5,
           team,
           teamBoxCounts,
           type: 'Init',
@@ -562,6 +427,8 @@ export class Game {
       this.fieldConfig ?? {bans: 0, partSize: 1, wh: {w: 1, h: 1}},
       this.#onLoop,
     )
+
+    this.fieldFetcher.update()
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
@@ -591,6 +458,7 @@ export class Game {
         this.seed = msg.seed ?? (0 as Seed)
         this.sub = msg.sub
         this.subLvl = msg.lvl
+        this.t5 = msg.t5
         this.team = msg.team
         this.teamBoxCounts = msg.teamBoxCounts
         this.field = new Uint8Array(msg.field.wh.w * msg.field.wh.h)
@@ -600,6 +468,7 @@ export class Game {
         if (msg.reinit) {
           console.log('reinit')
           this.ac = new AudioContext()
+          this.fieldFetcher.deinit()
           this.#pending.length = 0
           if (!this.assets) throw Error('no assets')
           this.p1BoxCount = 0
@@ -617,6 +486,13 @@ export class Game {
             Bubble('game-ui', {ui: 'Playing', msg: undefined}),
           )
         }
+        this.fieldFetcher.init(
+          this.fieldConfig,
+          this.appConfig.globalMaxDroppedPatches,
+          this.appConfig.globalMaxParallelS3Fetches,
+          this.t5,
+          msg.initialMapKey,
+        )
 
         if (devMode) {
           const rnd = new Random(this.seed)
@@ -654,11 +530,6 @@ export class Game {
         this.selectBox(msg.initialGlobalXY)
         this.centerBox(msg.initialGlobalXY)
 
-        if (msg.initialMapKey) {
-          console.log('initial map key:', msg.initialMapKey)
-          this.#fetchAndApplyPartition(msg.initialMapKey)
-        }
-
         this.p1 = msg.p1
         if (this.debug) console.log('init')
         this.#fulfil()
@@ -670,13 +541,19 @@ export class Game {
         this.canvas.dispatchEvent(Bubble('game-update', undefined))
         break
       }
-      case 'Box':
+      case 'Box': {
         if (!this.p1) return
-        if (msg.realtime === false) {
-          this.p1BoxCount += msg.cellsClaimed
-        }
-        this.#applyDeltas(msg.deltas, !msg.realtime)
+        this.p1BoxCount += msg.cellsClaimed
+        if (!this.fieldConfig || !msg.deltas[0]) return
+        if (msg.deltas.length > 1)
+          console.error('unexpected multi-delta message')
+        const partXY = getPartitionCoords(
+          msg.deltas[0].globalXY,
+          this.fieldConfig.partSize,
+        )
+        this.#renderPatch(msg.deltas, partXY, true)
         break
+      }
       case 'Connected':
         if (!this.p1) return
         this.#onConnect()
@@ -697,28 +574,8 @@ export class Game {
       case 'Dialog':
         this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'DialogMessage', msg}))
         break
-      case 'PartitionLoaded':
-        if (!this.fieldConfig) return
-        this.#clearLoadingForPart([
-          {
-            globalXY: {
-              x: msg.xy.x * this.fieldConfig.partSize,
-              y: msg.xy.y * this.fieldConfig.partSize,
-            },
-            isBan: false,
-            team: 0,
-          },
-        ])
-        break
       case 'PartitionUpdate': {
-        switch (msg.key.kind) {
-          case 'deltas':
-            this.#fetchAndApplyDeltas(msg.key)
-            break
-          case 'partition':
-            this.#fetchAndApplyPartition(msg.key)
-            break
-        }
+        this.fieldFetcher.message(msg)
         break
       }
       case 'ConfigUpdate':
@@ -745,6 +602,52 @@ export class Game {
     void this.ac.suspend().catch(console.warn)
   }
 
+  #renderBox(
+    xy: Readonly<XY>,
+    isBan: boolean,
+    team: Team,
+    isFromP1: boolean,
+  ): void {
+    const i = fieldArrayIndex(this.fieldConfig!, xy)
+    const pend = this.#findPending(xy)
+    if (pend) pend.resolve(this, isBan, team, this.subLvl!, isFromP1)
+    if (isBan) fieldArraySetBan(this.field, i)
+    else fieldArraySetTeam(this.field, i, team)
+    // to-do: it may be faster to send the entire array for many changes.
+    this.renderer.setBox(xy, this.field[i]!)
+  }
+
+  #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
+    if (!this.fieldConfig || this.subLvl == null) return
+    this.#clearLoadingForPart(partXY)
+
+    for (const {globalXY, isBan, team} of boxes)
+      this.#renderBox(globalXY, isBan, team, isFromP1)
+  }
+
+  #renderReplace: RenderReplace = (boxes, partXY) => {
+    if (!this.fieldConfig || this.subLvl == null || !this.fieldConfig.partSize)
+      return
+    const partSize = this.fieldConfig.partSize
+    this.#clearLoadingForPart(partXY)
+
+    // to-do: it may be faster to send the entire array at once
+    let i = 0
+    for (const box of boxes) {
+      if (box)
+        this.#renderBox(
+          {
+            x: partXY.x * partSize + (i % partSize),
+            y: partXY.y * partSize + Math.floor(i / partSize),
+          },
+          box.isBan,
+          box.team,
+          false,
+        )
+      i++
+    }
+  }
+
   #onResize = (): void => {}
 
   #onResume = (): void => {
@@ -755,29 +658,4 @@ export class Game {
     // to-do: peer messages: game.devPeerChan?.postMessage(msg)
     parent.postMessage(msg, document.referrer || '*')
   }
-}
-
-async function responseBodyAsBytes(rsp: Response): Promise<Uint8Array> {
-  if (!rsp.body) {
-    return new Uint8Array(0)
-  }
-  const reader = rsp.body.getReader()
-  const chunks = []
-  let length = 0
-  while (true) {
-    const {done, value} = await reader.read()
-    if (done) {
-      break
-    }
-    chunks.push(value)
-    length += value.length
-  }
-
-  const bytes = new Uint8Array(length)
-  let pos = 0
-  for (const chunk of chunks) {
-    bytes.set(chunk, pos)
-    pos += chunk.length
-  }
-  return bytes
 }

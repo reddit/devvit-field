@@ -6,7 +6,8 @@ import {
 } from '@devvit/public-api'
 import {
   type DeltaSnapshotKey,
-  deltaS3Path,
+  fieldS3Path,
+  partitionPeriod,
 } from '../../../shared/codecs/deltacodec.js'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import {partitionXYs} from '../../../shared/partition.js'
@@ -92,7 +93,7 @@ WorkQueue.register<PublishDeltasTask>(
       async upload(key: DeltaSnapshotKey, body: Buffer): Promise<void> {
         const client = new S3Client(settings)
         if (!settings['skip-s3']) {
-          const path = deltaS3Path(key)
+          const path = fieldS3Path(key)
           // console.log(`s3 upload to ${path}`)
           await client.send({
             path,
@@ -175,7 +176,7 @@ async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
     1,
   )
 
-  const alsoEmitPartitions = sequenceNumber % 10 === 0
+  const alsoEmitPartitions = sequenceNumber % partitionPeriod === 0
   for (const partitionXY of partitionXYs(config)) {
     await wq.enqueue({
       type: 'EmitDeltas',

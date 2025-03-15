@@ -13,6 +13,8 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
     currentClickCooldownMillis?: number
     currentServerPollingTimeMillis?: number
     currentReloadSequence?: number
+    currentMaxDroppedPatches?: number
+    currentMaxParallelS3Fetches?: number
   }) => {
     const defaults = getDefaultAppConfig()
     return {
@@ -27,8 +29,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           defaultValue:
             data.currentClickCooldownMillis ??
             defaults.globalClickCooldownMillis,
-          helpText:
-            'How long to force the user to wait before claiming another cell.',
+          helpText: `How long to force the user to wait before claiming another cell (default ${defaults.globalClickCooldownMillis}).`,
           required: true,
         },
         {
@@ -38,8 +39,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           defaultValue:
             data.currentServerPollingTimeMillis ??
             defaults.globalServerPollingTimeMillis,
-          helpText:
-            'How long clients should wait before polling the server for updates.',
+          helpText: `How long clients should wait before polling the server for updates (default ${defaults.globalServerPollingTimeMillis}).`,
           required: true,
         },
         {
@@ -48,8 +48,26 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           label: 'Reload sequence',
           defaultValue:
             data.currentReloadSequence ?? defaults.globalReloadSequence,
-          helpText:
-            'Change this to a different, >0 value to force clients to reload. USE WITH CARE.',
+          helpText: `Change this to a different, >0 value to force clients to reload (default ${defaults.globalReloadSequence}). USE WITH CARE.`,
+          required: true,
+        },
+        {
+          type: 'number',
+          name: 'globalMaxDroppedPatches',
+          label: 'Max dropped patches',
+          defaultValue:
+            data.currentMaxDroppedPatches ?? defaults.globalMaxDroppedPatches,
+          helpText: `Maximum missed realtime patch messages tolerated before downloading a replace ([0, ∞), default ${defaults.globalMaxDroppedPatches}).`,
+          required: true,
+        },
+        {
+          type: 'number',
+          name: 'globalMaxParallelS3Fetches',
+          label: 'Max parallel S3 fetches',
+          defaultValue:
+            data.currentMaxParallelS3Fetches ??
+            defaults.globalMaxParallelS3Fetches,
+          helpText: `Maximum concurrent S3 field partition downloads ([0, ∞), default ${defaults.globalMaxParallelS3Fetches}).`,
           required: true,
         },
       ],
@@ -61,6 +79,8 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
         globalClickCooldownMillis: values.globalClickCooldownMillis,
         globalServerPollingTimeMillis: values.globalServerPollingTimeMillis,
         globalReloadSequence: values.globalReloadSequence,
+        globalMaxDroppedPatches: values.globalMaxDroppedPatches,
+        globalMaxParallelS3Fetches: values.globalMaxParallelS3Fetches,
       }
 
       validateLiveConfig(newLiveConfig)
@@ -103,6 +123,17 @@ function validateLiveConfig(newConfig: AppConfig) {
       'Server polling time must be greater than or equal to 250ms',
     )
   }
+
+  if (
+    !Number.isInteger(newConfig.globalMaxDroppedPatches) ||
+    newConfig.globalMaxDroppedPatches < 0 ||
+    !Number.isInteger(newConfig.globalMaxParallelS3Fetches) ||
+    newConfig.globalMaxParallelS3Fetches < 0
+  ) {
+    throw Error(
+      'max dropped patches and max parallel S3 fetchs must be ints in [0, ∞)',
+    )
+  }
 }
 
 export const updateLiveConfigMenuAction = (): MenuItem => ({
@@ -118,6 +149,8 @@ export const updateLiveConfigMenuAction = (): MenuItem => ({
       currentServerPollingTimeMillis:
         currentLiveConfig.globalServerPollingTimeMillis,
       currentReloadSequence: currentLiveConfig.globalReloadSequence,
+      currentMaxDroppedPatches: currentLiveConfig.globalMaxDroppedPatches,
+      currentMaxParallelS3Fetches: currentLiveConfig.globalMaxParallelS3Fetches,
     })
   },
 })

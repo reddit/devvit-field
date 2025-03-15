@@ -21,6 +21,18 @@ export type AppConfig = {
    * Configured globally.
    */
   globalReloadSequence: number
+
+  /**
+   * Maximum missed realtime patch messages tolerated before downloading a
+   * replace; [0, ∞).
+   */
+  globalMaxDroppedPatches: number
+
+  /**
+   * Maximum missed realtime patch messages tolerated before downloading a
+   * replace; [0, ∞).
+   */
+  globalMaxParallelS3Fetches: number
 }
 
 /** Number of boxes per side of the minimap. */
@@ -31,5 +43,7 @@ export function getDefaultAppConfig(): AppConfig {
     globalClickCooldownMillis: 1000,
     globalServerPollingTimeMillis: 60_000,
     globalReloadSequence: 0,
+    globalMaxDroppedPatches: 5,
+    globalMaxParallelS3Fetches: 4,
   }
 }
