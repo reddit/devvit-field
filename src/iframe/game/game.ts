@@ -302,8 +302,12 @@ export class Game {
         const i = fieldArrayIndex(this.fieldConfig, {x, y})
         if (!fieldArrayIsLoading(this.field, i)) continue
         fieldArraySetHidden(this.field, i)
-        this.renderer.setBox({x, y}, this.field[i]!) // to-do: set array.
       }
+    this.renderer.setBox(
+      {x: xy.x, y: xy.y, w: partSize, h: partSize},
+      this.fieldConfig.wh.w,
+      this.field,
+    )
   }
 
   #findPending(xy: Readonly<XY>): BoxEnt | undefined {
@@ -614,7 +618,7 @@ export class Game {
     if (isBan) fieldArraySetBan(this.field, i)
     else fieldArraySetTeam(this.field, i, team)
     // to-do: it may be faster to send the entire array for many changes.
-    this.renderer.setBox(xy, this.field[i]!)
+    this.renderer.setXY(xy, this.field[i]!)
   }
 
   #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
@@ -631,7 +635,6 @@ export class Game {
     const partSize = this.fieldConfig.partSize
     this.#clearLoadingForPart(partXY)
 
-    // to-do: it may be faster to send the entire array at once
     let i = 0
     for (const box of boxes) {
       if (box)
@@ -646,6 +649,16 @@ export class Game {
         )
       i++
     }
+    this.renderer.setBox(
+      {
+        x: partXY.x * partSize,
+        y: partXY.y * partSize,
+        w: partSize,
+        h: partSize,
+      },
+      this.fieldConfig.wh.w,
+      this.field,
+    )
   }
 
   #onResize = (): void => {}

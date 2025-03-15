@@ -16,7 +16,7 @@ import {
   paletteWhatIsField,
   paletteWhatIsFieldDark,
 } from '../../shared/theme.js'
-import type {XY} from '../../shared/types/2d.js'
+import type {Box, XY} from '../../shared/types/2d.js'
 import {mapSize} from '../../shared/types/app-config.js'
 import type {FieldConfig} from '../../shared/types/field-config.js'
 import {type Level, levelWord} from '../../shared/types/level.js'
@@ -187,7 +187,31 @@ export class Renderer {
     this.#renderMap(cam, fieldConfig)
   }
 
-  setBox(xy: Readonly<XY>, val: number): void {
+  setBox(box: Readonly<Box>, fieldW: number, arr: Uint8Array): void {
+    if (!this.#fieldShader || !this.#gl) return
+
+    this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[2]!)
+    this.#gl.pixelStorei(this.#gl.UNPACK_ROW_LENGTH, fieldW)
+    this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_PIXELS, box.x)
+    this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_ROWS, box.y)
+    this.#gl.texSubImage2D(
+      this.#gl.TEXTURE_2D,
+      0,
+      box.x,
+      box.y,
+      box.w,
+      box.h,
+      this.#gl.RED_INTEGER,
+      this.#gl.UNSIGNED_BYTE,
+      arr,
+    )
+    this.#gl.pixelStorei(this.#gl.UNPACK_ROW_LENGTH, 0)
+    this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_PIXELS, 0)
+    this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_ROWS, 0)
+    this.#gl.bindTexture(this.#gl.TEXTURE_2D, null)
+  }
+
+  setXY(xy: Readonly<XY>, val: number): void {
     if (!this.#fieldShader || !this.#gl) return
     this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[2]!)
     this.#gl.texSubImage2D(
