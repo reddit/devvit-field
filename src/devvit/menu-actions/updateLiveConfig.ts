@@ -1,4 +1,9 @@
-import {Devvit, type FormKey, type MenuItem} from '@devvit/public-api'
+import {
+  Devvit,
+  type FormField,
+  type FormKey,
+  type MenuItem,
+} from '@devvit/public-api'
 import {
   type AppConfig,
   getDefaultAppConfig,
@@ -8,15 +13,17 @@ import {
   liveSettingsUpdate,
 } from '../server/core/live-settings.js'
 
+type FormInitConfig = {
+  currentClickCooldownMillis: number
+  currentServerPollingTimeMillis: number
+  currentReloadSequence: number
+  currentFetcherMaxDroppedPatches: number
+  currentFetcherMaxParallelS3Fetches: number
+  currentFetcherMaxSeqAgeMillis: number
+}
+
 export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
-  (data: {
-    currentClickCooldownMillis?: number
-    currentServerPollingTimeMillis?: number
-    currentReloadSequence?: number
-    currentMaxDroppedPatches?: number
-    currentMaxParallelS3Fetches?: number
-    currentMaxSeqAgeMillis?: number
-  }) => {
+  (data: Partial<FormInitConfig>) => {
     const defaults = getDefaultAppConfig()
     return {
       title: 'Update App Config',
@@ -54,33 +61,35 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
         },
         {
           type: 'number',
-          name: 'globalMaxDroppedPatches',
+          name: 'globalFetcherMaxDroppedPatches',
           label: 'Max dropped patches',
           defaultValue:
-            data.currentMaxDroppedPatches ?? defaults.globalMaxDroppedPatches,
-          helpText: `Maximum missed realtime patch messages tolerated before downloading a replace ([0, ∞), default ${defaults.globalMaxDroppedPatches}).`,
+            data.currentFetcherMaxDroppedPatches ??
+            defaults.globalFetcherMaxDroppedPatches,
+          helpText: `Maximum missed realtime patch messages tolerated before downloading a replace ([0, ∞), default ${defaults.globalFetcherMaxDroppedPatches}).`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalMaxParallelS3Fetches',
+          name: 'globalFetcherMaxParallelS3Fetches',
           label: 'Max parallel S3 fetches',
           defaultValue:
-            data.currentMaxParallelS3Fetches ??
-            defaults.globalMaxParallelS3Fetches,
-          helpText: `Maximum concurrent S3 field partition downloads ([0, ∞), default ${defaults.globalMaxParallelS3Fetches}).`,
+            data.currentFetcherMaxParallelS3Fetches ??
+            defaults.globalFetcherMaxParallelS3Fetches,
+          helpText: `Maximum concurrent S3 field partition downloads ([0, ∞), default ${defaults.globalFetcherMaxParallelS3Fetches}).`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalMaxSeqAgeMillis',
+          name: 'globalFetcherMaxSeqAgeMillis',
           label: 'Max sequence age (ms)',
           defaultValue:
-            data.currentMaxSeqAgeMillis ?? defaults.globalMaxSeqAgeMillis,
-          helpText: `Maximum duration a partition waits for a realtime sequence update before considering artificial sequence number injection ([0, ∞), default ${defaults.globalMaxSeqAgeMillis}).`,
+            data.currentFetcherMaxSeqAgeMillis ??
+            defaults.globalFetcherMaxSeqAgeMillis,
+          helpText: `Maximum duration a partition waits for a realtime sequence update before considering artificial sequence number injection ([0, ∞), default ${defaults.globalFetcherMaxSeqAgeMillis}).`,
           required: true,
         },
-      ],
+      ] as const satisfies (FormField & {name: keyof AppConfig})[],
     }
   },
   async ({values}, ctx) => {
@@ -89,9 +98,9 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
         globalClickCooldownMillis: values.globalClickCooldownMillis,
         globalServerPollingTimeMillis: values.globalServerPollingTimeMillis,
         globalReloadSequence: values.globalReloadSequence,
-        globalMaxDroppedPatches: values.globalMaxDroppedPatches,
-        globalMaxParallelS3Fetches: values.globalMaxParallelS3Fetches,
-        globalMaxSeqAgeMillis: values.globalMaxSeqAgeMillis,
+        globalFetcherMaxDroppedPatches: values.globalMaxDroppedPatches,
+        globalFetcherMaxParallelS3Fetches: values.globalMaxParallelS3Fetches,
+        globalFetcherMaxSeqAgeMillis: values.globalMaxSeqAgeMillis,
       }
 
       validateLiveConfig(newLiveConfig)
@@ -110,7 +119,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
   },
 )
 
-function validateLiveConfig(newConfig: AppConfig) {
+function validateLiveConfig(newConfig: AppConfig): void {
   if (
     !Number.isInteger(newConfig.globalClickCooldownMillis) ||
     !Number.isInteger(newConfig.globalServerPollingTimeMillis) ||
@@ -136,12 +145,12 @@ function validateLiveConfig(newConfig: AppConfig) {
   }
 
   if (
-    !Number.isInteger(newConfig.globalMaxDroppedPatches) ||
-    newConfig.globalMaxDroppedPatches < 0 ||
-    !Number.isInteger(newConfig.globalMaxParallelS3Fetches) ||
-    newConfig.globalMaxParallelS3Fetches < 0 ||
-    !Number.isInteger(newConfig.globalMaxSeqAgeMillis) ||
-    newConfig.globalMaxSeqAgeMillis < 0
+    !Number.isInteger(newConfig.globalFetcherMaxDroppedPatches) ||
+    newConfig.globalFetcherMaxDroppedPatches < 0 ||
+    !Number.isInteger(newConfig.globalFetcherMaxParallelS3Fetches) ||
+    newConfig.globalFetcherMaxParallelS3Fetches < 0 ||
+    !Number.isInteger(newConfig.globalFetcherMaxSeqAgeMillis) ||
+    newConfig.globalFetcherMaxSeqAgeMillis < 0
   ) {
     throw Error(
       'max dropped patches, max parallel S3 fetches, and max sequence age must be ints in [0, ∞)',
@@ -162,8 +171,12 @@ export const updateLiveConfigMenuAction = (): MenuItem => ({
       currentServerPollingTimeMillis:
         currentLiveConfig.globalServerPollingTimeMillis,
       currentReloadSequence: currentLiveConfig.globalReloadSequence,
-      currentMaxDroppedPatches: currentLiveConfig.globalMaxDroppedPatches,
-      currentMaxParallelS3Fetches: currentLiveConfig.globalMaxParallelS3Fetches,
-    })
+      currentFetcherMaxDroppedPatches:
+        currentLiveConfig.globalFetcherMaxDroppedPatches,
+      currentFetcherMaxParallelS3Fetches:
+        currentLiveConfig.globalFetcherMaxParallelS3Fetches,
+      currentFetcherMaxSeqAgeMillis:
+        currentLiveConfig.globalFetcherMaxSeqAgeMillis,
+    } satisfies FormInitConfig)
   },
 })

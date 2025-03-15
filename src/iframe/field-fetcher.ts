@@ -77,9 +77,10 @@ export class FieldFetcher {
   #camPartBox: Readonly<Box> = {x: 0, y: 0, w: 0, h: 0}
   #challenge: number = 0
   #config: Readonly<FieldConfig> | undefined // Implicitly used to test init.
-  #maxDroppedPatches: number = getDefaultAppConfig().globalMaxDroppedPatches
-  #maxPending: number = getDefaultAppConfig().globalMaxParallelS3Fetches
-  #maxSeqAgeMillis: number = getDefaultAppConfig().globalMaxSeqAgeMillis
+  #maxDroppedPatches: number =
+    getDefaultAppConfig().globalFetcherMaxDroppedPatches
+  #maxPending: number = getDefaultAppConfig().globalFetcherMaxParallelS3Fetches
+  #maxSeqAgeMillis: number = getDefaultAppConfig().globalFetcherMaxSeqAgeMillis
   #pathPrefix: string = ''
   /** Greatest sequence number received across partitions. */
   #maxSeq: number = noSeq

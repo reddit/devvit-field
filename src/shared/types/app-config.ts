@@ -26,18 +26,18 @@ export type AppConfig = {
    * Maximum missed realtime patch messages tolerated before downloading a
    * replace; [0, ∞).
    */
-  globalMaxDroppedPatches: number
+  globalFetcherMaxDroppedPatches: number
 
   /**
    * Maximum missed realtime patch messages tolerated before downloading a
    * replace; [0, ∞).
    */
-  globalMaxParallelS3Fetches: number
+  globalFetcherMaxParallelS3Fetches: number
   /**
    * Maximum duration a partition waits for a realtime sequence update before
    * considering artificial sequence number injection; [0, ∞).
    */
-  globalMaxSeqAgeMillis: number
+  globalFetcherMaxSeqAgeMillis: number
 }
 
 /** Number of boxes per side of the minimap. */
@@ -48,8 +48,8 @@ export function getDefaultAppConfig(): AppConfig {
     globalClickCooldownMillis: 1000,
     globalServerPollingTimeMillis: 60_000,
     globalReloadSequence: 0,
-    globalMaxDroppedPatches: 5,
-    globalMaxParallelS3Fetches: 4,
-    globalMaxSeqAgeMillis: 2_000,
+    globalFetcherMaxDroppedPatches: 5,
+    globalFetcherMaxParallelS3Fetches: 4,
+    globalFetcherMaxSeqAgeMillis: 2_000,
   }
 }

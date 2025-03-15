@@ -494,9 +494,9 @@ export class Game {
           )
         }
         this.fieldFetcher.setLiveConfig(
-          this.appConfig.globalMaxDroppedPatches,
-          this.appConfig.globalMaxParallelS3Fetches,
-          this.appConfig.globalMaxSeqAgeMillis,
+          this.appConfig.globalFetcherMaxDroppedPatches,
+          this.appConfig.globalFetcherMaxParallelS3Fetches,
+          this.appConfig.globalFetcherMaxSeqAgeMillis,
         )
         this.fieldFetcher.init(this.fieldConfig, this.t5, msg.initialMapKey)
 
@@ -587,9 +587,9 @@ export class Game {
       case 'ConfigUpdate':
         this.appConfig = msg.config
         this.fieldFetcher.setLiveConfig(
-          this.appConfig.globalMaxDroppedPatches,
-          this.appConfig.globalMaxParallelS3Fetches,
-          this.appConfig.globalMaxSeqAgeMillis,
+          this.appConfig.globalFetcherMaxDroppedPatches,
+          this.appConfig.globalFetcherMaxParallelS3Fetches,
+          this.appConfig.globalFetcherMaxSeqAgeMillis,
         )
         break
       case 'SetTimeout':
