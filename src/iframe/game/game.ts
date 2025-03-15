@@ -584,6 +584,10 @@ export class Game {
       }
       case 'ConfigUpdate':
         this.appConfig = msg.config
+        this.fieldFetcher.setLiveConfig(
+          msg.config.globalMaxDroppedPatches,
+          msg.config.globalMaxParallelS3Fetches,
+        )
         break
       case 'SetTimeout':
         setTimeout(() => {

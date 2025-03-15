@@ -134,6 +134,12 @@ export class FieldFetcher {
     if (this.#isPartFetchable(part)) void this.#fetchPart(part) // to-do: await on separate thread.
   }
 
+  /** Adjust live config for future evaluations. */
+  setLiveConfig(maxDroppedPatches: number, maxPending: number): void {
+    this.#maxDroppedPatches = maxDroppedPatches
+    this.#maxPending = maxPending
+  }
+
   /** Called every render loop to respond to camera changes.  */
   update(): void {
     if (!this.#config) return // Not initialized.
