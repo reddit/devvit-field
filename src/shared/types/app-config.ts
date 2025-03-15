@@ -52,6 +52,11 @@ export type AppConfig = {
   globalFetcherGuessOffsetMillis: number
   /** The minimum duration between requests; ints in [0, ∞). */
   globalFetcherFetchRestMillis: number
+  /**
+   * The max sequences to go without fetching a replace instead of just deltas;
+   * ints in [0, ∞).
+   */
+  globalFetcherMandatoryReplaceSequencePeriod: number
 }
 
 /** Number of boxes per side of the minimap. */
@@ -68,5 +73,6 @@ export function getDefaultAppConfig(): AppConfig {
     globalFetcherMaxRealtimeSilenceMillis: 5_000,
     globalFetcherGuessOffsetMillis: -1_000,
     globalFetcherFetchRestMillis: 300,
+    globalFetcherMandatoryReplaceSequencePeriod: 100,
   }
 }

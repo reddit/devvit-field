@@ -49,6 +49,8 @@ type Part = {
    * when to fetch.
    */
   pending: number
+  /** The last replace sequence written. */
+  replaced: number
   /**
    * The latest available sequence known for the partition. This is written by
    * messages received and has nothing to do with fetch state. Use to identify
@@ -179,7 +181,9 @@ export class FieldFetcher {
     let kind: S3Kind = 'deltas'
     if (
       part.dropped > this.#live.globalFetcherMaxDroppedPatches ||
-      part.written === noSeq
+      part.written === noSeq ||
+      part.seq - part.replaced >
+        this.#live.globalFetcherMandatoryReplaceSequencePeriod
     )
       // Partition offset may be > max dropped requiring a subsequent replace
       // request. This seems better than to keep downloading deltas hoping for a
@@ -214,8 +218,10 @@ export class FieldFetcher {
       this.#pending--
     }
 
-    if (kind === 'partition')
+    if (kind === 'partition') {
       part.dropped = Math.max(0, part.dropped - (prevDropped - partitionOffset))
+      part.replaced = key.sequenceNumber
+    }
     part.written = key.sequenceNumber
 
     // Applying never resets boxes so order is irrelevant. Always accept old
@@ -377,6 +383,7 @@ function Part(xy: Readonly<XY>): Part {
     dropped: 0,
     fetched: 0,
     pending: noSeq,
+    replaced: noSeq,
     seq: noSeq,
     seqUpdated: 0,
     written: noSeq,

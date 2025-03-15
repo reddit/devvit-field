@@ -110,6 +110,16 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           helpText: `The minimum duration between requests (ints in [0, ∞), default ${defaults.globalFetcherFetchRestMillis}).`,
           required: true,
         },
+        {
+          type: 'number',
+          name: 'globalFetcherMandatoryReplaceSequencePeriod',
+          label: 'Fetcher: mandatory replace sequence period',
+          defaultValue:
+            current.globalFetcherMandatoryReplaceSequencePeriod ??
+            defaults.globalFetcherMandatoryReplaceSequencePeriod,
+          helpText: `The max sequences to go without fetching a replace instead of just deltas (ints in [0, ∞), default ${defaults.globalFetcherMandatoryReplaceSequencePeriod}).`,
+          required: true,
+        },
       ] as const satisfies (FormField & {name: keyof AppConfig})[],
     }
   },
@@ -166,10 +176,12 @@ function validateLiveConfig(newConfig: AppConfig): void {
     !Number.isInteger(newConfig.globalFetcherMaxRealtimeSilenceMillis) ||
     newConfig.globalFetcherMaxRealtimeSilenceMillis < 0 ||
     !Number.isInteger(newConfig.globalFetcherFetchRestMillis) ||
-    newConfig.globalFetcherFetchRestMillis < 0
+    newConfig.globalFetcherFetchRestMillis < 0 ||
+    !Number.isInteger(newConfig.globalFetcherMandatoryReplaceSequencePeriod) ||
+    newConfig.globalFetcherMandatoryReplaceSequencePeriod < 0
   )
     throw Error(
-      'max dropped patches, max parallel S3 fetches, max sequence age, max realtime silence, and fetch rest must be ints in [0, ∞)',
+      'max dropped patches, max parallel S3 fetches, max sequence age, max realtime silence, fetch rest, and mandatory replace sequence period must be ints in [0, ∞)',
     )
 
   if (!Number.isInteger(newConfig.globalFetcherGuessOffsetMillis))
