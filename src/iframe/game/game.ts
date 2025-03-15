@@ -606,27 +606,14 @@ export class Game {
     void this.ac.suspend().catch(console.warn)
   }
 
-  #renderBox(
-    xy: Readonly<XY>,
-    isBan: boolean,
-    team: Team,
-    isFromP1: boolean,
-  ): void {
-    const i = fieldArrayIndex(this.fieldConfig!, xy)
-    const pend = this.#findPending(xy)
-    if (pend) pend.resolve(this, isBan, team, this.subLvl!, isFromP1)
-    if (isBan) fieldArraySetBan(this.field, i)
-    else fieldArraySetTeam(this.field, i, team)
-    // to-do: it may be faster to send the entire array for many changes.
-    this.renderer.setXY(xy, this.field[i]!)
-  }
-
   #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
     if (!this.fieldConfig || this.subLvl == null) return
     this.#clearLoadingForPart(partXY)
 
-    for (const {globalXY, isBan, team} of boxes)
-      this.#renderBox(globalXY, isBan, team, isFromP1)
+    for (const {globalXY, isBan, team} of boxes) {
+      const i = this.#setCell(globalXY, isBan, team, isFromP1)
+      this.renderer.setXY(globalXY, this.field[i]!)
+    }
   }
 
   #renderReplace: RenderReplace = (boxes, partXY) => {
@@ -638,7 +625,7 @@ export class Game {
     let i = 0
     for (const box of boxes) {
       if (box)
-        this.#renderBox(
+        this.#setCell(
           {
             x: partXY.x * partSize + (i % partSize),
             y: partXY.y * partSize + Math.floor(i / partSize),
@@ -659,6 +646,20 @@ export class Game {
       this.fieldConfig.wh.w,
       this.field,
     )
+  }
+
+  #setCell(
+    xy: Readonly<XY>,
+    isBan: boolean,
+    team: Team,
+    isFromP1: boolean,
+  ): number {
+    const i = fieldArrayIndex(this.fieldConfig!, xy)
+    const pend = this.#findPending(xy)
+    if (pend) pend.resolve(this, isBan, team, this.subLvl!, isFromP1)
+    if (isBan) fieldArraySetBan(this.field, i)
+    else fieldArraySetTeam(this.field, i, team)
+    return i
   }
 
   #onResize = (): void => {}
