@@ -150,8 +150,9 @@ export class FieldFetcher {
   async #fetchPart(part: Part): Promise<void> {
     const partitionOffset = part.seq % partitionPeriod
     let kind: S3Kind = 'deltas'
-    if (part.dropped > this.#maxDroppedPatches) {
-      if (partitionOffset < this.#maxDroppedPatches) kind = 'partition'
+    if (part.dropped > this.#maxDroppedPatches || part.written === noSeq) {
+      if (partitionOffset < this.#maxDroppedPatches || part.written === noSeq)
+        kind = 'partition'
       else console.info('min dropped >= max dropped')
     }
 
