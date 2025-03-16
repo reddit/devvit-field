@@ -34,10 +34,10 @@ import {EIDFactory} from '../ents/eid.ts'
 import {FieldLevel} from '../ents/levels/field-level.ts'
 import {Zoo} from '../ents/zoo.ts'
 import {
-  FieldFetcher,
+  PartitionFetcher,
   type RenderPatch,
   type RenderReplace,
-} from '../field-fetcher.ts'
+} from '../fetcher/partition-fetcher.ts'
 import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
@@ -89,7 +89,6 @@ export class Game {
   eid: EIDFactory
   field: Uint8Array
   fieldConfig: Readonly<FieldConfig> | undefined
-  fieldFetcher: FieldFetcher
   img?: AssetMap['img']
   init: Promise<void>
   looper!: Looper
@@ -98,6 +97,7 @@ export class Game {
   now: UTCMillis
   p1?: Player
   p1BoxCount: number = 0
+  partFetcher: PartitionFetcher
   /** Number of players online including p1; 0 when offline. */
   players: number
   renderer!: Renderer
@@ -132,7 +132,7 @@ export class Game {
     this.devPeerChan = devMode ? new BroadcastChannel('dev') : undefined
     this.eid = new EIDFactory()
     this.field = new Uint8Array()
-    this.fieldFetcher = new FieldFetcher(
+    this.partFetcher = new PartitionFetcher(
       this.cam,
       this.#renderPatch,
       this.#renderReplace,
@@ -266,7 +266,7 @@ export class Game {
 
     this.lvl.init(this)
 
-    this.fieldFetcher.register()
+    this.partFetcher.register()
 
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
@@ -281,7 +281,7 @@ export class Game {
   }
 
   stop(): void {
-    this.fieldFetcher.deregister()
+    this.partFetcher.deregister()
     removeEventListener('message', this.#onMsg)
     this.looper?.cancel()
     this.looper?.register('remove')
@@ -435,7 +435,7 @@ export class Game {
       this.#onLoop,
     )
 
-    this.fieldFetcher.update()
+    this.partFetcher.update()
   }
 
   #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
@@ -475,7 +475,7 @@ export class Game {
         if (msg.reinit) {
           console.log('reinit')
           this.ac = new AudioContext()
-          this.fieldFetcher.deinit()
+          this.partFetcher.deinit()
           this.#pending.length = 0
           if (!this.assets) throw Error('no assets')
           this.p1BoxCount = 0
@@ -493,8 +493,8 @@ export class Game {
             Bubble('game-ui', {ui: 'Playing', msg: undefined}),
           )
         }
-        this.fieldFetcher.setLiveConfig(this.appConfig)
-        this.fieldFetcher.init(this.fieldConfig, this.t5, msg.initialMapKey)
+        this.partFetcher.setLiveConfig(this.appConfig)
+        this.partFetcher.init(this.fieldConfig, this.t5, msg.initialMapKey)
 
         if (devMode) {
           const rnd = new Random(this.seed)
@@ -591,12 +591,12 @@ export class Game {
         }
         break
       case 'PartitionUpdate': {
-        this.fieldFetcher.message(msg)
+        this.partFetcher.message(msg)
         break
       }
       case 'ConfigUpdate':
         this.appConfig = msg.config
-        this.fieldFetcher.setLiveConfig(this.appConfig)
+        this.partFetcher.setLiveConfig(this.appConfig)
         console.log('live config updated', msg.config)
         break
       case 'SetTimeout':
@@ -618,7 +618,7 @@ export class Game {
   #onPause = (): void => {
     console.log('paused')
     void this.ac.suspend().catch(console.warn)
-    this.fieldFetcher.deregister()
+    this.partFetcher.deregister()
   }
 
   #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
@@ -681,7 +681,7 @@ export class Game {
 
   #onResume = (): void => {
     console.log('resumed')
-    this.fieldFetcher.register()
+    this.partFetcher.register()
   }
 
   postMessage(msg: Readonly<IframeMessage>): void {

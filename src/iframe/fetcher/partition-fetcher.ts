@@ -4,25 +4,25 @@ import {
   type S3Kind,
   fieldS3URL,
   partitionPeriod,
-} from '../shared/codecs/deltacodec.ts'
-import {MapCodec} from '../shared/codecs/mapcodec.ts'
-import {makePartitionKey} from '../shared/partition.ts'
+} from '../../shared/codecs/deltacodec.ts'
+import {MapCodec} from '../../shared/codecs/mapcodec.ts'
+import {makePartitionKey} from '../../shared/partition.ts'
 import {
   type Box,
   type PartitionKey,
   type XY,
   boxHits,
-} from '../shared/types/2d.ts'
+} from '../../shared/types/2d.ts'
 import {
   type AppConfig,
   getDefaultAppConfig,
-} from '../shared/types/app-config.ts'
-import type {FieldConfig} from '../shared/types/field-config.ts'
-import type {Cell, Delta} from '../shared/types/field.ts'
-import type {PartitionUpdate} from '../shared/types/message.ts'
-import {type T5, noT5} from '../shared/types/tid.ts'
-import {type UTCMillis, utcMillisNow} from '../shared/types/time.ts'
-import type {Cam} from './renderer/cam.ts'
+} from '../../shared/types/app-config.ts'
+import type {FieldConfig} from '../../shared/types/field-config.ts'
+import type {Cell, Delta} from '../../shared/types/field.ts'
+import type {PartitionUpdate} from '../../shared/types/message.ts'
+import {type T5, noT5} from '../../shared/types/tid.ts'
+import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
+import type {Cam} from '../renderer/cam.ts'
 
 // to-do: one interface.
 export type RenderPatch = (
@@ -77,7 +77,7 @@ class FetchError404 extends Error {}
  * fetches as appropriate for the current viewport. Guesses when realtime is
  * silent for too long.
  */
-export class FieldFetcher {
+export class PartitionFetcher {
   #abortCtrl: AbortController = new AbortController()
   readonly #cam: Readonly<Cam>
   /** Camera partitions rectangle. */
