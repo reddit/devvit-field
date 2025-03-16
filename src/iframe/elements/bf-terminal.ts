@@ -88,7 +88,6 @@ export class BFTerminal extends LitElement {
       width: 100%;
     }
     .title {flex-grow:1;}
-    .challenge {color: var(--color-white);}
     .header-bottom {
       display: flex;
       width: 100%;
@@ -181,7 +180,7 @@ export class BFTerminal extends LitElement {
       >
         <div class='header'>
           <div class='header-top'>
-            <h2 class='title'>${this.sub}&nbsp;${this.challenge == null ? '' : html`<span class='challenge'>#${this.challenge}</span>`}</h2>
+            <h2 class='title'>${this.sub}</h2>
             <div class='your-boxes-title'>your boxes</div>
           </div>
           <div class='header-bottom'>
