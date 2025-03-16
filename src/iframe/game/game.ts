@@ -549,15 +549,18 @@ export class Game {
       }
       case 'Box': {
         if (!this.p1) return
-        this.p1BoxCount += msg.cellsClaimed
-        if (!this.fieldConfig || !msg.deltas[0]) return
-        if (msg.deltas.length > 1)
-          console.error('unexpected multi-delta message')
+        this.p1BoxCount += msg.claimedCells.length
+
+        const newCells = [...msg.claimedCells, ...msg.lostCells]
+
+        if (!this.fieldConfig || !newCells[0]) return
+        if (newCells.length > 1) console.error('unexpected multi-delta message')
+
         const partXY = getPartitionCoords(
-          msg.deltas[0].globalXY,
+          newCells[0].globalXY,
           this.fieldConfig.partSize,
         )
-        this.#renderPatch(msg.deltas, partXY, true)
+        this.#renderPatch(newCells, partXY, true)
         break
       }
       case 'Connected':

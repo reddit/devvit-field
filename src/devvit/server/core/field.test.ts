@@ -101,7 +101,11 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 1, y: 1}, isBan: false, team: 2}]
 
-    expect(result).toStrictEqual({cellsClaimed: 1, deltas, newLevel: undefined})
+    expect(result).toStrictEqual({
+      lostCells: [],
+      claimedCells: deltas,
+      newLevel: undefined,
+    })
 
     await expect(
       fieldGetDeltas({
@@ -166,7 +170,11 @@ DevvitTest.it(
 
     const deltas: Delta[] = [{globalXY: {x: 2, y: 2}, isBan: false, team: 2}]
 
-    expect(result).toStrictEqual({cellsClaimed: 1, deltas, newLevel: undefined})
+    expect(result).toStrictEqual({
+      lostCells: [],
+      claimedCells: deltas,
+      newLevel: undefined,
+    })
 
     await expect(
       fieldGetDeltas({
@@ -235,7 +243,11 @@ DevvitTest.it('fieldClaimCells - should claim multiple cells', async ctx => {
     {globalXY: {x: 2, y: 2}, isBan: false, team: 2},
   ]
 
-  expect(result).toStrictEqual({cellsClaimed: 2, deltas, newLevel: undefined})
+  expect(result).toStrictEqual({
+    lostCells: [],
+    claimedCells: deltas,
+    newLevel: undefined,
+  })
 
   await expect(
     fieldGetDeltas({
@@ -342,8 +354,8 @@ DevvitTest.it(
     })
 
     expect(result).toStrictEqual({
-      cellsClaimed: 0,
-      deltas: [
+      claimedCells: [],
+      lostCells: [
         {
           globalXY: {
             x: 1,
@@ -433,15 +445,11 @@ DevvitTest.it(
     })
 
     expect(result).toStrictEqual({
-      cellsClaimed: 2,
-      deltas: [
+      claimedCells: [
         {globalXY: {x: 0, y: 0}, isBan: false, team: 2},
-        // Note that this is returned but cellClaims is only two
-        // since they technically did not claim in this request
-        // as it was already claimed in a previous
-        {globalXY: {x: 1, y: 1}, isBan: false, team: 2},
         {globalXY: {x: 0, y: 1}, isBan: false, team: 2},
       ],
+      lostCells: [{globalXY: {x: 1, y: 1}, isBan: false, team: 2}],
       newLevel: undefined,
     })
   },

@@ -268,10 +268,10 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   userId: T2
   fieldPartitionKey: ReturnType<typeof createFieldPartitionKey>
 }): Promise<{
-  /** Results from the claim. May include cells they did not successfully claim if they lost the write race */
-  deltas: Delta[]
-  /** The number of cells successfully claimed */
-  cellsClaimed: number
+  /** Cells the user won */
+  claimedCells: Delta[]
+  /** Cells the user lost */
+  lostCells: Delta[]
 }> => {
   // Produce and operation for each coord that we want to claim. The return value
   // will be used to see if we successfully claimed the cell.
@@ -350,7 +350,8 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   )
 
   // Produce the deltas from the write operation to be stored somewhere
-  const deltas: Delta[] = []
+  const claimedCells: Delta[] = []
+  const lostCells: Delta[] = []
   teamOpsReturn.forEach((value, i) => {
     const batchItem = batch[i]
     if (!batchItem) return
@@ -360,13 +361,13 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
 
     if (opType === 'get') {
       const decoded = decodeVTT(value)
-      deltas.push({
+      lostCells.push({
         globalXY: batchItem.globalXY,
         isBan: batchItem.isBan,
         team: decoded.team,
       })
     } else if (opType === 'set') {
-      deltas.push({
+      claimedCells.push({
         globalXY: batchItem.globalXY,
         isBan: batchItem.isBan,
         team: teamNumber,
@@ -377,8 +378,8 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   })
 
   return {
-    deltas,
-    cellsClaimed: bitfieldOps.filter(([type]) => type === 'set').length,
+    lostCells,
+    claimedCells,
   }
 }
 
@@ -413,15 +414,15 @@ export const fieldClaimCells = async ({
   challengeNumber: number
   ctx: JobContext
 }): Promise<{
-  /** The results of the boxes claimed! */
-  deltas: Delta[]
+  /** Cells the user won */
+  claimedCells: Delta[]
+  /** Cells the user lost */
+  lostCells: Delta[]
   /** If the user hits a ban box, this will be defined with the new level a user should be at */
   newLevel: Level | undefined
-  /** The number of cells successfully claimed */
-  cellsClaimed: number
 }> => {
   if (coords.length === 0)
-    return {deltas: [], newLevel: undefined, cellsClaimed: 0}
+    return {claimedCells: [], lostCells: [], newLevel: undefined}
 
   // We need a lookup here instead of passing in the config from blocks land
   // because blocks doesn't have the seed and other backend only pieces
@@ -467,24 +468,23 @@ export const fieldClaimCells = async ({
     ),
   )
 
-  const deltas: Delta[] = fieldsOpsReturn.flatMap(({deltas}) => deltas)
-  const cellsClaimed = fieldsOpsReturn.reduce(
-    (acc, {cellsClaimed}) => acc + cellsClaimed,
-    0,
+  const claimedCells: Delta[] = fieldsOpsReturn.flatMap(
+    ({claimedCells}) => claimedCells,
   )
+  const lostCells: Delta[] = fieldsOpsReturn.flatMap(({lostCells}) => lostCells)
 
   const {newLevel} = await _fieldClaimCellsSuccess({
     challengeNumber,
     userId,
-    deltas,
+    deltas: claimedCells,
     ctx,
     fieldConfig,
   })
 
   // TODO: Where I return to client anything you need like user's scores and other things
   return {
-    deltas,
-    cellsClaimed,
+    claimedCells,
+    lostCells,
     newLevel,
   }
 }

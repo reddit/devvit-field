@@ -98,7 +98,11 @@ export type RealtimeMessage =
   | LeaderboardUpdate
 
 /** Sent on response to claiming a box. */
-type ClaimBoxesResponse = {type: 'Box'; cellsClaimed: number; deltas: Delta[]}
+type ClaimBoxesResponse = {
+  type: 'Box'
+  lostCells: Delta[]
+  claimedCells: Delta[]
+}
 
 export type PartitionUpdate = {
   type: 'PartitionUpdate'

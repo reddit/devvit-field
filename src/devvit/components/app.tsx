@@ -313,14 +313,14 @@ export function App(ctx: Devvit.Context): JSX.Element {
             return
           }
 
-          const {deltas, newLevel, cellsClaimed} = await fieldClaimCells({
+          const {newLevel, claimedCells, lostCells} = await fieldClaimCells({
             challengeNumber: appState.challengeNumber,
             coords: msg.boxes,
             ctx,
             userId: appState.profile.t2,
           })
 
-          iframe.postMessage({type: 'Box', deltas, cellsClaimed})
+          iframe.postMessage({type: 'Box', claimedCells, lostCells})
 
           // Before returning the result to the client, we need to check if the user hit a mine
           // and if they did we don't let them try to click again.
