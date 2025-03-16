@@ -191,6 +191,7 @@ export class Renderer {
     if (!this.#fieldShader || !this.#gl) return
 
     this.#gl.bindTexture(this.#gl.TEXTURE_2D, this.#fieldShader.textures[2]!)
+    this.#gl.pixelStorei(this.#gl.UNPACK_ALIGNMENT, 1)
     this.#gl.pixelStorei(this.#gl.UNPACK_ROW_LENGTH, fieldW)
     this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_PIXELS, box.x)
     this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_ROWS, box.y)
@@ -205,6 +206,7 @@ export class Renderer {
       this.#gl.UNSIGNED_BYTE,
       arr,
     )
+    this.#gl.pixelStorei(this.#gl.UNPACK_ALIGNMENT, 4)
     this.#gl.pixelStorei(this.#gl.UNPACK_ROW_LENGTH, 0)
     this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_PIXELS, 0)
     this.#gl.pixelStorei(this.#gl.UNPACK_SKIP_ROWS, 0)
