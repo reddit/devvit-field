@@ -439,21 +439,25 @@ export function App(ctx: Devvit.Context): JSX.Element {
           reloadApp()
         }
 
-        // TODO: I think we want an early return here?
+        return // Don't care about any other settings. Going to restart.
       }
 
       if (msg.type === 'ChallengeComplete') {
-        const timeoutMillis = Math.floor(Math.random() * 15_000)
-        console.log(`Challenge complete, handling in ${timeoutMillis}ms.`)
-        iframe.postMessage({
-          type: 'SetTimeout',
-          message: msg,
-          timeoutMillis,
-        })
+        if (isIframeMounted) {
+          const timeoutMillis = Math.floor(Math.random() * 15_000)
+          console.log(`Challenge complete, handling in ${timeoutMillis}ms.`)
+          iframe.postMessage({
+            type: 'SetTimeout',
+            message: msg,
+            timeoutMillis,
+          })
+        } else setChallengeEndedState(msg)
+
         return // Don't send the message to the iframe since we're forwarding above with a delay.
       }
 
-      iframe.postMessage(msg)
+      // Don't aggregate to avoid OOM and slow launch.
+      if (isIframeMounted) iframe.postMessage(msg)
     },
     onSubscribed: () => iframe.postMessage({type: 'Connected'}),
     onUnsubscribed: () => iframe.postMessage({type: 'Disconnected'}),
