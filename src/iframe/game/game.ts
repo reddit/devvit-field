@@ -581,7 +581,18 @@ export class Game {
         break
       }
       case 'Dialog':
-        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'DialogMessage', msg}))
+        // Users want to see the ban box rendered before seeing the dialog
+        if (msg.code === 'ClaimedABanBox') {
+          setTimeout(() => {
+            this.canvas.dispatchEvent(
+              Bubble('game-ui', {ui: 'DialogMessage', msg}),
+            )
+          }, 900)
+        } else {
+          this.canvas.dispatchEvent(
+            Bubble('game-ui', {ui: 'DialogMessage', msg}),
+          )
+        }
         break
       case 'PartitionUpdate': {
         this.fieldFetcher.message(msg)
