@@ -13,17 +13,8 @@ import {
   liveSettingsUpdate,
 } from '../server/core/live-settings.js'
 
-type FormInitConfig = {
-  currentClickCooldownMillis: number
-  currentServerPollingTimeMillis: number
-  currentReloadSequence: number
-  currentFetcherMaxDroppedPatches: number
-  currentFetcherMaxParallelS3Fetches: number
-  currentFetcherMaxSeqAgeMillis: number
-}
-
 export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
-  (data: Partial<FormInitConfig>) => {
+  (current: Partial<AppConfig>) => {
     const defaults = getDefaultAppConfig()
     return {
       title: 'Update App Config',
@@ -35,7 +26,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           name: 'globalClickCooldownMillis',
           label: 'Click cooldown time (ms)',
           defaultValue:
-            data.currentClickCooldownMillis ??
+            current.globalClickCooldownMillis ??
             defaults.globalClickCooldownMillis,
           helpText: `How long to force the user to wait before claiming another cell (default ${defaults.globalClickCooldownMillis}).`,
           required: true,
@@ -45,7 +36,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           name: 'globalServerPollingTimeMillis',
           label: 'Server polling time (ms)',
           defaultValue:
-            data.currentServerPollingTimeMillis ??
+            current.globalServerPollingTimeMillis ??
             defaults.globalServerPollingTimeMillis,
           helpText: `How long clients should wait before polling the server for updates (default ${defaults.globalServerPollingTimeMillis}).`,
           required: true,
@@ -55,54 +46,75 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           name: 'globalReloadSequence',
           label: 'Reload sequence',
           defaultValue:
-            data.currentReloadSequence ?? defaults.globalReloadSequence,
+            current.globalReloadSequence ?? defaults.globalReloadSequence,
           helpText: `Change this to a different, >0 value to force clients to reload (default ${defaults.globalReloadSequence}). USE WITH CARE.`,
           required: true,
         },
         {
           type: 'number',
           name: 'globalFetcherMaxDroppedPatches',
-          label: 'Max dropped patches',
+          label: 'Fetcher: max dropped patches',
           defaultValue:
-            data.currentFetcherMaxDroppedPatches ??
+            current.globalFetcherMaxDroppedPatches ??
             defaults.globalFetcherMaxDroppedPatches,
-          helpText: `Maximum missed realtime patch messages tolerated before downloading a replace ([0, ∞), default ${defaults.globalFetcherMaxDroppedPatches}).`,
+          helpText: `Maximum missed realtime patch messages tolerated before downloading a replace (ints in [0, ∞), default ${defaults.globalFetcherMaxDroppedPatches}).`,
           required: true,
         },
         {
           type: 'number',
           name: 'globalFetcherMaxParallelS3Fetches',
-          label: 'Max parallel S3 fetches',
+          label: 'Fetcher: max parallel S3 fetches',
           defaultValue:
-            data.currentFetcherMaxParallelS3Fetches ??
+            current.globalFetcherMaxParallelS3Fetches ??
             defaults.globalFetcherMaxParallelS3Fetches,
-          helpText: `Maximum concurrent S3 field partition downloads ([0, ∞), default ${defaults.globalFetcherMaxParallelS3Fetches}).`,
+          helpText: `Maximum concurrent S3 field partition downloads (ints in [0, ∞), default ${defaults.globalFetcherMaxParallelS3Fetches}).`,
           required: true,
         },
         {
           type: 'number',
           name: 'globalFetcherMaxSeqAgeMillis',
-          label: 'Max sequence age (ms)',
+          label: 'Fetcher: max sequence age (ms)',
           defaultValue:
-            data.currentFetcherMaxSeqAgeMillis ??
+            current.globalFetcherMaxSeqAgeMillis ??
             defaults.globalFetcherMaxSeqAgeMillis,
-          helpText: `Maximum duration a partition waits for a realtime sequence update before considering artificial sequence number injection ([0, ∞), default ${defaults.globalFetcherMaxSeqAgeMillis}).`,
+          helpText: `Maximum duration a partition waits for a realtime sequence update before considering artificial sequence number injection (ints in [0, ∞), default ${defaults.globalFetcherMaxSeqAgeMillis}).`,
+          required: true,
+        },
+        {
+          type: 'number',
+          name: 'globalFetcherMaxRealtimeSilenceMillis',
+          label: 'Fetcher: max realtime silence (ms)',
+          defaultValue:
+            current.globalFetcherMaxRealtimeSilenceMillis ??
+            defaults.globalFetcherMaxRealtimeSilenceMillis,
+          helpText: `Maximum duration without a realtime update before the partition poller starts guessing sequence numbers(ints in [0, ∞), default ${defaults.globalFetcherMaxRealtimeSilenceMillis}). Duration resets on next update but not on guesses.`,
+          required: true,
+        },
+        {
+          type: 'number',
+          name: 'globalFetcherGuessOffsetMillis',
+          label: 'Fetcher: guess offset (ms)',
+          defaultValue:
+            current.globalFetcherGuessOffsetMillis ??
+            defaults.globalFetcherGuessOffsetMillis,
+          helpText: `When guessing at sequence numbers, how far (backward is negative, forward is positive) to adjust the guess to increase the likelihood that the sequence exists (ints in [-∞, ∞), default ${defaults.globalFetcherGuessOffsetMillis}).`,
+          required: true,
+        },
+        {
+          type: 'number',
+          name: 'globalFetcherFetchRestMillis',
+          label: 'Fetcher: rest period (ms)',
+          defaultValue:
+            current.globalFetcherFetchRestMillis ??
+            defaults.globalFetcherFetchRestMillis,
+          helpText: `The minimum duration between requests (ints in [0, ∞), default ${defaults.globalFetcherFetchRestMillis}).`,
           required: true,
         },
       ] as const satisfies (FormField & {name: keyof AppConfig})[],
     }
   },
-  async ({values}, ctx) => {
+  async ({values: newLiveConfig}, ctx) => {
     try {
-      const newLiveConfig: AppConfig = {
-        globalClickCooldownMillis: values.globalClickCooldownMillis,
-        globalServerPollingTimeMillis: values.globalServerPollingTimeMillis,
-        globalReloadSequence: values.globalReloadSequence,
-        globalFetcherMaxDroppedPatches: values.globalMaxDroppedPatches,
-        globalFetcherMaxParallelS3Fetches: values.globalMaxParallelS3Fetches,
-        globalFetcherMaxSeqAgeMillis: values.globalMaxSeqAgeMillis,
-      }
-
       validateLiveConfig(newLiveConfig)
 
       await liveSettingsUpdate(ctx, newLiveConfig)
@@ -150,12 +162,18 @@ function validateLiveConfig(newConfig: AppConfig): void {
     !Number.isInteger(newConfig.globalFetcherMaxParallelS3Fetches) ||
     newConfig.globalFetcherMaxParallelS3Fetches < 0 ||
     !Number.isInteger(newConfig.globalFetcherMaxSeqAgeMillis) ||
-    newConfig.globalFetcherMaxSeqAgeMillis < 0
-  ) {
+    newConfig.globalFetcherMaxSeqAgeMillis < 0 ||
+    !Number.isInteger(newConfig.globalFetcherMaxRealtimeSilenceMillis) ||
+    newConfig.globalFetcherMaxRealtimeSilenceMillis < 0 ||
+    !Number.isInteger(newConfig.globalFetcherFetchRestMillis) ||
+    newConfig.globalFetcherFetchRestMillis < 0
+  )
     throw Error(
-      'max dropped patches, max parallel S3 fetches, and max sequence age must be ints in [0, ∞)',
+      'max dropped patches, max parallel S3 fetches, max sequence age, max realtime silence, and fetch rest must be ints in [0, ∞)',
     )
-  }
+
+  if (!Number.isInteger(newConfig.globalFetcherGuessOffsetMillis))
+    throw Error('guess offset must be an int in (-∞, ∞)')
 }
 
 export const updateLiveConfigMenuAction = (): MenuItem => ({
@@ -163,20 +181,10 @@ export const updateLiveConfigMenuAction = (): MenuItem => ({
   label: '[Field] Update Live Config',
   location: ['post', 'subreddit'],
   onPress: async (_ev, ctx) => {
-    const currentLiveConfig = await liveSettingsGet({
+    // This is a partial config when adding new entries.
+    const currentLiveConfig: Partial<AppConfig> = await liveSettingsGet({
       redis: ctx.redis,
     })
-    ctx.ui.showForm(updateLiveConfigFormKey, {
-      currentClickCooldownMillis: currentLiveConfig.globalClickCooldownMillis,
-      currentServerPollingTimeMillis:
-        currentLiveConfig.globalServerPollingTimeMillis,
-      currentReloadSequence: currentLiveConfig.globalReloadSequence,
-      currentFetcherMaxDroppedPatches:
-        currentLiveConfig.globalFetcherMaxDroppedPatches,
-      currentFetcherMaxParallelS3Fetches:
-        currentLiveConfig.globalFetcherMaxParallelS3Fetches,
-      currentFetcherMaxSeqAgeMillis:
-        currentLiveConfig.globalFetcherMaxSeqAgeMillis,
-    } satisfies FormInitConfig)
+    ctx.ui.showForm(updateLiveConfigFormKey, currentLiveConfig)
   },
 })

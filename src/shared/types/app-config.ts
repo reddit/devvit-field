@@ -24,20 +24,34 @@ export type AppConfig = {
 
   /**
    * Maximum missed realtime patch messages tolerated before downloading a
-   * replace; [0, ∞).
+   * replace; ints in [0, ∞).
    */
   globalFetcherMaxDroppedPatches: number
 
   /**
    * Maximum missed realtime patch messages tolerated before downloading a
-   * replace; [0, ∞).
+   * replace; ints in [0, ∞).
    */
   globalFetcherMaxParallelS3Fetches: number
   /**
    * Maximum duration a partition waits for a realtime sequence update before
-   * considering artificial sequence number injection; [0, ∞).
+   * considering artificial sequence number injection; ints in [0, ∞).
    */
   globalFetcherMaxSeqAgeMillis: number
+  /**
+   * Maximum duration without a realtime update before the partition poller
+   * starts guessing sequence numbers; ints in [0, ∞). Duration resets on next
+   * update but not on guesses.
+   */
+  globalFetcherMaxRealtimeSilenceMillis: number
+  /**
+   * When guessing at sequence numbers, how far (backward is negative, forward
+   * is positive) to adjust the guess to increase the likelihood that the
+   * sequence exists; ints in (-∞, ∞).
+   */
+  globalFetcherGuessOffsetMillis: number
+  /** The minimum duration between requests; ints in [0, ∞). */
+  globalFetcherFetchRestMillis: number
 }
 
 /** Number of boxes per side of the minimap. */
@@ -51,5 +65,8 @@ export function getDefaultAppConfig(): AppConfig {
     globalFetcherMaxDroppedPatches: 5,
     globalFetcherMaxParallelS3Fetches: 4,
     globalFetcherMaxSeqAgeMillis: 2_000,
+    globalFetcherMaxRealtimeSilenceMillis: 5_000,
+    globalFetcherGuessOffsetMillis: -1_000,
+    globalFetcherFetchRestMillis: 300,
   }
 }

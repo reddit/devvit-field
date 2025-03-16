@@ -493,11 +493,7 @@ export class Game {
             Bubble('game-ui', {ui: 'Playing', msg: undefined}),
           )
         }
-        this.fieldFetcher.setLiveConfig(
-          this.appConfig.globalFetcherMaxDroppedPatches,
-          this.appConfig.globalFetcherMaxParallelS3Fetches,
-          this.appConfig.globalFetcherMaxSeqAgeMillis,
-        )
+        this.fieldFetcher.setLiveConfig(this.appConfig)
         this.fieldFetcher.init(this.fieldConfig, this.t5, msg.initialMapKey)
 
         if (devMode) {
@@ -600,11 +596,8 @@ export class Game {
       }
       case 'ConfigUpdate':
         this.appConfig = msg.config
-        this.fieldFetcher.setLiveConfig(
-          this.appConfig.globalFetcherMaxDroppedPatches,
-          this.appConfig.globalFetcherMaxParallelS3Fetches,
-          this.appConfig.globalFetcherMaxSeqAgeMillis,
-        )
+        this.fieldFetcher.setLiveConfig(this.appConfig)
+        console.log('live config updated', msg.config)
         break
       case 'SetTimeout':
         setTimeout(() => {

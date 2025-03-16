@@ -13,7 +13,10 @@ import {
   type XY,
   boxHits,
 } from '../shared/types/2d.ts'
-import {getDefaultAppConfig} from '../shared/types/app-config.ts'
+import {
+  type AppConfig,
+  getDefaultAppConfig,
+} from '../shared/types/app-config.ts'
 import type {FieldConfig} from '../shared/types/field-config.ts'
 import type {Cell, Delta} from '../shared/types/field.ts'
 import type {PartitionUpdate} from '../shared/types/message.ts'
@@ -38,6 +41,8 @@ type Part = {
    * seq - written doesn't aggregate. Excludes skips.
    */
   dropped: number
+  /** Last fetch attempt. */
+  fetched: UTCMillis | 0
   /**
    * The latest sequence being fetched. Only one in-flight request allowed.
    * noSeq on un/successful completion. Use pending and written to determine
@@ -63,12 +68,12 @@ type Part = {
 const pollIntervalMillis: number = 250
 const noSeq: number = -1
 
+class FetchError404 extends Error {}
+
 /**
  * Accepts new realtime messages and initiates partition patch and replace
- * fetches as appropriate for the current viewport.
- *
- * to-do: full no-realtime support; needs aforementioned miss support +
- *        leaderboard + sequence sync.
+ * fetches as appropriate for the current viewport. Guesses when realtime is
+ * silent for too long.
  */
 export class FieldFetcher {
   #abortCtrl: AbortController = new AbortController()
@@ -77,13 +82,12 @@ export class FieldFetcher {
   #camPartBox: Readonly<Box> = {x: 0, y: 0, w: 0, h: 0}
   #challenge: number = 0
   #config: Readonly<FieldConfig> | undefined // Implicitly used to test init.
-  #maxDroppedPatches: number =
-    getDefaultAppConfig().globalFetcherMaxDroppedPatches
-  #maxPending: number = getDefaultAppConfig().globalFetcherMaxParallelS3Fetches
-  #maxSeqAgeMillis: number = getDefaultAppConfig().globalFetcherMaxSeqAgeMillis
+  #live: Readonly<AppConfig> = getDefaultAppConfig()
   #pathPrefix: string = ''
-  /** Greatest sequence number received across partitions. */
+  /** Greatest sequence number received across partitions. Never artificial. */
   #maxSeq: number = noSeq
+  /** Time of last maxSeq write. */
+  #maxSeqUpdated: UTCMillis | 0 = 0
   #part: {[key: PartitionKey]: Part} = {}
   /** Number of inflight requests. */
   #pending: number = 0
@@ -107,6 +111,7 @@ export class FieldFetcher {
     this.#abortCtrl.abort()
     this.#config = undefined
     this.#maxSeq = noSeq
+    this.#maxSeqUpdated = 0
     this.#part = {}
   }
 
@@ -152,14 +157,8 @@ export class FieldFetcher {
   }
 
   /** Adjust live config for future evaluations. */
-  setLiveConfig(
-    maxDroppedPatches: number,
-    maxPending: number,
-    maxSeqAgeMillis: number,
-  ): void {
-    this.#maxDroppedPatches = maxDroppedPatches
-    this.#maxPending = maxPending
-    this.#maxSeqAgeMillis = maxSeqAgeMillis
+  setLiveConfig(config: Readonly<AppConfig>): void {
+    this.#live = config
   }
 
   /** Called every render loop to respond to camera changes.  */
@@ -178,11 +177,14 @@ export class FieldFetcher {
   async #fetchPart(part: Part): Promise<void> {
     const partitionOffset = part.seq % partitionPeriod
     let kind: S3Kind = 'deltas'
-    if (part.dropped > this.#maxDroppedPatches || part.written === noSeq) {
-      if (partitionOffset < this.#maxDroppedPatches || part.written === noSeq)
-        kind = 'partition'
-      else console.info('min dropped >= max dropped')
-    }
+    if (
+      part.dropped > this.#live.globalFetcherMaxDroppedPatches ||
+      part.written === noSeq
+    )
+      // Partition offset may be > max dropped requiring a subsequent replace
+      // request. This seems better than to keep downloading deltas hoping for a
+      // better replace.
+      kind = 'partition'
 
     const key = {
       challengeNumber: this.#challenge,
@@ -195,6 +197,7 @@ export class FieldFetcher {
     }
 
     const prevDropped = part.dropped
+    part.fetched = utcMillisNow()
     part.pending = key.sequenceNumber
     this.#pending++
 
@@ -203,14 +206,16 @@ export class FieldFetcher {
       rsp = await fetchPart(key, this.#abortCtrl)
     } catch (err) {
       // Don't retry. Assume another update is coming soon.
-      if (!this.#abortCtrl.signal.aborted) console.warn(err)
+      if (!this.#abortCtrl.signal.aborted && !(err instanceof FetchError404))
+        console.warn(err)
       return
     } finally {
       part.pending = noSeq
       this.#pending--
     }
 
-    if (kind === 'partition') part.dropped -= prevDropped // Reset on replace.
+    if (kind === 'partition')
+      part.dropped = Math.max(0, part.dropped - (prevDropped - partitionOffset))
     part.written = key.sequenceNumber
 
     // Applying never resets boxes so order is irrelevant. Always accept old
@@ -229,7 +234,10 @@ export class FieldFetcher {
 
   #isPartFetchable(part: Readonly<Part>): boolean {
     return (
-      this.#pending < this.#maxPending && // Not maxed out.
+      // Not back to back.
+      utcMillisNow() - part.fetched > this.#live.globalFetcherFetchRestMillis &&
+      // Not maxed out.
+      this.#pending < this.#live.globalFetcherMaxParallelS3Fetches &&
       part.pending === noSeq && // Not pending.
       part.written < part.seq && // New data available.
       this.#isPartVisible(part) // Not hidden.
@@ -244,15 +252,30 @@ export class FieldFetcher {
   /** Called when the timer checks in. */
   #onPoll = (): void => {
     if (!this.#config || this.#maxSeq === noSeq) return
+
     const now = utcMillisNow()
+    const maxSeqAge = now - this.#maxSeqUpdated
+    let seq = this.#maxSeq
+    if (maxSeqAge > this.#live.globalFetcherMaxRealtimeSilenceMillis) {
+      seq =
+        this.#maxSeq +
+        Math.max(
+          0,
+          Math.trunc(
+            (maxSeqAge + this.#live.globalFetcherGuessOffsetMillis) / 1000,
+          ),
+        )
+      // console.log(`guessing seq=${seq} maxSeq=${this.#maxSeq}`)
+    }
+
     for (const xy of boxParts(this.#camPartBox, this.#config.partSize)) {
       const partKey = makePartitionKey(xy)
       const part = (this.#part[partKey] ??= Part(xy))
-      if (now - part.seqUpdated > this.#maxSeqAgeMillis) {
+      if (now - part.seqUpdated > this.#live.globalFetcherMaxSeqAgeMillis) {
         // console.log(
         //   `artificial sequence xy=${xy.x}-${xy.y} old=${part.seq} new=${this.#maxSeq}`,
         // )
-        part.seq = this.#maxSeq
+        part.seq = seq
         part.seqUpdated = now
       }
     }
@@ -279,7 +302,10 @@ export class FieldFetcher {
         Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
     part.seq = Math.max(part.seq, key.sequenceNumber)
     part.seqUpdated = utcMillisNow()
-    this.#maxSeq = Math.max(this.#maxSeq, part.seq)
+    if (part.seq > this.#maxSeq) {
+      this.#maxSeq = part.seq
+      this.#maxSeqUpdated = part.seqUpdated
+    }
 
     return part
   }
@@ -337,6 +363,7 @@ async function fetchPart(
     headers: {accept: 'application/binary'},
     signal: ctrl.signal,
   })
+  if (rsp.status === 404) throw new FetchError404()
   if (!rsp.ok)
     throw Error(`part fetch error ${rsp.status}: ${rsp.statusText} for ${url}`)
   const type = rsp.headers.get('Content-Type')
@@ -348,6 +375,7 @@ async function fetchPart(
 function Part(xy: Readonly<XY>): Part {
   return {
     dropped: 0,
+    fetched: 0,
     pending: noSeq,
     seq: noSeq,
     seqUpdated: 0,
