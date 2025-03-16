@@ -395,6 +395,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
         reloadApp()
         break
       }
+      case 'ChallengeComplete': {
+        setChallengeEndedState(msg)
+        break
+      }
 
       default:
         msg satisfies never
@@ -424,7 +428,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           setIsWaitingToReload(true)
           // Ideally, we schedule this sometime in the next 30 seconds (for jitter reasons),
           // but we can only use setTimeout if the iframe is mounted.
-          const timeoutMillis = Math.random() * 30_000
+          const timeoutMillis = Math.floor(Math.random() * 30_000)
           iframe.postMessage({
             type: 'SetTimeout',
             timeoutMillis,
@@ -434,11 +438,19 @@ export function App(ctx: Devvit.Context): JSX.Element {
           // without the iframe, we can't use setTimeout. just immediately reload.
           reloadApp()
         }
+
+        // TODO: I think we want an early return here?
       }
 
       if (msg.type === 'ChallengeComplete') {
-        setChallengeEndedState(msg)
-        return // Don't send the message to the iframe since we need to circuit break first
+        const timeoutMillis = Math.floor(Math.random() * 15_000)
+        console.log(`Challenge complete, handling in ${timeoutMillis}ms.`)
+        iframe.postMessage({
+          type: 'SetTimeout',
+          message: msg,
+          timeoutMillis,
+        })
+        return // Don't send the message to the iframe since we're forwarding above with a delay.
       }
 
       iframe.postMessage(msg)

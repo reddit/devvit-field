@@ -87,6 +87,8 @@ export type IframeMessage =
   | {type: 'OnClaimGlobalPointClicked'}
   /** The entire app should be reloaded. */
   | {type: 'ReloadApp'}
+  /** Only lives here because the iFrame produces Jitter and forwards us this message back over to block to handle */
+  | ChallengeCompleteMessage
 
 /** A realtime message from another instance or server broadcast. */
 export type RealtimeMessage =
