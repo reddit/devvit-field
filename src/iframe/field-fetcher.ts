@@ -252,8 +252,11 @@ export class FieldFetcher {
   }
 
   #isPartVisible(part: Readonly<Part>): boolean {
-    if (!this.#camPartBox) return false
-    return boxHits(this.#camPartBox, part.xy)
+    if (!this.#camPartBox || !this.#config) return false
+    return boxHits(this.#camPartBox, {
+      x: part.xy.x * this.#config.partSize,
+      y: part.xy.y * this.#config.partSize,
+    })
   }
 
   /** Called when the timer checks in. */
@@ -358,7 +361,7 @@ export function camPartBox(
       ),
     ),
   }
-  return {x: start.x, y: start.x, w: end.x - start.x, h: end.y - start.y}
+  return {x: start.x, y: start.y, w: end.x - start.x, h: end.y - start.y}
 }
 
 async function fetchPart(
