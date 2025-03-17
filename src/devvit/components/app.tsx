@@ -408,6 +408,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   const chan = useChannel<RealtimeMessage>({
     name: INSTALL_REALTIME_CHANNEL,
     onMessage(msg) {
+      if (!msg || !msg.type) return // Filter out Andrew nonsense.
       if (session.debug)
         console.log(
           `${
