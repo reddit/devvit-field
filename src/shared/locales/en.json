@@ -55,6 +55,7 @@
   "winner-dialog-metadata-2": "ADD IT TO YOUR LINKEDIN",
   "winner-dialog-button-label": "THANKS!",
   "winner-dialog-footer": "VIEW YOUR STATS↵AND TEAM STANDINGS AT",
-  "ended-dialog-title": "r/Field has ended.",
-  "ended-dialog-metadata": "Thank you for trying.↵(Place was better.)"
+  "ended-dialog-title": "Field has ended.",
+  "ended-dialog-metadata": "Thank you for trying.↵(Place was better.)",
+  "ended-dialog-button-label": "THANKS!"
 }
