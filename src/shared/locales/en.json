@@ -49,5 +49,12 @@
   "staying-dialog-metadata-1": "YOU CLAIMED",
   "staying-dialog-metadata-2": "BOXES WITHOUT GETTING BANNED",
   "staying-dialog-button-label": "BEGIN NEXT ROUND",
-  "error-dialog-no-webgl": "WebGL 2 support↵is required to play.↵Try another device."
+  "error-dialog-no-webgl": "WebGL 2 support↵is required to play.↵Try another device.",
+  "winner-dialog-title": "CONGRATULATIONS!",
+  "winner-dialog-metadata-1": "YOU GOT A POINT FOR",
+  "winner-dialog-metadata-2": "ADD IT TO YOUR LINKEDIN",
+  "winner-dialog-button-label": "THANKS!",
+  "winner-dialog-footer": "VIEW YOUR STATS↵AND TEAM STANDINGS AT",
+  "ended-dialog-title": "r/Field has ended.",
+  "ended-dialog-metadata": "Thank you for trying.↵(Place was better.)"
 }

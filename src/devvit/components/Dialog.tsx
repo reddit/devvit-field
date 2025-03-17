@@ -25,6 +25,7 @@ type DialogProps = {
   level: Level
   backgroundElement?: JSX.Element
   marketing?: boolean
+  marketingLabel?: string
 }
 
 export function Dialog(props: DialogProps): JSX.Element {
@@ -91,7 +92,10 @@ export function Dialog(props: DialogProps): JSX.Element {
         {props.marketing !== false && (
           <>
             <spacer height='24px' />
-            <GamesOnRedditBanner {...props} />
+            <GamesOnRedditBanner
+              {...props}
+              label={props.marketingLabel ?? ''}
+            />
           </>
         )}
       </vstack>
