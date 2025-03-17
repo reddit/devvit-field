@@ -597,10 +597,12 @@ export async function fieldGetPartitionMapLatestSnapshotKey(
   partitionXY: XY,
 ): Promise<DeltaSnapshotKey | undefined> {
   try {
-    const latestSequenceNumber = (await redis.get(
-      createFieldPartitionLatestSnapshotKey(challengeNumber, partitionXY),
-    )) as number | undefined
-    if (latestSequenceNumber !== undefined) {
+    const latestSequenceNumber = Number.parseInt(
+      (await redis.get(
+        createFieldPartitionLatestSnapshotKey(challengeNumber, partitionXY),
+      )) || '',
+    )
+    if (latestSequenceNumber >= 0) {
       return {
         kind: 'partition',
         subredditId,
