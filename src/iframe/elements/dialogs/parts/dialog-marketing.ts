@@ -59,7 +59,7 @@ export class InnerContainer extends LitElement {
         <p>${localize('games-on-reddit-header')}</p>
         <!-- to-do: swap to a higher res asset. + swap based on level. -->
         <img
-          src="/assets/games-on-reddit-logo.svg"
+          src="/assets/games-on-reddit-logo.webp"
           alt="r/GamesOnReddit logo"
           class="logo" />
       </div>`
