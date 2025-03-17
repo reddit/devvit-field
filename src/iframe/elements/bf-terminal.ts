@@ -171,7 +171,9 @@ export class BFTerminal extends LitElement {
   protected override render(): TemplateResult {
     // to-do: fix PascalCase team.
     const claim = this.team
-      ? `${this.cooldown ? 'Claiming' : 'Claim'} for ${this.team}`
+      ? this.cooldown
+        ? 'Claiming...'
+        : `Claim for ${this.team}`
       : 'Claim'
     return html`
       <div
