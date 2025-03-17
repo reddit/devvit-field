@@ -24,6 +24,12 @@ export type DevvitMessage =
   | RealtimeMessage
   | DialogMessage
   | SetTimeoutMessage
+  | BatchMessage
+
+export type BatchMessage = {
+  batch: DevvitMessage[]
+  type: 'BatchMessage'
+}
 
 export type InitDevvitMessage = {
   appConfig: AppConfig

@@ -2,7 +2,6 @@ import {
   type DeltaSnapshotKey,
   fieldS3Path,
 } from '../../../shared/codecs/deltacodec.js'
-import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import type {XY} from '../../../shared/types/2d.js'
 import type {PartitionUpdate} from '../../../shared/types/message.js'
 import type {Uploader} from '../core/deltas.ts'
@@ -17,6 +16,7 @@ import {
   Client as S3Client,
   getPathPrefix,
 } from '../core/s3.ts'
+import {sendRealtime} from './sendRealtime.ts'
 import {type Task, WorkQueue} from './workqueue.ts'
 
 type EmitPartitionTask = Task & {
@@ -115,7 +115,7 @@ type AnnouncePartitionTask = Task & {
 WorkQueue.register<AnnouncePartitionTask>(
   'AnnouncePartition',
   async (wq: WorkQueue, task: AnnouncePartitionTask): Promise<void> => {
-    await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
+    await sendRealtime(wq, {
       type: 'PartitionUpdate',
       key: task.ref,
     } satisfies PartitionUpdate)

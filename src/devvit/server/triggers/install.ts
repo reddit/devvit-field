@@ -2,12 +2,14 @@ import {Devvit, type TriggerContext} from '@devvit/public-api'
 import {challengeOnInstall} from '../core/challenge'
 import {leaderboardInit} from '../core/leaderboards/global/leaderboard'
 import {teamStatsWinsInit} from '../core/leaderboards/subreddit/team.wins'
+import {realtimeInit} from '../scheduler/sendRealtime.ts'
 import {workQueueInit} from '../scheduler/workqueue.ts'
 
 export const initialize = async (ctx: TriggerContext): Promise<void> => {
   await challengeOnInstall({redis: ctx.redis})
   await leaderboardInit({redis: ctx.redis})
   await teamStatsWinsInit({redis: ctx.redis})
+  await realtimeInit(ctx)
   await workQueueInit(ctx)
 
   const jobs = await ctx.scheduler.listJobs()

@@ -81,10 +81,6 @@ export class WorkQueue {
     })
   }
 
-  async #sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-
   async runUntil(deadline: Date): Promise<void> {
     let inFlight = 0
 
@@ -106,7 +102,7 @@ export class WorkQueue {
     while (new Date() < deadline) {
       const avail = maxConcurrentClaims - inFlight
       if (avail <= 0) {
-        await this.#sleep(100)
+        await sleep(100)
         continue
       }
       const nextTasks = await this.#claimOneBatch(avail)
@@ -114,7 +110,7 @@ export class WorkQueue {
         break
       }
       handleTasks(nextTasks)
-      await this.#sleep(100)
+      await sleep(100)
     }
   }
 
@@ -144,28 +140,13 @@ export class WorkQueue {
     })
   }
 
-  async #withLock<T>(fn: () => Promise<T>, orElse: T): Promise<T> {
-    // Acquire lock
-    let attempts = 0
-    while (attempts < maxTransactionAttempts) {
-      attempts++
-      const res = await this.ctx.redis.hSetNX(lockKey, 'lock', '')
-      if (res > 0) {
-        await this.ctx.redis.expire(lockKey, 1)
-        try {
-          return await fn()
-        } finally {
-          await this.ctx.redis.hDel(lockKey, ['lock'])
-        }
-      }
-      await this.#sleep(attempts * 100 + 50 * Math.random())
-    }
-    this.#debug('gave up acquiring lock')
-    return orElse
-  }
-
   async #claimTasks(n: number): Promise<Task[]> {
-    return this.#withLock(async () => this.#claimTasksUnderLock(n), [])
+    return withLock(
+      this.ctx,
+      lockKey,
+      async () => this.#claimTasksUnderLock(n),
+      [],
+    )
   }
 
   async #claimTasksUnderLock(n: number): Promise<Task[]> {
@@ -202,7 +183,12 @@ export class WorkQueue {
   }
 
   async #stealTasks(n: number): Promise<Task[]> {
-    return this.#withLock(async () => this.#stealTasksUnderLock(n), [])
+    return withLock(
+      this.ctx,
+      lockKey,
+      async () => this.#stealTasksUnderLock(n),
+      [],
+    )
   }
 
   async #stealTasksUnderLock(n: number): Promise<Task[]> {
@@ -260,7 +246,7 @@ export class WorkQueue {
           console.log(`workqueue: stack trace:\n${error.stack}`)
         }
       } else {
-        await this.#sleep(task.attempts * 100 + 50 * Math.random())
+        await sleep(task.attempts * 100 + 50 * Math.random())
         await this.ctx.redis.zAdd(claimsKey, {member: task.key!, score: 0})
       }
     } finally {
@@ -279,4 +265,32 @@ export class WorkQueue {
     task.key = key
     return key
   }
+}
+
+export async function withLock<T>(
+  ctx: JobContext,
+  key: string,
+  fn: () => Promise<T>,
+  orElse: T,
+): Promise<T> {
+  // Acquire lock
+  let attempts = 0
+  while (attempts < maxTransactionAttempts) {
+    attempts++
+    const res = await ctx.redis.hSetNX(key, 'lock', '')
+    if (res > 0) {
+      await ctx.redis.expire(key, 1)
+      try {
+        return await fn()
+      } finally {
+        await ctx.redis.hDel(key, ['lock'])
+      }
+    }
+    await sleep(attempts * 100 + 50 * Math.random())
+  }
+  return orElse
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

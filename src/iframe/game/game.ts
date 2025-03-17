@@ -237,7 +237,7 @@ export class Game {
     this.renderer = new Renderer(this.canvas)
     this.looper = new Looper(this.canvas, this.cam, this.ctrl, this.renderer)
 
-    addEventListener('message', this.#onMsg)
+    addEventListener('message', this.#onMessageEvent)
     this.postMessage({type: 'Registered'})
     this.ctrl.register('add')
     this.looper.register('add')
@@ -282,7 +282,7 @@ export class Game {
 
   stop(): void {
     this.partFetcher.deregister()
-    removeEventListener('message', this.#onMsg)
+    removeEventListener('message', this.#onMessageEvent)
     this.looper?.cancel()
     this.looper?.register('remove')
     this.ctrl?.register('remove')
@@ -399,7 +399,7 @@ export class Game {
   }
 
   #onDevMsg(msg: Readonly<DevvitMessage>): void {
-    this.#onMsg(
+    this.#onMessageEvent(
       new MessageEvent<DevvitSystemMessage>('message', {
         data: {type: 'devvit-message', data: {message: msg}},
       }),
@@ -438,7 +438,7 @@ export class Game {
     this.partFetcher.update()
   }
 
-  #onMsg = (ev: MessageEvent<DevvitSystemMessage>): void => {
+  #onMessageEvent = (ev: MessageEvent<DevvitSystemMessage>): void => {
     // Filter any unknown messages.
     if (ev.data.type !== 'devvit-message') return
 
@@ -449,10 +449,12 @@ export class Game {
     )
       return
 
-    const msg = ev.data.data.message
+    this.#onMsg(ev.data.data.message)
     // if (this.debug || (msg.type === 'Init' && msg.debug))
     //   console.log(`Devvit → iframe msg=${JSON.stringify(msg)}`)
+  }
 
+  #onMsg = (msg: DevvitMessage): void => {
     switch (msg.type) {
       case 'Init': {
         this.appConfig = msg.appConfig
@@ -609,6 +611,11 @@ export class Game {
         this.bannedPlayers = msg.bannedPlayers
         this.players = msg.activePlayers
         this.canvas.dispatchEvent(Bubble('game-update', undefined))
+        break
+      case 'BatchMessage':
+        for (const elem of msg.batch) {
+          this.#onMsg(elem)
+        }
         break
       default:
         msg satisfies never

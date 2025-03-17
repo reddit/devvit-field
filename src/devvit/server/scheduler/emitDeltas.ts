@@ -9,7 +9,6 @@ import {
   fieldS3Path,
   partitionPeriod,
 } from '../../../shared/codecs/deltacodec.js'
-import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
 import {partitionXYs} from '../../../shared/partition.js'
 import type {XY} from '../../../shared/types/2d.js'
 import type {PartitionUpdate} from '../../../shared/types/message.js'
@@ -23,6 +22,11 @@ import {
   Client as S3Client,
   getPathPrefix,
 } from '../core/s3.ts'
+import {
+  flushRealtime,
+  maybeFlushRealtime,
+  sendRealtime,
+} from './sendRealtime.ts'
 import {type Task, WorkQueue, newWorkQueue} from './workqueue.ts'
 
 /**
@@ -129,7 +133,7 @@ type AnnounceDeltasTask = Task & {
 WorkQueue.register<AnnounceDeltasTask>(
   'AnnounceDeltas',
   async (wq: WorkQueue, task: AnnounceDeltasTask): Promise<void> => {
-    await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, {
+    sendRealtime(wq, {
       type: 'PartitionUpdate',
       key: task.ref,
     } satisfies PartitionUpdate)
@@ -156,8 +160,24 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 ): Promise<void> => {
   const wq = await newWorkQueue(ctx)
   const start = Date.now()
-  await emitAllPartitions(ctx, wq)
-  await wq.runUntil(new Date(start + 10_000))
+
+  let pending: Promise<void> | undefined
+  // Drive realtime flushes at regular intervals while the workqueue is still running.
+  const interval = setInterval(() => {
+    pending = maybeFlushRealtime(wq)
+  }, 100)
+
+  try {
+    await emitAllPartitions(ctx, wq)
+    await wq.runUntil(new Date(start + 10_000))
+  } finally {
+    clearInterval(interval)
+    if (pending) await pending
+    //console.log(`flushing realtime queue after scheduled run of ${Date.now()-start}`)
+    await flushRealtime(wq)
+    // Run the workqueue one more time for any realtime sends that were just flushed.
+    await wq.runUntil(new Date(Date.now() + 1_000))
+  }
 }
 
 async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
