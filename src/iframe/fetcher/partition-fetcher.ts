@@ -266,7 +266,10 @@ export class PartitionFetcher {
     const now = utcMillisNow()
     const maxSeqAge = now - this.#maxSeqUpdated
     let seq = this.#maxSeq
-    if (maxSeqAge > this.#live.globalFetcherMaxRealtimeSilenceMillis) {
+    if (
+      this.#maxSeqUpdated &&
+      maxSeqAge > this.#live.globalFetcherMaxRealtimeSilenceMillis
+    ) {
       seq =
         this.#maxSeq +
         Math.max(
@@ -310,7 +313,7 @@ export class PartitionFetcher {
       part.dropped +=
         key.sequenceNumber -
         Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
-    part.seq = Math.max(part.seq, key.sequenceNumber)
+    part.seq = key.sequenceNumber // Always favor a natural sequence.
     part.seqUpdated = utcMillisNow()
     if (part.seq > this.#maxSeq) {
       this.#maxSeq = part.seq
