@@ -101,7 +101,7 @@ WorkQueue.register<PublishPartitionTask>(
 
     await wq.enqueue({
       type: 'AnnouncePartition',
-      maxAttempts: 1, // Don't retry realtime sends
+      maxAttempts: 3, // Only retry realtime sends 3 times, not 5
       ref: key,
     })
   },
