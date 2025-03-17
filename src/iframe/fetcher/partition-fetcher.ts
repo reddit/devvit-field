@@ -57,7 +57,10 @@ type Part = {
    * fetch target and dropped messages.
    */
   seq: number
-  /** The last write to seq by message or artificially. */
+  /**
+   * The last write to seq by message or artificially. Updated when no change
+   * too.
+   */
   seqUpdated: UTCMillis | 0
   /**
    * The latest sequence written to a partition (could be patch or replace). Use
@@ -133,29 +136,17 @@ export class PartitionFetcher {
     this.#config = config
     this.#t5 = t5
 
-    if (!key) return
-    const part = this.#recordMessage(key)
-    void this.#fetchPart(part) // Assume visible.
+    if (key) this.#recordMessage(key)
   }
 
   /** Called when a new partition is available for download by realtime. */
   message(update: Readonly<PartitionUpdate>): void {
-    const part = this.#recordMessage(update.key)
+    this.#recordMessage(update.key)
 
     // if (update.key.kind === 'deltas')
     //   console.log(
     //     `message xy=${update.key.partitionXY.x}-${update.key.partitionXY.y} seq=${update.key.sequenceNumber} noChange=${update.key.noChange}`,
     //   )
-
-    // Not initialized yet for challenge.
-    if (!this.#config || update.key.challengeNumber !== this.#challenge) return
-
-    if (
-      (update.key.kind === 'partition' || update.key.noChange) &&
-      part.written !== noSeq
-    )
-      return // Nothing new.
-    if (this.#isPartFetchable(part)) void this.#fetchPart(part) // to-do: await on separate thread.
   }
 
   /** Register sequence timer. */
@@ -185,10 +176,13 @@ export class PartitionFetcher {
     const partitionOffset = part.seq % partitionPeriod
     let kind: S3Kind = 'deltas'
     if (
-      part.dropped > this.#live.globalFetcherMaxDroppedPatches ||
-      part.written === noSeq ||
-      part.seq - part.replaced >
-        this.#live.globalFetcherMandatoryReplaceSequencePeriod
+      (part.dropped > this.#live.globalFetcherMaxDroppedPatches ||
+        part.seq - part.replaced >
+          this.#live.globalFetcherMandatoryReplaceSequencePeriod) &&
+      part.replaced !== part.seq - partitionOffset &&
+      (part.written === noSeq ||
+        part.dropped - partitionOffset <
+          this.#live.globalFetcherMaxDroppedPatches)
     )
       // Partition offset may be > max dropped requiring a subsequent replace
       // request. This seems better than to keep downloading deltas hoping for a
@@ -229,7 +223,7 @@ export class PartitionFetcher {
       part.dropped = Math.max(0, part.dropped - (prevDropped - partitionOffset))
       part.replaced = key.sequenceNumber
     }
-    part.written = key.sequenceNumber
+    part.written = Math.max(part.written, key.sequenceNumber)
 
     // Applying never resets boxes so order is irrelevant. Always accept old
     // responses.
@@ -324,11 +318,12 @@ export class PartitionFetcher {
       key.sequenceNumber -
       Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
 
-    part.seq = key.sequenceNumber
-    part.seqUpdated = utcMillisNow()
-    if (part.seq > this.#maxSeq) {
-      this.#maxSeq = part.seq
-      this.#maxSeqUpdated = part.seqUpdated
+    const now = utcMillisNow()
+    if (!key.noChange) part.seq = key.sequenceNumber
+    part.seqUpdated = now
+    if (key.sequenceNumber > this.#maxSeq) {
+      this.#maxSeq = key.sequenceNumber
+      this.#maxSeqUpdated = now
     }
 
     return part
