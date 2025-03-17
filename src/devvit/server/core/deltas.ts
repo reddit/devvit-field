@@ -182,5 +182,9 @@ export async function deltasPublish(
     noChange: encodedB64 === '',
   }
   await uploader.upload(key, copy)
+  // if (!key.noChange)
+  //   console.log(
+  //     `upload part=${key.partitionXY.x}-${key.partitionXY.y} seq=${key.sequenceNumber}`,
+  //   )
   return key
 }

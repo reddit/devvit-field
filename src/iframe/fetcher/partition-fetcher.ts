@@ -142,6 +142,11 @@ export class PartitionFetcher {
   message(update: Readonly<PartitionUpdate>): void {
     const part = this.#recordMessage(update.key)
 
+    // if (update.key.kind === 'deltas')
+    //   console.log(
+    //     `message xy=${update.key.partitionXY.x}-${update.key.partitionXY.y} seq=${update.key.sequenceNumber} noChange=${update.key.noChange}`,
+    //   )
+
     // Not initialized yet for challenge.
     if (!this.#config || update.key.challengeNumber !== this.#challenge) return
 
@@ -193,7 +198,7 @@ export class PartitionFetcher {
     const key = {
       challengeNumber: this.#challenge,
       kind,
-      noChange: true, // to-do: fix type.
+      noChange: false, // to-do: fix type.
       partitionXY: part.xy,
       pathPrefix: this.#pathPrefix,
       sequenceNumber: part.seq - (kind === 'deltas' ? 0 : partitionOffset),
@@ -204,6 +209,8 @@ export class PartitionFetcher {
     part.fetched = utcMillisNow()
     part.pending = key.sequenceNumber
     this.#pending++
+
+    // console.log(`fetch xy=${part.xy.x}-${part.xy.y} seq=${key.sequenceNumber}`)
 
     let rsp
     try {
@@ -278,7 +285,9 @@ export class PartitionFetcher {
             (maxSeqAge + this.#live.globalFetcherGuessOffsetMillis) / 1000,
           ),
         )
-      // console.log(`guessing seq=${seq} maxSeq=${this.#maxSeq}`)
+      // console.log(
+      //   `guessing seq=${seq} maxSeq=${this.#maxSeq} age=${maxSeqAge} offset=${this.#live.globalFetcherGuessOffsetMillis}`,
+      // )
     }
 
     for (const xy of boxParts(this.#camPartBox, this.#config.partSize)) {
@@ -301,19 +310,21 @@ export class PartitionFetcher {
     const partKey = makePartitionKey(key.partitionXY)
     const part = (this.#part[partKey] ??= Part(key.partitionXY))
 
-    // Replace messages are expected to duplicate patch messages and do not
-    // correctly post noChange. This would cause a double count if both are
-    // received. This conditional is not quite correct since it's possible to
-    // only receive a replace but deduplicating reliably would be hard.
-    if (key.kind === 'deltas')
-      // Record dropped before fetching. Realtime updates always come in order
-      // but responses do not. noSeq is -1. Patch and replace messages can come
-      // in any order which means part.seq may or may not be equal to
-      // key.sequenceNumber.
-      part.dropped +=
-        key.sequenceNumber -
-        Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
-    part.seq = key.sequenceNumber // Always favor a natural sequence.
+    // Replace messages are expected to duplicate patch messages but do not
+    // correctly post noChange and may be out of sync with patches. It's
+    // possible to only receive a replace and no delta but deduplicating
+    // reliably would be hard. The sequence number could be updated to the
+    // greatest seen but then artificial sequences would need to be tracked
+    // separately so that part.seq could always be the max.
+    if (key.kind !== 'deltas') return part
+
+    // Record dropped before fetching. Realtime updates always come in order
+    // but responses do not. noSeq is -1.
+    part.dropped +=
+      key.sequenceNumber -
+      Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
+
+    part.seq = key.sequenceNumber
     part.seqUpdated = utcMillisNow()
     if (part.seq > this.#maxSeq) {
       this.#maxSeq = part.seq
