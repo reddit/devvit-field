@@ -584,7 +584,7 @@ export class Game {
             this.canvas.dispatchEvent(
               Bubble('game-ui', {ui: 'DialogMessage', msg}),
             )
-          }, 2100)
+          }, 1700)
         } else {
           this.canvas.dispatchEvent(
             Bubble('game-ui', {ui: 'DialogMessage', msg}),
