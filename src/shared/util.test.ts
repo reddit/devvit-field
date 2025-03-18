@@ -8,7 +8,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: ['banana', 'orange'],
       toUnsubscribe: ['apple', 'grape'],
       toSubscribe: ['kiwi', 'melon'],
@@ -21,7 +21,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: [],
       toUnsubscribe: [],
       toSubscribe: [],
@@ -34,7 +34,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: [],
       toUnsubscribe: ['apple', 'banana'],
       toSubscribe: ['kiwi', 'melon'],
@@ -47,7 +47,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: ['apple', 'banana', 'orange'],
       toUnsubscribe: [],
       toSubscribe: [],
@@ -60,7 +60,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: [],
       toUnsubscribe: [],
       toSubscribe: ['apple', 'banana', 'orange'],
@@ -73,7 +73,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: [],
       toUnsubscribe: ['apple', 'banana', 'orange'],
       toSubscribe: [],
@@ -86,7 +86,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: [3, 4],
       toUnsubscribe: [1, 2],
       toSubscribe: [5, 6],
@@ -99,7 +99,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: [2, '3', 4],
       toUnsubscribe: ['1'],
       toSubscribe: ['5'],
@@ -112,7 +112,7 @@ describe('diffArrays', () => {
 
     const result = diffArrays(oldList, newList)
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       duplicates: ['', 0],
       toUnsubscribe: [],
       toSubscribe: [],

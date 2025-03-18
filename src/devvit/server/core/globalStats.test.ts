@@ -18,7 +18,7 @@ DevvitTest.it('should init, increment, and get global stats', async ctx => {
 
   await expect(
     globalStatsGet({redis: ctx.redis, globalNumber: 0}),
-  ).resolves.toEqual(globalStatsInitialState)
+  ).resolves.toStrictEqual(globalStatsInitialState)
 
   await globalStatsIncrement({
     redis: ctx.redis,
@@ -28,7 +28,7 @@ DevvitTest.it('should init, increment, and get global stats', async ctx => {
 
   await expect(
     globalStatsGet({redis: ctx.redis, globalNumber: 0}),
-  ).resolves.toEqual({
+  ).resolves.toStrictEqual({
     ...globalStatsInitialState,
     totalPlayers: 1,
   } satisfies GlobalStats)
@@ -49,7 +49,7 @@ DevvitTest.it(
 
     await expect(
       globalStatsGet({redis: ctx.redis, globalNumber: 0}),
-    ).resolves.toEqual({
+    ).resolves.toStrictEqual({
       ...globalStatsInitialState,
       totalPlayers: 1,
     } satisfies GlobalStats)

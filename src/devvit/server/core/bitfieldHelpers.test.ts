@@ -8,9 +8,9 @@ it('encodeVTT - encodes claimed and team', () => {
 })
 
 it('decodeVTT - decodes claimed and team', () => {
-  expect(decodeVTT(0)).toEqual({claimed: 0, team: 0})
-  expect(decodeVTT(4)).toEqual({claimed: 1, team: 0})
-  expect(decodeVTT(7)).toEqual({claimed: 1, team: 3})
+  expect(decodeVTT(0)).toStrictEqual({claimed: 0, team: 0})
+  expect(decodeVTT(4)).toStrictEqual({claimed: 1, team: 0})
+  expect(decodeVTT(7)).toStrictEqual({claimed: 1, team: 3})
 })
 
 it('parseBitfieldToFlatArray - should correctly parse a 1x1 pixel from a single byte', () => {
@@ -22,5 +22,5 @@ it('parseBitfieldToFlatArray - should correctly parse a 1x1 pixel from a single 
   const width = 1
   const height = 1
 
-  expect(parseBitfieldToFlatArray(buf, width, height)).toEqual([7])
+  expect(parseBitfieldToFlatArray(buf, width, height)).toStrictEqual([7])
 })

@@ -32,7 +32,7 @@ DevvitTest.it(
       ctx,
     })
 
-    await expect(appInitState(ctx)).resolves.toEqual({
+    await expect(appInitState(ctx)).resolves.toStrictEqual({
       status: 'pass',
       appConfig: getDefaultAppConfig(),
       challengeConfig: {
@@ -64,6 +64,7 @@ DevvitTest.it(
         x: expect.any(Number),
         y: expect.any(Number),
       },
+      initialMapKey: undefined,
       level: config2.levels[0],
       profile: {
         currentLevel: 0,
@@ -118,7 +119,7 @@ DevvitTest.it(
       ctx,
     })
 
-    await expect(appInitState(ctx)).resolves.toEqual({
+    await expect(appInitState(ctx)).resolves.toStrictEqual({
       type: 'Dialog',
       code: 'WrongLevelBanned',
       message: expect.any(String),
@@ -126,6 +127,7 @@ DevvitTest.it(
       team: 2,
       redirectURL: expect.any(String),
       profile: expect.any(Object),
+      team: 2,
     })
   },
 )

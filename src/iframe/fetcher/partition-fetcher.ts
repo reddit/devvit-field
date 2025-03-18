@@ -298,6 +298,8 @@ export class PartitionFetcher {
   }
 
   #recordMessage(key: Readonly<DeltaSnapshotKey>): Part {
+    // to-do: what to do when challenge changes but not init? Should be handled
+    //        by Blocks.
     this.#challenge = Math.max(this.#challenge, key.challengeNumber)
     this.#pathPrefix = key.pathPrefix
 
@@ -319,7 +321,7 @@ export class PartitionFetcher {
       Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
 
     const now = utcMillisNow()
-    // to-do: if (!key.noChange) 
+    // to-do: if (!key.noChange)
     part.seq = key.sequenceNumber
     part.seqUpdated = now
     if (key.sequenceNumber > this.#maxSeq) {

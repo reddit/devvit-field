@@ -147,6 +147,6 @@ describe('leaderboardUpdate', async () => {
     // And expect that the new challenge was started (challenge number incremented)
     expect(
       await challengeGetCurrentChallengeNumber({redis: ctx.redis}),
-    ).toEqual(challengeNumber + 1)
+    ).toStrictEqual(challengeNumber + 1)
   })
 })

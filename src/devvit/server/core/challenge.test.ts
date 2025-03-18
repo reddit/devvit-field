@@ -23,15 +23,15 @@ DevvitTest.it(
 
     await expect(
       challengeGetCurrentChallengeNumber({redis: ctx.redis}),
-    ).resolves.toEqual(0)
+    ).resolves.toStrictEqual(0)
 
     await expect(
       challengeIncrementCurrentChallengeNumber({redis: ctx.redis}),
-    ).resolves.toEqual(1)
+    ).resolves.toStrictEqual(1)
 
     await expect(
       challengeGetCurrentChallengeNumber({redis: ctx.redis}),
-    ).resolves.toEqual(1)
+    ).resolves.toStrictEqual(1)
   },
 )
 
@@ -51,7 +51,7 @@ DevvitTest.it(
         challengeNumber,
         subredditId: 't5_0',
       }),
-    ).resolves.toEqual({
+    ).resolves.toStrictEqual({
       size: expect.any(Number),
       partitionSize: expect.any(Number),
       mineDensity: 59,
@@ -84,9 +84,11 @@ DevvitTest.it(
       challengeNumber,
     })
 
-    expect(challengeConfig.size).toEqual(defaultConfig.size)
-    expect(challengeConfig.partitionSize).toEqual(defaultConfig.partitionSize)
-    expect(challengeConfig.mineDensity).toEqual(defaultConfig.mineDensity)
+    expect(challengeConfig.size).toStrictEqual(defaultConfig.size)
+    expect(challengeConfig.partitionSize).toStrictEqual(
+      defaultConfig.partitionSize,
+    )
+    expect(challengeConfig.mineDensity).toStrictEqual(defaultConfig.mineDensity)
 
     expect(challengeConfig.seed).toBeDefined()
   },
@@ -104,13 +106,13 @@ DevvitTest.it(
       challengeNumber,
     })
 
-    expect(challengeConfig.size).toEqual(
+    expect(challengeConfig.size).toStrictEqual(
       makeFallbackDefaultChallengeConfig().size,
     )
-    expect(challengeConfig.partitionSize).toEqual(
+    expect(challengeConfig.partitionSize).toStrictEqual(
       makeFallbackDefaultChallengeConfig().partitionSize,
     )
-    expect(challengeConfig.mineDensity).toEqual(
+    expect(challengeConfig.mineDensity).toStrictEqual(
       makeFallbackDefaultChallengeConfig().mineDensity,
     )
     expect(challengeConfig.seed).toBeDefined()
@@ -148,9 +150,9 @@ DevvitTest.it(
       challengeNumber,
     })
 
-    expect(challengeConfig.size).toEqual(modConfig.size)
-    expect(challengeConfig.partitionSize).toEqual(modConfig.partitionSize)
-    expect(challengeConfig.mineDensity).toEqual(modConfig.mineDensity)
+    expect(challengeConfig.size).toStrictEqual(modConfig.size)
+    expect(challengeConfig.partitionSize).toStrictEqual(modConfig.partitionSize)
+    expect(challengeConfig.mineDensity).toStrictEqual(modConfig.mineDensity)
     expect(challengeConfig.seed).toBeDefined()
   },
 )

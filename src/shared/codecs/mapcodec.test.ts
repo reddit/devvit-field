@@ -73,7 +73,7 @@ describe('MapCodec', () => {
       const bytes = codec.encode(cells.values())
       console.log(`${name}: encoded ${cells.length} into ${bytes.length} bytes`)
       const copy = [...codec.decode(bytes)]
-      expect(copy).toEqual(cells)
+      expect(copy).toStrictEqual(cells)
       if (validate) {
         validate(bytes)
       }

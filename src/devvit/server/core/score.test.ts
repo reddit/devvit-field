@@ -12,7 +12,7 @@ it('score should return 0 if no scores', () => {
         {member: 0, score: 0},
       ],
     }),
-  ).toEqual({
+  ).toStrictEqual({
     isOver: false,
     remainingPercentage: 100,
     winner: undefined,
@@ -30,7 +30,7 @@ it('does not require teams to be provided in order', () => {
         {member: 1, score: 0},
       ],
     }),
-  ).toEqual({
+  ).toStrictEqual({
     isOver: true,
     remainingPercentage: 25,
     winner: 3,
@@ -48,7 +48,7 @@ it('score declare winner when no one can pass the person in the lead', () => {
         {member: 0, score: 0},
       ],
     }),
-  ).toEqual({
+  ).toStrictEqual({
     isOver: true,
     remainingPercentage: 25,
     winner: 3,
@@ -66,7 +66,7 @@ it('score does not blow up on a tie and chooses someone', () => {
         {member: 0, score: 0},
       ],
     }),
-  ).toEqual({
+  ).toStrictEqual({
     isOver: true,
     remainingPercentage: 0,
     winner: expect.any(Number),
