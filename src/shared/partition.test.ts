@@ -70,7 +70,10 @@ it('getPartitionAndLocalCoords', () => {
 })
 
 it('getGlobalCoords', () => {
-  expect(getGlobalCoords({x: 0, y: 0}, {x: 0, y: 0}, 10)).toStrictEqual({x: 0, y: 0})
+  expect(getGlobalCoords({x: 0, y: 0}, {x: 0, y: 0}, 10)).toStrictEqual({
+    x: 0,
+    y: 0,
+  })
   expect(getGlobalCoords({x: 1, y: 1}, {x: 0, y: 0}, 10)).toStrictEqual({
     x: 10,
     y: 10,

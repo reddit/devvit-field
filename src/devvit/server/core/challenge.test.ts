@@ -85,7 +85,9 @@ DevvitTest.it(
     })
 
     expect(challengeConfig.size).toStrictEqual(defaultConfig.size)
-    expect(challengeConfig.partitionSize).toStrictEqual(defaultConfig.partitionSize)
+    expect(challengeConfig.partitionSize).toStrictEqual(
+      defaultConfig.partitionSize,
+    )
     expect(challengeConfig.mineDensity).toStrictEqual(defaultConfig.mineDensity)
 
     expect(challengeConfig.seed).toBeDefined()
