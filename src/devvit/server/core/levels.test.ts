@@ -73,7 +73,7 @@ DevvitTest.it('should pass if user has never played on level 0', async ctx => {
       ctx,
       profile,
     }),
-  ).resolves.toEqual({pass: true})
+  ).resolves.toStrictEqual({pass: true})
 })
 
 DevvitTest.it(
@@ -120,7 +120,7 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
+    ).resolves.toStrictEqual({pass: true})
   },
 )
 
@@ -225,14 +225,14 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
+    ).resolves.toStrictEqual({pass: true})
 
     await expect(
       userGet({
         redis: ctx.redis,
         userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(
+    ).resolves.toStrictEqual(
       // TODO(gunsch/marcus): I think I may have undone a Marcus edge case fix in merge conflict.
       // Come back to this.
       expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 1}),
@@ -341,7 +341,7 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
+    ).resolves.toStrictEqual({pass: true})
   },
 )
 
@@ -412,7 +412,7 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
+    ).resolves.toStrictEqual({pass: true})
   },
 )
 
@@ -453,7 +453,7 @@ DevvitTest.it('should not pass if user is on the wrong level', async ctx => {
       ctx,
       profile,
     }),
-  ).resolves.toEqual(expect.objectContaining({pass: false}))
+  ).resolves.toStrictEqual(expect.objectContaining({pass: false}))
 })
 
 // TODO: this is a good test, but right now is broken since game "win" is no
@@ -545,12 +545,12 @@ DevvitTest.it('should not pass if user is on the wrong level', async ctx => {
 //         ctx,
 //         profile,
 //       }),
-//     ).resolves.toEqual(expect.objectContaining({pass: false}))
+//     ).resolves.toStrictEqual(expect.objectContaining({pass: false}))
 //     await expect(
 //       userGet({
 //         redis: ctx.redis,
 //         userId: USER_IDS.TEAM_2_PLAYER_1,
 //       }),
-//     ).resolves.toEqual(expect.objectContaining({currentLevel: 0}))
+//     ).resolves.toStrictEqual(expect.objectContaining({currentLevel: 0}))
 //   },
 // )

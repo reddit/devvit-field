@@ -21,7 +21,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
 
   await expect(
     teamStatsMinesHitGet({redis: ctx.redis, challengeNumber: 0}),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 3, score: 0},
     {member: 2, score: 0},
     {member: 1, score: 0},
@@ -58,7 +58,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
       challengeNumber: 0,
       sort: 'DESC',
     }),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 0, score: 2},
     {member: 2, score: 1},
     {member: 3, score: 0},
@@ -71,7 +71,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
       challengeNumber: 0,
       sort: 'ASC',
     }),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 1, score: 0},
     {member: 3, score: 0},
     {member: 2, score: 1},

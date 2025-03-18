@@ -22,7 +22,7 @@ DevvitTest.it(
     const retrievedConfig = await defaultChallengeConfigMaybeGet({
       redis: ctx.redis,
     })
-    expect(retrievedConfig).toEqual(config)
+    expect(retrievedConfig).toStrictEqual(config)
   },
 )
 
@@ -58,7 +58,7 @@ DevvitTest.it(
       defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       }),
-    ).resolves.toEqual(initialConfig)
+    ).resolves.toStrictEqual(initialConfig)
 
     await defaultChallengeConfigSet({
       redis: ctx.redis,
@@ -68,7 +68,7 @@ DevvitTest.it(
       defaultChallengeConfigMaybeGet({
         redis: ctx.redis,
       }),
-    ).resolves.toEqual(updatedConfig)
+    ).resolves.toStrictEqual(updatedConfig)
   },
 )
 

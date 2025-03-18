@@ -10,7 +10,7 @@ import {
 DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
   await teamStatsWinsInit({redis: ctx.redis})
 
-  await expect(teamStatsWinsGet({redis: ctx.redis})).resolves.toEqual([
+  await expect(teamStatsWinsGet({redis: ctx.redis})).resolves.toStrictEqual([
     {member: 3, score: 0},
     {member: 2, score: 0},
     {member: 1, score: 0},
@@ -41,7 +41,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
 
   await expect(
     teamStatsWinsGet({redis: ctx.redis, sort: 'DESC'}),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 0, score: 2},
     {member: 2, score: 1},
     {member: 3, score: 0},
@@ -50,7 +50,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
 
   await expect(
     teamStatsWinsGet({redis: ctx.redis, sort: 'ASC'}),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 1, score: 0},
     {member: 3, score: 0},
     {member: 2, score: 1},

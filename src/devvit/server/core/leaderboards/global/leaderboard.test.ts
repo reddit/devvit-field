@@ -14,7 +14,7 @@ beforeEach(async () => {
 DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
   await leaderboardInit({redis: ctx.redis})
 
-  await expect(leaderboardGet({redis: ctx.redis})).resolves.toEqual([
+  await expect(leaderboardGet({redis: ctx.redis})).resolves.toStrictEqual([
     {member: 3, score: 0},
     {member: 2, score: 0},
     {member: 1, score: 0},
@@ -45,7 +45,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
 
   await expect(
     leaderboardGet({redis: ctx.redis, sort: 'DESC'}),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 0, score: 2},
     {member: 2, score: 1},
     {member: 3, score: 0},
@@ -54,7 +54,7 @@ DevvitTest.it('should init, increment, and get challenge stats', async ctx => {
 
   await expect(
     leaderboardGet({redis: ctx.redis, sort: 'ASC'}),
-  ).resolves.toEqual([
+  ).resolves.toStrictEqual([
     {member: 1, score: 0},
     {member: 3, score: 0},
     {member: 2, score: 1},
