@@ -16,7 +16,7 @@ import {
   variableStartToken,
 } from '../../../shared/locale.ts'
 import {type Team, teamTitleCase} from '../../../shared/team.ts'
-import {levelHighlightColor} from '../../../shared/types/level.ts'
+import {type Level, levelHighlightColor} from '../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -61,10 +61,11 @@ export class DialogStaying extends LitElement {
         flex-grow: 0;
       }`
 
-  @property({type: Number}) accessor subLvl: 0 | 1 | 2 | 3 | undefined = 0
+  @property({type: Number}) accessor subLvl: Level | undefined = 0
   @property({type: Number}) accessor roundNumber: number = 0
   @property({type: Number}) accessor team: Team = 0
   @property({type: Number}) accessor myPoints: number = 0
+  @property({attribute: false}) accessor buttonHandler: () => void = () => {}
 
   protected override render(): TemplateResult {
     this.style.setProperty(
@@ -109,7 +110,7 @@ export class DialogStaying extends LitElement {
           .subLvl=${this.subLvl}
           buttonLabel=${localize('staying-dialog-button-label')}
           buttonLevel=${this.subLvl ?? 0}
-          .buttonHandler=${() => console.log('to-do: navigate to new sub')}>
+          .buttonHandler=${this.buttonHandler}>
           <div class="container">
             <dialog-container .height=${96} .subLvl=${this.subLvl ?? 0}>
               <div .innerHTML=${title.join('')}></div>

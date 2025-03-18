@@ -44,7 +44,7 @@ export type AppState =
   | ({
       status: 'dialog'
       profile: Awaited<ReturnType<typeof userGetOrSet>>
-    } & Omit<DialogMessage, 'type'>)
+    } & DialogMessage)
   /** User has to verify email  */
   | {
       status: 'needsToVerifyEmail'

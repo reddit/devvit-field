@@ -119,6 +119,8 @@ export function App(ctx: Devvit.Context): JSX.Element {
   // as part of the dialog so we need to do this. If it's a problem, we need a
   // dialog that pops up on challenge complete and then a `Next` button that
   // makes this check and then a final state that shows the dialog.
+  //
+  // NOTE: This is buggy and somehow runs twice on challenge end
   useAsync(
     async () => {
       if (!challengeEndedState) return null
@@ -141,6 +143,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
             'This round has ended. Please refresh to begin the next round.',
           redirectURL: '',
           profile,
+          standings: challengeEndedState.standings,
         }) //TODO: clean this up
         return null
       }
@@ -161,6 +164,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
 
   const iframe = useWebView<IframeMessage, DevvitMessage>({
+    url: 'index.html',
     onMessage: onMsg,
     onUnmount: () => {
       setIsIframeMounted(false)
@@ -250,7 +254,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'Registered': {
         if (appState.status === 'dialog') {
           const {status: _status, ...rest} = appState
-          iframe.postMessage({type: 'Dialog', ...rest})
+          iframe.postMessage(rest)
         } else if (appState.status === 'pass') {
           sendInitToIframe(appState)
         }
@@ -260,7 +264,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       case 'ClaimBoxes': {
         if (appState.status === 'dialog') {
           const {status: _status, ...rest} = appState
-          iframe.postMessage({type: 'Dialog', ...rest})
+          iframe.postMessage(rest)
         } else if (appState.status === 'pass') {
           // Get a fresh profile in case something has changed!
           const profile = await userGet({

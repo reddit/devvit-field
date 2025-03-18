@@ -28,27 +28,27 @@ import {
   paletteWhatIsFieldLight,
 } from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
-import type {
-  ChallengeCompleteMessage,
-  DialogMessage,
-} from '../../shared/types/message.ts'
+import type {DialogMessage} from '../../shared/types/message.ts'
 import {Game} from '../game/game.ts'
 import type {BFTerminal} from './bf-terminal.ts'
 import {cssReset} from './css-reset.ts'
 
-import './dialogs/dialog-webgl.ts'
-import './dialogs/dialog-ascended.ts'
-import './dialogs/dialog-staying.ts'
-import './dialogs/dialog-banned.ts'
 import './bf-dialog.ts'
 import './bf-terminal.ts'
+import './dialogs/dialog-ascended.ts'
+import './dialogs/dialog-banned.ts'
+import './dialogs/dialog-global-point.ts'
+import './dialogs/dialog-staying.ts'
+import './dialogs/dialog-unauthorized.ts'
+import './dialogs/dialog-webgl.ts'
+import type {Level} from '../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementEventMap {
     'game-debug': CustomEvent<string>
     'game-ui': CustomEvent<{
       ui: UI
-      msg: DialogMessage | ChallengeCompleteMessage | undefined
+      msg: DialogMessage | undefined
     }>
     /** Request update; Game properties have changed. */
     'game-update': CustomEvent<undefined>
@@ -58,14 +58,12 @@ declare global {
   }
 }
 
-// to-do: fill out the remaining states.
 export type UI =
   | 'DialogMessage'
-  | 'Loading'
-  /** Promoted, replaying / stuck, or demoted. */
+  /** User not using a device that supports WebGL 2 */
   | 'NoWebGL'
+  | 'Loading'
   | 'Playing'
-  | 'Scored'
 
 /**
  * Game canvas wrapper and DOM UI. Pass primitive properties to children so
@@ -95,6 +93,7 @@ export class BFGame extends LitElement {
 
   #dbgLog: string = ''
   #game: Game = new Game(this)
+  #msg: DialogMessage | undefined
 
   // to-do: pass to game.
   async canvas(): Promise<HTMLCanvasElement> {
@@ -128,61 +127,107 @@ export class BFGame extends LitElement {
       this.#game.team == null ? undefined : teamPascalCase[this.#game.team]
 
     let dialog
+
+    const currentLvl: Level | undefined = this.#game.subLvl
+    const bannedLevel = (currentLvl! + 1) as Level
+    const ascendALevel = currentLvl! > 0 ? currentLvl! - 1 : 0
+    const winningTeam =
+      this.#msg?.code === 'ChallengeEndedAscend' ||
+      this.#msg?.code === 'ChallengeEndedStay'
+        ? this.#msg.standings[0]?.member
+        : 0
+
     switch (this.ui) {
       case 'Loading':
         // to-do: no background, no nothing.
         break
       case 'Playing':
         break
-      case 'DialogMessage':
-        // code: 'WrongLevelBanned' 'ChallengeEndedStay'
-        // message: 'You are banned from this level.'
-
-        dialog = html`
-          <dialog-banned
-            subLvl=${1}
-            buttonLevel=${3}
-            .buttonHandler=${() => {
-              this.#game.postMessage({type: 'OnNextChallengeClicked'})
-            }}
-          >
-        </dialog-banned>`
-
-        // dialog = html`
-        //   <dialog-staying
-        //     subLvl=${1}
-        //     roundNumber=${42}
-        //     team=${0}
-        //     myPoints=${7}
-        //     .buttonHandler=${() => {
-        //       console.log('to-do: start again')
-        //     }}
-        //   >
-        // </dialog-staying>`
-
-        // dialog = html`<dialog-webgl></dialog-webgl>`
-
-        // dialog = html`
-        //   <dialog-ascended
-        //     subLvl=${1}
-        //     buttonLevel=${2}
-        //     .buttonHandler=${() => {
-        //       console.log('to-do: navigate to new sub')
-        //     }}
-        //   >
-        // </dialog-ascended>`
-        break
       case 'NoWebGL':
-        // to-do: replce with dialog-webgl above.
+        dialog = html`<dialog-webgl></dialog-webgl>`
         dialog = html`
-          <bf-dialog>
-            <h2>Error</h2>
-            WebGL 2 support is required to play. Try another device.
-          </bf-dialog>
         `
         break
-      case 'Scored':
-        return html`to-do: fix me.`
+      // case 'Scored':
+      //   return html`to-do: fix me.`
+      case 'DialogMessage': {
+        if (this.#msg?.type !== 'Dialog') throw new Error('no dialog message')
+        switch (this.#msg?.code) {
+          case 'ClaimedABanBox':
+            dialog = html`
+              <dialog-banned
+                subLvl=${ifDefined(currentLvl)}
+                buttonLevel=${bannedLevel}
+                .buttonHandler=${() => {
+                  this.#msg
+                    ? this.#game.postMessage(this.#msg)
+                    : console.log('no msg')
+                }}
+              >
+            </dialog-banned>`
+            break
+          case 'GlobalPointClaimed':
+            dialog = html`
+              <dialog-global-point
+                subLvl=${ifDefined(currentLvl)}
+                buttonLevel=${0}
+                .buttonHandler=${() => {
+                  this.#msg
+                    ? this.#game.postMessage(this.#msg)
+                    : console.log('no msg')
+                }}
+              >
+            </dialog-global-point>`
+            break
+          case 'ChallengeEndedAscend':
+            dialog = html`
+              <dialog-ascended
+                subLvl=${ifDefined(currentLvl)}
+                buttonLevel=${ascendALevel}
+                .buttonHandler=${() => {
+                  this.#msg
+                    ? this.#game.postMessage(this.#msg)
+                    : console.log('no msg')
+                }}
+                .team=${winningTeam ? winningTeam : 0}
+              >
+            </dialog-ascended>`
+            break
+          case 'ChallengeEndedStay':
+            dialog = html`
+              <dialog-staying
+                subLvl=${ifDefined(currentLvl)}
+                roundNumber=${0}
+                .team=${winningTeam ? winningTeam : 0}
+                myPoints=${this.#msg.profile.lastPlayedChallengeNumberCellsClaimed}
+                .buttonHandler=${() => {
+                  this.#game.postMessage({type: 'OnNextChallengeClicked'})
+                }}
+              >
+            </dialog-staying>`
+            break
+          case 'WrongLevelBanned':
+            //TODO: update button text w/ next sub name
+            dialog = html`
+              <dialog-unauthorized
+              subLvl=${ifDefined(currentLvl)}
+              roundNumber=${0}
+              team=${this.#msg.team}
+              myPoints=${this.#msg.profile.lastPlayedChallengeNumberCellsClaimed}
+              .buttonHandler=${() => {
+                this.#msg
+                  ? this.#game.postMessage(this.#msg)
+                  : console.log('no msg')
+              }}
+              >
+            </dialog-unauthorized>`
+            break
+          default:
+            this.#msg satisfies never
+        }
+
+        break
+      }
       default:
         this.ui satisfies never
     }
@@ -236,6 +281,7 @@ export class BFGame extends LitElement {
           }}'
           @game-ui='${(ev: CustomEvent<{ui: UI; msg: DialogMessage}>) => {
             this.ui = ev.detail.ui
+            this.#msg = ev.detail.msg
           }}'
           @game-update='${() => this.requestUpdate()}'
           @claim='${this.#onClaim}'

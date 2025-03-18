@@ -43,6 +43,7 @@ export const levelsIsUserInRightPlace = async ({
     )
   }
   const userLevel = config2.levels.find(x => x.id === profile.currentLevel)!
+  const userTeam = getTeamFromUserId(profile.t2)
 
   if (profile.currentLevel !== subredditLevel.id) {
     return {
@@ -50,6 +51,8 @@ export const levelsIsUserInRightPlace = async ({
       message: `You have been permanently banned from r/${subredditLevel.subredditName}`,
       redirectURL: userLevel.url,
       code: 'WrongLevelBanned',
+      profile,
+      team: userTeam,
       type: 'Dialog',
     }
   }
@@ -74,7 +77,6 @@ export const levelsIsUserInRightPlace = async ({
   }
 
   const winningTeam = standings[0]!.member
-  const userTeam = getTeamFromUserId(profile.t2)
 
   if (
     winningTeam === userTeam &&
@@ -98,6 +100,7 @@ export const levelsIsUserInRightPlace = async ({
       redirectURL: newLevelForUserConfig.url,
       type: 'Dialog',
       profile,
+      standings,
     }
   }
 

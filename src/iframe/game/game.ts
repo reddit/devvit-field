@@ -574,8 +574,7 @@ export class Game {
         // to-do: implement.
         break
       case 'ChallengeComplete': {
-        if (!this.p1) return
-        this.canvas.dispatchEvent(Bubble('game-ui', {ui: 'DialogMessage', msg}))
+        // we don't use this case here, challengeEnded conditions are handled by Dialog
         break
       }
       case 'Dialog':
@@ -585,7 +584,7 @@ export class Game {
             this.canvas.dispatchEvent(
               Bubble('game-ui', {ui: 'DialogMessage', msg}),
             )
-          }, 2200)
+          }, 2100)
         } else {
           this.canvas.dispatchEvent(
             Bubble('game-ui', {ui: 'DialogMessage', msg}),

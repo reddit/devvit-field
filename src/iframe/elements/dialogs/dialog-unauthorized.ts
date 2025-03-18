@@ -18,12 +18,12 @@ import {type Level, levelPascalCase} from '../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
-    'dialog-banned': DialogBanned
+    'dialog-unauthorized': DialogUnauthorized
   }
 }
 
-@customElement('dialog-banned')
-export class DialogBanned extends LitElement {
+@customElement('dialog-unauthorized')
+export class DialogUnauthorized extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 
@@ -45,7 +45,7 @@ export class DialogBanned extends LitElement {
     }
 
     h1 {
-      font-size: 24px;
+      font-size: 16px;
       flex-grow: 0;
     }`
 
@@ -73,15 +73,10 @@ export class DialogBanned extends LitElement {
         .buttonHandler=${this.buttonHandler}>
         <div class="container">
           <dialog-container .height=${96} .subLvl=${this.subLvl ?? 0}>
-            ${localize(`banned-dialog-level-${this.subLvl ?? 0}-title`)
+            ${localize(`unauthorized-dialog-level-${this.subLvl ?? 0}`)
               .split(lineBreakToken)
               .map(line => html`<h1>${line}</h1>`)}
           </dialog-container>
-          <div class="metadata">
-            ${localize(`banned-dialog-level-${this.subLvl ?? 0}-metadata`)
-              .split(lineBreakToken)
-              .map(line => html`<p>${line}</p>`)}
-          </div>
         </div>
       </bf-dialog>`
   }

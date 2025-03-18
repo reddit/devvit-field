@@ -157,15 +157,22 @@ type DialogMessageBase = {
 
 export type DialogMessage =
   | (DialogMessageBase & {
-      code: 'WrongLevelBanned' | 'GlobalPointClaimed' | 'ClaimedABanBox'
+      code: 'GlobalPointClaimed' | 'ClaimedABanBox'
+    })
+  | (DialogMessageBase & {
+      profile: Profile
+      team: Team
+      code: 'WrongLevelBanned'
     })
   | (DialogMessageBase & {
       profile: Profile
       code: 'ChallengeEndedAscend'
+      standings: {member: Team; score: number}[]
     })
   | (DialogMessageBase & {
       profile: Profile
       code: 'ChallengeEndedStay'
+      standings: {member: Team; score: number}[]
     })
 
 // TODO: Remove if there are no peer to peer messages. We won't have peer for things like

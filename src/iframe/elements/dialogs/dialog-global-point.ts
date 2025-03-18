@@ -15,16 +15,16 @@ import {
   variableStartToken,
 } from '../../../shared/locale.ts'
 import {type Team, teamTitleCase} from '../../../shared/team.ts'
-import {levelHighlightColor, type Level} from '../../../shared/types/level.ts'
+import {type Level, levelHighlightColor} from '../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
-    'dialog-ascended': DialogAscended
+    'dialog-global-point': DialogGlobalPoint
   }
 }
 
-@customElement('dialog-ascended')
-export class DialogAscended extends LitElement {
+@customElement('dialog-global-point')
+export class DialogGlobalPoint extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 
@@ -57,7 +57,8 @@ export class DialogAscended extends LitElement {
     h1 {
       font-size: 16px;
       flex-grow: 0;
-    }`
+    }
+    `
 
   @property({type: Number}) accessor subLvl: Level | undefined = 0
   @property({type: Number}) accessor team: Team = 0
@@ -71,7 +72,7 @@ export class DialogAscended extends LitElement {
 
     // Parse and hydrate the localized title string.
     const title: string[] = []
-    const lines = localize('ascension-dialog-title').split(lineBreakToken)
+    const lines = localize('global-point-dialog-title').split(lineBreakToken)
     for (const line of lines) {
       const containesToken = line.includes(variableStartToken)
       if (containesToken) {
@@ -89,6 +90,7 @@ export class DialogAscended extends LitElement {
       }
     }
 
+    //TODO: add team name banner
     return html`
       <bf-dialog
         .subLvl=${this.subLvl}
@@ -98,6 +100,7 @@ export class DialogAscended extends LitElement {
         <div class="container">
           <dialog-container .height=${200} .subLvl=${this.subLvl ?? 0}>
             <div .innerHTML=${title.join('')}></div>
+            <div>You scored 1 point for your team</div>
           </dialog-container>
         </div>
       </bf-dialog>`
