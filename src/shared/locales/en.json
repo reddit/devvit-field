@@ -56,5 +56,13 @@
   "point-claim-button-label": "BAN ME, YOU COWARDS",
   "point-claim-button-label-after": "BANNED",
   "point-claim-scoreboard-title": "SCOREBOARD",
-  "point-claim-title": "What’s The Point?"
+  "point-claim-title": "What’s The Point?",
+  "ended-dialog-title": "Field has ended.",
+  "ended-dialog-metadata": "Thank you for trying.↵(Place was better.)",
+  "ended-dialog-button-label": "THANKS!",
+  "winner-dialog-title": "CONGRATULATIONS!",
+  "winner-dialog-metadata-1": "YOU GOT A POINT FOR",
+  "winner-dialog-metadata-2": "ADD IT TO YOUR LINKEDIN",
+  "winner-dialog-button-label": "THANKS!",
+  "winner-dialog-footer": "VIEW YOUR STATS↵AND TEAM STANDINGS AT"
 }
