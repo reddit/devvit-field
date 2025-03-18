@@ -123,6 +123,7 @@ DevvitTest.it(
       code: 'WrongLevelBanned',
       message: expect.any(String),
       status: 'dialog',
+      team: 2,
       redirectURL: expect.any(String),
       profile: expect.any(Object),
     })

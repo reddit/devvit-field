@@ -3,7 +3,8 @@ import {Devvit, useAsync, useInterval} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {INSTALL_REALTIME_CHANNEL} from '../../shared/const.ts'
-import {getTeamFromUserId} from '../../shared/team.ts'
+import type {Profile} from '../../shared/save.ts'
+import {type Team, getTeamFromUserId} from '../../shared/team.ts'
 import {fallbackPixelRatio} from '../../shared/theme.ts'
 import {type FieldFixtureData, config2} from '../../shared/types/level.ts'
 import type {
@@ -111,6 +112,26 @@ export function App(ctx: Devvit.Context): JSX.Element {
   }, 30_000)
   activePlayerInterval.start()
 
+  const postMessageChallengeEndedStay = ({
+    profile,
+    standings,
+  }: {
+    profile: Profile
+    standings: {
+      member: Team
+      score: number
+    }[]
+  }) => {
+    iframe.postMessage({
+      type: 'Dialog',
+      code: 'ChallengeEndedStay',
+      message: 'This round has ended. Please refresh to begin the next round.',
+      redirectURL: '',
+      profile,
+      standings,
+    })
+  }
+
   // Since we can't circuit break in realtime, we need to use this hack
   // in order to know where the player needs to be after the challenge ends.
   //
@@ -136,15 +157,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
       // If they pass for some reason, just do nothing
       if (result.pass) {
-        iframe.postMessage({
-          type: 'Dialog',
-          code: 'ChallengeEndedStay',
-          message:
-            'This round has ended. Please refresh to begin the next round.',
-          redirectURL: '',
+        postMessageChallengeEndedStay({
           profile,
           standings: challengeEndedState.standings,
-        }) //TODO: clean this up
+        })
         return null
       }
 
@@ -295,6 +311,24 @@ export function App(ctx: Devvit.Context): JSX.Element {
           if (result.pass === false) {
             const {pass: _pass, ...rest} = result
             iframe.postMessage(rest)
+            return
+          }
+
+          if (
+            result.code === 'RightLevelWrongChallenge' &&
+            // Only handle when their appState is out of sync because
+            // the claim cells path is the one that updates their last played
+            // challenge number!
+            appState.challengeNumber !== result.activeChallengeNumberForLevel
+          ) {
+            console.log(
+              'Challenge number mismatch, ending challenge for user to refresh',
+            )
+
+            postMessageChallengeEndedStay({
+              profile,
+              standings: result.standingsForUserLastPlayedChallenge,
+            })
             return
           }
 

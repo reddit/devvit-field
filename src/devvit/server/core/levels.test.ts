@@ -4,6 +4,7 @@ import {DevvitTest} from './_utils/DevvitTest'
 import {setCtxLevel} from './_utils/utils'
 import {challengeMakeNew} from './challenge'
 import {fieldClaimCells} from './field'
+import {teamStatsCellsClaimedIncrementForMemberTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {levelsIsUserInRightPlace} from './levels'
 import {userGet, userSet} from './user'
 
@@ -39,10 +40,62 @@ DevvitTest.it(
   },
 )
 
+DevvitTest.it(
+  'should pass if no one has ever claimed a cell for a challenge',
+  async ctx => {
+    setCtxLevel(ctx, 0)
+
+    // Challenge number 1
+    await challengeMakeNew({
+      ctx,
+      config: {
+        mineDensity: 0,
+        partitionSize: 2,
+        size: 2,
+      },
+    })
+
+    // Challenge number 2
+    await challengeMakeNew({
+      ctx,
+      config: {
+        mineDensity: 0,
+        partitionSize: 2,
+        size: 2,
+      },
+    })
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        // Note the one here to denote they have played a valid challenge!
+        lastPlayedChallengeNumberForLevel: 1,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+        hasVerifiedEmail: true,
+        globalPointCount: 0,
+      },
+    })
+    const profile = await userGet({
+      redis: ctx.redis,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+    })
+
+    await expect(
+      levelsIsUserInRightPlace({
+        ctx,
+        profile,
+      }),
+    ).resolves.toStrictEqual({code: 'FirstTimePlayerOrClicker', pass: true})
+  },
+)
+
 DevvitTest.it('should pass if user has never played on level 0', async ctx => {
   setCtxLevel(ctx, 0)
 
-  await challengeMakeNew({
+  const {challengeNumber} = await challengeMakeNew({
     ctx,
     config: {
       mineDensity: 0,
@@ -63,6 +116,14 @@ DevvitTest.it('should pass if user has never played on level 0', async ctx => {
       globalPointCount: 0,
     },
   })
+
+  await teamStatsCellsClaimedIncrementForMemberTotal(
+    ctx.redis,
+    challengeNumber,
+    0,
+    1,
+  )
+
   const profile = await userGet({
     redis: ctx.redis,
     userId: USER_IDS.TEAM_2_PLAYER_1,
@@ -73,7 +134,7 @@ DevvitTest.it('should pass if user has never played on level 0', async ctx => {
       ctx,
       profile,
     }),
-  ).resolves.toEqual({pass: true})
+  ).resolves.toStrictEqual({pass: true, code: 'FirstTimePlayerOrClicker'})
 })
 
 DevvitTest.it(
@@ -120,7 +181,7 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
+    ).resolves.toStrictEqual({code: 'PlayingCurrentLevel', pass: true})
   },
 )
 
@@ -151,22 +212,7 @@ DevvitTest.it(
       },
     })
 
-    // Their teammate
-    await userSet({
-      redis: ctx.redis,
-      user: {
-        currentLevel: 0,
-        lastPlayedChallengeNumberForLevel: 0,
-        lastPlayedChallengeNumberCellsClaimed: 0,
-        t2: USER_IDS.TEAM_2_PLAYER_2,
-        username: 'foo',
-        superuser: false,
-        hasVerifiedEmail: true,
-        globalPointCount: 0,
-      },
-    })
-
-    // They played the round and their team won
+    // They played the round
     await fieldClaimCells({
       challengeNumber,
       coords: [{x: 0, y: 0}],
@@ -174,20 +220,13 @@ DevvitTest.it(
       userId: USER_IDS.TEAM_2_PLAYER_1,
     })
 
-    // Their teammate clicked as well to make them win
-    await fieldClaimCells({
+    // They win the round
+    await teamStatsCellsClaimedIncrementForMemberTotal(
+      ctx.redis,
       challengeNumber,
-      coords: [{x: 1, y: 1}],
-      ctx,
-      userId: USER_IDS.TEAM_2_PLAYER_2,
-    })
-
-    await fieldClaimCells({
-      challengeNumber,
-      coords: [{x: 0, y: 1}],
-      ctx,
-      userId: USER_IDS.TEAM_2_PLAYER_2,
-    })
+      2,
+      3,
+    )
 
     // They bounce and some more rounds are played...
     await challengeMakeNew({
@@ -225,17 +264,26 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
+    ).resolves.toStrictEqual({
+      activeChallengeNumberForLevel: 4,
+      code: 'RightLevelWrongChallenge',
+      pass: true,
+      standingsForUserLastPlayedChallenge: [
+        {
+          member: 2,
+          score: 3,
+        },
+      ],
+    })
 
+    // Make sure that the user's cells claimed is reset to 0
     await expect(
       userGet({
         redis: ctx.redis,
         userId: USER_IDS.TEAM_2_PLAYER_1,
       }),
-    ).resolves.toEqual(
-      // TODO(gunsch/marcus): I think I may have undone a Marcus edge case fix in merge conflict.
-      // Come back to this.
-      expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 1}),
+    ).resolves.toStrictEqual(
+      expect.objectContaining({lastPlayedChallengeNumberCellsClaimed: 0}),
     )
   },
 )
@@ -267,22 +315,7 @@ DevvitTest.it(
       },
     })
 
-    // Their opponent
-    await userSet({
-      redis: ctx.redis,
-      user: {
-        currentLevel: 0,
-        lastPlayedChallengeNumberForLevel: 0,
-        lastPlayedChallengeNumberCellsClaimed: 0,
-        t2: USER_IDS.TEAM_1_PLAYER_1,
-        username: 'foo',
-        superuser: false,
-        hasVerifiedEmail: true,
-        globalPointCount: 0,
-      },
-    })
-
-    // They played the round and their team won
+    // They played the round
     await fieldClaimCells({
       challengeNumber,
       coords: [{x: 0, y: 0}],
@@ -290,30 +323,15 @@ DevvitTest.it(
       userId: USER_IDS.TEAM_2_PLAYER_1,
     })
 
-    // Another team played and beat the user's team
-    await fieldClaimCells({
+    // They lose the round
+    await teamStatsCellsClaimedIncrementForMemberTotal(
+      ctx.redis,
       challengeNumber,
-      coords: [{x: 1, y: 1}],
-      ctx,
-      userId: USER_IDS.TEAM_1_PLAYER_1,
-    })
-
-    await fieldClaimCells({
-      challengeNumber,
-      coords: [{x: 0, y: 1}],
-      ctx,
-      userId: USER_IDS.TEAM_1_PLAYER_1,
-    })
+      0, // Team 0 is the winning team
+      3,
+    )
 
     // They bounce and some more rounds are played...
-    await challengeMakeNew({
-      ctx,
-      config: {
-        mineDensity: 0,
-        partitionSize: 2,
-        size: 2,
-      },
-    })
     await challengeMakeNew({
       ctx,
       config: {
@@ -341,78 +359,17 @@ DevvitTest.it(
         ctx,
         profile,
       }),
-    ).resolves.toEqual({pass: true})
-  },
-)
-
-DevvitTest.it(
-  'should pass if they are on the right level and for some reason we cannot find the standings for the last challenge they played to see if they should ascend or not',
-  async ctx => {
-    setCtxLevel(ctx, 0)
-
-    const {challengeNumber} = await challengeMakeNew({
-      ctx,
-      config: {
-        mineDensity: 0,
-        partitionSize: 2,
-        size: 2,
-      },
+    ).resolves.toStrictEqual({
+      activeChallengeNumberForLevel: 3,
+      code: 'RightLevelWrongChallenge',
+      pass: true,
+      standingsForUserLastPlayedChallenge: [
+        {
+          member: 0,
+          score: 3,
+        },
+      ],
     })
-    await userSet({
-      redis: ctx.redis,
-      user: {
-        currentLevel: 0,
-        lastPlayedChallengeNumberForLevel: 0,
-        lastPlayedChallengeNumberCellsClaimed: 0,
-        t2: USER_IDS.TEAM_2_PLAYER_1,
-        username: 'foo',
-        superuser: false,
-        hasVerifiedEmail: true,
-        globalPointCount: 0,
-      },
-    })
-
-    // They played the round and their team won
-    await fieldClaimCells({
-      challengeNumber,
-      coords: [{x: 0, y: 0}],
-      ctx,
-      userId: USER_IDS.TEAM_2_PLAYER_1,
-    })
-
-    // They bounce and some more rounds are played...
-    await challengeMakeNew({
-      ctx,
-      config: {
-        mineDensity: 0,
-        partitionSize: 2,
-        size: 2,
-      },
-    })
-    await challengeMakeNew({
-      ctx,
-      config: {
-        mineDensity: 0,
-        partitionSize: 2,
-        size: 2,
-      },
-    })
-
-    // Delete the standings, for some reason we can't find them due to a write error or
-    // creation error. This is just safety since we hit this bug playtesting
-    await ctx.redis.del(`challenge:${challengeNumber}:stats:team:cells_claimed`)
-
-    const profile = await userGet({
-      redis: ctx.redis,
-      userId: USER_IDS.TEAM_2_PLAYER_1,
-    })
-
-    await expect(
-      levelsIsUserInRightPlace({
-        ctx,
-        profile,
-      }),
-    ).resolves.toEqual({pass: true})
   },
 )
 
@@ -453,104 +410,90 @@ DevvitTest.it('should not pass if user is on the wrong level', async ctx => {
       ctx,
       profile,
     }),
-  ).resolves.toEqual(expect.objectContaining({pass: false}))
+  ).resolves.toStrictEqual(expect.objectContaining({pass: false}))
 })
 
-// TODO: this is a good test, but right now is broken since game "win" is no
-// longer evaluated during cell claim, but being moved to a background job. See
-// if we can re-enable it once we have the background job logic in place.
+DevvitTest.it(
+  'should not pass if they are not on level one, their current level is right, and the last challenge they claimed a box in their team won (also force them to ascend)',
+  async ctx => {
+    // User is request level one but they are on level 0!
+    setCtxLevel(ctx, 1)
 
-// DevvitTest.it(
-//   'should not pass if they are not on level one, their current level is right, and the last challenge they claimed a box in their team won (also force them to ascend)',
-//   async ctx => {
-//     // User is request level one but they are on level 0!
-//     setCtxLevel(ctx, 1)
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {
+        mineDensity: 0,
+        partitionSize: 2,
+        size: 2,
+      },
+    })
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 1,
+        lastPlayedChallengeNumberForLevel: 1,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        globalPointCount: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: false,
+        hasVerifiedEmail: true,
+      },
+    })
 
-// const {challengeNumber} = await challengeMakeNew({
-//   ctx,
-//   config: {
-//     mineDensity: 0,
-//     partitionSize: 2,
-//     size: 2,
-//   },
-// })
-// await userSet({
-//   redis: ctx.redis,
-//   user: {
-//     currentLevel: 1,
-//     lastPlayedChallengeNumberForLevel: 0,
-//     lastPlayedChallengeNumberCellsClaimed: 0,
-//     t2: USER_IDS.TEAM_2_PLAYER_1,
-//     username: 'foo',
-//     superuser: false,
-//     hasVerifiedEmail: true,
-//   },
-// })
+    // Claim a cell so that it registers they played a round
+    await fieldClaimCells({
+      challengeNumber,
+      coords: [{x: 0, y: 0}],
+      ctx,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+    })
 
-// // Their teammate
-// await userSet({
-//   redis: ctx.redis,
-//   user: {
-//     currentLevel: 0,
-//     lastPlayedChallengeNumberForLevel: 0,
-//     lastPlayedChallengeNumberCellsClaimed: 0,
-//     t2: USER_IDS.TEAM_2_PLAYER_2,
-//     username: 'foo',
-//     superuser: false,
-//     hasVerifiedEmail: true,
-//   },
-// })
+    // They played the round and their team won
+    await teamStatsCellsClaimedIncrementForMemberTotal(
+      ctx.redis,
+      challengeNumber,
+      2,
+      3,
+    )
 
-//     // They played the round and their team won
-//     await fieldClaimCells({
-//       challengeNumber,
-//       coords: [{x: 0, y: 0}],
-//       ctx,
-//       userId: USER_IDS.TEAM_2_PLAYER_1,
-//     })
+    // They bounce and some more rounds are played...
+    await challengeMakeNew({
+      ctx,
+      config: {
+        mineDensity: 0,
+        partitionSize: 2,
+        size: 2,
+      },
+    })
+    await challengeMakeNew({
+      ctx,
+      config: {
+        mineDensity: 0,
+        partitionSize: 2,
+        size: 2,
+      },
+    })
 
-//     // Their teammate clicked as well to make them win
-//     await fieldClaimCells({
-//       challengeNumber,
-//       coords: [{x: 1, y: 1}],
-//       ctx,
-//       userId: USER_IDS.TEAM_2_PLAYER_2,
-//     })
+    const profile = await userGet({
+      redis: ctx.redis,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+    })
 
-//     await fieldClaimCells({
-//       challengeNumber,
-//       coords: [{x: 0, y: 1}],
-//       ctx,
-//       userId: USER_IDS.TEAM_2_PLAYER_2,
-//     })
+    expect(profile.currentLevel).toBe(1)
 
-//     // They bounce and some more rounds are played...
-//     await challengeMakeNew({
-//       ctx,
-//       config: {
-//         mineDensity: 0,
-//         partitionSize: 2,
-//         size: 2,
-//       },
-//     })
+    await expect(
+      levelsIsUserInRightPlace({
+        ctx,
+        profile,
+      }),
+    ).resolves.toStrictEqual(expect.objectContaining({pass: false}))
 
-//     const profile = await userGet({
-//       redis: ctx.redis,
-//       userId: USER_IDS.TEAM_2_PLAYER_1,
-//     })
-
-//     expect(profile.currentLevel).toBe(1)
-//     await expect(
-//       levelsIsUserInRightPlace({
-//         ctx,
-//         profile,
-//       }),
-//     ).resolves.toEqual(expect.objectContaining({pass: false}))
-//     await expect(
-//       userGet({
-//         redis: ctx.redis,
-//         userId: USER_IDS.TEAM_2_PLAYER_1,
-//       }),
-//     ).resolves.toEqual(expect.objectContaining({currentLevel: 0}))
-//   },
-// )
+    await expect(
+      userGet({
+        redis: ctx.redis,
+        userId: USER_IDS.TEAM_2_PLAYER_1,
+      }),
+    ).resolves.toStrictEqual(expect.objectContaining({currentLevel: 0}))
+  },
+)

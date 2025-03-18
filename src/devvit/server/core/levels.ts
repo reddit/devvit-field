@@ -19,9 +19,24 @@ import {userAscendLevel, userSet} from './user'
  * to send the user to.
  */
 type LevelsIsUserInRightPlaceResponse =
-  | {
-      pass: true
-    }
+  | (
+      | {
+          pass: true
+          code: 'PlayingCurrentLevel'
+        }
+      | {
+          pass: true
+          code: 'FirstTimePlayerOrClicker'
+        }
+      | {
+          pass: true
+          code: 'RightLevelWrongChallenge'
+          standingsForUserLastPlayedChallenge: Awaited<
+            ReturnType<typeof teamStatsCellsClaimedGetTotal>
+          >
+          activeChallengeNumberForLevel: number
+        }
+    )
   | ({
       pass: false
     } & DialogMessage)
@@ -62,7 +77,7 @@ export const levelsIsUserInRightPlace = async ({
   })
 
   if (profile.lastPlayedChallengeNumberForLevel === currentChallengeNumber) {
-    return {pass: true}
+    return {pass: true, code: 'PlayingCurrentLevel'}
   }
 
   const standings = await teamStatsCellsClaimedGetTotal(
@@ -71,9 +86,13 @@ export const levelsIsUserInRightPlace = async ({
     'DESC',
   )
 
-  // If there are no standings for some reason, just pass
+  // A user's lastPlayedChallengeNumberForLevel is 0 when they first join the level
+  // Challenges start a 1, so we can assume they haven't played and can pass early
+  //
+  // This can also happen is the user is the first clicker on that level because
+  // standings will be empty (no claimed cells)
   if (standings.length === 0) {
-    return {pass: true}
+    return {pass: true, code: 'FirstTimePlayerOrClicker'}
   }
 
   const winningTeam = standings[0]!.member
@@ -122,5 +141,10 @@ export const levelsIsUserInRightPlace = async ({
     })
   }
 
-  return {pass: true}
+  return {
+    pass: true,
+    code: 'RightLevelWrongChallenge',
+    standingsForUserLastPlayedChallenge: standings,
+    activeChallengeNumberForLevel: currentChallengeNumber,
+  }
 }
