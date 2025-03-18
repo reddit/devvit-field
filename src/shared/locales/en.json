@@ -52,5 +52,9 @@
   "staying-dialog-metadata-2": "BOXES WITHOUT GETTING BANNED",
   "staying-dialog-button-label": "BEGIN NEXT ROUND",
   "error-dialog-no-webgl": "WebGL 2 support↵is required to play.↵Try another device.",
-  "global-point-dialog-title": "Congratulations"
+  "global-point-dialog-title": "Congratulations",
+  "point-claim-button-label": "BAN ME, YOU COWARDS",
+  "point-claim-button-label-after": "BANNED",
+  "point-claim-scoreboard-title": "SCOREBOARD",
+  "point-claim-title": "What’s The Point?"
 }

@@ -9,7 +9,6 @@ import {
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
-import {GameScreen} from './GameScreen'
 import {PixelText} from './PixelText'
 import {TeamBadge} from './TeamBadge'
 
@@ -25,7 +24,6 @@ export function DialogWinner(props: DialogWinnerProps): JSX.Element {
     <Dialog
       {...props}
       buttonLabel={localize('winner-dialog-button-label')}
-      backgroundElement={<GameScreen {...props} />}
       marketingLabel={localize('winner-dialog-footer')}
     >
       <BorderedContainer

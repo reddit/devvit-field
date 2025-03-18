@@ -20,7 +20,7 @@ export function createBanBoxBadge(): string {
 
   const background = `<path d="M0 0h25v25h-25Z" fill="${cssHex(paletteFieldDark)}" />`
 
-  const symbol = `<path d='M4.5 4.5h5.33v5.33h5.33v-5.33h5.33v5.33h-5.33v5.33h5.33v5.33h-5.33v-5.33h-5.33v5.33h-5.33v-5.33h5.33v-5.33h-5.33Z' fill="${cssHex(paletteFieldLight)}" />`
+  const symbol = `<path d="M4.5 4.5h5.33v5.33h5.33v-5.33h5.33v5.33h-5.33v5.33h5.33v5.33h-5.33v-5.33h-5.33v5.33h-5.33v-5.33h5.33v-5.33h-5.33Z" fill="${cssHex(paletteFieldLight)}" />`
 
   return `<svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">${background}${border}${symbol}</svg>`
 }

@@ -9,7 +9,6 @@ import {
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
-import {GameScreen} from './GameScreen'
 import {PixelText} from './PixelText'
 
 type DialogEndedProps = {
@@ -21,11 +20,7 @@ type DialogEndedProps = {
 
 export function DialogEnded(props: DialogEndedProps): JSX.Element {
   return (
-    <Dialog
-      {...props}
-      buttonLabel={localize('ended-dialog-button-label')}
-      backgroundElement={<GameScreen {...props} />}
-    >
+    <Dialog {...props} buttonLabel={localize('ended-dialog-button-label')}>
       <BorderedContainer
         height={128}
         width={256}

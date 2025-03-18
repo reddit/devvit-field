@@ -11,7 +11,6 @@ import {
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
-import {GameScreen} from './GameScreen'
 import {PixelText} from './PixelText'
 import {TeamBadge} from './TeamBadge'
 
@@ -46,7 +45,6 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
               rSlashSubredditName: `r/${levelName}`,
             })
       }
-      backgroundElement={<GameScreen {...props} />}
     >
       <BorderedContainer
         height={80}

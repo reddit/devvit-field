@@ -17,8 +17,8 @@ export function InnerBorder(props: InnerBorderProps): JSX.Element {
     pixelRatio,
     height = 512,
     width = 50,
-    radius = 14,
-    inset = 2,
+    radius = 12,
+    inset = 4,
     borderColor = cssHex(paletteBlack),
     borderWidth = 2,
   } = props
