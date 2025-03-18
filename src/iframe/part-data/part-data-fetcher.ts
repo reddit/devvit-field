@@ -20,7 +20,7 @@ import {
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import type {Cell, Delta} from '../../shared/types/field.ts'
 import type {PartitionUpdate} from '../../shared/types/message.ts'
-import {type T5, noT5} from '../../shared/types/tid.ts'
+import {T5, noT5} from '../../shared/types/tid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import type {Cam} from '../renderer/cam.ts'
 
@@ -80,7 +80,7 @@ class FetchError404 extends Error {}
  * fetches as appropriate for the current viewport. Guesses when realtime is
  * silent for too long.
  */
-export class PartitionFetcher {
+export class PartDataFetcher {
   #abortCtrl: AbortController = new AbortController()
   readonly #cam: Readonly<Cam>
   /** Camera partitions rectangle. */
@@ -129,12 +129,10 @@ export class PartitionFetcher {
   /** Called on initial render and reinit to initialize the entire field. */
   init(
     config: Readonly<FieldConfig>,
-    t5: T5,
     key: Readonly<DeltaSnapshotKey> | undefined,
   ): void {
     this.#abortCtrl = new AbortController()
     this.#config = config
-    this.#t5 = t5
 
     if (key) this.#recordMessage(key)
   }
@@ -302,6 +300,7 @@ export class PartitionFetcher {
     //        by Blocks.
     this.#challenge = Math.max(this.#challenge, key.challengeNumber)
     this.#pathPrefix = key.pathPrefix
+    this.#t5 = T5(key.subredditId)
 
     const partKey = makePartitionKey(key.partitionXY)
     const part = (this.#part[partKey] ??= Part(key.partitionXY))
