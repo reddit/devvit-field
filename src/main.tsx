@@ -206,6 +206,13 @@ Devvit.addSettings([
   },
   {
     scope: SettingScope.App,
+    name: 'realtime-batch-enabled',
+    label: 'Set to true to reduce realtime publish RPS',
+    type: 'boolean',
+    defaultValue: true,
+  },
+  {
+    scope: SettingScope.App,
     name: 's3-bucket',
     label: 'S3 bucket',
     type: 'string',

@@ -42,7 +42,12 @@ export async function sendRealtime(
   wq: WorkQueue,
   msg: DevvitMessage,
 ): Promise<void> {
-  await withLock<void>(
+  if (!(await wq.ctx.settings.get<boolean>('realtime-batch-enabled'))) {
+    await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, msg)
+    return
+  }
+
+  const ok = await withLock<boolean>(
     wq.ctx,
     realtimeLockKey,
     async () => {
@@ -62,21 +67,29 @@ export async function sendRealtime(
       if (empty) {
         await wq.ctx.redis.set(realtimeLastSendKey, `${Date.now()}`)
       }
+      return true
     },
-    undefined,
+    false,
   )
+  if (!ok) {
+    throw new Error('failed to enqueue realtime message')
+  }
   await maybeFlushRealtime(wq)
 }
 
 export async function flushRealtime(wq: WorkQueue): Promise<void> {
-  await withLock<void>(
+  const ok = await withLock<boolean>(
     wq.ctx,
     realtimeLockKey,
     async () => {
       await flushRealtimeUnderLock(wq)
+      return true
     },
-    undefined,
+    false,
   )
+  if (!ok) {
+    console.log('failed to flush realtime messages')
+  }
 }
 
 export async function flushRealtimeUnderLock(wq: WorkQueue): Promise<void> {
@@ -112,7 +125,7 @@ export async function flushRealtimeUnderLock(wq: WorkQueue): Promise<void> {
 }
 
 export async function maybeFlushRealtime(wq: WorkQueue): Promise<void> {
-  await withLock<void>(
+  const ok = await withLock<boolean>(
     wq.ctx,
     realtimeLockKey,
     async () => {
@@ -121,10 +134,14 @@ export async function maybeFlushRealtime(wq: WorkQueue): Promise<void> {
         (await wq.ctx.redis.get(realtimeLastSendKey)) ?? '0',
       )
       if (n < maxMessagesPerBatch && lastSend >= Date.now() - maxGatherTimeMs) {
-        return
+        return true
       }
       await flushRealtimeUnderLock(wq)
+      return true
     },
-    undefined,
+    false,
   )
+  if (!ok) {
+    console.log('failed to maybe flush realtime messages')
+  }
 }
