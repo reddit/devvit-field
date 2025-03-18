@@ -415,6 +415,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
           sendInitToIframe(newAppState, {reinit: true})
         } else if (newAppState.status === 'dialog') {
           console.log('user ascended, redirecting', newAppState)
+          iframe.unmount()
           ctx.ui.navigateTo(newAppState.redirectURL)
         }
 
@@ -424,9 +425,16 @@ export function App(ctx: Devvit.Context): JSX.Element {
         ctx.ui.navigateTo(config2.leaderboard.url)
         break
       case 'Dialog':
+        // Close the iframe for all cases except for stay!
+        // Note that this should be a no-op since the webview should
+        // always send OnNextChallengeClicked for that case
+        if (msg.code !== 'ChallengeEndedStay') {
+          iframe.unmount()
+        }
         ctx.ui.navigateTo(msg.redirectURL)
         break
       case 'OnClaimGlobalPointClicked':
+        iframe.unmount()
         ctx.ui.navigateTo(config2.levels[0]!.url)
         break
       case 'ReloadApp': {
