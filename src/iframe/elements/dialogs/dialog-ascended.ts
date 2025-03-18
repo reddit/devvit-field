@@ -15,7 +15,7 @@ import {
   variableStartToken,
 } from '../../../shared/locale.ts'
 import {type Team, teamTitleCase} from '../../../shared/team.ts'
-import {levelHighlightColor, type Level} from '../../../shared/types/level.ts'
+import {type Level, levelHighlightColor} from '../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
