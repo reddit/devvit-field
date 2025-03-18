@@ -319,7 +319,8 @@ export class PartitionFetcher {
       Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
 
     const now = utcMillisNow()
-    if (!key.noChange) part.seq = key.sequenceNumber
+    // to-do: if (!key.noChange) 
+    part.seq = key.sequenceNumber
     part.seqUpdated = now
     if (key.sequenceNumber > this.#maxSeq) {
       this.#maxSeq = key.sequenceNumber
