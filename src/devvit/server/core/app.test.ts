@@ -125,6 +125,7 @@ DevvitTest.it(
       status: 'dialog',
       redirectURL: expect.any(String),
       profile: expect.any(Object),
+      team: 2,
     })
   },
 )
