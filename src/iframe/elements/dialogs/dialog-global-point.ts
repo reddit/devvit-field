@@ -14,7 +14,11 @@ import {
   localize,
   variableStartToken,
 } from '../../../shared/locale.ts'
-import {type Team, teamTitleCase} from '../../../shared/team.ts'
+import {
+  type Team,
+  type TeamTitleCase,
+  teamTitleCase,
+} from '../../../shared/team.ts'
 import {type Level, levelHighlightColor} from '../../../shared/types/level.ts'
 
 declare global {
@@ -72,35 +76,31 @@ export class DialogGlobalPoint extends LitElement {
 
     // Parse and hydrate the localized title string.
     const title: string[] = []
-    const lines = localize('global-point-dialog-title').split(lineBreakToken)
+    const lines = localize('winner-dialog-title').split(lineBreakToken)
     for (const line of lines) {
       const containesToken = line.includes(variableStartToken)
       if (containesToken) {
         const words = line.split(' ')
-        const tokenIndex = words.findIndex(word =>
-          word.startsWith(variableStartToken),
-        )
-        if (tokenIndex !== -1) {
-          const value = teamTitleCase[this.team].toUpperCase()
-          words[tokenIndex] = `<span class="team">${value}</span>`
-        }
         title.push(`<h1>${words.join(' ')}</h1>`)
       } else {
         title.push(`<h1>${line}</h1>`)
       }
     }
+    const teamName: TeamTitleCase = teamTitleCase[this.team]
 
     //TODO: add team name banner
     return html`
       <bf-dialog
         .subLvl=${this.subLvl}
-        buttonLabel=${localize('ascension-dialog-button-label')}
+        buttonLabel=${localize('winner-dialog-button-label')}
         buttonLevel=${this.subLvl ?? 0}
         .buttonHandler=${this.buttonHandler}>
         <div class="container">
           <dialog-container .height=${200} .subLvl=${this.subLvl ?? 0}>
             <div .innerHTML=${title.join('')}></div>
-            <div>You scored 1 point for your team</div>
+            <div>${localize('winner-dialog-metadata-1')}</div>
+            <div class="team">${teamName}</div>
+            <div>${localize('winner-dialog-metadata-2')}</div>
           </dialog-container>
         </div>
       </bf-dialog>`

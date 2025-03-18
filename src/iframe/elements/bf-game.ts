@@ -176,6 +176,7 @@ export class BFGame extends LitElement {
                     ? this.#game.postMessage(this.#msg)
                     : console.log('no msg')
                 }}
+                team=${ifDefined(this.#game.team)}
               >
             </dialog-global-point>`
             break
