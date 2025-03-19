@@ -115,19 +115,28 @@ export class WorkQueue {
   }
 
   async #claimOneBatch(n: number): Promise<Task[]> {
+    return withLock(
+      this.ctx,
+      lockKey,
+      async () => this.#claimOneBatchUnderLock(n),
+      [],
+    )
+  }
+
+  async #claimOneBatchUnderLock(n: number): Promise<Task[]> {
     const [numTasks, numClaims] = await Promise.all([
       this.ctx.redis.zCard(tasksKey),
       this.ctx.redis.zCard(claimsKey),
     ])
     this.#debug(`numTasks=${numTasks}, numClaims=${numClaims}`)
     if (numClaims > 0) {
-      const tasks = await this.#stealTasks(n)
+      const tasks = await this.#stealTasksUnderLock(n)
       if (tasks?.length) {
         this.#debug(`stole ${tasks.length} claims`)
         return tasks
       }
     }
-    const tasks = await this.#claimTasks(n)
+    const tasks = await this.#claimTasksUnderLock(n)
     this.#debug(`claimed ${tasks.length} tasks`)
     return tasks
   }
@@ -138,15 +147,6 @@ export class WorkQueue {
       task.key = member
       return task
     })
-  }
-
-  async #claimTasks(n: number): Promise<Task[]> {
-    return withLock(
-      this.ctx,
-      lockKey,
-      async () => this.#claimTasksUnderLock(n),
-      [],
-    )
   }
 
   async #claimTasksUnderLock(n: number): Promise<Task[]> {
@@ -180,15 +180,6 @@ export class WorkQueue {
       tasksToClaim.map(task => task.key!),
     )
     return tasksToClaim
-  }
-
-  async #stealTasks(n: number): Promise<Task[]> {
-    return withLock(
-      this.ctx,
-      lockKey,
-      async () => this.#stealTasksUnderLock(n),
-      [],
-    )
   }
 
   async #stealTasksUnderLock(n: number): Promise<Task[]> {
