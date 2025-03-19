@@ -1,3 +1,4 @@
+import {counter, gauge, histogram} from '@devvit/metrics'
 import type {ZMember} from '@devvit/protos'
 import type {Context, JobContext, TriggerContext} from '@devvit/public-api'
 
@@ -23,6 +24,66 @@ const maxTransactionAttempts = 10
 
 type WorkQueueSettings = {
   'workqueue-debug'?: string
+}
+
+// Metrics.
+
+const buckets = [
+  0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 1.0,
+]
+const metrics = {
+  tasksCompleted: counter({
+    name: 'workqueue_tasks_completed',
+    labels: ['type'],
+  }),
+
+  tasksFailed: counter({
+    name: 'workqueue_tasks_failed',
+    labels: ['type'],
+  }),
+
+  tasksPermanentlyFailed: counter({
+    name: 'workqueue_tasks_permanently_failed',
+    labels: ['type'],
+  }),
+
+  taskHandlerDurationSeconds: histogram({
+    name: 'workqueue_task_handler_duration_seconds',
+    labels: ['type', 'success'],
+    buckets,
+  }),
+
+  numTasks: gauge({
+    name: 'workqueue_num_tasks',
+    labels: [],
+  }),
+
+  numClaims: gauge({
+    name: 'workqueue_num_claims',
+    labels: [],
+  }),
+
+  lockAttempts: counter({
+    name: 'workqueue_lock_attempts',
+    labels: ['key', 'success'],
+  }),
+
+  lockRequests: counter({
+    name: 'workqueue_lock_requests',
+    labels: ['key', 'success'],
+  }),
+
+  lockDurationSeconds: histogram({
+    name: 'workqueue_lock_duration_seconds',
+    labels: ['key'],
+    buckets,
+  }),
+
+  lockAcquisitionLatencySeconds: histogram({
+    name: 'workqueue_lock_acquisition_latency_seconds',
+    labels: ['key', 'success'],
+    buckets,
+  }),
 }
 
 export async function workQueueInit(ctx: TriggerContext): Promise<void> {
@@ -129,6 +190,8 @@ export class WorkQueue {
       this.ctx.redis.zCard(claimsKey),
     ])
     this.#debug(`numTasks=${numTasks}, numClaims=${numClaims}`)
+    metrics.numTasks.labels().set(numTasks)
+    metrics.numClaims.labels().set(numClaims)
     if (numClaims > 0) {
       const tasks = await this.#stealTasksUnderLock(n)
       if (tasks?.length) {
@@ -221,9 +284,12 @@ export class WorkQueue {
 
     this.#debug(`handling task: ${task.key}`)
     let failed = false
+    const start = performance.now()
+    let end: number = 0
     try {
       await handler(this, task)
     } catch (error) {
+      end = performance.now() - start
       failed = true
       await this.ctx.redis.zRem(claimsKey, [task.key!])
       // Update retry count and reassign key, to mark for immediate stealing.
@@ -231,7 +297,9 @@ export class WorkQueue {
       delete task.key
       task.key = JSON.stringify(task)
       const maxAttempts = task.maxAttempts ?? defaultMaxAttempts
+      metrics.tasksFailed.labels(task.type).inc()
       if (task.attempts >= maxAttempts) {
+        metrics.tasksPermanentlyFailed.labels(task.type).inc()
         console.error(`workqueue: permanent failure: ${task.key}`)
         if (error instanceof Error && error.stack) {
           console.log(`workqueue: stack trace:\n${error.stack}`)
@@ -241,7 +309,14 @@ export class WorkQueue {
         await this.ctx.redis.zAdd(claimsKey, {member: task.key!, score: 0})
       }
     } finally {
+      if (!end) {
+        end = performance.now() - start
+      }
+      metrics.taskHandlerDurationSeconds
+        .labels(task.type, failed ? 'false' : 'true')
+        .observe((end - start) / 1_000)
       if (!failed) {
+        metrics.tasksCompleted.labels(task.type).inc()
         this.#debug(`deleting claim ${task.key}`)
         await this.ctx.redis.zRem(claimsKey, [task.key!])
       }
@@ -264,21 +339,35 @@ export async function withLock<T>(
   fn: () => Promise<T>,
   orElse: T,
 ): Promise<T> {
-  // Acquire lock
+  const start = performance.now()
   let attempts = 0
   while (attempts < maxTransactionAttempts) {
     attempts++
     const res = await ctx.redis.hSetNX(key, 'lock', '')
-    if (res > 0) {
+    const acquired = res > 0
+    metrics.lockAttempts.labels(key, `${acquired}`).inc()
+    if (acquired) {
+      const holdStart = performance.now()
+      metrics.lockAcquisitionLatencySeconds
+        .labels(key, 'true')
+        .observe((holdStart - start) / 1_000)
+      metrics.lockRequests.labels(key, 'true').inc()
       await ctx.redis.expire(key, 1)
       try {
         return await fn()
       } finally {
         await ctx.redis.hDel(key, ['lock'])
+        metrics.lockDurationSeconds
+          .labels(key)
+          .observe((performance.now() - holdStart) / 1_000)
       }
     }
     await sleep(attempts * 100 + 50 * Math.random())
   }
+  metrics.lockRequests.labels(key, 'false').inc()
+  metrics.lockAcquisitionLatencySeconds
+    .labels(key, 'false')
+    .observe((performance.now() - start) / 1_000)
   return orElse
 }
 
