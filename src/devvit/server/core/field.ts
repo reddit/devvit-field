@@ -537,7 +537,7 @@ const _fieldNukeCellsBitfieldOpsForPartition = async ({
   // Iterate over the results of the claims operations and either
   // set (if value === 0) or get (if value === 1) so that the user
   // can see the final state for the cell.
-  batch.forEach((value, i) => {
+  batch.forEach((_value, i) => {
     const batchItem = batch[i]!
 
     bitfieldOps.push([
@@ -625,7 +625,7 @@ export const fieldNukeCells = async ({
   }
 
   await Promise.all(
-    Object.entries(partitionBatchMap).map(([fieldPartitionKey, batch], i) =>
+    Object.entries(partitionBatchMap).map(([fieldPartitionKey, batch]) =>
       _fieldNukeCellsBitfieldOpsForPartition({
         batch,
         fieldPartitionKey: fieldPartitionKey as ReturnType<
