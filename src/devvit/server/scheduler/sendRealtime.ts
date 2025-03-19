@@ -42,7 +42,7 @@ export async function sendRealtime(
   wq: WorkQueue,
   msg: DevvitMessage,
 ): Promise<void> {
-  if (!(await wq.ctx.settings.get<boolean>('realtime-batch-enabled'))) {
+  if ((await wq.ctx.settings.get<boolean>('realtime-batch-enabled')) !== true) {
     await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, msg)
     return
   }
