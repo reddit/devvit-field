@@ -90,7 +90,6 @@ export type IframeMessage =
   | DialogMessage
   /** Player has tapped the r/GamesOnReddit leaderboard open button. */
   | {type: 'OpenLeaderboard'}
-  | {type: 'OnClaimGlobalPointClicked'}
   /** The entire app should be reloaded. */
   | {type: 'ReloadApp'}
   /** Only lives here because the iFrame produces Jitter and forwards us this message back over to block to handle */
@@ -157,7 +156,7 @@ type DialogMessageBase = {
 
 export type DialogMessage =
   | (DialogMessageBase & {
-      code: 'GlobalPointClaimed' | 'ClaimedABanBox'
+      code: 'ClaimedABanBox'
     })
   | (DialogMessageBase & {
       profile: Profile

@@ -21,10 +21,8 @@ import {activePlayersIncrement} from '../server/core/activePlayers.js'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells} from '../server/core/field.js'
 import {levelsIsUserInRightPlace} from '../server/core/levels.js'
-import {
-  userAttemptToClaimGlobalPointForTeam,
-  userGet,
-} from '../server/core/user.js'
+import {userGet} from '../server/core/user.js'
+import {DialogBeatGame} from './DialogBeatGame.tsx'
 import {DialogHowToPlay} from './DialogHowToPlay.tsx'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
@@ -45,11 +43,7 @@ export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 export function App(ctx: Devvit.Context): JSX.Element {
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
 
-  if (
-    ctx.subredditId === config2.leaderboard.subredditId &&
-    ctx.postId === config2.leaderboard.postId
-  ) {
-    // to-do: avoid postId in above checks. Not great having to submit a post, then hardcode the postId in the app code and upload a new version.
+  if (ctx.subredditId === config2.leaderboard.subredditId) {
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
   const session = useSession(ctx)
@@ -81,6 +75,18 @@ export function App(ctx: Devvit.Context): JSX.Element {
   if (appState.status === 'notAllowed') {
     return (
       <DialogNotAllowed
+        level={
+          config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
+          0
+        }
+        pixelRatio={pixelRatio}
+      />
+    )
+  }
+
+  if (appState.status === 'beatTheGame') {
+    return (
+      <DialogBeatGame
         level={
           config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
           0
@@ -332,25 +338,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
             return
           }
 
-          const lastLevel = config2.levels.at(-1)!
-
-          // Attempt to claim a global point if on the last level
-          if (lastLevel.id === profile.currentLevel) {
-            await userAttemptToClaimGlobalPointForTeam({
-              ctx,
-              userId: profile.t2,
-            })
-
-            iframe.postMessage({
-              type: 'Dialog',
-              message: 'Global point claimed!',
-              code: 'GlobalPointClaimed',
-              redirectURL: config2.levels[0]!.url,
-            })
-
-            return
-          }
-
           const {newLevel, claimedCells, lostCells} = await fieldClaimCells({
             challengeNumber: appState.challengeNumber,
             coords: msg.boxes,
@@ -432,10 +419,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
           iframe.unmount()
         }
         ctx.ui.navigateTo(msg.redirectURL)
-        break
-      case 'OnClaimGlobalPointClicked':
-        iframe.unmount()
-        ctx.ui.navigateTo(config2.levels[0]!.url)
         break
       case 'ReloadApp': {
         reloadApp()

@@ -300,23 +300,6 @@ export class BFButton extends LitElement {
     :host([appearance='3']) button::after {
       background-color: var(--color-banana-field-dark);
     }
-
-    /* Appearance: WhatIsField.  */
-    :host([appearance='4']) button {
-      background-color: var(--color-what-is-field-light);
-    }
-    :host([appearance='4']:hover) button {
-      background-color: var(--color-what-is-field);
-    }
-    :host([appearance='4']:active) button {
-      background-color: var(--color-what-is-field);
-    }
-    :host([appearance='4']) button:disabled {
-      background-color: var(--color-grey);
-    }
-    :host([appearance='4']) button::after {
-      background-color: var(--color-what-is-field-dark);
-    }
   `
 
   @property() accessor appearance: TeamPascalCase | Level | undefined

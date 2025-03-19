@@ -41,6 +41,10 @@ type LevelsIsUserInRightPlaceResponse =
       pass: false
     } & DialogMessage)
 
+/**
+ * Throws when there is suspected auth issues with the user in case
+ * they bypass the checks in the initial app state render.
+ */
 export const levelsIsUserInRightPlace = async ({
   profile,
   ctx,
@@ -48,6 +52,16 @@ export const levelsIsUserInRightPlace = async ({
   profile: Profile
   ctx: Devvit.Context
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
+  if (
+    profile.blocked ||
+    profile.hasVerifiedEmail === false ||
+    profile.globalPointCount > 0
+  ) {
+    throw new Error(
+      `User (${profile.t2} - ${profile.username}) is blocked, has not verified their email, or has a global point count greater than 0.`,
+    )
+  }
+
   // Make sure the level config exists for the subreddit before anything
   const subredditLevel = config2.levels.find(
     x => x.subredditId === ctx.subredditId,

@@ -23,9 +23,6 @@ import {
   paletteVeryBannedField,
   paletteVeryBannedFieldDark,
   paletteVeryBannedFieldLight,
-  paletteWhatIsField,
-  paletteWhatIsFieldDark,
-  paletteWhatIsFieldLight,
 } from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import type {DialogMessage} from '../../shared/types/message.ts'
@@ -37,7 +34,6 @@ import './bf-dialog.ts'
 import './bf-terminal.ts'
 import './dialogs/dialog-ascended.ts'
 import './dialogs/dialog-banned.ts'
-import './dialogs/dialog-global-point.ts'
 import './dialogs/dialog-staying.ts'
 import './dialogs/dialog-unauthorized.ts'
 import './dialogs/dialog-webgl.ts'
@@ -166,20 +162,6 @@ export class BFGame extends LitElement {
               >
             </dialog-banned>`
             break
-          case 'GlobalPointClaimed':
-            dialog = html`
-              <dialog-global-point
-                subLvl=${ifDefined(currentLvl)}
-                buttonLevel=${0}
-                .buttonHandler=${() => {
-                  this.#msg
-                    ? this.#game.postMessage(this.#msg)
-                    : console.log('no msg')
-                }}
-                team=${ifDefined(this.#game.team)}
-              >
-            </dialog-global-point>`
-            break
           case 'ChallengeEndedAscend':
             dialog = html`
               <dialog-ascended
@@ -241,7 +223,6 @@ export class BFGame extends LitElement {
             1: paletteBannedField,
             2: paletteVeryBannedField,
             3: paletteBananaField,
-            4: paletteWhatIsField,
           }[this.#game.sub]
     const themeDark =
       this.#game.sub == null
@@ -251,7 +232,6 @@ export class BFGame extends LitElement {
             1: paletteBannedFieldDark,
             2: paletteVeryBannedFieldDark,
             3: paletteBananaFieldDark,
-            4: paletteWhatIsFieldDark,
           }[this.#game.sub]
     const themeLight =
       this.#game.sub == null
@@ -261,7 +241,6 @@ export class BFGame extends LitElement {
             1: paletteBannedFieldLight,
             2: paletteVeryBannedFieldLight,
             3: paletteBananaFieldLight,
-            4: paletteWhatIsFieldLight,
           }[this.#game.sub]
     const boxes = this.#game.fieldConfig
       ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h

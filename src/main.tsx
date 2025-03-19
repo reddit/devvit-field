@@ -27,6 +27,7 @@ import {flushWorkQueueAction} from './devvit/menu-actions/flushWorkQueue.ts'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
 import {makeSuperUserMenuAction} from './devvit/menu-actions/makeSuperUser.js'
 import {nukeCellsMenuAction} from './devvit/menu-actions/nukeCells.ts'
+import {resetUserGlobalPointCountMenuAction} from './devvit/menu-actions/resetGlobalPointCounter.ts'
 import {resetUserStartedPlayingAtMenuAction} from './devvit/menu-actions/resetUserStartedPlayingAt.js'
 import {setDefaultConfigMenuAction} from './devvit/menu-actions/setDefaultConfig.js'
 import {setUserLevelMenuAction} from './devvit/menu-actions/setUserLevel.js'
@@ -181,6 +182,7 @@ Devvit.addMenuItem(nukeCellsMenuAction())
 Devvit.addMenuItem(blockUsersMenuAction())
 Devvit.addMenuItem(unblockUsersMenuAction())
 Devvit.addMenuItem(resetUserStartedPlayingAtMenuAction())
+Devvit.addMenuItem(resetUserGlobalPointCountMenuAction())
 Devvit.addMenuItem(flushWorkQueueAction())
 
 Devvit.addSettings([

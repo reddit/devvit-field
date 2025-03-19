@@ -13,7 +13,7 @@ import {PixelText} from '../PixelText'
 type HeaderProps = {
   pixelRatio: number
   team: Team
-  scores: {team: Team; score: number}[]
+  scores: {member: Team; score: number}[]
   onPress?: () => void
 }
 

@@ -4,7 +4,6 @@
     "title": "Leaderboard",
     "subredditName": "GamesOnRedditDev",
     "subredditId": "t5_",
-    "postId": "t3_",
     "url": "https://www.reddit.com/r/GamesOnRedditDev/"
   },
   "levels": [
@@ -44,9 +43,9 @@
       "id": 4,
       "subredditId": "t5_",
       "url": "https://www.reddit.com/r/",
-      "subredditName": "WhatIsField",
+      "subredditName": "GamesOnRedditDev",
       "theme": {},
-      "title": "WhatIsField"
+      "title": "GamesOnRedditDev"
     }
   ]
 }

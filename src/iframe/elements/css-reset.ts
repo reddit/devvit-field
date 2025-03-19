@@ -25,9 +25,6 @@ import {
   paletteVeryBannedField,
   paletteVeryBannedFieldDark,
   paletteVeryBannedFieldLight,
-  paletteWhatIsField,
-  paletteWhatIsFieldDark,
-  paletteWhatIsFieldLight,
   paletteWhite,
 } from '../../shared/theme.ts'
 
@@ -82,9 +79,6 @@ export const cssReset: CSSResult = css`
     --color-very-banned-field-dark: ${unsafeCSS(cssHex(paletteVeryBannedFieldDark))};
     --color-very-banned-field-light: ${unsafeCSS(cssHex(paletteVeryBannedFieldLight))};
     --color-very-banned-field: ${unsafeCSS(cssHex(paletteVeryBannedField))};
-    --color-what-is-field-dark: ${unsafeCSS(cssHex(paletteWhatIsFieldDark))};
-    --color-what-is-field-light: ${unsafeCSS(cssHex(paletteWhatIsFieldLight))};
-    --color-what-is-field: ${unsafeCSS(cssHex(paletteWhatIsField))};
     --color-white: ${unsafeCSS(cssHex(paletteWhite))};
 
     font-family: 'Departure Mono';

@@ -53,6 +53,9 @@ export type AppState =
   | {
       status: 'notAllowed'
     }
+  | {
+      status: 'beatTheGame'
+    }
 
 export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   const [appConfig, profile, challengeNumber] = await Promise.all([
@@ -67,6 +70,10 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
 
   if (profile.hasVerifiedEmail === false) {
     return {status: 'needsToVerifyEmail'}
+  }
+
+  if (profile.globalPointCount > 0) {
+    return {status: 'beatTheGame'}
   }
 
   const result = await levelsIsUserInRightPlace({

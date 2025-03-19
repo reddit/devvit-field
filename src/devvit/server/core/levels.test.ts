@@ -8,6 +8,58 @@ import {teamStatsCellsClaimedIncrementForMemberTotal} from './leaderboards/chall
 import {levelsIsUserInRightPlace} from './levels'
 import {userGet, userSet} from './user'
 
+DevvitTest.it('should throw for profile auth issues', async ctx => {
+  setCtxLevel(ctx, 0)
+
+  await userSet({
+    redis: ctx.redis,
+    user: {
+      currentLevel: 0,
+      lastPlayedChallengeNumberForLevel: 0,
+      lastPlayedChallengeNumberCellsClaimed: 0,
+      t2: USER_IDS.TEAM_2_PLAYER_1,
+      username: 'foo',
+      superuser: false,
+      hasVerifiedEmail: true,
+      globalPointCount: 0,
+    },
+  })
+  const profile = await userGet({
+    redis: ctx.redis,
+    userId: USER_IDS.TEAM_2_PLAYER_1,
+  })
+
+  await expect(
+    levelsIsUserInRightPlace({
+      ctx,
+      profile: {
+        ...profile,
+        hasVerifiedEmail: false,
+      },
+    }),
+  ).rejects.toThrowError()
+
+  await expect(
+    levelsIsUserInRightPlace({
+      ctx,
+      profile: {
+        ...profile,
+        globalPointCount: 1,
+      },
+    }),
+  ).rejects.toThrowError()
+
+  await expect(
+    levelsIsUserInRightPlace({
+      ctx,
+      profile: {
+        ...profile,
+        blocked: new Date().toISOString(),
+      },
+    }),
+  ).rejects.toThrowError()
+})
+
 DevvitTest.it(
   'should throw if the subreddit is not found in the level config',
   async ctx => {

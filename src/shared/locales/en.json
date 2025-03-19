@@ -6,9 +6,11 @@
   "unauthorized-dialog-level-2": "Trying to reverse↵your ban? I’m afraid↵I can’t do that.",
   "unauthorized-dialog-level-3": "Don’t go back.↵You’ve got so much↵more ahead of you.",
   "unauthorized-dialog-level-4": "Oh... it’s you again.↵Ya, still banned.",
-
   "unauthorized-dialog-metadata": "YOUR TEAM NEEDS YOU HERE:",
   "unauthorized-dialog-button-label": "Go to {rSlashSubredditName}",
+  "beat-game-dialog": "You’re still here?.↵You already got the point.↵Go home. Go on, get.",
+  "beat-game-dialog-metadata": "Play more games at:",
+  "beat-game-dialog-button-label": "Go to r/GamesOnReddit",
   "verify-email-dialog": "Please verify↵your email↵to continue.",
   "verify-email-dialog-button-label": "CHECK AGAIN",
   "leaderboard-online": "ONLINE",

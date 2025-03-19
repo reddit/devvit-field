@@ -4,7 +4,6 @@
     "title": "Leaderboard",
     "subredditName": "GamesOnRedditDev",
     "subredditId": "t5_dsfv4q",
-    "postId": "t3_1j89azk",
     "url": "https://www.reddit.com/r/GamesOnRedditDev/"
   },
   "levels": [
@@ -42,11 +41,11 @@
     },
     {
       "id": 4,
-      "subredditId": "t5_dpi3gj",
-      "url": "https://www.reddit.com/r/WhatIsField/",
-      "subredditName": "WhatIsField",
+      "subredditId": "t5_dsfv4q",
+      "url": "https://www.reddit.com/r/GamesOnRedditDev/",
+      "subredditName": "GamesOnRedditDev",
       "theme": {},
-      "title": "WhatIsField"
+      "title": "GamesOnRedditDev"
     }
   ]
 }

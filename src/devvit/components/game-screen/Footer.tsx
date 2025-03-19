@@ -12,6 +12,7 @@ import {
   paletteTint19,
   paletteWhite,
 } from '../../../shared/theme'
+import {config2} from '../../../shared/types/level'
 import {PixelText} from '../PixelText'
 
 const CAP_HEIGHT = 128
@@ -27,7 +28,7 @@ type FooterProps = {
   pixelRatio: number
   claimed?: boolean
   onPress?: () => void
-  scores: {team: Team; score: number}[]
+  scores: {member: Team; score: number}[]
 }
 
 export function Footer(props: FooterProps, context: Context): JSX.Element {
@@ -67,8 +68,8 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
         <hstack width='100%' grow padding='small'>
           <spacer width='14px' />
           <hstack height='100%' grow>
-            {props.scores.map(({team, score}) => (
-              <hstack key={`team-score-${team}`} height='100%' width='25%'>
+            {props.scores.map(({member, score}) => (
+              <hstack key={`team-score-${member}`} height='100%' width='25%'>
                 <spacer width='2px' />
                 <vstack
                   grow
@@ -76,7 +77,7 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
                   alignment='center middle'
                   border='thick'
                   borderColor={cssHex(paletteShade50)}
-                  backgroundColor={cssHex(teamColor[team])}
+                  backgroundColor={cssHex(teamColor[member])}
                 >
                   <PixelText {...props} size={22} color={cssHex(paletteBlack)}>
                     {abbreviateNumber(score)}
@@ -99,9 +100,7 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
           height={`${29}px`}
           description='r/GamesOnReddit Button'
           url={`gor-button-${props.claimed ? 'enabled' : 'disabled'}.png`}
-          onPress={() =>
-            context.ui.navigateTo('https://www.reddit.com/r/GamesOnReddit/')
-          }
+          onPress={() => context.ui.navigateTo(config2.leaderboard.url)}
         />
 
         <spacer height='14px' />

@@ -56,7 +56,6 @@ export class BFTerminal extends LitElement {
     .BannedField {color: var(--color-banned-field-light);}
     .VeryBannedField {color: var(--color-very-banned-field-light);}
     .BananaField {color: var(--color-banana-field-light);}
-    .WhatIsField {color: var(--color-what-is-field-light);}
 
     .canvas-box {
       height: 100%;

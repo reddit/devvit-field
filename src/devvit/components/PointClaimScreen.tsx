@@ -19,17 +19,12 @@ import {RaisedPanel} from './game-screen/RaisedPanel'
 type PointClaimScreenProps = {
   pixelRatio: number
   team: Team
+  standings: {member: Team; score: number}[]
+  onClaimPress: () => void | Promise<void>
 }
 
 export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
   const [claimed, setClaimed] = useState(false)
-  // to-do: replace with actual scores
-  const scores: {team: Team; score: number}[] = [
-    {team: 0, score: 8},
-    {team: 1, score: 13},
-    {team: 2, score: 21},
-    {team: 3, score: 34},
-  ]
   const symbolHeight = 120
 
   return (
@@ -41,7 +36,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
         alignment='center middle'
         padding='small'
       >
-        <Header {...props} scores={scores} />
+        <Header {...props} scores={props.standings} />
 
         <spacer size='xsmall' />
 
@@ -93,7 +88,10 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
           <StyledButton
             {...props}
             color={cssHex(claimed ? paletteDisabled : teamColor[props.team])}
-            onPress={() => setClaimed(!claimed)}
+            onPress={async () => {
+              await props.onClaimPress()
+              setClaimed(true)
+            }}
           >
             {claimed
               ? localize('point-claim-button-label-after')
@@ -105,7 +103,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
 
         <spacer size='small' />
 
-        <Footer {...props} scores={scores} claimed={claimed} />
+        <Footer {...props} scores={props.standings} claimed={claimed} />
       </vstack>
     </zstack>
   )
