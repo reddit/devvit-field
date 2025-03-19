@@ -5,6 +5,13 @@ export type XY = {x: number; y: number}
 export type PartitionKey = `px_${number}__py_${number}`
 export type XYZ = {x: number; y: number; z: number}
 
+export function boxAssign(lhs: Box, rhs: Readonly<Box>): void {
+  lhs.x = rhs.x
+  lhs.y = rhs.y
+  lhs.w = rhs.w
+  lhs.h = rhs.h
+}
+
 export function boxEq(lhs: Readonly<Box>, rhs: Readonly<Box>): boolean {
   return (
     lhs.x === rhs.x && lhs.y === rhs.y && lhs.w === rhs.w && lhs.h === rhs.h

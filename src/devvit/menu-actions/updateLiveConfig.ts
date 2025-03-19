@@ -52,72 +52,60 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
         },
         {
           type: 'number',
-          name: 'globalFetcherMaxDroppedPatches',
-          label: 'Fetcher: max dropped patches',
-          defaultValue:
-            current.globalFetcherMaxDroppedPatches ??
-            defaults.globalFetcherMaxDroppedPatches,
-          helpText: `Maximum missed realtime patch messages tolerated before downloading a replace (ints in [0, ∞), default ${defaults.globalFetcherMaxDroppedPatches}).`,
+          name: 'globalPDFDebug',
+          label: 'Partition data fetcher: debug mode',
+          defaultValue: current.globalPDFDebug ?? defaults.globalPDFDebug,
+          helpText: `Debug mode (ints in [0, ∞), default ${defaults.globalPDFDebug}). 0 is off, great is verbose.`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalFetcherMaxParallelS3Fetches',
-          label: 'Fetcher: max parallel S3 fetches',
+          name: 'globalPDFGuessAfterMillis',
+          label: 'Partition data fetcher: realtime silence tolerance (ms)',
           defaultValue:
-            current.globalFetcherMaxParallelS3Fetches ??
-            defaults.globalFetcherMaxParallelS3Fetches,
-          helpText: `Maximum concurrent S3 field partition downloads (ints in [0, ∞), default ${defaults.globalFetcherMaxParallelS3Fetches}).`,
+            current.globalPDFGuessAfterMillis ??
+            defaults.globalPDFGuessAfterMillis,
+          helpText: `Maximum duration without a realtime update before guessing sequences (ints in [0, ∞), default ${defaults.globalPDFGuessAfterMillis}).`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalFetcherMaxSeqAgeMillis',
-          label: 'Fetcher: max sequence age (ms)',
+          name: 'globalPDFGuessOffsetMillis',
+          label: 'Partition data fetcher: guess offset (ms)',
           defaultValue:
-            current.globalFetcherMaxSeqAgeMillis ??
-            defaults.globalFetcherMaxSeqAgeMillis,
-          helpText: `Maximum duration a partition waits for a realtime sequence update before considering artificial sequence number injection (ints in [0, ∞), default ${defaults.globalFetcherMaxSeqAgeMillis}).`,
+            current.globalPDFGuessOffsetMillis ??
+            defaults.globalPDFGuessOffsetMillis,
+          helpText: `When guessing sequences, how far (backward is negative, forward is positive) to adjust the guess to increase the likelihood that the sequence exists (ints in [-∞, ∞), default ${defaults.globalPDFGuessOffsetMillis}).`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalFetcherMaxRealtimeSilenceMillis',
-          label: 'Fetcher: max realtime silence (ms)',
+          name: 'globalPDFMaxDroppedPatches',
+          label: 'Partition data fetcher: max dropped patches',
           defaultValue:
-            current.globalFetcherMaxRealtimeSilenceMillis ??
-            defaults.globalFetcherMaxRealtimeSilenceMillis,
-          helpText: `Maximum duration without a realtime update before the partition poller starts guessing sequence numbers(ints in [0, ∞), default ${defaults.globalFetcherMaxRealtimeSilenceMillis}). Duration resets on next update but not on guesses.`,
+            current.globalPDFMaxDroppedPatches ??
+            defaults.globalPDFMaxDroppedPatches,
+          helpText: `Maximum missed realtime patch messages before preferring a partition replace (ints in [0, ∞), default ${defaults.globalPDFMaxDroppedPatches}).`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalFetcherGuessOffsetMillis',
-          label: 'Fetcher: guess offset (ms)',
+          name: 'globalPDFMaxParallelFetches',
+          label: 'Partition data fetcher: max parallel fetches',
           defaultValue:
-            current.globalFetcherGuessOffsetMillis ??
-            defaults.globalFetcherGuessOffsetMillis,
-          helpText: `When guessing at sequence numbers, how far (backward is negative, forward is positive) to adjust the guess to increase the likelihood that the sequence exists (ints in [-∞, ∞), default ${defaults.globalFetcherGuessOffsetMillis}).`,
+            current.globalPDFMaxParallelFetches ??
+            defaults.globalPDFMaxParallelFetches,
+          helpText: `Maximum concurrent fetches across all partitions (ints in [0, ∞), default ${defaults.globalPDFMaxParallelFetches}).`,
           required: true,
         },
         {
           type: 'number',
-          name: 'globalFetcherFetchRestMillis',
-          label: 'Fetcher: rest period (ms)',
+          name: 'globalPDFMaxPatchesWithoutReplace',
+          label: 'Partition data fetcher: mandatory replace sequence period',
           defaultValue:
-            current.globalFetcherFetchRestMillis ??
-            defaults.globalFetcherFetchRestMillis,
-          helpText: `The minimum duration between requests (ints in [0, ∞), default ${defaults.globalFetcherFetchRestMillis}).`,
-          required: true,
-        },
-        {
-          type: 'number',
-          name: 'globalFetcherMandatoryReplaceSequencePeriod',
-          label: 'Fetcher: mandatory replace sequence period',
-          defaultValue:
-            current.globalFetcherMandatoryReplaceSequencePeriod ??
-            defaults.globalFetcherMandatoryReplaceSequencePeriod,
-          helpText: `The max sequences to go without fetching a replace instead of just deltas (ints in [0, ∞), default ${defaults.globalFetcherMandatoryReplaceSequencePeriod}).`,
+            current.globalPDFMaxPatchesWithoutReplace ??
+            defaults.globalPDFMaxPatchesWithoutReplace,
+          helpText: `The max sequences to go without fetching a replace instead of just patches (ints in [0, ∞), default ${defaults.globalPDFMaxPatchesWithoutReplace}).`,
           required: true,
         },
       ] as const satisfies (FormField & {name: keyof AppConfig})[],
@@ -167,24 +155,20 @@ function validateLiveConfig(newConfig: AppConfig): void {
   }
 
   if (
-    !Number.isInteger(newConfig.globalFetcherMaxDroppedPatches) ||
-    newConfig.globalFetcherMaxDroppedPatches < 0 ||
-    !Number.isInteger(newConfig.globalFetcherMaxParallelS3Fetches) ||
-    newConfig.globalFetcherMaxParallelS3Fetches < 0 ||
-    !Number.isInteger(newConfig.globalFetcherMaxSeqAgeMillis) ||
-    newConfig.globalFetcherMaxSeqAgeMillis < 0 ||
-    !Number.isInteger(newConfig.globalFetcherMaxRealtimeSilenceMillis) ||
-    newConfig.globalFetcherMaxRealtimeSilenceMillis < 0 ||
-    !Number.isInteger(newConfig.globalFetcherFetchRestMillis) ||
-    newConfig.globalFetcherFetchRestMillis < 0 ||
-    !Number.isInteger(newConfig.globalFetcherMandatoryReplaceSequencePeriod) ||
-    newConfig.globalFetcherMandatoryReplaceSequencePeriod < 0
+    !Number.isInteger(newConfig.globalPDFMaxDroppedPatches) ||
+    newConfig.globalPDFMaxDroppedPatches < 0 ||
+    !Number.isInteger(newConfig.globalPDFMaxParallelFetches) ||
+    newConfig.globalPDFMaxParallelFetches < 0 ||
+    !Number.isInteger(newConfig.globalPDFGuessAfterMillis) ||
+    newConfig.globalPDFGuessAfterMillis < 0 ||
+    !Number.isInteger(newConfig.globalPDFMaxPatchesWithoutReplace) ||
+    newConfig.globalPDFMaxPatchesWithoutReplace < 0
   )
     throw Error(
-      'max dropped patches, max parallel S3 fetches, max sequence age, max realtime silence, fetch rest, and mandatory replace sequence period must be ints in [0, ∞)',
+      'max dropped patches, max parallel fetches, guess after, and max patches without replace must be ints in [0, ∞)',
     )
 
-  if (!Number.isInteger(newConfig.globalFetcherGuessOffsetMillis))
+  if (!Number.isInteger(newConfig.globalPDFGuessOffsetMillis))
     throw Error('guess offset must be an int in (-∞, ∞)')
 }
 

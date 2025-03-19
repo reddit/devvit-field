@@ -1,9 +1,7 @@
 import {
   DeltaCodec,
   type DeltaSnapshotKey,
-  type S3Kind,
   fieldS3URL,
-  partitionPeriod,
 } from '../../shared/codecs/deltacodec.ts'
 import {MapCodec} from '../../shared/codecs/mapcodec.ts'
 import {makePartitionKey} from '../../shared/partition.ts'
@@ -11,7 +9,7 @@ import {
   type Box,
   type PartitionKey,
   type XY,
-  boxHits,
+  boxAssign,
 } from '../../shared/types/2d.ts'
 import {
   type AppConfig,
@@ -23,6 +21,8 @@ import type {PartitionUpdate} from '../../shared/types/message.ts'
 import {T5, noT5} from '../../shared/types/tid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import type {Cam} from '../renderer/cam.ts'
+import {PartData} from './part-data.ts'
+import {type NoSeq, Seq, noSeq} from './seq.ts'
 
 // to-do: one interface.
 export type RenderPatch = (
@@ -35,44 +35,6 @@ export type RenderReplace = (
   partXY: Readonly<XY>,
 ) => void
 
-type Part = {
-  /**
-   * Missed updates since last replace. Reset when replaced. Necessary since
-   * seq - written doesn't aggregate. Excludes skips.
-   */
-  dropped: number
-  /** Last fetch attempt. */
-  fetched: UTCMillis | 0
-  /**
-   * The latest sequence being fetched. Only one in-flight request allowed.
-   * noSeq on un/successful completion. Use pending and written to determine
-   * when to fetch.
-   */
-  pending: number
-  /** The last replace sequence written. */
-  replaced: number
-  /**
-   * The latest available sequence known for the partition. This is written by
-   * messages received and has nothing to do with fetch state. Use to identify
-   * fetch target and dropped messages.
-   */
-  seq: number
-  /**
-   * The last write to seq by message or artificially. Updated when no change
-   * too.
-   */
-  seqUpdated: UTCMillis | 0
-  /**
-   * The latest sequence written to a partition (could be patch or replace). Use
-   * pending and written to determine when to fetch.
-   */
-  written: number
-  readonly xy: Readonly<XY>
-}
-
-const pollIntervalMillis: number = 250
-const noSeq: number = -1
-
 class FetchError404 extends Error {}
 
 /**
@@ -83,22 +45,22 @@ class FetchError404 extends Error {}
 export class PartDataFetcher {
   #abortCtrl: AbortController = new AbortController()
   readonly #cam: Readonly<Cam>
-  /** Camera partitions rectangle. */
-  #camPartBox: Readonly<Box> = {x: 0, y: 0, w: 0, h: 0}
+  /** Camera partitions rectangle in pixel coords. */
+  readonly #camPartBox: Readonly<Box> = {x: 0, y: 0, w: 0, h: 0}
   #challenge: number = 0
   #config: Readonly<FieldConfig> | undefined // Implicitly used to test init.
-  #live: Readonly<AppConfig> = getDefaultAppConfig()
-  #pathPrefix: string = ''
+  readonly #live: Readonly<AppConfig> = getDefaultAppConfig()
   /** Greatest sequence number received across partitions. Never artificial. */
-  #maxSeq: number = noSeq
+  #maxSeq: Seq | NoSeq = noSeq
   /** Time of last maxSeq write. */
   #maxSeqUpdated: UTCMillis | 0 = 0
-  #part: {[key: PartitionKey]: Part} = {}
+  #part: {[key: PartitionKey]: PartData} = {}
+  #pathPrefix: string = ''
+  #resumed: boolean = false
   /** Number of inflight requests. */
   #pending: number = 0
-  #poller: number = 0
-  #renderPatch: RenderPatch
-  #renderReplace: RenderReplace
+  readonly #renderPatch: RenderPatch
+  readonly #renderReplace: RenderReplace
   #t5: T5 = noT5
 
   constructor(
@@ -120,12 +82,6 @@ export class PartDataFetcher {
     this.#part = {}
   }
 
-  /** Deregister sequence timer. */
-  deregister(): void {
-    clearInterval(this.#poller)
-    this.#poller = 0
-  }
-
   /** Called on initial render and reinit to initialize the entire field. */
   init(
     config: Readonly<FieldConfig>,
@@ -133,77 +89,63 @@ export class PartDataFetcher {
   ): void {
     this.#abortCtrl = new AbortController()
     this.#config = config
-
     if (key) this.#recordMessage(key)
+    else if (this.#live.globalPDFDebug) console.debug('[pdf] no initial key')
   }
 
   /** Called when a new partition is available for download by realtime. */
   message(update: Readonly<PartitionUpdate>): void {
     this.#recordMessage(update.key)
-
-    // if (update.key.kind === 'deltas')
-    //   console.log(
-    //     `message xy=${update.key.partitionXY.x}-${update.key.partitionXY.y} seq=${update.key.sequenceNumber} noChange=${update.key.noChange}`,
-    //   )
   }
 
-  /** Register sequence timer. */
-  register(): void {
-    this.#poller = setInterval(this.#onPoll, pollIntervalMillis)
+  pause(): void {
+    this.#resumed = false
+  }
+
+  resume(): void {
+    this.#resumed = true
   }
 
   /** Adjust live config for future evaluations. */
-  setLiveConfig(config: Readonly<AppConfig>): void {
-    this.#live = config
+  setLiveConfig(live: Readonly<AppConfig>): void {
+    Object.assign(this.#live, live)
   }
 
   /** Called every render loop to respond to camera changes.  */
   update(): void {
     if (!this.#config) return // Not initialized.
 
-    this.#camPartBox = camPartBox(this.#cam, this.#config)
-    for (const xy of boxParts(this.#camPartBox, this.#config.partSize)) {
-      const partKey = makePartitionKey(xy)
-      const part = this.#part[partKey]
-      if (!part) continue // to-do: fetch current sequence and then fetch part.
-      if (this.#isPartFetchable(part)) void this.#fetchPart(part) // to-do: await on separate thread.
+    boxAssign(this.#camPartBox, camPartBox(this.#cam, this.#config))
+    const now = utcMillisNow()
+    for (const partXY of boxParts(this.#camPartBox, this.#config.partSize)) {
+      const part = this.#part[makePartitionKey(partXY)]
+      if (part) void this.#fetchPart(now, part) // to-do: await on separate thread.
     }
   }
 
-  async #fetchPart(part: Part): Promise<void> {
-    const partitionOffset = part.seq % partitionPeriod
-    let kind: S3Kind = 'deltas'
-    if (
-      (part.dropped > this.#live.globalFetcherMaxDroppedPatches ||
-        part.seq - part.replaced >
-          this.#live.globalFetcherMandatoryReplaceSequencePeriod) &&
-      part.replaced !== part.seq - partitionOffset &&
-      (part.written === noSeq ||
-        part.dropped - partitionOffset <
-          this.#live.globalFetcherMaxDroppedPatches)
-    )
-      // Partition offset may be > max dropped requiring a subsequent replace
-      // request. This seems better than to keep downloading deltas hoping for a
-      // better replace.
-      kind = 'partition'
+  async #fetchPart(now: UTCMillis, part: PartData): Promise<void> {
+    if (!this.#resumed) return
+    if (this.#pending >= this.#live.globalPDFMaxParallelFetches) return
+
+    const seq = part.fetch(this.#maxSeq, this.#maxSeqUpdated, now)
+    if (!seq) return
 
     const key = {
       challengeNumber: this.#challenge,
-      kind,
+      kind: seq.kind,
       noChange: false, // to-do: fix type.
-      partitionXY: part.xy,
+      partitionXY: part.partXY,
       pathPrefix: this.#pathPrefix,
-      sequenceNumber: part.seq - (kind === 'deltas' ? 0 : partitionOffset),
+      sequenceNumber: seq.seq,
       subredditId: this.#t5,
     }
 
-    const prevDropped = part.dropped
-    part.fetched = utcMillisNow()
-    part.pending = key.sequenceNumber
+    if (this.#live.globalPDFDebug > 2)
+      console.debug(
+        `[pdf] fetch xy=${part.partXY.x}-${part.partXY.y} seq=${seq.seq}${seq.kind === 'deltas' ? 'p' : 'r'}`,
+      )
+
     this.#pending++
-
-    // console.log(`fetch xy=${part.xy.x}-${part.xy.y} seq=${key.sequenceNumber}`)
-
     let rsp
     try {
       rsp = await fetchPart(key, this.#abortCtrl)
@@ -213,122 +155,46 @@ export class PartDataFetcher {
         console.warn(err)
       return
     } finally {
-      part.pending = noSeq
       this.#pending--
+      part.resolve(now, !!rsp)
     }
-
-    if (kind === 'partition') {
-      part.dropped = Math.max(0, part.dropped - (prevDropped - partitionOffset))
-      part.replaced = key.sequenceNumber
-    }
-    part.written = Math.max(part.written, key.sequenceNumber)
 
     // Applying never resets boxes so order is irrelevant. Always accept old
     // responses.
     // to-do: what to do about moderation?
 
     if (!this.#config) return
-    if (kind === 'deltas') {
-      const codec = new DeltaCodec(part.xy, this.#config.partSize)
-      this.#renderPatch(codec.decode(new Uint8Array(rsp)), part.xy, false)
+    if (seq.kind === 'deltas') {
+      const codec = new DeltaCodec(part.partXY, this.#config.partSize)
+      this.#renderPatch(codec.decode(new Uint8Array(rsp)), part.partXY, false)
     } else {
       const codec = new MapCodec()
-      this.#renderReplace(codec.decode(new Uint8Array(rsp)), part.xy)
+      this.#renderReplace(codec.decode(new Uint8Array(rsp)), part.partXY)
     }
   }
 
-  #isPartFetchable(part: Readonly<Part>): boolean {
-    return (
-      this.#poller !== 0 && // Not paused.
-      // Not back to back.
-      utcMillisNow() - part.fetched > this.#live.globalFetcherFetchRestMillis &&
-      // Not maxed out.
-      this.#pending < this.#live.globalFetcherMaxParallelS3Fetches &&
-      part.pending === noSeq && // Not pending.
-      part.written < part.seq && // New data available.
-      this.#isPartVisible(part) // Not hidden.
-    )
-  }
-
-  #isPartVisible(part: Readonly<Part>): boolean {
-    if (!this.#camPartBox || !this.#config) return false
-    return boxHits(this.#camPartBox, {
-      x: part.xy.x * this.#config.partSize,
-      y: part.xy.y * this.#config.partSize,
-    })
-  }
-
-  /** Called when the timer checks in. */
-  #onPoll = (): void => {
-    if (!this.#config || this.#maxSeq === noSeq) return
-
-    const now = utcMillisNow()
-    const maxSeqAge = now - this.#maxSeqUpdated
-    let seq = this.#maxSeq
-    if (
-      this.#maxSeqUpdated &&
-      maxSeqAge > this.#live.globalFetcherMaxRealtimeSilenceMillis
-    ) {
-      seq =
-        this.#maxSeq +
-        Math.max(
-          0,
-          Math.trunc(
-            (maxSeqAge + this.#live.globalFetcherGuessOffsetMillis) / 1000,
-          ),
-        )
-      // console.log(
-      //   `guessing seq=${seq} maxSeq=${this.#maxSeq} age=${maxSeqAge} offset=${this.#live.globalFetcherGuessOffsetMillis}`,
-      // )
-    }
-
-    for (const xy of boxParts(this.#camPartBox, this.#config.partSize)) {
-      const partKey = makePartitionKey(xy)
-      const part = (this.#part[partKey] ??= Part(xy))
-      if (now - part.seqUpdated > this.#live.globalFetcherMaxSeqAgeMillis) {
-        // console.log(
-        //   `artificial sequence xy=${xy.x}-${xy.y} old=${part.seq} new=${this.#maxSeq}`,
-        // )
-        part.seq = seq
-        part.seqUpdated = now
-      }
-    }
-  }
-
-  #recordMessage(key: Readonly<DeltaSnapshotKey>): Part {
-    // to-do: what to do when challenge changes but not init? Should be handled
-    //        by Blocks.
+  #recordMessage(key: Readonly<DeltaSnapshotKey>): void {
+    // to-do: when challenge changes, call init.
+    if (!this.#config) return
     this.#challenge = Math.max(this.#challenge, key.challengeNumber)
     this.#pathPrefix = key.pathPrefix
     this.#t5 = T5(key.subredditId)
 
-    const partKey = makePartitionKey(key.partitionXY)
-    const part = (this.#part[partKey] ??= Part(key.partitionXY))
-
-    // Replace messages are expected to duplicate patch messages but do not
-    // correctly post noChange and may be out of sync with patches. It's
-    // possible to only receive a replace and no delta but deduplicating
-    // reliably would be hard. The sequence number could be updated to the
-    // greatest seen but then artificial sequences would need to be tracked
-    // separately so that part.seq could always be the max.
-    if (key.kind !== 'deltas') return part
-
-    // Record dropped before fetching. Realtime updates always come in order
-    // but responses do not. noSeq is -1.
-    part.dropped +=
-      key.sequenceNumber -
-      Math.min(key.sequenceNumber, part.seq + (key.noChange ? 1 : 0))
-
     const now = utcMillisNow()
-    // to-do: if (!key.noChange)
-    part.seq = key.sequenceNumber
-    part.seqUpdated = now
+
+    const partKey = makePartitionKey(key.partitionXY)
+    const part = (this.#part[partKey] ??= new PartData(
+      this.#camPartBox,
+      this.#live,
+      this.#config.partSize,
+      key.partitionXY,
+    ))
+    part.message(key, now)
+
     if (key.sequenceNumber > this.#maxSeq) {
-      this.#maxSeq = key.sequenceNumber
+      this.#maxSeq = Seq(key.sequenceNumber)
       this.#maxSeqUpdated = now
     }
-
-    return part
   }
 }
 
@@ -338,6 +204,7 @@ function* boxParts(box: Readonly<Box>, partSize: number): IterableIterator<XY> {
       yield {x: x / partSize, y: y / partSize}
 }
 
+/** @internal */
 export function camPartBox(
   cam: Readonly<Cam>,
   config: Readonly<FieldConfig>,
@@ -391,17 +258,4 @@ async function fetchPart(
   if (!type?.startsWith('application/binary'))
     throw Error(`bad part fetch response type ${type} for ${url}`)
   return await rsp.arrayBuffer()
-}
-
-function Part(xy: Readonly<XY>): Part {
-  return {
-    dropped: 0,
-    fetched: 0,
-    pending: noSeq,
-    replaced: noSeq,
-    seq: noSeq,
-    seqUpdated: 0,
-    written: noSeq,
-    xy,
-  }
 }

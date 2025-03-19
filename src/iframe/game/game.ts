@@ -266,7 +266,7 @@ export class Game {
 
     this.lvl.init(this)
 
-    this.partDataFetcher.register()
+    this.partDataFetcher.resume()
 
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
@@ -281,7 +281,7 @@ export class Game {
   }
 
   stop(): void {
-    this.partDataFetcher.deregister()
+    this.partDataFetcher.pause()
     removeEventListener('message', this.#onMessageEvent)
     this.looper?.cancel()
     this.looper?.register('remove')
@@ -624,7 +624,7 @@ export class Game {
   #onPause = (): void => {
     console.log('paused')
     void this.ac.suspend().catch(console.warn)
-    this.partDataFetcher.deregister()
+    this.partDataFetcher.pause()
   }
 
   #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
@@ -690,7 +690,7 @@ export class Game {
 
   #onResume = (): void => {
     console.log('resumed')
-    this.partDataFetcher.register()
+    this.partDataFetcher.resume()
   }
 
   postMessage(msg: Readonly<IframeMessage>): void {

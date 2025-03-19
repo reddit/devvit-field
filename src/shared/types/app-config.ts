@@ -22,41 +22,37 @@ export type AppConfig = {
    */
   globalReloadSequence: number
 
-  /**
-   * Maximum missed realtime patch messages tolerated before downloading a
-   * replace; ints in [0, ∞).
-   */
-  globalFetcherMaxDroppedPatches: number
+  // Partition data fetcher.
+  /** Debug mode; ints in [0, ∞). 0 is off, great is verbose.  */
+  globalPDFDebug: number
 
   /**
-   * Maximum missed realtime patch messages tolerated before downloading a
-   * replace; ints in [0, ∞).
+   * Maximum duration without a realtime update before guessing sequences; ints
+   * in [0, ∞).
    */
-  globalFetcherMaxParallelS3Fetches: number
+  globalPDFGuessAfterMillis: number
+
   /**
-   * Maximum duration a partition waits for a realtime sequence update before
-   * considering artificial sequence number injection; ints in [0, ∞).
+   * When guessing sequences, how far (backward is negative, forward is
+   * positive) to adjust the guess to increase the likelihood that the sequence
+   * exists; ints in (-∞, ∞).
    */
-  globalFetcherMaxSeqAgeMillis: number
+  globalPDFGuessOffsetMillis: number
+
   /**
-   * Maximum duration without a realtime update before the partition poller
-   * starts guessing sequence numbers; ints in [0, ∞). Duration resets on next
-   * update but not on guesses.
+   * Maximum missed realtime patch messages before preferring a partition
+   * replace; ints in [0, ∞). Doesn't include no-change patches.
    */
-  globalFetcherMaxRealtimeSilenceMillis: number
+  globalPDFMaxDroppedPatches: number
+
+  /** Maximum concurrent fetches across all partitions; ints in [0, ∞). */
+  globalPDFMaxParallelFetches: number
+
   /**
-   * When guessing at sequence numbers, how far (backward is negative, forward
-   * is positive) to adjust the guess to increase the likelihood that the
-   * sequence exists; ints in (-∞, ∞).
-   */
-  globalFetcherGuessOffsetMillis: number
-  /** The minimum duration between requests; ints in [0, ∞). */
-  globalFetcherFetchRestMillis: number
-  /**
-   * The max sequences to go without fetching a replace instead of just deltas;
+   * The max sequences to go without fetching a replace instead of just patches;
    * ints in [0, ∞).
    */
-  globalFetcherMandatoryReplaceSequencePeriod: number
+  globalPDFMaxPatchesWithoutReplace: number
 }
 
 /** Number of boxes per side of the minimap. */
@@ -67,12 +63,11 @@ export function getDefaultAppConfig(): AppConfig {
     globalClickCooldownMillis: 1000,
     globalServerPollingTimeMillis: 60_000,
     globalReloadSequence: 0,
-    globalFetcherMaxDroppedPatches: 5,
-    globalFetcherMaxParallelS3Fetches: 4,
-    globalFetcherMaxSeqAgeMillis: 2_000,
-    globalFetcherMaxRealtimeSilenceMillis: 5_000,
-    globalFetcherGuessOffsetMillis: -1_000,
-    globalFetcherFetchRestMillis: 300,
-    globalFetcherMandatoryReplaceSequencePeriod: 100,
+    globalPDFDebug: 0,
+    globalPDFGuessAfterMillis: 10_000,
+    globalPDFGuessOffsetMillis: -1_000,
+    globalPDFMaxDroppedPatches: 5,
+    globalPDFMaxParallelFetches: 4,
+    globalPDFMaxPatchesWithoutReplace: 100,
   }
 }

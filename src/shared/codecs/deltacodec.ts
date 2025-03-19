@@ -91,10 +91,10 @@ export class DeltaCodec {
   readonly #partitionSize: number
 
   // Constructs codec for deltas for a partition in a given location.
-  constructor(globalCoord: XY, partitionSize: number) {
+  constructor(partXY: XY, partitionSize: number) {
     this.#topLeft = {
-      x: globalCoord.x * partitionSize,
-      y: globalCoord.y * partitionSize,
+      x: partXY.x * partitionSize,
+      y: partXY.y * partitionSize,
     }
     this.#partitionSize = partitionSize
   }
