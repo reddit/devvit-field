@@ -26,6 +26,7 @@ import {endCurrentChallengeMenuAction} from './devvit/menu-actions/endCurrentCha
 import {flushWorkQueueAction} from './devvit/menu-actions/flushWorkQueue.ts'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
 import {makeSuperUserMenuAction} from './devvit/menu-actions/makeSuperUser.js'
+import {nukeCellsMenuAction} from './devvit/menu-actions/nukeCells.ts'
 import {resetUserStartedPlayingAtMenuAction} from './devvit/menu-actions/resetUserStartedPlayingAt.js'
 import {setDefaultConfigMenuAction} from './devvit/menu-actions/setDefaultConfig.js'
 import {setUserLevelMenuAction} from './devvit/menu-actions/setUserLevel.js'
@@ -176,6 +177,7 @@ Devvit.addMenuItem(setDefaultConfigMenuAction())
 Devvit.addMenuItem(getDefaultConfigMenuAction())
 Devvit.addMenuItem(updateLiveConfigMenuAction())
 Devvit.addMenuItem(endCurrentChallengeMenuAction())
+Devvit.addMenuItem(nukeCellsMenuAction())
 Devvit.addMenuItem(blockUsersMenuAction())
 Devvit.addMenuItem(unblockUsersMenuAction())
 Devvit.addMenuItem(resetUserStartedPlayingAtMenuAction())

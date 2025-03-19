@@ -16,8 +16,12 @@ import {
   fieldClaimCells,
   fieldGet,
   fieldGetDeltas,
+  fieldNukeCells,
 } from './field'
-import {teamStatsCellsClaimedForTeamPartitioned} from './leaderboards/challenge/team.cellsClaimed'
+import {
+  teamStatsCellsClaimedForTeamPartitioned,
+  teamStatsCellsClaimedGetTotal,
+} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 import {userGet, userSet} from './user'
 
@@ -863,5 +867,291 @@ DevvitTest.it(
     const decodedFieldState3 = newFieldState3.map(x => decodeVTT(x))
 
     expect(decodedFieldState3).toStrictEqual(finalState)
+  },
+)
+
+DevvitTest.it(
+  'fieldNukeCells - should nuke valid cells for a given radius',
+  async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: true,
+        hasVerifiedEmail: true,
+        globalPointCount: 0,
+      },
+    })
+
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {
+        size: 5,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 5,
+      },
+    })
+
+    await fieldClaimCells({
+      coords: [{x: 2, y: 2}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          subredditId: ctx.subredditId,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
+        cols: 5,
+        rows: 5,
+      }),
+    ).toStrictEqual([
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '2', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+    ])
+
+    await fieldNukeCells({
+      blastRadius: 1,
+      coord: {x: 2, y: 2},
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          subredditId: ctx.subredditId,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
+        cols: 5,
+        rows: 5,
+      }),
+    ).toStrictEqual([
+      ['_', '_', '_', '_', '_'],
+      ['_', '0', '3', '2', '_'],
+      ['_', '1', '0', '3', '_'],
+      ['_', '2', '1', '0', '_'],
+      ['_', '_', '_', '_', '_'],
+    ])
+
+    await fieldNukeCells({
+      blastRadius: 2,
+      coord: {x: 2, y: 2},
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          subredditId: ctx.subredditId,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
+        cols: 5,
+        rows: 5,
+      }),
+    ).toStrictEqual([
+      ['0', '1', '2', '3', '0'],
+      ['1', '2', '3', '0', '1'],
+      ['2', '3', '0', '1', '2'],
+      ['3', '0', '1', '2', '3'],
+      ['0', '1', '2', '3', '0'],
+    ])
+
+    // Bigger than the board!!
+    await fieldNukeCells({
+      blastRadius: 3,
+      coord: {x: 2, y: 2},
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          subredditId: ctx.subredditId,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
+        cols: 5,
+        rows: 5,
+      }),
+    ).toStrictEqual([
+      ['0', '1', '2', '3', '0'],
+      ['1', '2', '3', '0', '1'],
+      ['2', '3', '0', '1', '2'],
+      ['3', '0', '1', '2', '3'],
+      ['0', '1', '2', '3', '0'],
+    ])
+  },
+)
+
+DevvitTest.it(
+  'fieldNukeCells - should partially apply if some of the blast radius is out of bounds',
+  async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: true,
+        hasVerifiedEmail: true,
+        globalPointCount: 0,
+      },
+    })
+
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {
+        size: 5,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 5,
+      },
+    })
+
+    await fieldClaimCells({
+      coords: [{x: 2, y: 2}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          subredditId: ctx.subredditId,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
+        cols: 5,
+        rows: 5,
+      }),
+    ).toStrictEqual([
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '2', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+    ])
+
+    await fieldNukeCells({
+      blastRadius: 1,
+      coord: {x: 0, y: 0},
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    expect(
+      toMatrix({
+        result: await fieldGet({
+          challengeNumber,
+          subredditId: ctx.subredditId,
+          redis: ctx.redis,
+          partitionXY: {x: 0, y: 0},
+        }),
+        cols: 5,
+        rows: 5,
+      }),
+    ).toStrictEqual([
+      ['0', '2', '_', '_', '_'],
+      ['1', '3', '_', '_', '_'],
+      ['_', '_', '2', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+      ['_', '_', '_', '_', '_'],
+    ])
+  },
+)
+
+DevvitTest.it(
+  'fieldNukeCells - increments scores for teams on nuke',
+  async ctx => {
+    await userSet({
+      redis: ctx.redis,
+      user: {
+        currentLevel: 0,
+        lastPlayedChallengeNumberForLevel: 0,
+        lastPlayedChallengeNumberCellsClaimed: 0,
+        t2: USER_IDS.TEAM_2_PLAYER_1,
+        username: 'foo',
+        superuser: true,
+        hasVerifiedEmail: true,
+        globalPointCount: 0,
+      },
+    })
+
+    const {challengeNumber} = await challengeMakeNew({
+      ctx,
+      config: {
+        size: 5,
+        seed: makeRandomSeed(),
+        mineDensity: 0,
+        partitionSize: 5,
+      },
+    })
+
+    await fieldClaimCells({
+      coords: [{x: 2, y: 2}],
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    await fieldNukeCells({
+      blastRadius: 1,
+      coord: {x: 0, y: 0},
+      challengeNumber,
+      userId: USER_IDS.TEAM_2_PLAYER_1,
+      ctx,
+    })
+
+    await expect(
+      teamStatsCellsClaimedGetTotal(ctx.redis, challengeNumber, 'DESC'),
+    ).resolves.toStrictEqual([
+      {
+        member: 3,
+        score: 1,
+      },
+      {
+        // Even though the user claimed above the leaderboard won't
+        // increment since those counts are handled in the work queue now!
+        member: 2,
+        score: 1,
+      },
+      {
+        member: 1,
+        score: 1,
+      },
+      {
+        member: 0,
+        score: 1,
+      },
+    ])
   },
 )

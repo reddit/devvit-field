@@ -9,7 +9,7 @@ import {
   makePartitionKey,
   parsePartitionXY,
 } from '../../../shared/partition'
-import {type Team, getTeamFromUserId} from '../../../shared/team'
+import {type Team, getTeamFromUserId, teams} from '../../../shared/team'
 import type {PartitionKey, XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
 import type {Delta, FieldMap} from '../../../shared/types/field'
@@ -20,11 +20,15 @@ import {validateFieldArea} from '../../../shared/validateFieldArea.js'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {type Uploader, deltasAdd} from './deltas'
-import {teamStatsCellsClaimedIncrementForMemberPartitioned} from './leaderboards/challenge/team.cellsClaimed'
+import {
+  teamStatsCellsClaimedIncrementForMemberPartitioned,
+  teamStatsCellsClaimedIncrementForMemberTotal,
+} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
 import {minefieldIsMine} from './minefield'
 import {
   userDescendLevel,
+  userGet,
   userIncrementLastPlayedChallengeClaimedCells,
   userSetLastPlayedChallenge,
   userSetPlayedIfNotExists,
@@ -51,7 +55,7 @@ const coordsToOffset = (coord: XY, cols: number): number => {
   return (coord.y * cols + coord.x) * FIELD_CELL_BITS
 }
 
-const enforceBounds = ({
+export const enforceBounds = ({
   coord,
   cols,
   rows,
@@ -71,10 +75,12 @@ const enforceBounds = ({
   return coord
 }
 
-type BatchItem = Omit<Delta, 'team'> & {
+type BatchItemWithTeam = Delta & {
   partitionXY: XY
   localXY: XY
 }
+
+type BatchItemWithoutTeam = Omit<BatchItemWithTeam, 'team'>
 
 /**
  * Runs through a batch of coords and breaks AFTER the first mine is hit. This
@@ -85,7 +91,7 @@ const produceValidBatch = ({
   coords,
   challengeConfig,
 }: {coords: XY[]; challengeConfig: ChallengeConfig}) => {
-  const validCoords: BatchItem[] = []
+  const validCoords: BatchItemWithoutTeam[] = []
 
   for (const coord of coords) {
     // This is the bounds for the board
@@ -262,7 +268,7 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
   userId,
   fieldPartitionKey,
 }: {
-  batch: BatchItem[]
+  batch: BatchItemWithoutTeam[]
   fieldConfig: ChallengeConfig
   ctx: JobContext
   userId: T2
@@ -487,6 +493,168 @@ export const fieldClaimCells = async ({
     lostCells,
     newLevel,
   }
+}
+
+const getBlastRadius = (gridSize: number, radius: number, xy: XY): XY[] => {
+  const blastRadius: XY[] = []
+
+  for (let x = xy.x - radius; x <= xy.x + radius; x++) {
+    for (let y = xy.y - radius; y <= xy.y + radius; y++) {
+      try {
+        const validCoord = enforceBounds({
+          coord: {x, y},
+          cols: gridSize,
+          rows: gridSize,
+        })
+        blastRadius.push(validCoord)
+      } catch (e) {
+        // Skip invalid coordinates (out of bounds)
+      }
+    }
+  }
+
+  return blastRadius
+}
+
+/**
+ * @internal
+ *
+ * The actual bitfield operations ran for a partition. Broken out for testing only.
+ */
+const _fieldNukeCellsBitfieldOpsForPartition = async ({
+  batch,
+  fieldConfig,
+  ctx,
+  fieldPartitionKey,
+}: {
+  batch: BatchItemWithTeam[]
+  fieldConfig: ChallengeConfig
+  ctx: JobContext
+  fieldPartitionKey: ReturnType<typeof createFieldPartitionKey>
+}): Promise<void> => {
+  const bitfieldOps: BitfieldCommand[] = []
+
+  // Iterate over the results of the claims operations and either
+  // set (if value === 0) or get (if value === 1) so that the user
+  // can see the final state for the cell.
+  batch.forEach((value, i) => {
+    const batchItem = batch[i]!
+
+    bitfieldOps.push([
+      'set',
+      `u${FIELD_CELL_BITS}`,
+      coordsToOffset(
+        enforceBounds({
+          coord: batchItem.localXY,
+          cols: fieldConfig.partitionSize,
+          rows: fieldConfig.partitionSize,
+        }),
+        fieldConfig.partitionSize,
+      ),
+      encodeVTT(1, batchItem.team),
+    ])
+  })
+
+  await ctx.redis.bitfield(
+    fieldPartitionKey,
+    // @ts-expect-error - not sure
+    ...bitfieldOps.flat(),
+  )
+}
+
+/** Nukes cells for a given area around a global XY */
+export const fieldNukeCells = async ({
+  coord,
+  blastRadius,
+  userId,
+  challengeNumber,
+  ctx,
+}: {
+  /** Central point to blast around */
+  coord: XY
+  /** How many cells to blast around the coord */
+  blastRadius: number
+  userId: T2
+  challengeNumber: number
+  ctx: JobContext
+}): Promise<void> => {
+  // We need a lookup here instead of passing in the config from blocks land
+  // because blocks doesn't have the seed and other backend only pieces
+  // of information that we need
+  const fieldConfig = await challengeConfigGet({
+    redis: ctx.redis,
+    subredditId: ctx.subredditId,
+    challengeNumber,
+  })
+
+  const profile = await userGet({redis: ctx.redis, userId})
+
+  if (!profile.superuser) {
+    throw new Error('Must be a super user to nuke cells')
+  }
+
+  const batch: BatchItemWithTeam[] = getBlastRadius(
+    fieldConfig.size,
+    blastRadius,
+    coord,
+  ).map((item, i) => ({
+    globalXY: item,
+    // Assume all are valid for this operation
+    isBan: false,
+    // Rainbowify!!
+    team: teams[i % teams.length]!,
+    ...getPartitionAndLocalCoords(item, fieldConfig.partitionSize),
+  }))
+
+  const partitionBatchMap: Record<
+    ReturnType<typeof createFieldPartitionKey>,
+    typeof batch
+  > = {}
+
+  for (const batchItem of batch) {
+    const fieldPartitionKey = createFieldPartitionKey(
+      challengeNumber,
+      batchItem.partitionXY,
+    )
+
+    if (!partitionBatchMap[fieldPartitionKey]) {
+      partitionBatchMap[fieldPartitionKey] = []
+    }
+
+    partitionBatchMap[fieldPartitionKey].push(batchItem)
+  }
+
+  await Promise.all(
+    Object.entries(partitionBatchMap).map(([fieldPartitionKey, batch], i) =>
+      _fieldNukeCellsBitfieldOpsForPartition({
+        batch,
+        fieldPartitionKey: fieldPartitionKey as ReturnType<
+          typeof createFieldPartitionKey
+        >,
+        ctx,
+        fieldConfig,
+      }),
+    ),
+  )
+
+  // Calculate the increment for all teams by dividing the total number of cells
+  // in the batch by the number of teams, rounding up to ensure all teams are awarded
+  // the same amount (even if the grid doesn't divide evenly).
+  const incrementAllTeamsBy = Math.ceil(batch.length / teams.length)
+
+  // Increment the total claimed cells for each team by the calculated amount.
+  // The downside is that it's possible to end the game "early" since some cells
+  // will be double counted. Since games are meaningless I think it's ok.
+  await Promise.all(
+    teams.map(team =>
+      teamStatsCellsClaimedIncrementForMemberTotal(
+        ctx.redis,
+        challengeNumber,
+        team,
+        incrementAllTeamsBy,
+      ),
+    ),
+  )
 }
 
 /**
