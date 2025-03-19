@@ -11,6 +11,7 @@ export const paletteShade19: number = 0x00000030
 export const paletteShade50: number = 0x00000080
 export const paletteShade60: number = 0x00000099
 export const paletteShade80: number = 0x000000cd
+export const paletteTint6: number = 0xffffff0f
 export const paletteTint19: number = 0xffffff30
 export const paletteTint60: number = 0xffffff99
 export const paletteTint75: number = 0xffffffb0
