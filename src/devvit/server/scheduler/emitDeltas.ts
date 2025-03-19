@@ -173,7 +173,9 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   } finally {
     clearInterval(interval)
     if (pending) await pending
-    if ((await wq.ctx.settings.get<boolean>('realtime-batch-enabled')) !== true) {
+    if (
+      (await wq.ctx.settings.get<boolean>('realtime-batch-enabled')) !== true
+    ) {
       //console.log(`flushing realtime queue after scheduled run of ${Date.now()-start}`)
       await flushRealtime(wq)
       // Run the workqueue one more time for any realtime sends that were just flushed.

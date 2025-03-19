@@ -38,6 +38,15 @@ export async function realtimeInit(ctx: TriggerContext): Promise<void> {
   await ctx.redis.expire(realtimeLockKey, 1)
 }
 
+export async function dropRealtimeQueue(ctx: TriggerContext): Promise<void> {
+  await ctx.redis.del(
+    realtimeQueueKey,
+    realtimeCounterKey,
+    realtimeLockKey,
+    realtimeLastSendKey,
+  )
+}
+
 export async function sendRealtime(
   wq: WorkQueue,
   msg: DevvitMessage,
