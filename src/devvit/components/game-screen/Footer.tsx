@@ -39,49 +39,6 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
     </hstack>
   )
 
-  const wing = (
-    <vstack grow alignment='center top'>
-      <hstack
-        height='1px'
-        width='100%'
-        backgroundColor={cssHex(paletteShade80)}
-        cornerRadius='full'
-      />
-      <hstack
-        height='1px'
-        width='100%'
-        backgroundColor={cssHex(paletteTint19)}
-        cornerRadius='full'
-      />
-      <spacer height='4px' />
-      <hstack
-        height='1px'
-        width='100%'
-        backgroundColor={cssHex(paletteShade80)}
-        cornerRadius='full'
-      />
-      <hstack
-        height='1px'
-        width='100%'
-        backgroundColor={cssHex(paletteTint19)}
-        cornerRadius='full'
-      />
-    </vstack>
-  )
-
-  const wings = (
-    <vstack height='100%' width='100%' alignment='center top'>
-      <spacer height='16px' />
-      <hstack width='100%' height='16px' alignment='center top'>
-        <spacer width='56px' />
-        {wing}
-        <spacer width='144px' />
-        {wing}
-        <spacer width='56px' />
-      </hstack>
-    </vstack>
-  )
-
   return (
     <zstack
       width='100%'
@@ -90,7 +47,6 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
       onPress={props.onPress}
     >
       {background}
-      {wings}
 
       {/* Content */}
       <vstack width='100%' height='100%' alignment='center top'>
@@ -213,6 +169,8 @@ function LeftCap(props: CapProps): JSX.Element {
  */
 
 function Middle(props: CapProps): JSX.Element {
+  const mid = MIDDLE_WIDTH / 2
+
   const bottomTint = ['M0,96', `H${MIDDLE_WIDTH}`, 'V120', 'H0']
 
   const outerBorder = [
@@ -229,8 +187,27 @@ function Middle(props: CapProps): JSX.Element {
     `H${MIDDLE_WIDTH}`,
   ]
 
-  const mid = MIDDLE_WIDTH / 2
+  const wingsDark = [
+    'M0,16',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    'M0,21',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},16`,
+    `H${MIDDLE_WIDTH}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},21`,
+    `H${MIDDLE_WIDTH}`,
+  ]
 
+  const wingsLight = [
+    'M0,17',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    'M0,22',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},17`,
+    `H${MIDDLE_WIDTH}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},22`,
+    `H${MIDDLE_WIDTH}`,
+  ]
   const titleNotch = [
     `M${mid - TITLE_NOTCH_WIDTH / 2},${HALF_STROKE + 8}`,
     `L${mid - TITLE_NOTCH_WIDTH / 2 + TITLE_NOTCH_HEIGHT},${HALF_STROKE + 8 + TITLE_NOTCH_HEIGHT}`,
@@ -257,7 +234,7 @@ function Middle(props: CapProps): JSX.Element {
         imageHeight={CAP_HEIGHT * props.pixelRatio}
         width={`${MIDDLE_WIDTH}px`}
         height={`${CAP_HEIGHT}px`}
-        url={svg`<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${outerBorder.join('')}${insetContainer.join('')}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /></svg>`}
+        url={svg`<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${outerBorder.join('')}${insetContainer.join('')}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /><path d="${wingsDark.join('')}" stroke-width="1" stroke="${cssHex(paletteShade80)}" fill="none" /><path d="${wingsLight.join('')}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /></svg>`}
       />
     </zstack>
   )
