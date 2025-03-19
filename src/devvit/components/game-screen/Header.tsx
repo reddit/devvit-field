@@ -1,20 +1,24 @@
 import {Devvit, svg} from '@devvit/public-api'
 import {localize} from '../../../shared/locale'
 import type {Team} from '../../../shared/team'
-import {cssHex, paletteBlack, paletteTint60} from '../../../shared/theme'
-import {type Level, levelHighlightColor} from '../../../shared/types/level'
+import {
+  cssHex,
+  paletteBlack,
+  paletteField,
+  paletteFieldLight,
+  paletteTint60,
+} from '../../../shared/theme'
 import {PixelText} from '../PixelText'
 
 type HeaderProps = {
   pixelRatio: number
-  level: Level
   team: Team
   scores: {team: Team; score: number}[]
   onPress?: () => void
 }
 
 export function Header(props: HeaderProps): JSX.Element {
-  const borderColor = cssHex(levelHighlightColor[props.level])
+  const borderColor = cssHex(paletteField)
   const CAP_HEIGHT = 48
   const CAP_WIDTH = 48
   const RADIUS = 8
@@ -63,11 +67,7 @@ export function Header(props: HeaderProps): JSX.Element {
 
   const topRow = (
     <hstack alignment='middle'>
-      <PixelText
-        {...props}
-        size={16}
-        color={cssHex(levelHighlightColor[props.level])}
-      >
+      <PixelText {...props} size={16} color={cssHex(paletteFieldLight)}>
         {localize('point-claim-title')}
       </PixelText>
       <spacer grow />

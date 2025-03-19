@@ -7,9 +7,9 @@ import {
   paletteBlack,
   paletteConsole,
   paletteDisabled,
+  paletteField,
   paletteFieldLight,
 } from '../../shared/theme'
-import {type Level, levelHighlightColor} from '../../shared/types/level'
 import {StyledButton} from './StyledButton'
 import {Footer} from './game-screen/Footer'
 import {Header} from './game-screen/Header'
@@ -18,7 +18,6 @@ import {RaisedPanel} from './game-screen/RaisedPanel'
 
 type PointClaimScreenProps = {
   pixelRatio: number
-  level: Level
   team: Team
 }
 
@@ -52,7 +51,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
           grow
           backgroundColor={cssHex(paletteBlack)}
           border='thin'
-          borderColor={cssHex(levelHighlightColor[props.level])}
+          borderColor={cssHex(paletteField)}
           padding='small'
           alignment='center middle'
         >
@@ -106,7 +105,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
 
         <spacer size='small' />
 
-        <Footer {...props} scores={scores} />
+        <Footer {...props} scores={scores} claimed={claimed} />
       </vstack>
     </zstack>
   )
