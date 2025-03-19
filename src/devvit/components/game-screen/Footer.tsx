@@ -8,6 +8,8 @@ import {
   paletteConsole,
   paletteShade19,
   paletteShade50,
+  paletteShade80,
+  paletteTint19,
   paletteWhite,
 } from '../../../shared/theme'
 import {PixelText} from '../PixelText'
@@ -37,6 +39,49 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
     </hstack>
   )
 
+  const wing = (
+    <vstack grow alignment='center top'>
+      <hstack
+        height='1px'
+        width='100%'
+        backgroundColor={cssHex(paletteShade80)}
+        cornerRadius='full'
+      />
+      <hstack
+        height='1px'
+        width='100%'
+        backgroundColor={cssHex(paletteTint19)}
+        cornerRadius='full'
+      />
+      <spacer height='4px' />
+      <hstack
+        height='1px'
+        width='100%'
+        backgroundColor={cssHex(paletteShade80)}
+        cornerRadius='full'
+      />
+      <hstack
+        height='1px'
+        width='100%'
+        backgroundColor={cssHex(paletteTint19)}
+        cornerRadius='full'
+      />
+    </vstack>
+  )
+
+  const wings = (
+    <vstack height='100%' width='100%' alignment='center top'>
+      <spacer height='16px' />
+      <hstack width='100%' height='16px' alignment='center top'>
+        <spacer width='56px' />
+        {wing}
+        <spacer width='144px' />
+        {wing}
+        <spacer width='56px' />
+      </hstack>
+    </vstack>
+  )
+
   return (
     <zstack
       width='100%'
@@ -45,6 +90,7 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
       onPress={props.onPress}
     >
       {background}
+      {wings}
 
       {/* Content */}
       <vstack width='100%' height='100%' alignment='center top'>
