@@ -163,7 +163,7 @@ describe('_testNextSeq()', () => {
     const seq = Seq(0)
     const written = {patch: noSeq, replace: noSeq}
     const next = _testNextSeq(droppedPatches, fetched, live, seq, written)
-    expect(next).toStrictEqual({kind: 'deltas', seq: 0})
+    expect(next).toBe(undefined)
   })
 
   test('replaced and never dropped allows patch', () => {
