@@ -632,12 +632,21 @@ export class Game {
     this.#clearLoadingForPart(partXY)
 
     for (const {globalXY, isBan, team} of boxes) {
-      const i = this.#setCell(globalXY, isBan, team, isFromP1)
+      this.#setCell(globalXY, isBan, team, isFromP1)
       // console.log(
       //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
       // )
-      this.renderer.setXY(globalXY, this.field[i]!)
     }
+    this.renderer.setBox(
+      {
+        x: partXY.x * this.fieldConfig.partSize,
+        y: partXY.y * this.fieldConfig.partSize,
+        w: this.fieldConfig.partSize,
+        h: this.fieldConfig.partSize,
+      },
+      this.fieldConfig.wh.w,
+      this.field,
+    )
   }
 
   #renderReplace: RenderReplace = (boxes, partXY) => {
