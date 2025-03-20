@@ -220,7 +220,8 @@ export const _fieldClaimCellsSuccess = async ({
   // User stats
   let newLevel: Level | undefined = undefined
   if (isGameOverForUser) {
-    console.log(`Game over for ${userId}. Hit a mine!`)
+    // to-do: put behind logging flag. This is going wild under heavy loads.
+    // console.log(`Game over for ${userId}. Hit a mine!`)
     newLevel = await userDescendLevel({
       redis: ctx.redis,
       userId,

@@ -1,0 +1,14 @@
+// TypeScript config for partition data worker.
+{
+  "extends": "../../../tools/tsconfig-base.json",
+  "compilerOptions": {
+    "lib": ["WebWorker", "ES2023"],
+
+    "outDir": "../../../dist/iframe/fetcher",
+
+    "tsBuildInfoFile": "../../../dist/iframe/fetcher/tsconfig.tsbuildinfo"
+  },
+  "include": ["part-data-worker.ts"],
+  "exclude": ["**/*.test.ts"],
+  "references": [{ "path": ".." }, { "path": "../../shared" }]
+}
