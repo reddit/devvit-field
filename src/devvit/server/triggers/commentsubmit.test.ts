@@ -6,7 +6,7 @@ import {USER_IDS} from '../../../shared/test-utils'
 import {config2} from '../../../shared/types/level'
 import {DevvitTest} from '../core/_utils/DevvitTest'
 import {userSet} from '../core/user'
-import {commentCreate} from './commentcreate'
+import {commentSubmit} from './CommentSubmit'
 
 const fakeComment: Readonly<CommentV2> = {
   id: 'id',
@@ -60,16 +60,16 @@ const levels = config2.levels
 
 const testCases = [
   {
-    title: 'CommentCreate - Leaves comment when user is on right level',
+    title: 'CommentSubmit - Leaves comment when user is on right level',
     profile: testProfile,
     level: 1,
     expected: {
       removeComment: false,
-      privateMessageText: false,
+      replyText: false,
     },
   },
   {
-    title: 'CommentCreate - Leaves comment alone when user is superuser',
+    title: 'CommentSubmit - Leaves comment alone when user is superuser',
     profile: {
       ...testProfile,
       superuser: true,
@@ -77,20 +77,20 @@ const testCases = [
     level: 0,
     expected: {
       removeComment: false,
-      privateMessageText: false,
+      replyText: false,
     },
   },
   {
-    title: 'CommentCreate - Removes comment when user is on wrong level',
+    title: 'CommentSubmit - Removes comment when user is on wrong level',
     profile: testProfile,
     level: 0,
     expected: {
       removeComment: true,
-      privateMessageText: `Hi u/userFoo, your comment in r/${levels[0]!.subredditName} was removed, because you have been permanently banned from r/${levels[0]!.subredditName}.`,
+      replyText: `Your comment in r/${levels[0]!.subredditName} was removed, because you have been permanently banned from r/${levels[0]!.subredditName}.`,
     },
   },
   {
-    title: 'CommentCreate - Removes comment when user is blocked',
+    title: 'CommentSubmit - Removes comment when user is blocked',
     profile: {
       ...testProfile,
       blocked: new Date().toISOString(),
@@ -98,11 +98,11 @@ const testCases = [
     level: 0,
     expected: {
       removeComment: true,
-      privateMessageText: `Hi u/userFoo, your comment in r/${levels[0]!.subredditName} was removed, because you have been banned from playing Field.`,
+      replyText: `Your comment in r/${levels[0]!.subredditName} was removed, because you have been banned from playing Field.`,
     },
   },
   {
-    title: 'CommentCreate - Removes comment when user has not verified email',
+    title: 'CommentSubmit - Removes comment when user has not verified email',
     profile: {
       ...testProfile,
       hasVerifiedEmail: false,
@@ -110,7 +110,7 @@ const testCases = [
     level: 0,
     expected: {
       removeComment: true,
-      privateMessageText: `Hi u/userFoo, your comment in r/${levels[0]!.subredditName} was removed, because you must first verify your email to play Field.`,
+      replyText: `Your comment in r/${levels[0]!.subredditName} was removed, because you must first verify your email to play Field.`,
     },
   },
 ]
@@ -135,7 +135,7 @@ for (const testCase of testCases) {
       remove: removeComment,
     })
 
-    await commentCreate.onEvent(
+    await commentSubmit.onEvent(
       {
         comment: fakeComment,
         author: fakeAuthor,
@@ -149,14 +149,13 @@ for (const testCase of testCases) {
       expect(removeComment).not.toHaveBeenCalled()
     }
 
-    if (testCase.expected.privateMessageText) {
-      expect(ctx.reddit.sendPrivateMessage).toHaveBeenCalledWith({
-        to: 'userFoo',
-        subject: 'Your comment was removed from Field',
-        text: testCase.expected.privateMessageText,
+    if (testCase.expected.replyText) {
+      expect(ctx.reddit.submitComment).toHaveBeenCalledWith({
+        id: fakeComment.id,
+        text: testCase.expected.replyText,
       })
     } else {
-      expect(ctx.reddit.sendPrivateMessage).not.toHaveBeenCalled()
+      expect(ctx.reddit.submitComment).not.toHaveBeenCalled()
     }
   })
 }

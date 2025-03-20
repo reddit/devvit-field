@@ -503,6 +503,7 @@ export namespace DevvitTest {
         getCommentById(_id) {
           throw new Error('Not implemented in test')
         },
+        submitComment: vi.fn(),
         sendPrivateMessage: vi.fn(),
         getUserById(_id) {
           throw new Error('Not implemented in test')

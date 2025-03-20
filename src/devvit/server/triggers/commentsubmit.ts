@@ -1,10 +1,10 @@
-import {type CommentCreateDefinition, Devvit} from '@devvit/public-api'
+import {type CommentSubmitDefinition, Devvit} from '@devvit/public-api'
 import {asT2ID} from '@devvit/shared-types/tid.js'
 import {config2} from '../../../shared/types/level.js'
 import {userMaybeGet} from '../core/user.js'
 
-export const commentCreate: CommentCreateDefinition = {
-  event: 'CommentCreate',
+export const commentSubmit: CommentSubmitDefinition = {
+  event: 'CommentSubmit',
   onEvent: async (event, ctx) => {
     if (!event.comment || !event.author) return
 
@@ -18,8 +18,8 @@ export const commentCreate: CommentCreateDefinition = {
       userId: asT2ID(authorId),
     })
 
-    // Mods/admins can always comment
-    if (profile?.superuser) {
+    // Mods/admins/app can always comment
+    if (profile?.superuser || event.author.name === ctx.appName) {
       return
     }
 
@@ -46,18 +46,17 @@ export const commentCreate: CommentCreateDefinition = {
       return
     }
 
-    const messageTemplate = `Hi u/${event.author.name}, your comment in r/${ctx.subredditName} was removed, because ${reason}`
+    const messageTemplate = `Your comment in r/${ctx.subredditName} was removed, because ${reason}`
 
     const comment = await ctx.reddit.getCommentById(event.comment.id)
     await Promise.all([
       comment.remove(false),
-      ctx.reddit.sendPrivateMessage({
-        to: event.author.name,
-        subject: 'Your comment was removed from Field',
+      ctx.reddit.submitComment({
+        id: event.comment.id,
         text: messageTemplate,
       }),
     ])
   },
 }
 
-Devvit.addTrigger(commentCreate)
+Devvit.addTrigger(commentSubmit)
