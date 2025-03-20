@@ -127,4 +127,5 @@ export const levelHighlightColor: {
 
 // to-do: file a bug. I think the sandboxed runtime is injecting a variable
 //        named config and the bundler can't know about it.
-export const config2: Readonly<FieldFixtureData> = configRaw as FieldFixtureData
+export const config2: Readonly<FieldFixtureData> =
+  configRaw as unknown as FieldFixtureData
