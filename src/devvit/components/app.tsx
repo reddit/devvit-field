@@ -186,7 +186,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
   )
 
   const iframe = useWebView<IframeMessage, DevvitMessage>({
-    url: 'index.html',
     onMessage: onMsg,
     onUnmount: () => {
       setIsIframeMounted(false)
