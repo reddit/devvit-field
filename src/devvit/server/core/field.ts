@@ -1,3 +1,4 @@
+import {counter, histogram} from '@devvit/metrics'
 import type {BitfieldCommand, Devvit, JobContext} from '@devvit/public-api'
 import type {DeltaSnapshotKey} from '../../../shared/codecs/deltacodec.js'
 import {MapCodec} from '../../../shared/codecs/mapcodec.js'
@@ -33,6 +34,21 @@ import {
   userSetLastPlayedChallenge,
   userSetPlayedIfNotExists,
 } from './user'
+
+const metrics = {
+  claims: counter({
+    name: 'field_cell_claims',
+    labels: ['partition', 'success'],
+  }),
+
+  claimDurations: histogram({
+    name: 'field_cell_claim_duration_seconds_step1',
+    labels: [],
+    buckets: [
+      0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 1.0,
+    ],
+  }),
+}
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
   `challenge:${challengeNumber}:field:${makePartitionKey(partitionXY)}` as const
@@ -186,7 +202,7 @@ export const _fieldClaimCellsSuccess = async ({
   const deltasPromises = []
   for (const [partitionKey, partitionDeltas] of deltasByPartitionKey) {
     const partitionXY = parsePartitionXY(partitionKey)
-    deltasPromises.push(
+    deltasPromises.push(() =>
       deltasAdd(ctx.redis, challengeNumber, partitionXY, partitionDeltas),
     )
   }
@@ -383,6 +399,8 @@ const _fieldClaimCellsBitfieldOpsForPartition = async ({
     }
   })
 
+  metrics.claims.labels(fieldPartitionKey, 'false').inc(lostCells.length)
+  metrics.claims.labels(fieldPartitionKey, 'true').inc(claimedCells.length)
   return {
     lostCells,
     claimedCells,
@@ -430,6 +448,8 @@ export const fieldClaimCells = async ({
   if (coords.length === 0)
     return {claimedCells: [], lostCells: [], newLevel: undefined}
 
+  const start = performance.now()
+
   // We need a lookup here instead of passing in the config from blocks land
   // because blocks doesn't have the seed and other backend only pieces
   // of information that we need
@@ -461,16 +481,18 @@ export const fieldClaimCells = async ({
   }
 
   const fieldsOpsReturn = await Promise.all(
-    Object.entries(partitionBatchMap).map(([fieldPartitionKey, batch]) =>
-      _fieldClaimCellsBitfieldOpsForPartition({
-        batch,
-        fieldPartitionKey: fieldPartitionKey as ReturnType<
-          typeof createFieldPartitionKey
-        >,
-        ctx,
-        fieldConfig,
-        userId,
-      }),
+    Object.entries(partitionBatchMap).map(
+      async ([fieldPartitionKey, batch]) => {
+        return await _fieldClaimCellsBitfieldOpsForPartition({
+          batch,
+          fieldPartitionKey: fieldPartitionKey as ReturnType<
+            typeof createFieldPartitionKey
+          >,
+          ctx,
+          fieldConfig,
+          userId,
+        })
+      },
     ),
   )
 
@@ -486,6 +508,8 @@ export const fieldClaimCells = async ({
     ctx,
     fieldConfig,
   })
+
+  metrics.claimDurations.labels().observe((performance.now() - start) / 1_000)
 
   // TODO: Where I return to client anything you need like user's scores and other things
   return {

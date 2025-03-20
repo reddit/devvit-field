@@ -2,7 +2,7 @@ import {counter, gauge, histogram} from '@devvit/metrics'
 import type {ZMember} from '@devvit/protos'
 import type {Context, JobContext, TriggerContext} from '@devvit/public-api'
 
-export const taskDeadlineMillis = 5000
+export const taskDeadlineMillis = 1000
 
 export type Task = {
   type: string
@@ -54,6 +54,12 @@ const metrics = {
     buckets,
   }),
 
+  tasksProcessedPerRun: histogram({
+    name: 'workqueue_tasks_processed_per_run',
+    labels: ['type'],
+    buckets: [1, 2, 4, 8, 16, 32, 64, 128, 256],
+  }),
+
   numTasks: gauge({
     name: 'workqueue_num_tasks',
     labels: [],
@@ -98,8 +104,7 @@ export async function flushWorkQueue(ctx: Context): Promise<void> {
 
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
   const settings = await ctx.settings.getAll<WorkQueueSettings>()
-  const wq = new WorkQueue(ctx, settings)
-  return wq
+  return new WorkQueue(ctx, settings)
 }
 
 export class WorkQueue {
@@ -143,6 +148,7 @@ export class WorkQueue {
 
   async runUntil(deadline: Date): Promise<void> {
     let inFlight = 0
+    const observations: Record<string, number> = {}
 
     const handleTasks = (tasks: Task[]) => {
       inFlight += tasks.length
@@ -155,6 +161,7 @@ export class WorkQueue {
       }
       for (const task of tasks) {
         //this.#debug('registering in flight task')
+        observations[task.type] = (observations[task.type] ?? 0) + 1
         this.#handle(task).finally(resolve)
       }
     }
@@ -171,6 +178,9 @@ export class WorkQueue {
       }
       handleTasks(nextTasks)
       await sleep(this.#pollIntervalMs)
+    }
+    for (const [type, count] of Object.entries(observations)) {
+      metrics.tasksProcessedPerRun.labels(type).observe(count)
     }
   }
 
@@ -260,6 +270,7 @@ export class WorkQueue {
     if (!claimableMembers || !claimableMembers.length) {
       return []
     }
+    console.log(`stealing ${claimableMembers.length} claims`)
 
     const tasksToSteal = this.#membersToTasks(claimableMembers)
     const now = Date.now()
