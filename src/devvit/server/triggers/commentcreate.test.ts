@@ -98,8 +98,7 @@ const testCases = [
     level: 0,
     expected: {
       removeComment: true,
-      privateMessageText:
-        'Hi u/userFoo, your comment in r/banfield_load was removed, because you have been banned from playing Field.',
+      privateMessageText: `Hi u/userFoo, your comment in r/${levels[0]!.subredditName} was removed, because you have been banned from playing Field.`,
     },
   },
   {
@@ -111,8 +110,7 @@ const testCases = [
     level: 0,
     expected: {
       removeComment: true,
-      privateMessageText:
-        'Hi u/userFoo, your comment in r/banfield_load was removed, because you must first verify your email to play Field.',
+      privateMessageText: `Hi u/userFoo, your comment in r/${levels[0]!.subredditName} was removed, because you must first verify your email to play Field.`,
     },
   },
 ]

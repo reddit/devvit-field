@@ -41,7 +41,24 @@ DevvitTest.it(
         totalNumberOfMines: expect.any(Number),
       },
       challengeNumber: 1,
-      initialCellsClaimed: [],
+      initialCellsClaimed: [
+        {
+          member: 0,
+          score: 0,
+        },
+        {
+          member: 1,
+          score: 0,
+        },
+        {
+          member: 2,
+          score: 0,
+        },
+        {
+          member: 3,
+          score: 0,
+        },
+      ],
       minesHitByTeam: [
         {
           member: 3,

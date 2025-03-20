@@ -4,7 +4,7 @@ import {
   type ScheduledJobHandler,
 } from '@devvit/public-api'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
-import type {Team} from '../../../shared/team.js'
+import {fillAndSortByTeamNumber} from '../../../shared/team.js'
 import type {
   LeaderboardUpdate,
   TeamBoxCounts,
@@ -51,15 +51,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 
   // Zeroes from Redis aren't necessarily initialized. Set them here to
   // ensure we score all teams.
-  const teams: {member: Team; score: number}[] = [
-    {member: 0, score: 0},
-    {member: 1, score: 0},
-    {member: 2, score: 0},
-    {member: 3, score: 0},
-  ]
-  for (const team of leaderboard) {
-    teams[team.member]!.score = team.score
-  }
+  const teams = fillAndSortByTeamNumber(leaderboard)
 
   // Whether or not the challenge is over determines what event we emit
   const score = computeScore({size: config.size, teams})

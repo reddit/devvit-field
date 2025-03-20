@@ -6,7 +6,6 @@ import {
   paletteLasagna,
   paletteSunshine,
 } from './theme'
-import type {TeamBoxCounts} from './types/message'
 import type {T2} from './types/tid'
 
 export type Team = 0 | 1 | 2 | 3
@@ -39,24 +38,25 @@ export function getTeamFromUserId(id: T2): Team {
 }
 
 /**
- * Given a set of cell counts (which may not have entries for a team that hasn't
- * yet claimed any cells), return a sorted list of scores for each team, with
- * zeroes filled in as necessary.
+ * Returns a score for every team, sorted by team number.
+ *
+ * Useful for filling out team scores from a partial list.
  */
-export function getTeamBoxCountsFromCellsClaimed(
+export function fillAndSortByTeamNumber(
   initialCellsClaimed: {member: Team; score: number}[],
-): TeamBoxCounts {
-  const scoresByTeam: Record<Team, number> = {0: 0, 1: 0, 2: 0, 3: 0}
-  for (const {member, score} of initialCellsClaimed) {
-    scoresByTeam[member] = score
+): {member: Team; score: number}[] {
+  const teams: {member: Team; score: number}[] = [
+    {member: 0, score: 0},
+    {member: 1, score: 0},
+    {member: 2, score: 0},
+    {member: 3, score: 0},
+  ]
+
+  for (const team of initialCellsClaimed) {
+    teams[team.member]!.score = team.score
   }
-  const cellsClaimedWithDefaults = Object.entries(scoresByTeam).map(
-    ([member, score]) => ({member: parseInt(member), score}),
-  )
-  const teamBoxCounts = cellsClaimedWithDefaults
-    .sort((a, b) => a.member - b.member)
-    .map(x => x.score) as TeamBoxCounts
-  return teamBoxCounts
+
+  return teams
 }
 
 /** Title case team name. */

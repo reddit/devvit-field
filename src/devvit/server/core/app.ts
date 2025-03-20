@@ -1,6 +1,10 @@
 import type {Devvit} from '@devvit/public-api'
 import {getPartitionCoords} from '../../../shared/partition'
-import {type Team, getTeamFromUserId} from '../../../shared/team'
+import {
+  type Team,
+  fillAndSortByTeamNumber,
+  getTeamFromUserId,
+} from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import {type LevelConfig, config2} from '../../../shared/types/level'
 import type {DialogMessage} from '../../../shared/types/message'
@@ -141,7 +145,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     challengeConfig: makeSafeChallengeConfig(challengeConfig),
     initialGlobalXY,
     initialMapKey: mapKey,
-    initialCellsClaimed,
+    initialCellsClaimed: fillAndSortByTeamNumber(initialCellsClaimed),
     visible,
     level,
     minesHitByTeam,
