@@ -500,6 +500,10 @@ export namespace DevvitTest {
       },
       settings: mockSettings,
       reddit: {
+        getCommentById(_id) {
+          throw new Error('Not implemented in test')
+        },
+        sendPrivateMessage: vi.fn(),
         getUserById(_id) {
           throw new Error('Not implemented in test')
         },

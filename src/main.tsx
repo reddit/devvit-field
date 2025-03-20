@@ -5,6 +5,7 @@ import './devvit/server/scheduler/emitDeltas.js'
 import './devvit/server/scheduler/emitLiveConfig.js'
 import './devvit/server/scheduler/emitPartitions.js'
 import './devvit/server/scheduler/leaderboardUpdate.js'
+import './devvit/server/triggers/commentcreate.js'
 import './devvit/server/triggers/install.js'
 import './devvit/server/triggers/upgrade.js'
 
@@ -242,6 +243,13 @@ Devvit.addSettings([
     label: 'Set to true to enable workqueue debug logging',
     type: 'boolean',
     defaultValue: false,
+  },
+  {
+    scope: SettingScope.App,
+    name: 'skip-comment-create',
+    label: 'Set to "true" to skip comment creation handling',
+    type: 'string',
+    defaultValue: 'false',
   },
 ])
 
