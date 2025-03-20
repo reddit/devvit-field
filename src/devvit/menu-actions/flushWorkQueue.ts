@@ -1,4 +1,5 @@
 import type {MenuItem} from '@devvit/public-api'
+import {dropRealtimeQueue} from '../server/scheduler/sendRealtime.js'
 import {flushWorkQueue} from '../server/scheduler/workqueue.js'
 
 export const flushWorkQueueAction = (): MenuItem => ({
