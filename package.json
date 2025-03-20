@@ -27,7 +27,7 @@
   "scripts": {
     "build": "tools/build.ts --minify",
     "build:atlas": "tools/atlas-pack.ts src/iframe/game/config.json",
-    "clean": "rm -rf dist webroot/index.js*",
+    "clean": "rm -rf dist webroot/*.js*",
     "clobber": "npm run clean && rm -rf src/iframe/game/atlas.json webroot/assets/atlas.webp",
     "devvit:install:prod": "npm run clean && npm run build && devvit upload --config=devvit.prod.yaml --employee-update --ignoreOutdated && tools/install.ts src/shared/config/config.prod.json",
     "devvit:install:dev": "tools/install.ts src/shared/config/config.dev.json",

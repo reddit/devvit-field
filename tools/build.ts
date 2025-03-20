@@ -24,13 +24,17 @@ const buildOpts: BuildOptions = {
     : {},
   bundle: true,
   define: {devMode: `${devMode}`, version: `'${pkg.version}'`},
-  entryPoints: ['src/iframe/index.ts'],
+  entryNames: '[name]', // Don't output subdirs.
+  entryPoints: [
+    'src/iframe/index.ts',
+    'src/iframe/part-data/part-data-worker.ts',
+  ],
   format: 'esm',
   logLevel: 'info', // Print the port and build demarcations.
   metafile: true,
   minify,
-  outfile: 'webroot/index.js',
-  sourcemap: 'linked',
+  outdir: 'webroot',
+  sourcemap: devMode && 'linked', // Don't upload sourcemaps in prod.
   target: 'es2022', // https://esbuild.github.io/content-types/#tsconfig-json
   write: !devMode, // Never record dev mode which is incompatible with prod.
 }

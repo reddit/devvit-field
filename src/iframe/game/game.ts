@@ -43,11 +43,11 @@ import {
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
 import {Cam} from '../renderer/cam.ts'
 import {
+  fieldArrayColorBan,
+  fieldArrayColorHidden,
+  fieldArrayColorLoading,
   fieldArrayIndex,
-  fieldArrayIsLoading,
   fieldArrayIsVisible,
-  fieldArraySetBan,
-  fieldArraySetHidden,
   fieldArraySetTeam,
 } from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
@@ -294,23 +294,16 @@ export class Game {
 
     const xy = {x: partXY.x * partSize, y: partXY.y * partSize}
 
-    const partLoading = fieldArrayIsLoading(
-      this.field,
-      fieldArrayIndex(this.fieldConfig, xy),
-    )
+    const partLoading =
+      this.field[fieldArrayIndex(this.fieldConfig, xy)] ===
+      fieldArrayColorLoading
     if (!partLoading) return
 
-    for (let y = xy.y; y < xy.y + partSize; y++)
-      for (let x = xy.x; x < xy.x + partSize; x++) {
-        const i = fieldArrayIndex(this.fieldConfig, {x, y})
-        if (!fieldArrayIsLoading(this.field, i)) continue
-        fieldArraySetHidden(this.field, i)
-      }
-    this.renderer.setBox(
-      {x: xy.x, y: xy.y, w: partSize, h: partSize},
-      this.fieldConfig.wh.w,
-      this.field,
-    )
+    for (let y = 0; y < partSize; y++) {
+      const start =
+        (partXY.y * partSize + y) * this.fieldConfig.wh.w + partXY.x * partSize
+      this.field.fill(fieldArrayColorHidden, start, start + partSize)
+    }
   }
 
   #findPending(xy: Readonly<XY>): BoxEnt | undefined {
@@ -390,6 +383,23 @@ export class Game {
         () => this.#onDevMsg({type: 'Connected'}),
         Math.trunc(rnd.num * 1000),
       )
+  }
+
+  #invalidatePart(partXY: Readonly<XY>): void {
+    if (!this.fieldConfig) return
+
+    const partSize = this.fieldConfig.partSize
+
+    this.renderer.setBox(
+      {
+        x: partXY.x * partSize,
+        y: partXY.y * partSize,
+        w: partSize,
+        h: partSize,
+      },
+      this.fieldConfig.wh.w,
+      this.field,
+    )
   }
 
   #onConnect(): void {
@@ -508,7 +518,7 @@ export class Game {
                 if (rnd.num < 0.2) {
                   visible++
                   const i = fieldArrayIndex(this.fieldConfig, {x, y})
-                  if (rnd.num < 0.2) fieldArraySetBan(this.field, i)
+                  if (rnd.num < 0.2) this.field[i] = fieldArrayColorBan
                   else
                     fieldArraySetTeam(
                       this.field,
@@ -549,16 +559,27 @@ export class Game {
         if (!this.p1) return
         this.p1BoxCount += msg.claimedCells.length
 
-        const newCells = [...msg.claimedCells, ...msg.lostCells]
+        const cells = [...msg.claimedCells, ...msg.lostCells]
 
-        if (!this.fieldConfig || !newCells[0]) return
-        if (newCells.length > 1) console.error('unexpected multi-delta message')
+        if (!this.fieldConfig || !cells[0]) return
 
+        for (const [i, cell] of cells.entries()) {
+          const pend = this.#findPending(cell.globalXY)
+          if (pend)
+            pend.resolve(
+              this,
+              cell.isBan,
+              cell.team,
+              this.subLvl!,
+              i < msg.claimedCells.length,
+            )
+        }
         const partXY = getPartitionCoords(
-          newCells[0].globalXY,
+          cells[0].globalXY,
           this.fieldConfig.partSize,
         )
-        this.#renderPatch(newCells, partXY, true)
+        this.#renderPatch(cells, partXY)
+
         break
       }
       case 'Connected':
@@ -627,72 +648,56 @@ export class Game {
     this.partDataFetcher.pause()
   }
 
-  #renderPatch: RenderPatch = (boxes, partXY, isFromP1) => {
-    if (!this.fieldConfig || this.subLvl == null) return
-    this.#clearLoadingForPart(partXY)
+  #renderPatch: RenderPatch = (boxes, partXY) => {
+    if (!this.fieldConfig) return
+
+    this.#clearLoadingForPart(partXY) // Must be called for any partition write.
 
     for (const {globalXY, isBan, team} of boxes) {
-      this.#setCell(globalXY, isBan, team, isFromP1)
       // console.log(
       //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
       // )
+      const i = fieldArrayIndex(this.fieldConfig, globalXY)
+      if (isBan) this.field[i] = fieldArrayColorBan
+      else fieldArraySetTeam(this.field, i, team)
     }
-    this.renderer.setBox(
-      {
-        x: partXY.x * this.fieldConfig.partSize,
-        y: partXY.y * this.fieldConfig.partSize,
-        w: this.fieldConfig.partSize,
-        h: this.fieldConfig.partSize,
-      },
-      this.fieldConfig.wh.w,
-      this.field,
-    )
+
+    this.#invalidatePart(partXY)
   }
 
-  #renderReplace: RenderReplace = (boxes, partXY) => {
-    if (!this.fieldConfig || this.subLvl == null || !this.fieldConfig.partSize)
-      return
+  #renderReplace: RenderReplace = (buf, partXY) => {
+    if (!this.fieldConfig) return
+
+    this.#clearLoadingForPart(partXY) // Must be called for any partition write.
+
     const partSize = this.fieldConfig.partSize
-    this.#clearLoadingForPart(partXY)
 
-    let i = 0
-    for (const box of boxes) {
-      if (box)
-        this.#setCell(
-          {
-            x: partXY.x * partSize + (i % partSize),
-            y: partXY.y * partSize + Math.floor(i / partSize),
-          },
-          box.isBan,
-          box.team,
-          false,
-        )
-      i++
-    }
-    this.renderer.setBox(
-      {
-        x: partXY.x * partSize,
-        y: partXY.y * partSize,
-        w: partSize,
-        h: partSize,
-      },
-      this.fieldConfig.wh.w,
-      this.field,
-    )
-  }
+    // The main thread must retain a copy of the array at all times in case
+    // context is lost. It cannot be transferred in and out of PartitionWorker.
+    // to-do: consider reworking shader to be SharedArrayBuffer compatible and
+    //        using atomics to signal GPU transfers.
 
-  #setCell(
-    xy: Readonly<XY>,
-    isBan: boolean,
-    team: Team,
-    isFromP1: boolean,
-  ): number {
-    const i = fieldArrayIndex(this.fieldConfig!, xy)
-    const pend = this.#findPending(xy)
-    if (pend) pend.resolve(this, isBan, team, this.subLvl!, isFromP1)
-    if (isBan) fieldArraySetBan(this.field, i)
-    else fieldArraySetTeam(this.field, i, team)
-    return i
+    // to-do: test if row is visible. If not, ust a fast copy. We can't blindly
+    //        copy over since the partition may be a little older than the last
+    //        delta written (usually containing player claims).
+    // for (let y = 0; y < partSize; y++) {
+    //   this.field.set(
+    //     boxes.subarray(y * partSize, y * partSize + partSize),
+    //     (partXY.y * partSize + y) * this.fieldConfig.wh.w + partXY.x * partSize,
+    //   )
+    // }
+
+    const boxes = new Uint8Array(buf)
+    for (let i = 0; i < boxes.length; i++)
+      if (boxes[i] !== fieldArrayColorHidden) {
+        const xy = {
+          x: partXY.x * partSize + (i % partSize),
+          y: partXY.y * partSize + Math.floor(i / partSize),
+        }
+        this.field[fieldArrayIndex(this.fieldConfig!, xy)] = boxes[i]!
+      }
+
+    this.#invalidatePart(partXY)
   }
 
   #onResize = (): void => {}

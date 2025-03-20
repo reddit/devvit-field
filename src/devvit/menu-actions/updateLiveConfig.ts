@@ -95,7 +95,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
           defaultValue:
             current.globalPDFMaxParallelFetches ??
             defaults.globalPDFMaxParallelFetches,
-          helpText: `Maximum concurrent fetches across all partitions (ints in [0, ∞), default ${defaults.globalPDFMaxParallelFetches}).`,
+          helpText: `Maximum concurrent fetch threads across all partitions (ints in [1, 16], default ${defaults.globalPDFMaxParallelFetches}).`,
           required: true,
         },
         {
@@ -157,16 +157,21 @@ function validateLiveConfig(newConfig: AppConfig): void {
   if (
     !Number.isInteger(newConfig.globalPDFMaxDroppedPatches) ||
     newConfig.globalPDFMaxDroppedPatches < 0 ||
-    !Number.isInteger(newConfig.globalPDFMaxParallelFetches) ||
-    newConfig.globalPDFMaxParallelFetches < 0 ||
     !Number.isInteger(newConfig.globalPDFGuessAfterMillis) ||
     newConfig.globalPDFGuessAfterMillis < 0 ||
     !Number.isInteger(newConfig.globalPDFMaxPatchesWithoutReplace) ||
     newConfig.globalPDFMaxPatchesWithoutReplace < 0
   )
     throw Error(
-      'max dropped patches, max parallel fetches, guess after, and max patches without replace must be ints in [0, ∞)',
+      'max dropped patches, guess after, and max patches without replace must be ints in [0, ∞)',
     )
+
+  if (
+    !Number.isInteger(newConfig.globalPDFMaxParallelFetches) ||
+    newConfig.globalPDFMaxParallelFetches < 1 ||
+    newConfig.globalPDFMaxParallelFetches > 16
+  )
+    throw Error('max parallel fetches must be an int in [1, 16]')
 
   if (!Number.isInteger(newConfig.globalPDFGuessOffsetMillis))
     throw Error('guess offset must be an int in (-∞, ∞)')

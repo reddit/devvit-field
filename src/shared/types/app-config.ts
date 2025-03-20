@@ -45,7 +45,7 @@ export type AppConfig = {
    */
   globalPDFMaxDroppedPatches: number
 
-  /** Maximum concurrent fetches across all partitions; ints in [0, ∞). */
+  /** Maximum concurrent fetch threads across all partitions; ints in [1, 16]. */
   globalPDFMaxParallelFetches: number
 
   /**

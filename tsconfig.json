@@ -5,6 +5,7 @@
     { "path": "./src/devvit" },
     { "path": "./src/devvit/server" },
     { "path": "./src/iframe" },
+    { "path": "./src/iframe/part-data" },
     { "path": "./src/shared" },
     { "path": "./src/test" },
     { "path": "./tools" }

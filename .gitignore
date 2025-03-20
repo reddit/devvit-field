@@ -3,7 +3,7 @@
 /dist/
 /node_modules/
 /src/shared/config/config.dev.json
-/webroot/index.js*
+/webroot/*.js*
 /coverage/
 
 # Audacity temporary files.

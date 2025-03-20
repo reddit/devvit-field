@@ -1,9 +1,4 @@
-import {
-  DeltaCodec,
-  type DeltaSnapshotKey,
-  fieldS3URL,
-} from '../../shared/codecs/deltacodec.ts'
-import {MapCodec} from '../../shared/codecs/mapcodec.ts'
+import type {DeltaSnapshotKey} from '../../shared/codecs/deltacodec.ts'
 import {makePartitionKey} from '../../shared/partition.ts'
 import {
   type Box,
@@ -16,26 +11,35 @@ import {
   getDefaultAppConfig,
 } from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
-import type {Cell, Delta} from '../../shared/types/field.ts'
+import type {Delta} from '../../shared/types/field.ts'
 import type {PartitionUpdate} from '../../shared/types/message.ts'
 import {T5, noT5} from '../../shared/types/tid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
+import {V4} from '../../shared/types/v4.ts'
 import type {Cam} from '../renderer/cam.ts'
+import type {
+  PartDataFetcherMessage,
+  PartDataWorkerMessage,
+} from './part-data-message.ts'
 import {PartData} from './part-data.ts'
 import {type NoSeq, Seq, noSeq} from './seq.ts'
 
-// to-do: one interface.
 export type RenderPatch = (
   boxes: readonly Readonly<Delta>[],
   partXY: Readonly<XY>,
-  isFromP1: boolean,
 ) => void
 export type RenderReplace = (
-  boxes: IterableIterator<Readonly<Cell>>,
+  boxes: Readonly<ArrayBuffer>,
   partXY: Readonly<XY>,
 ) => void
 
-class FetchError404 extends Error {}
+type PartWorker = {
+  readonly id: V4
+  state: 'Free' | 'Fetching' | 'Dying'
+  readonly worker: Omit<Worker, 'postMessage'> & {
+    postMessage(msg: PartDataFetcherMessage): void
+  }
+}
 
 /**
  * Accepts new realtime messages and initiates partition patch and replace
@@ -43,7 +47,6 @@ class FetchError404 extends Error {}
  * silent for too long.
  */
 export class PartDataFetcher {
-  #abortCtrl: AbortController = new AbortController()
   readonly #cam: Readonly<Cam>
   /** Camera partitions rectangle in pixel coords. */
   readonly #camPartBox: Readonly<Box> = {x: 0, y: 0, w: 0, h: 0}
@@ -57,11 +60,10 @@ export class PartDataFetcher {
   #part: {[key: PartitionKey]: PartData} = {}
   #pathPrefix: string = ''
   #resumed: boolean = false
-  /** Number of inflight requests. */
-  #pending: number = 0
   readonly #renderPatch: RenderPatch
   readonly #renderReplace: RenderReplace
   #t5: T5 = noT5
+  readonly #workers: PartWorker[] = []
 
   constructor(
     cam: Readonly<Cam>,
@@ -75,7 +77,8 @@ export class PartDataFetcher {
 
   /** Called on reinit to clear any pending fetches. */
   deinit(): void {
-    this.#abortCtrl.abort()
+    for (const worker of this.#workers)
+      if (worker.state !== 'Dying') worker.worker.postMessage({type: 'Kill'})
     this.#config = undefined
     this.#maxSeq = noSeq
     this.#maxSeqUpdated = 0
@@ -87,7 +90,6 @@ export class PartDataFetcher {
     config: Readonly<FieldConfig>,
     key: Readonly<DeltaSnapshotKey> | undefined,
   ): void {
-    this.#abortCtrl = new AbortController()
     this.#config = config
     if (key) this.#recordMessage(key)
     else if (this.#live.globalPDFDebug) console.debug('[pdf] no initial key')
@@ -109,6 +111,21 @@ export class PartDataFetcher {
   /** Adjust live config for future evaluations. */
   setLiveConfig(live: Readonly<AppConfig>): void {
     Object.assign(this.#live, live)
+
+    let living = this.#workers.reduce(
+      (sum, worker) => sum + (worker.state === 'Dying' ? 0 : 1),
+      0,
+    )
+    while (living > live.globalPDFMaxParallelFetches) {
+      const worker = this.#workers.find(worker => worker.state !== 'Dying')
+      if (!worker) break
+      worker.worker.postMessage({type: 'Kill'})
+      living--
+    }
+    while (living < live.globalPDFMaxParallelFetches) {
+      this.#workers.push(this.#newWorker())
+      living++
+    }
   }
 
   /** Called every render loop to respond to camera changes.  */
@@ -119,13 +136,16 @@ export class PartDataFetcher {
     const now = utcMillisNow()
     for (const partXY of boxParts(this.#camPartBox, this.#config.partSize)) {
       const part = this.#part[makePartitionKey(partXY)]
-      if (part) void this.#fetchPart(now, part) // to-do: await on separate thread.
+      if (part) this.#fetchPart(now, part)
     }
   }
 
   async #fetchPart(now: UTCMillis, part: PartData): Promise<void> {
+    if (!this.#config) return // Not init.
     if (!this.#resumed) return
-    if (this.#pending >= this.#live.globalPDFMaxParallelFetches) return
+
+    const worker = this.#workers.find(worker => worker.state === 'Free')
+    if (!worker) return
 
     const seq = part.fetch(this.#maxSeq, this.#maxSeqUpdated, now)
     if (!seq) return
@@ -145,31 +165,62 @@ export class PartDataFetcher {
         `[pdf] fetch xy=${part.partXY.x}-${part.partXY.y} seq=${seq.seq}${seq.kind === 'deltas' ? 'p' : 'r'}`,
       )
 
-    this.#pending++
-    let rsp
-    try {
-      rsp = await fetchPart(key, this.#abortCtrl)
-    } catch (err) {
-      // Don't retry. Assume another update is coming soon.
-      if (!this.#abortCtrl.signal.aborted && !(err instanceof FetchError404))
-        console.warn(err)
-      return
-    } finally {
-      this.#pending--
-      part.resolve(now, !!rsp)
-    }
+    worker.state = 'Fetching'
+    worker.worker.postMessage({
+      type: 'Fetch',
+      key,
+      partSize: this.#config.partSize,
+      workerID: worker.id,
+    })
+  }
 
-    // Applying never resets boxes so order is irrelevant. Always accept old
-    // responses.
-    // to-do: what to do about moderation?
+  #newWorker(): PartWorker {
+    const worker = {
+      id: V4(),
+      state: 'Free',
+      worker: new Worker('/part-data-worker.js', {
+        name: 'PartDataWorker',
+        type: 'module',
+      }),
+    } as const
+    worker.worker.addEventListener('message', this.#onWorkerMsg)
+    return worker
+  }
 
-    if (!this.#config) return
-    if (seq.kind === 'deltas') {
-      const codec = new DeltaCodec(part.partXY, this.#config.partSize)
-      this.#renderPatch(codec.decode(new Uint8Array(rsp)), part.partXY, false)
-    } else {
-      const codec = new MapCodec()
-      this.#renderReplace(codec.decode(new Uint8Array(rsp)), part.partXY)
+  #onWorkerMsg = (ev: MessageEvent<PartDataWorkerMessage>): void => {
+    if (!this.#config) return // No init.
+    if (!ev.isTrusted) return
+
+    const msg = ev.data
+    if (this.#live.globalPDFDebug > 4)
+      console.debug(`worker → iframe msg=${JSON.stringify(msg)}`)
+
+    switch (msg.type) {
+      case 'Cells': {
+        const {cells, key, workerID} = msg
+        const worker = this.#workers.find(worker => worker.id === workerID)
+        if (worker) {
+          if (worker.state === 'Dying')
+            worker.worker.removeEventListener('message', this.#onWorkerMsg)
+          else worker.state = 'Free'
+        }
+
+        const part = this.#part[makePartitionKey(key.partitionXY)]
+        if (!part) break
+
+        part.resolve(utcMillisNow(), !!cells)
+
+        if (!cells) break
+
+        // Applying never resets boxes so order is irrelevant. Always accept old
+        // responses.
+        if (key.kind === 'deltas')
+          this.#renderPatch(cells as Delta[], part.partXY)
+        else this.#renderReplace(cells as ArrayBuffer, part.partXY)
+        break
+      }
+      default:
+        msg.type satisfies never
     }
   }
 
@@ -240,22 +291,4 @@ export function camPartBox(
     ),
   }
   return {x: start.x, y: start.y, w: end.x - start.x, h: end.y - start.y}
-}
-
-async function fetchPart(
-  key: Readonly<DeltaSnapshotKey>,
-  ctrl: AbortController,
-): Promise<ArrayBuffer> {
-  const url = fieldS3URL(key)
-  const rsp = await fetch(url, {
-    headers: {accept: 'application/binary'},
-    signal: ctrl.signal,
-  })
-  if (rsp.status === 404) throw new FetchError404()
-  if (!rsp.ok)
-    throw Error(`part fetch error ${rsp.status}: ${rsp.statusText} for ${url}`)
-  const type = rsp.headers.get('Content-Type')
-  if (!type?.startsWith('application/binary'))
-    throw Error(`bad part fetch response type ${type} for ${url}`)
-  return await rsp.arrayBuffer()
 }

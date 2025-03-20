@@ -19,20 +19,8 @@ export function fieldArrayIndex(
   return xy.y * config.wh.w + xy.x
 }
 
-export function fieldArrayIsLoading(field: Uint8Array, i: number): boolean {
-  return field[i] === fieldArrayColorLoading
-}
-
-export function fieldArraySetHidden(field: Uint8Array, i: number): void {
-  field[i] = fieldArrayColorHidden
-}
-
 export function fieldArrayIsVisible(field: Uint8Array, i: number): boolean {
   return field[i]! > fieldArrayColorHidden
-}
-
-export function fieldArraySetBan(field: Uint8Array, i: number): void {
-  field[i] = fieldArrayColorBan
 }
 
 export function fieldArraySetTeam(
