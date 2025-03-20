@@ -22,7 +22,7 @@ describe('steal task', async () => {
 
     // After running workqueue once, task should be handled.
     expect(taskHandled).eq(false)
-    const wq = new WorkQueue(ctx)
+    const wq = new WorkQueue(ctx, {})
     const deadline = new Date(Date.now() + 1_000)
     await wq.runUntil(deadline)
     expect(taskHandled).eq(true)
