@@ -202,7 +202,7 @@ export const _fieldClaimCellsSuccess = async ({
   const deltasPromises = []
   for (const [partitionKey, partitionDeltas] of deltasByPartitionKey) {
     const partitionXY = parsePartitionXY(partitionKey)
-    deltasPromises.push(() =>
+    deltasPromises.push(
       deltasAdd(ctx.redis, challengeNumber, partitionXY, partitionDeltas),
     )
   }
