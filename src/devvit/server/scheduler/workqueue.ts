@@ -24,6 +24,7 @@ const maxTransactionAttempts = 10
 
 type WorkQueueSettings = {
   'workqueue-debug'?: string
+  'workqueue-polling-interval-ms'?: number
 }
 
 // Metrics.
@@ -97,8 +98,7 @@ export async function flushWorkQueue(ctx: Context): Promise<void> {
 
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
   const settings = await ctx.settings.getAll<WorkQueueSettings>()
-  const wq = new WorkQueue(ctx)
-  wq.setDebugEnabled(settings['workqueue-debug'] === 'true')
+  const wq = new WorkQueue(ctx, settings)
   return wq
 }
 
@@ -108,6 +108,7 @@ export class WorkQueue {
   readonly ctx: JobContext
   #id: string
   #debugEnabled = false
+  #pollIntervalMs: number
 
   static register<T extends Task>(
     type: T['type'],
@@ -117,9 +118,11 @@ export class WorkQueue {
     return handler
   }
 
-  constructor(ctx: JobContext) {
+  constructor(ctx: JobContext, settings: WorkQueueSettings) {
     this.ctx = ctx
     this.#id = `workqueue[${Date.now() % 60_000}]:`
+    this.#debugEnabled = settings['workqueue-debug'] === 'true'
+    this.#pollIntervalMs = settings['workqueue-polling-interval-ms'] ?? 10
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: just wrapping console.log here
@@ -127,10 +130,6 @@ export class WorkQueue {
     if (this.#debugEnabled) {
       console.log(...[this.#id, ...args])
     }
-  }
-
-  setDebugEnabled(enabled: boolean): void {
-    this.#debugEnabled = enabled
   }
 
   async enqueue<T extends Task>(task: T): Promise<void> {
@@ -163,7 +162,7 @@ export class WorkQueue {
     while (new Date() < deadline) {
       const avail = maxConcurrentClaims - inFlight
       if (avail <= 0) {
-        await sleep(100)
+        await sleep(this.#pollIntervalMs)
         continue
       }
       const nextTasks = await this.#claimOneBatch(avail)
@@ -171,7 +170,7 @@ export class WorkQueue {
         break
       }
       handleTasks(nextTasks)
-      await sleep(100)
+      await sleep(this.#pollIntervalMs)
     }
   }
 

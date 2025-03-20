@@ -246,6 +246,13 @@ Devvit.addSettings([
   },
   {
     scope: SettingScope.App,
+    name: 'workqueue-polling-interval-ms',
+    label: 'Milliseconds to wait after completing each batch of claimed tasks',
+    type: 'number',
+    defaultValue: 10,
+  },
+  {
+    scope: SettingScope.App,
     name: 'skip-comment-create',
     label: 'Set to "true" to skip comment creation handling',
     type: 'string',
