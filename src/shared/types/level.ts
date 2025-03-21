@@ -16,7 +16,7 @@ import {
   paletteVeryBannedFieldLight,
 } from '../theme'
 // to-do: Make sure we don't spoil the levels in the client bundle by getting the colors here.
-import type {T5} from './tid'
+import type {T3, T5} from './tid'
 
 /** The current level the user is on */
 export type Level = 0 | 1 | 2 | 3 | 4
@@ -47,6 +47,7 @@ export type FieldFixtureData = {
 export type LevelConfig = {
   id: Level
   url: string
+  postId: T3
   subredditName: string
   subredditId: T5
   theme: Record<string, string>

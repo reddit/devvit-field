@@ -12,6 +12,18 @@ export const commentSubmit: CommentSubmitDefinition = {
     if ((await ctx.settings.get<string>('skip-comment-create')) === 'true')
       return
 
+    const subredditLevel = config2.levels.find(
+      x => x.subredditId === ctx.subredditId,
+    )
+    if (!subredditLevel) {
+      throw new Error(
+        `No level config found for subreddit ${ctx.subredditId}. Please make sure you are using the right config.{env}.json (or update it for the new sub you installed this app to)!`,
+      )
+    }
+
+    // Only apply comment deletion logic if the comment is on one of the game posts.
+    if (subredditLevel.postId !== event.comment.postId) return
+
     const authorId = event.author.id
     const profile = await userMaybeGet({
       redis: ctx.redis,
@@ -23,15 +35,6 @@ export const commentSubmit: CommentSubmitDefinition = {
       return
     }
 
-    const subredditLevel = config2.levels.find(
-      x => x.subredditId === ctx.subredditId,
-    )
-    if (!subredditLevel) {
-      throw new Error(
-        `No level config found for subreddit ${ctx.subredditId}. Please make sure you are using the right config.{env}.json (or update it for the new sub you installed this app to)!`,
-      )
-    }
-
     let reason = ''
     if (!profile) {
       reason = 'you must play the game before you can comment.'
@@ -39,6 +42,8 @@ export const commentSubmit: CommentSubmitDefinition = {
       reason = 'you have been banned from playing Field.'
     } else if (profile.hasVerifiedEmail === false) {
       reason = 'you must first verify your email to play Field.'
+    } else if (profile.globalPointCount > 0) {
+      reason = 'you beat the game!'
     } else if (profile.currentLevel !== subredditLevel.id) {
       reason = `you have been permanently banned from r/${subredditLevel.subredditName}.`
     } else {
@@ -46,7 +51,7 @@ export const commentSubmit: CommentSubmitDefinition = {
       return
     }
 
-    const messageTemplate = `Your comment in r/${ctx.subredditName} was removed, because ${reason}`
+    const messageTemplate = `Your comment was removed, because ${reason}`
 
     const comment = await ctx.reddit.getCommentById(event.comment.id)
     await Promise.all([

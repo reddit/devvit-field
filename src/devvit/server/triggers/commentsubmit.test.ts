@@ -18,7 +18,7 @@ const fakeComment: Readonly<CommentV2> = {
   spam: false,
   deleted: false,
   subredditId: 'FieldGame',
-  postId: 'postId',
+  postId: config2.levels[0]!.postId,
   upvotes: 0,
   downvotes: 0,
   score: 0,
@@ -63,6 +63,10 @@ const testCases = [
     title: 'CommentSubmit - Leaves comment when user is on right level',
     profile: testProfile,
     level: 1,
+    comment: {
+      ...fakeComment,
+      postId: config2.levels[1]!.postId,
+    },
     expected: {
       removeComment: false,
       replyText: false,
@@ -75,6 +79,7 @@ const testCases = [
       superuser: true,
     },
     level: 0,
+    comment: fakeComment,
     expected: {
       removeComment: false,
       replyText: false,
@@ -84,9 +89,23 @@ const testCases = [
     title: 'CommentSubmit - Removes comment when user is on wrong level',
     profile: testProfile,
     level: 0,
+    comment: fakeComment,
     expected: {
       removeComment: true,
-      replyText: `Your comment in r/${levels[0]!.subredditName} was removed, because you have been permanently banned from r/${levels[0]!.subredditName}.`,
+      replyText: `Your comment was removed, because you have been permanently banned from r/${levels[0]!.subredditName}.`,
+    },
+  },
+  {
+    title: 'CommentSubmit - Leaves comment when on a different post',
+    profile: testProfile,
+    level: 0,
+    comment: {
+      ...fakeComment,
+      postId: 't3_abcdef',
+    },
+    expected: {
+      removeComment: false,
+      replyText: false,
     },
   },
   {
@@ -96,9 +115,11 @@ const testCases = [
       blocked: new Date().toISOString(),
     },
     level: 0,
+    comment: fakeComment,
     expected: {
       removeComment: true,
-      replyText: `Your comment in r/${levels[0]!.subredditName} was removed, because you have been banned from playing Field.`,
+      replyText:
+        'Your comment was removed, because you have been banned from playing Field.',
     },
   },
   {
@@ -107,10 +128,39 @@ const testCases = [
       ...testProfile,
       hasVerifiedEmail: false,
     },
+    comment: fakeComment,
     level: 0,
     expected: {
       removeComment: true,
-      replyText: `Your comment in r/${levels[0]!.subredditName} was removed, because you must first verify your email to play Field.`,
+      replyText:
+        'Your comment was removed, because you must first verify your email to play Field.',
+    },
+  },
+  {
+    title: 'CommentSubmit - Removes comment when user has won the game',
+    profile: {
+      ...testProfile,
+      hasVerifiedEmail: false,
+    },
+    comment: fakeComment,
+    level: 0,
+    expected: {
+      removeComment: true,
+      replyText:
+        'Your comment was removed, because you must first verify your email to play Field.',
+    },
+  },
+  {
+    title: 'CommentSubmit - Removes comment when user has won the game',
+    profile: {
+      ...testProfile,
+      globalPointCount: 1,
+    },
+    comment: fakeComment,
+    level: 0,
+    expected: {
+      removeComment: true,
+      replyText: 'Your comment was removed, because you beat the game!',
     },
   },
 ]
@@ -137,7 +187,7 @@ for (const testCase of testCases) {
 
     await commentSubmit.onEvent(
       {
-        comment: fakeComment,
+        comment: testCase.comment,
         author: fakeAuthor,
       },
       ctx,
