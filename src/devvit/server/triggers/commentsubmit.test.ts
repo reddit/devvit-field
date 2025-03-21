@@ -6,7 +6,7 @@ import {USER_IDS} from '../../../shared/test-utils'
 import {config2} from '../../../shared/types/level'
 import {DevvitTest} from '../core/_utils/DevvitTest'
 import {userSet} from '../core/user'
-import {commentSubmit} from './CommentSubmit'
+import {commentSubmit} from './commentsubmit.js'
 
 const fakeComment: Readonly<CommentV2> = {
   id: 'id',
