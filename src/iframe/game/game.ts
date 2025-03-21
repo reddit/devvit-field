@@ -339,8 +339,8 @@ export class Game {
         }
 
     const lvl = Math.trunc(rnd.num * 5) as Level
-    const partSize = 128
-    const size = partSize * (1 + Math.trunc(rnd.num * 25 - 1))
+    const partSize = 1 + Math.trunc(rnd.num * 800)
+    const size = partSize * 4
     // to-do: randomize bans.
     const field = {bans: 0, partSize, wh: {w: size, h: size}}
     const team = Math.trunc(rnd.num * 4) as Team
