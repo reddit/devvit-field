@@ -34,7 +34,7 @@ export function fieldS3URL(key: DeltaSnapshotKey): string {
 export function fieldS3Path(key: DeltaSnapshotKey): string {
   const kind = key.kind === 'deltas' ? 'd' : 'p'
   const pkey = makePartitionKey(key.partitionXY)
-  return `${key.pathPrefix}/${key.subredditId}/${kind}/${key.challengeNumber}/${pkey}/${key.sequenceNumber}`
+  return `${key.pathPrefix}/${pkey}/${key.subredditId}/${kind}/${key.challengeNumber}/${key.sequenceNumber}`
 }
 
 function publicPath(path: string): string {
