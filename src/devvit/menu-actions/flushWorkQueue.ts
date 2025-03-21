@@ -1,6 +1,15 @@
 import type {MenuItem} from '@devvit/public-api'
 import {dropRealtimeQueue} from '../server/scheduler/sendRealtime.js'
-import {flushWorkQueue} from '../server/scheduler/workqueue.js'
+import {flushWorkQueue, joltWorkQueue} from '../server/scheduler/workqueue.js'
+
+export const joltWorkQueueAction = (): MenuItem => ({
+  forUserType: ['moderator'],
+  label: '[Field] Jolt WorkQueue',
+  location: ['post', 'subreddit'],
+  onPress: async (_ev, ctx) => {
+    await joltWorkQueue(ctx)
+  },
+})
 
 export const flushWorkQueueAction = (): MenuItem => ({
   forUserType: ['moderator'],

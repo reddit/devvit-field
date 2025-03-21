@@ -1,10 +1,11 @@
+import {gauge} from '@devvit/metrics'
 import {
   Devvit,
   type JSONObject,
   type ScheduledJobHandler,
 } from '@devvit/public-api'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
-import {fillAndSortByTeamNumber} from '../../../shared/team.js'
+import {fillAndSortByTeamNumber, teamPascalCase} from '../../../shared/team.js'
 import type {
   LeaderboardUpdate,
   TeamBoxCounts,
@@ -18,6 +19,18 @@ import {fieldEndGame} from '../core/field.ts'
 import {teamStatsCellsClaimedGetTotal} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
 import {teamStatsMinesHitGet} from '../core/leaderboards/challenge/team.minesHit'
 import {computeScore} from '../core/score.ts'
+
+const metrics = {
+  bannedPlayers: gauge({
+    name: 'banned_players',
+    labels: ['team'],
+  }),
+
+  score: gauge({
+    name: 'score',
+    labels: ['team'],
+  }),
+}
 
 /**
  * This is just a stub for the interface that we need on the client to satisfy the UI
@@ -49,9 +62,18 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
     activePlayersGet({redis: ctx.redis}),
   ])
 
+  const bannedPlayers = banned.reduce((acc, x) => acc + x.score, 0)
+  for (const team of banned) {
+    metrics.bannedPlayers.labels(teamPascalCase[team.member]).set(team.score)
+  }
+
   // Zeroes from Redis aren't necessarily initialized. Set them here to
   // ensure we score all teams.
   const teams = fillAndSortByTeamNumber(leaderboard)
+
+  for (const team of teams) {
+    metrics.score.labels(teamPascalCase[team.member]).set(team.score)
+  }
 
   // Whether or not the challenge is over determines what event we emit
   const score = computeScore({size: config.size, teams})
@@ -62,7 +84,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
     const message: LeaderboardUpdate = {
       type: 'LeaderboardUpdate',
       teamBoxCounts: teams.map(x => x.score) as TeamBoxCounts,
-      bannedPlayers: banned.reduce((acc, x) => acc + x.score, 0),
+      bannedPlayers,
       activePlayers,
     }
     await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, message)

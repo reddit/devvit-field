@@ -119,7 +119,8 @@ WorkQueue.register<PublishDeltasTask>(
     )
     await wq.enqueue({
       type: 'AnnounceDeltas',
-      maxAttempts: 3, // Only retry realtime sends 3 times, not 5
+      // Most common cause of error is timeout on 429, which we shouldn't retry.
+      maxAttempts: 1,
       ref: key,
     })
   },
@@ -174,7 +175,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 
   try {
     await emitAllPartitions(ctx, wq)
-    await wq.runUntil(new Date(start + 10_000))
+    await wq.runUntil(new Date(start + 5_000))
   } finally {
     if (interval) clearInterval(interval)
     if (pending) await pending

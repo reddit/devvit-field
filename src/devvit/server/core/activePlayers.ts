@@ -1,8 +1,16 @@
+import {gauge} from '@devvit/metrics'
 import type {Context} from '@devvit/public-api'
-import {type Team, teams} from '../../../shared/team'
+import {type Team, teamPascalCase, teams} from '../../../shared/team'
 
 const activePlayersSecondsInterval = 30
 const activePlayersLookBackWindow = 3
+
+const metrics = {
+  activePlayers: gauge({
+    name: 'active_players',
+    labels: ['team'],
+  }),
+}
 
 const getActivePlayersKey = (team: Team) => `active_players:${team}` as const
 
@@ -60,9 +68,14 @@ export const activePlayersGet = async ({
   )
   const results = await Promise.all(
     teams.flatMap(team =>
-      lastNTimestamps.map(timestamp =>
-        redis.zScore(getActivePlayersKey(team), timestamp.toString()),
-      ),
+      lastNTimestamps.map(async timestamp => {
+        const score = await redis.zScore(
+          getActivePlayersKey(team),
+          timestamp.toString(),
+        )
+        if (score) metrics.activePlayers.labels(teamPascalCase[team]).set(score)
+        return score
+      }),
     ),
   )
 

@@ -2,7 +2,7 @@ import {counter, gauge, histogram} from '@devvit/metrics'
 import type {ZMember} from '@devvit/protos'
 import type {Context, JobContext, TriggerContext} from '@devvit/public-api'
 
-export const taskDeadlineMillis = 1000
+export const taskDeadlineMillis = 2000
 
 export type Task = {
   type: string
@@ -18,9 +18,10 @@ export const claimsKey = '{workqueue}:claims'
 const lockKey = '{workqueue}:lock'
 
 // TODO: make into settings
-const maxConcurrentClaims = 48 // Enough to serve 16 partitions x 3 tasks per partition
+const maxConcurrentClaims = 128
 const defaultMaxAttempts = 5
 const maxTransactionAttempts = 10
+const maxTaskHandleTimeSec = 1
 
 type WorkQueueSettings = {
   'workqueue-debug'?: string
@@ -95,11 +96,15 @@ const metrics = {
 
 export async function workQueueInit(ctx: TriggerContext): Promise<void> {
   // Ensure the workqueue lock key has an expiration, to avoid total deadlock.
-  await ctx.redis.expire(lockKey, 1)
+  await ctx.redis.expire(lockKey, maxTaskHandleTimeSec)
 }
 
 export async function flushWorkQueue(ctx: Context): Promise<void> {
   await ctx.redis.del(tasksKey, claimsKey, lockKey)
+}
+
+export async function joltWorkQueue(ctx: Context): Promise<void> {
+  await ctx.redis.del(lockKey)
 }
 
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
@@ -147,6 +152,8 @@ export class WorkQueue {
   }
 
   async runUntil(deadline: Date): Promise<void> {
+    this.#debug(`runUntil ${deadline}`)
+
     let inFlight = 0
     const observations: Record<string, number> = {}
 
@@ -169,13 +176,18 @@ export class WorkQueue {
     while (new Date() < deadline) {
       const avail = maxConcurrentClaims - inFlight
       if (avail <= 0) {
+        this.#debug(
+          `max claims in flight, sleeping for ${this.#pollIntervalMs} ms`,
+        )
         await sleep(this.#pollIntervalMs)
         continue
       }
       const nextTasks = await this.#claimOneBatch(avail)
       if (inFlight === 0 && !nextTasks.length) {
+        this.#debug('no work to do, returning')
         break
       }
+      this.#debug(`handling ${nextTasks.length} tasks`)
       handleTasks(nextTasks)
       await sleep(this.#pollIntervalMs)
     }
@@ -190,6 +202,7 @@ export class WorkQueue {
       lockKey,
       async () => this.#claimOneBatchUnderLock(n),
       [],
+      '#claimOneBatch',
     )
   }
 
@@ -270,7 +283,6 @@ export class WorkQueue {
     if (!claimableMembers || !claimableMembers.length) {
       return []
     }
-    console.log(`stealing ${claimableMembers.length} claims`)
 
     const tasksToSteal = this.#membersToTasks(claimableMembers)
     const now = Date.now()
@@ -348,12 +360,13 @@ export async function withLock<T>(
   key: string,
   fn: () => Promise<T>,
   orElse: T,
+  debugTag: string = '',
 ): Promise<T> {
   const start = performance.now()
   let attempts = 0
   while (attempts < maxTransactionAttempts) {
     attempts++
-    const res = await ctx.redis.hSetNX(key, 'lock', '')
+    const res = await ctx.redis.hSetNX(key, 'lock', `${Date.now()}`)
     const acquired = res > 0
     metrics.lockAttempts.labels(key, `${acquired}`).inc()
     if (acquired) {
@@ -362,16 +375,33 @@ export async function withLock<T>(
         .labels(key, 'true')
         .observe((holdStart - start) / 1_000)
       metrics.lockRequests.labels(key, 'true').inc()
-      await ctx.redis.expire(key, 1)
+      await ctx.redis.expire(key, maxTaskHandleTimeSec)
       try {
         return await fn()
       } finally {
         await ctx.redis.hDel(key, ['lock'])
-        metrics.lockDurationSeconds
-          .labels(key)
-          .observe((performance.now() - holdStart) / 1_000)
+        const dur = performance.now() - holdStart
+        metrics.lockDurationSeconds.labels(key).observe(dur / 1_000)
+        if (dur > 1_000) {
+          console.log(
+            `slow operation involving ${key} took ${dur} ms:`,
+            debugTag,
+          )
+        }
       }
     }
+
+    const val = await ctx.redis.hGet(key, 'lock')
+    if (val) {
+      const ts = parseInt(val) ?? ''
+      if (ts < Date.now() - maxTaskHandleTimeSec * 1_000) {
+        // Lock should have expired, but didn't! So we'll delete it here and retry.
+        console.log(`deleting stale lock! age was ${ts - Date.now()} ms`)
+        await ctx.redis.del(key)
+        continue
+      }
+    }
+    //console.log(`failed to acquire lock, value ${val} expires at ${await ctx.redis.expireTime(key)}`)
     await sleep(attempts * 100 + 50 * Math.random())
   }
   metrics.lockRequests.labels(key, 'false').inc()

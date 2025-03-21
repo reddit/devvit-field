@@ -43,6 +43,7 @@ WorkQueue.register<EmitPartitionTask>(
         task.sequenceNumber,
       ),
       encoded,
+      {expiration: new Date(Date.now() + 600_000)}, // 10 minutes
     )
 
     const key: DeltaSnapshotKey = {

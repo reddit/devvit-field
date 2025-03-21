@@ -127,7 +127,7 @@ export async function deltasRotate(
     ),
     // TODO: Use setBuffer to avoid base64 encoding.
     Buffer.from(encoded).toString('base64'),
-    {expiration: new Date(Date.now() + 3600_000)},
+    {expiration: new Date(Date.now() + 600_000)}, // 10 minutes
   )
 }
 
