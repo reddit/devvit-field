@@ -11,8 +11,8 @@ import {
 } from './leaderboards/global/leaderboard'
 import * as userMethods from './user'
 
-beforeEach(() => {
-  DevvitTest.resetRedis()
+beforeEach(async () => {
+  await DevvitTest.resetRedis()
   vi.resetAllMocks()
 })
 

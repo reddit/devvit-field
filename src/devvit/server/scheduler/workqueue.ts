@@ -135,8 +135,7 @@ export class WorkQueue {
     this.#pollIntervalMs = settings['workqueue-polling-interval-ms'] ?? 10
   }
 
-  // biome-ignore lint/suspicious/noExplicitAny: just wrapping console.log here
-  #debug(...args: any) {
+  #debug(...args: readonly unknown[]) {
     if (this.#debugEnabled) {
       console.log(...[this.#id, ...args])
     }
@@ -328,7 +327,7 @@ export class WorkQueue {
         }
       } else {
         await sleep(task.attempts * 100 + 50 * Math.random())
-        await this.ctx.redis.zAdd(claimsKey, {member: task.key!, score: 0})
+        await this.ctx.redis.zAdd(claimsKey, {member: task.key, score: 0})
       }
     } finally {
       if (!end) {

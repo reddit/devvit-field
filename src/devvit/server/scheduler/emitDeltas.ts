@@ -134,7 +134,7 @@ type AnnounceDeltasTask = Task & {
 WorkQueue.register<AnnounceDeltasTask>(
   'AnnounceDeltas',
   async (wq: WorkQueue, task: AnnounceDeltasTask): Promise<void> => {
-    sendRealtime(wq, {
+    await sendRealtime(wq, {
       type: 'PartitionUpdate',
       key: task.ref,
     } satisfies PartitionUpdate)

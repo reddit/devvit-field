@@ -25,14 +25,14 @@ export class Client {
   readonly #bucket: string
 
   constructor(settings: ClientOptions) {
-    const region = settings['s3-region'] as string
-    const accessKeyId = settings['aws-access-key'] as string
-    const secretAccessKey = settings['aws-secret'] as string
+    const region = settings['s3-region']
+    const accessKeyId = settings['aws-access-key']
+    const secretAccessKey = settings['aws-secret']
     this.#client = new S3Client({
       region,
       credentials: {accessKeyId, secretAccessKey},
     })
-    this.#bucket = settings['s3-bucket'] as string
+    this.#bucket = settings['s3-bucket']
   }
 
   async send(opts: UploadOptions): Promise<PutObjectCommandOutput> {

@@ -5,7 +5,7 @@ import {type Task, WorkQueue, claimsKey, taskDeadlineMillis} from './workqueue'
 type TestTask = Task & {type: 'Test'}
 
 describe('steal task', async () => {
-  await DevvitTest.it('steal task', async ctx => {
+  DevvitTest.it('steal task', async ctx => {
     // Register handler.
     let taskHandled = false
     WorkQueue.register<TestTask>('Test', async (_wq, _task) => {

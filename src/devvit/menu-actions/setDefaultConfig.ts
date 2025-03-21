@@ -45,7 +45,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           required: true,
         },
       ],
-    }
+    } as const
   },
   async ({values}, ctx) => {
     try {

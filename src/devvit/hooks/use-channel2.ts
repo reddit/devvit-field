@@ -91,12 +91,12 @@ export function useChannel2<T extends JSONObject>(
       if (msg.version === opts.version) opts.onPeerMessage(msg)
       else if (msg.version > opts.version) opts.onOutdated?.()
     },
-    onSubscribed() {
+    async onSubscribed() {
       disconnectInterval.start()
-      opts.onConnected?.()
+      await opts.onConnected?.()
     },
-    onUnsubscribed() {
-      opts.onDisconnected?.()
+    async onUnsubscribed() {
+      await opts.onDisconnected?.()
     },
   })
 

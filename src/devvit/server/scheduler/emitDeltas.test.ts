@@ -13,7 +13,7 @@ import {userSet} from '../core/user'
 import {onRun} from './emitDeltas'
 
 describe('emitDeltas', async () => {
-  await DevvitTest.it('multiple complete heartbeats', async ctx => {
+  DevvitTest.it('multiple complete heartbeats', async ctx => {
     const innerLog = console.log
     console.log = (...args) => {
       innerLog(...[`[${(new Date()).toISOString()}]`, ...args])

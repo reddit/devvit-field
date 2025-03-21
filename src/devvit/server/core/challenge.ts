@@ -62,7 +62,7 @@ export const challengeConfigGet = async ({
 /**
  * Clears the cache of challenge configs. Primarily used for testing.
  */
-export const challengeConfigClearCache = async (): Promise<void> => {
+export const challengeConfigClearCache = (): void => {
   for (const key in challengeConfigCache) {
     delete challengeConfigCache[key]
   }

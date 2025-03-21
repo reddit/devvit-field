@@ -8,6 +8,6 @@ type EmitLiveConfigTask = Task & {
 WorkQueue.register<EmitLiveConfigTask>(
   'EmitLiveConfig',
   async (wq: WorkQueue): Promise<void> => {
-    liveSettingsEmitForCurrentInstallationIfNeeded(wq.ctx)
+    await liveSettingsEmitForCurrentInstallationIfNeeded(wq.ctx)
   },
 )

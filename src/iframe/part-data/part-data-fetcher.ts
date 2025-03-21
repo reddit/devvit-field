@@ -140,7 +140,7 @@ export class PartDataFetcher {
     }
   }
 
-  async #fetchPart(now: UTCMillis, part: PartData): Promise<void> {
+  #fetchPart(now: UTCMillis, part: PartData): void {
     if (!this.#config) return // Not init.
     if (!this.#resumed) return
 

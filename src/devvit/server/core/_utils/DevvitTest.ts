@@ -121,7 +121,7 @@ export namespace DevvitTest {
     const makeKey = (key: string) => (prefix ? `${prefix}:${key}` : key)
     return {
       async del(...keys) {
-        con.del(...keys.map(makeKey))
+        await con.del(...keys.map(makeKey))
       },
       async expire(key, seconds) {
         await con.expire(makeKey(key), seconds)
