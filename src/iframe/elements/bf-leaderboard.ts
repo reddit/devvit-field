@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontSSize, spacePx} from '../../shared/theme.ts'
+import {spacePx} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
