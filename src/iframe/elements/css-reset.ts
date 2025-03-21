@@ -21,6 +21,7 @@ import {
   paletteShade60,
   paletteShade80,
   paletteSunshine,
+  paletteTint60,
   paletteTint75,
   paletteVeryBannedField,
   paletteVeryBannedFieldDark,
@@ -75,6 +76,7 @@ export const cssReset: CSSResult = css`
     --color-sunshine-dark: #c18a28;
     --color-sunshine-light: #ffc96f;
     --color-sunshine: ${unsafeCSS(cssHex(paletteSunshine))};
+    --color-tint-60: ${unsafeCSS(cssHex(paletteTint60))};
     --color-tint-75: ${unsafeCSS(cssHex(paletteTint75))};
     --color-very-banned-field-dark: ${unsafeCSS(cssHex(paletteVeryBannedFieldDark))};
     --color-very-banned-field-light: ${unsafeCSS(cssHex(paletteVeryBannedFieldLight))};

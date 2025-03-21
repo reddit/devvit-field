@@ -22,20 +22,20 @@ export class BFLeaderboard extends LitElement {
 
     :host {
       display: flex;
+      flex-direction: row;
+      column-gap: ${spacePx / 2}px;
       color: var(--color-theme);
-      font-size: ${fontSSize}px;
+      font-size: 12px;
       width: 100%;
       align-items: center;
     }
 
     .board {
       display: flex;
-      height: ${fontSSize}px;
-      column-gap: 2px;
+      height: 12px;
+      column-gap: ${spacePx / 4}px;
       width: 100%;
       background-color: var(--color-another-grey);
-      margin-inline-start: ${spacePx / 2}px;
-      margin-inline-end: ${spacePx / 2}px;
     }
 
     .bar {
@@ -68,7 +68,7 @@ export class BFLeaderboard extends LitElement {
     const lasagna = (this.lasagna / boxes) * 100
     const sunshine = (this.sunshine / boxes) * 100
     return html`
-      ${`${Math.trunc((claimed * 100) / boxes)}`.padStart(2, ' ')}%
+      ${`${Math.trunc((claimed * 100) / boxes)}`}%
       <div class='board'>
         <div class='bar flamingo' style='width: ${flamingo}%;'></div>
         <div class='bar juice-box' style='width: ${juiceBox}%;'></div>
