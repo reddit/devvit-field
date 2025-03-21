@@ -22,6 +22,7 @@ const maxConcurrentClaims = 128
 const defaultMaxAttempts = 5
 const maxTransactionAttempts = 10
 const maxTaskHandleTimeSec = 1
+const maxTaskAgeMs = 300_000
 
 type WorkQueueSettings = {
   'workqueue-debug'?: string
@@ -234,6 +235,14 @@ export class WorkQueue {
   }
 
   async #claimTasksUnderLock(n: number): Promise<Task[]> {
+    const removed = await this.ctx.redis.zRemRangeByScore(
+      tasksKey,
+      0,
+      Date.now() - maxTaskAgeMs,
+    )
+    if (removed) {
+      console.warn(`[workqueue] dropped ${removed} old tasks`)
+    }
     const claimableMembers = await this.ctx.redis.zRange(
       tasksKey,
       '-inf',
@@ -267,6 +276,14 @@ export class WorkQueue {
   }
 
   async #stealTasksUnderLock(n: number): Promise<Task[]> {
+    const removed = await this.ctx.redis.zRemRangeByScore(
+      claimsKey,
+      0,
+      Date.now() - maxTaskAgeMs,
+    )
+    if (removed) {
+      console.warn(`[workqueue] dropped ${removed} old claims`)
+    }
     const claimableMembers = await this.ctx.redis.zRange(
       claimsKey,
       '-inf',
@@ -327,7 +344,12 @@ export class WorkQueue {
         }
       } else {
         await sleep(task.attempts * 100 + 50 * Math.random())
-        await this.ctx.redis.zAdd(claimsKey, {member: task.key, score: 0})
+        // Add back to claims queue with score adjusted back in time, to give
+        // it a higher priority.
+        await this.ctx.redis.zAdd(claimsKey, {
+          member: task.key,
+          score: Date.now() - maxTaskAgeMs / 2,
+        })
       }
     } finally {
       if (!end) {
