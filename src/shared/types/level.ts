@@ -1,6 +1,6 @@
 // to-do: Uncomment me for prod!!
-// import configRaw from '../config/config.prod.json'
-import configRaw from '../config/config.dev.json'
+import configRaw from '../config/config.prod.json'
+//import configRaw from '../config/config.dev.json'
 import {
   paletteBananaField,
   paletteBananaFieldDark,

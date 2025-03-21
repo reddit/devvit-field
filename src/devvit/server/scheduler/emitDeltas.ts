@@ -22,11 +22,7 @@ import {
   Client as S3Client,
   getPathPrefix,
 } from '../core/s3.ts'
-import {
-  flushRealtime,
-  maybeFlushRealtime,
-  sendRealtime,
-} from './sendRealtime.ts'
+import {sendRealtime} from './sendRealtime.ts'
 import {type Task, WorkQueue, newWorkQueue} from './workqueue.ts'
 
 /**
@@ -161,31 +157,8 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 ): Promise<void> => {
   const wq = await newWorkQueue(ctx)
   const start = Date.now()
-  const realtimeBatchEnabled =
-    (await wq.ctx.settings.get<boolean>('realtime-batch-enabled')) === true
-
-  let pending: Promise<void> | undefined
-  let interval: NodeJS.Timeout | undefined
-  if (realtimeBatchEnabled) {
-    // Drive realtime flushes at regular intervals while the workqueue is still running.
-    interval = setInterval(() => {
-      pending = maybeFlushRealtime(wq)
-    }, 100)
-  }
-
-  try {
-    await emitAllPartitions(ctx, wq)
-    await wq.runUntil(new Date(start + 5_000))
-  } finally {
-    if (interval) clearInterval(interval)
-    if (pending) await pending
-    if (realtimeBatchEnabled) {
-      //console.log(`flushing realtime queue after scheduled run of ${Date.now()-start}`)
-      await flushRealtime(wq)
-      // Run the workqueue one more time for any realtime sends that were just flushed.
-      await wq.runUntil(new Date(Date.now() + 1_000))
-    }
-  }
+  await emitAllPartitions(ctx, wq)
+  await wq.runUntil(new Date(start + 5_000))
 }
 
 async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {
