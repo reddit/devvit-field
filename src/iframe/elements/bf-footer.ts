@@ -6,12 +6,19 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
+import {abbreviateNumber} from '../../shared/format.ts'
 import {localize} from '../../shared/locale.ts'
 import {createFooterEnd} from '../../shared/svg-factories/createFooterEnd.ts'
 import {createFooterMiddle} from '../../shared/svg-factories/createFooterMiddle.ts'
 import {createFooterStart} from '../../shared/svg-factories/createFooterStart.ts'
+import {createPersonIcon} from '../../shared/svg-factories/createPersonIcon.ts'
 import {TITLE_NOTCH_HEIGHT} from '../../shared/svg-factories/footerSettings.ts'
-import type {Level} from '../../shared/types/level.ts'
+import {
+  type Team,
+  type TeamPascalCase,
+  teamPascalCase,
+} from '../../shared/team.ts'
+import {spacePx} from '../../shared/theme.ts'
 import type {
   ChallengeCompleteMessage,
   DialogMessage,
@@ -36,7 +43,6 @@ export class BFFooter extends LitElement {
     :host {
         position: relative;
         width: 100%;
-        margin: 8px;
         height: 128px;
     }
 
@@ -49,7 +55,6 @@ export class BFFooter extends LitElement {
     .content {
         display: flex;
         flex-direction: column;
-        align-content: center;
         text-align: center;
     }
 
@@ -78,41 +83,112 @@ export class BFFooter extends LitElement {
         flex-shrink: 0;
     }
 
-    ul {
-        list-style-type: none;
-        padding: 0 24px;
-        margin: 8px 0 0 0;
-        display: flex;
-        flex-direction: row;
-        gap: 4px;
-    }
-
-    li {
-        width: 25%;
-        background: green;
-        line-height: 24px;
-        font-size: 16px;
-        color: var(--color-black);
-    }
-
     .title {
-        margin-top: 8px;
+        margin-top: ${spacePx}px;
         line-height: ${TITLE_NOTCH_HEIGHT}px;
         font-size: 12px;
         color: var(--color-white);
     }
 
-  `
+    .scores {
+        list-style-type: none;
+        padding: 0 24px;
+        margin: ${spacePx}px 0 0 0;
+        display: flex;
+        flex-direction: row;
+        gap: ${spacePx}px;
+        max-width: 380px;
+    }
+
+    .scores li {
+        width: 25%;
+        height: 28px;
+        background: green;
+        color: var(--color-black);
+        display: flex;
+        flex-direction: row;
+        justify-content: start;
+    }
+
+    .score {
+        line-height: 20px;
+        height: 100%;
+        flex-grow: 1;
+        flex-shrink: 1;
+        text-align: center;
+        font-size: 14px;
+        border-width: ${spacePx / 2}px;
+        border-style: solid;
+        border-color: var(--color-shade-50);
+    }
+
+    .icon {
+      height: 28px;
+      width: 28px;
+      flex-shrink: 0;
+      flex-grow: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--color-shade-50);
+    }
+
+    .icon svg {
+      width: 12px;
+      height: 12px;
+      display: block;
+    }
+
+    .JuiceBox {
+        background-color: var(--color-juice-box);
+    }
+
+    .Flamingo {
+        background-color: var(--color-flamingo);
+    }
+
+    .Lasagna {
+        background-color: var(--color-lasagna);
+    }
+
+    .Sunshine {
+        background-color: var(--color-sunshine);
+    }`
 
   @property({type: Object}) accessor msg:
     | DialogMessage
     | ChallengeCompleteMessage
     | undefined
 
-  @property({type: Number}) accessor subLvl: Level | undefined = 0
-  @property({attribute: false}) accessor buttonHandler: () => void = () => {}
+  @property() accessor team: TeamPascalCase | undefined
+  @property({type: Number}) accessor flamingo: number = 0
+  @property({type: Number}) accessor juiceBox: number = 0
+  @property({type: Number}) accessor lasagna: number = 0
+  @property({type: Number}) accessor sunshine: number = 0
 
   protected override render(): TemplateResult {
+    const orderedTeams: {
+      id: Team
+      score: number
+    }[] = [
+      {
+        id: 1,
+        score: this.juiceBox,
+      },
+      {
+        id: 0,
+        score: this.flamingo,
+      },
+      {
+        id: 2,
+        score: this.lasagna,
+      },
+      {
+        id: 3,
+        score: this.sunshine,
+      },
+    ]
+
     return html`
       <div class="background">
         <div class="cap" .innerHTML=${createFooterStart()}></div>
@@ -122,10 +198,19 @@ export class BFFooter extends LitElement {
       <div class="content">
         <p class="title">${localize('game-footer-title')}</p>
         <ul class="scores">
-            <li>12.1k</li>
-            <li>999</li>
-            <li>12.9k</li>
-            <li>240.1k</li>
+          ${orderedTeams.map(team => {
+            const name = teamPascalCase[team.id]
+            return html`
+              <li class="${name}">
+                ${
+                  this.team === name
+                    ? html`
+                <div class="icon" .innerHTML=${createPersonIcon(team.id)}></div>`
+                    : ''
+                }
+                <div class="score">${abbreviateNumber(team.score)}</div>
+              </li>`
+          })}
         </ul>
         <div 
             @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'

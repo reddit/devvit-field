@@ -167,7 +167,13 @@ export class BFTerminal extends LitElement {
           ></bf-button>
         </main>
 
-        <bf-footer></bf-footer>
+        <bf-footer
+          flamingo='${this.flamingo}'
+          juiceBox='${this.juiceBox}'
+          lasagna='${this.lasagna}'
+          sunshine='${this.sunshine}'
+          team='${ifDefined(this.team)}'
+        ></bf-footer>
       </div>
     `
   }
