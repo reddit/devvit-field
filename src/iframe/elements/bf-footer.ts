@@ -43,83 +43,89 @@ export class BFFooter extends LitElement {
     :host {
         position: relative;
         width: 100%;
-        height: 128px;
+        height: 108px;
     }
 
     .content,
     .background {
-        position: absolute;
-        inset: 0;
+      position: absolute;
+      inset: 0;
     }
 
     .content {
-        display: flex;
-        flex-direction: column;
-        text-align: center;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      align-items: center;
     }
 
     .background {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
     }
 
     .cap {
-        flex-shrink: 0;
-        flex-grow: 0;
+      flex-shrink: 0;
+      flex-grow: 0;
     }
 
     .middle {
-        flex-shrink: 1;
-        flex-grow: 1;
-        display: flex;
-        overflow: hidden;
-        justify-content: center;
-        align-content: center;
+      flex-shrink: 1;
+      flex-grow: 1;
+      display: flex;
+      overflow: hidden;
+      justify-content: center;
+      align-content: center;
     }
 
     .background svg {
-        height: 128px;
-        flex-shrink: 0;
+      height: 108px;
+      flex-shrink: 0;
     }
 
     .title {
-        margin-top: ${spacePx}px;
-        line-height: ${TITLE_NOTCH_HEIGHT}px;
-        font-size: 12px;
-        color: var(--color-white);
+      margin-top: ${spacePx}px;
+      line-height: ${TITLE_NOTCH_HEIGHT}px;
+      font-size: 12px;
+      color: var(--color-white);
     }
 
     .scores {
-        list-style-type: none;
-        padding: 0 24px;
-        margin: ${spacePx}px 0 0 0;
-        display: flex;
-        flex-direction: row;
-        gap: ${spacePx}px;
-        max-width: 380px;
+      list-style-type: none;
+      padding: 0 24px;
+      margin: ${spacePx}px 0 0 0;
+      display: flex;
+      flex-direction: row;
+      gap: ${spacePx * 1.5}px;
+      width: 100%;
+      max-width: 420px;
     }
 
     .scores li {
-        width: 25%;
-        height: 28px;
-        background: green;
-        color: var(--color-black);
-        display: flex;
-        flex-direction: row;
-        justify-content: start;
+      width: 25%;
+      height: 28px;
+      color: var(--color-black);
+      display: flex;
+      flex-direction: row;
+      justify-content: start;
     }
 
     .score {
-        line-height: 20px;
-        height: 100%;
-        flex-grow: 1;
-        flex-shrink: 1;
-        text-align: center;
-        font-size: 14px;
-        border-width: ${spacePx / 2}px;
-        border-style: solid;
-        border-color: var(--color-shade-50);
+      line-height: 20px;
+      height: 100%;
+      flex-grow: 1;
+      flex-shrink: 1;
+      text-align: center;
+      font-size: 14px;
+      border-width: ${spacePx / 2}px;
+      border-style: solid;
+      border-color: var(--color-shade-60);
+    }
+
+    .icon + .score {
+      border-left: 0;
     }
 
     .icon {
@@ -130,7 +136,7 @@ export class BFFooter extends LitElement {
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: var(--color-shade-50);
+      background-color: var(--color-shade-60);
     }
 
     .icon svg {
@@ -140,19 +146,19 @@ export class BFFooter extends LitElement {
     }
 
     .JuiceBox {
-        background-color: var(--color-juice-box);
+      background-color: var(--color-juice-box);
     }
 
     .Flamingo {
-        background-color: var(--color-flamingo);
+      background-color: var(--color-flamingo);
     }
 
     .Lasagna {
-        background-color: var(--color-lasagna);
+      background-color: var(--color-lasagna);
     }
 
     .Sunshine {
-        background-color: var(--color-sunshine);
+      background-color: var(--color-sunshine);
     }`
 
   @property({type: Object}) accessor msg:

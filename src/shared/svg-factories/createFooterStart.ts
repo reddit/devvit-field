@@ -6,16 +6,16 @@ export function createFooterStart(): string {
     `M${CAP_WIDTH},8`,
     `H${8 + RADIUS}`,
     `Q8,8 8,${8 + RADIUS}`,
-    `V${104 - RADIUS}`,
-    `Q8,${104} ${8 + RADIUS},${104}`,
+    `V${84 - RADIUS}`,
+    `Q8,${84} ${8 + RADIUS},${84}`,
     `H${CAP_WIDTH}`,
   ]
   const bottomTint = [
     `M${CAP_WIDTH},16`,
     `H${16 + RADIUS}`,
     `Q16,16 16,${16 + RADIUS}`,
-    `V${120 - RADIUS}`,
-    `Q16,${120} ${16 + RADIUS},${120}`,
+    `V${100 - RADIUS}`,
+    `Q16,${100} ${16 + RADIUS},${100}`,
     `H${CAP_WIDTH}`,
   ]
 
@@ -23,8 +23,8 @@ export function createFooterStart(): string {
     `M${CAP_WIDTH},8`,
     `H${8 + RADIUS}`,
     `Q8,8 8,${8 + RADIUS}`,
-    `V${96 - RADIUS}`,
-    `Q8,${96} ${8 + RADIUS},${96}`,
+    `V${76 - RADIUS}`,
+    `Q8,${76} ${8 + RADIUS},${76}`,
     `H${CAP_WIDTH}`,
   ]
 

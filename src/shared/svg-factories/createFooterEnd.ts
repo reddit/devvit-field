@@ -6,16 +6,16 @@ export function createFooterEnd(): string {
     'M0,8',
     `H${CAP_WIDTH - RADIUS - 8}`,
     `Q${CAP_WIDTH - 8},8 ${CAP_WIDTH - 8},${8 + RADIUS}`,
-    `V${104 - RADIUS}`,
-    `Q${CAP_WIDTH - 8},${104} ${CAP_WIDTH - RADIUS - 8},${104}`,
+    `V${84 - RADIUS}`,
+    `Q${CAP_WIDTH - 8},${84} ${CAP_WIDTH - RADIUS - 8},${84}`,
     'H0',
   ]
   const bottomTint = [
     'M0,16',
     `H${CAP_WIDTH - RADIUS - 16}`,
     `Q${CAP_WIDTH - 16},16 ${CAP_WIDTH - 16},${16 + RADIUS}`,
-    `V${120 - RADIUS}`,
-    `Q${CAP_WIDTH - 16},${120} ${CAP_WIDTH - RADIUS - 16},${120}`,
+    `V${100 - RADIUS}`,
+    `Q${CAP_WIDTH - 16},${100} ${CAP_WIDTH - RADIUS - 16},${100}`,
     'H0',
   ]
 
@@ -23,8 +23,8 @@ export function createFooterEnd(): string {
     'M0,8',
     `H${CAP_WIDTH - RADIUS - 8}`,
     `Q${CAP_WIDTH - 8},8 ${CAP_WIDTH - 8},${8 + RADIUS}`,
-    `V${96 - RADIUS}`,
-    `Q${CAP_WIDTH - 8},${96} ${CAP_WIDTH - RADIUS - 8},${96}`,
+    `V${76 - RADIUS}`,
+    `Q${CAP_WIDTH - 8},${76} ${CAP_WIDTH - RADIUS - 8},${76}`,
     'H0',
   ]
 

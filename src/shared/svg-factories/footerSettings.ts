@@ -1,6 +1,6 @@
 // Settings shared across footer SVG factories
 
-export const CAP_HEIGHT = 128
+export const CAP_HEIGHT = 108
 export const CAP_WIDTH = 48
 export const MIDDLE_WIDTH = 1048
 export const RADIUS = 8

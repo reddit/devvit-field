@@ -77,12 +77,12 @@ function createTextureLine(x: number, y: number, flip?: boolean): string {
 export function createFooterMiddle(): string {
   const mid = MIDDLE_WIDTH / 2
 
-  const bottomTint = ['M0,96', `H${MIDDLE_WIDTH}`, 'V120', 'H0']
+  const bottomTint = ['M0,76', `H${MIDDLE_WIDTH}`, 'V100', 'H0']
 
   const insetContainer = [
     `M${CAP_WIDTH},8`,
     `H${MIDDLE_WIDTH}`,
-    `M${CAP_WIDTH},96`,
+    `M${CAP_WIDTH},76`,
     `H${MIDDLE_WIDTH}`,
   ]
 
@@ -119,29 +119,29 @@ export function createFooterMiddle(): string {
   const cx2 = mid + TITLE_NOTCH_WIDTH / 2
 
   const logoNotch = [
-    `M${cx1 - RADIUS},${96}`,
-    `C${cx1},${96} ${cx1},${96 - 12} ${cx1 + RADIUS},${96 - 12}`,
+    `M${cx1 - RADIUS},${76}`,
+    `C${cx1},${76} ${cx1},${76 - 12} ${cx1 + RADIUS},${76 - 12}`,
     `H${cx2 - RADIUS}`,
-    `C${cx2},${96 - 12} ${cx2},${96} ${cx2 + RADIUS},${96}`,
+    `C${cx2},${76 - 12} ${cx2},${76} ${cx2 + RADIUS},${76}`,
     `H${cx2 + RADIUS}`,
     'Z',
   ]
 
   const bottomRidgeTop = [
-    `M0,${104}`,
+    `M0,${84}`,
     `H${cx1 - RADIUS}`,
-    `C${cx1},${104} ${cx1},${104 + 12} ${cx1 + RADIUS},${104 + 12}`,
+    `C${cx1},${84} ${cx1},${84 + 12} ${cx1 + RADIUS},${84 + 12}`,
     `H${cx2 - RADIUS}`,
-    `C${cx2},${104 + 12} ${cx2},${104} ${cx2 + RADIUS},${104}`,
+    `C${cx2},${84 + 12} ${cx2},${84} ${cx2 + RADIUS},${84}`,
     `H${MIDDLE_WIDTH}`,
   ]
 
   const bottomRidgeBottom = [
-    `M0,${105}`,
+    `M0,${85}`,
     `H${cx1 - 1 - RADIUS}`,
-    `C${cx1 - 1},${105} ${cx1 - 1},${105 + 12} ${cx1 - 1 + RADIUS},${105 + 12}`,
+    `C${cx1 - 1},${85} ${cx1 - 1},${85 + 12} ${cx1 - 1 + RADIUS},${85 + 12}`,
     `H${cx2 + 1 - RADIUS}`,
-    `C${cx2 + 1},${105 + 12} ${cx2 + 1},${105} ${cx2 + 1 + RADIUS},${105}`,
+    `C${cx2 + 1},${85 + 12} ${cx2 + 1},${85} ${cx2 + 1 + RADIUS},${85}`,
     `H${MIDDLE_WIDTH}`,
   ]
 
