@@ -51,6 +51,7 @@ import {
   fieldArraySetTeam,
 } from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
+import {staggerMap} from '../utils/stagger.ts'
 import atlas from './atlas.json' with {type: 'json'}
 import type {Tag} from './config.ts'
 import {Looper} from './looper.ts'
@@ -653,16 +654,16 @@ export class Game {
 
     this.#clearLoadingForPart(partXY) // Must be called for any partition write.
 
-    for (const {globalXY, isBan, team} of boxes) {
+    staggerMap(boxes, 1_000, ({globalXY, isBan, team}) => {
       // console.log(
       //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
       // )
+      if (!this.fieldConfig) return
       const i = fieldArrayIndex(this.fieldConfig, globalXY)
       if (isBan) this.field[i] = fieldArrayColorBan
       else fieldArraySetTeam(this.field, i, team)
-    }
-
-    this.#invalidatePart(partXY)
+      this.#invalidatePart(partXY)
+    })
   }
 
   #renderReplace: RenderReplace = (buf, partXY) => {
