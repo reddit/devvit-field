@@ -32,7 +32,7 @@
   "welcome-dialog-team-overview-1": "Team 1: {TeamName1}",
   "games-on-reddit-header": "BROUGHT TO YOU BY",
   "game-claim-button-label-loading": "Loading",
-  "game-footer-attribution": "Leaderboard in r/GamesOnReddit",
+  "game-footer-title": "SCOREBOARD",
   "ascension-dialog-title": "Team {TeamName} claimed↵this round. As a↵surviving participant,↵you ascend upward!",
   "ascension-dialog-button-label": "UPWARD!",
   "error-dialog": "An error occurred.↵Please try again later.",

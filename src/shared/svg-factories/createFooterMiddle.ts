@@ -1,0 +1,149 @@
+import {
+  cssHex,
+  paletteBlack,
+  paletteShade80,
+  paletteTint6,
+  paletteTint19,
+} from '../theme'
+import {
+  CAP_HEIGHT,
+  CAP_WIDTH,
+  HALF_STROKE,
+  MIDDLE_WIDTH,
+  RADIUS,
+  TITLE_NOTCH_HEIGHT,
+  TITLE_NOTCH_WIDTH,
+} from './footerSettings'
+
+function createTextureLine(x: number, y: number, flip?: boolean): string {
+  return [
+    `M${x},${y}`,
+    `h${flip ? '-' : ''}8`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}8`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}8`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}8`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}22`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}22`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}8,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}3`,
+    `m${flip ? '-' : ''}3,0`,
+    `h${flip ? '-' : ''}22`,
+  ].join('')
+}
+
+/*
+ * Background: Middle Section
+ */
+
+export function createFooterMiddle(): string {
+  const mid = MIDDLE_WIDTH / 2
+
+  const bottomTint = ['M0,96', `H${MIDDLE_WIDTH}`, 'V120', 'H0']
+
+  const insetContainer = [
+    `M${CAP_WIDTH},8`,
+    `H${MIDDLE_WIDTH}`,
+    `M${CAP_WIDTH},96`,
+    `H${MIDDLE_WIDTH}`,
+  ]
+
+  const wingsDark = [
+    'M0,16',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    'M0,21',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},16`,
+    `H${MIDDLE_WIDTH}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},21`,
+    `H${MIDDLE_WIDTH}`,
+  ]
+
+  const wingsLight = [
+    'M0,17',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    'M0,22',
+    `H${mid - TITLE_NOTCH_WIDTH / 2 - RADIUS}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},17`,
+    `H${MIDDLE_WIDTH}`,
+    `M${mid + TITLE_NOTCH_WIDTH / 2 + RADIUS},22`,
+    `H${MIDDLE_WIDTH}`,
+  ]
+
+  const titleNotch = [
+    `M${mid - TITLE_NOTCH_WIDTH / 2},${HALF_STROKE + 8}`,
+    `L${mid - TITLE_NOTCH_WIDTH / 2 + TITLE_NOTCH_HEIGHT},${HALF_STROKE + 8 + TITLE_NOTCH_HEIGHT}`,
+    `H${mid + TITLE_NOTCH_WIDTH / 2 - TITLE_NOTCH_HEIGHT}`,
+    `L${mid + TITLE_NOTCH_WIDTH / 2},${HALF_STROKE + 8}`,
+  ]
+
+  const cx1 = mid - TITLE_NOTCH_WIDTH / 2
+  const cx2 = mid + TITLE_NOTCH_WIDTH / 2
+
+  const logoNotch = [
+    `M${cx1 - RADIUS},${96}`,
+    `C${cx1},${96} ${cx1},${96 - 12} ${cx1 + RADIUS},${96 - 12}`,
+    `H${cx2 - RADIUS}`,
+    `C${cx2},${96 - 12} ${cx2},${96} ${cx2 + RADIUS},${96}`,
+    `H${cx2 + RADIUS}`,
+    'Z',
+  ]
+
+  const bottomRidgeTop = [
+    `M0,${104}`,
+    `H${cx1 - RADIUS}`,
+    `C${cx1},${104} ${cx1},${104 + 12} ${cx1 + RADIUS},${104 + 12}`,
+    `H${cx2 - RADIUS}`,
+    `C${cx2},${104 + 12} ${cx2},${104} ${cx2 + RADIUS},${104}`,
+    `H${MIDDLE_WIDTH}`,
+  ]
+
+  const bottomRidgeBottom = [
+    `M0,${105}`,
+    `H${cx1 - 1 - RADIUS}`,
+    `C${cx1 - 1},${105} ${cx1 - 1},${105 + 12} ${cx1 - 1 + RADIUS},${105 + 12}`,
+    `H${cx2 + 1 - RADIUS}`,
+    `C${cx2 + 1},${105 + 12} ${cx2 + 1},${105} ${cx2 + 1 + RADIUS},${105}`,
+    `H${MIDDLE_WIDTH}`,
+  ]
+
+  return `<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${insetContainer.join('')}${createTextureLine(cx2 + 16, 89)}${createTextureLine(cx1 - 16, 89, true)}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /><path d="${wingsDark.join('')}" stroke-width="1" stroke="${cssHex(paletteShade80)}" fill="none" /><path d="${wingsLight.join('')}${bottomRidgeTop.join('')}${createTextureLine(cx2 + 16, 88)}${createTextureLine(cx1 - 16, 88, true)}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /><path d="${bottomRidgeBottom.join('')}" stroke-width="1" stroke="${cssHex(paletteTint6)}" fill="none" /><path d="${createTextureLine(cx2 + 16, 112)}${createTextureLine(cx1 - 16, 112, true)}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /></svg>`
+}
