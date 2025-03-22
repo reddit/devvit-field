@@ -1,5 +1,5 @@
 import type {XY} from '../../../shared/types/2d'
-import {Random, type Seed} from '../../../shared/types/random'
+import type {Seed} from '../../../shared/types/random'
 
 export interface MinefieldConfig {
   /**
@@ -18,12 +18,10 @@ const DEFAULT_CONFIG: MinefieldConfig = {
 export function minefieldIsMine({
   seed,
   coord,
-  cols,
   config = DEFAULT_CONFIG,
 }: {
   seed: Seed
   coord: XY
-  cols: number
   config?: MinefieldConfig
 }): boolean {
   if (
@@ -36,13 +34,23 @@ export function minefieldIsMine({
     )
   }
 
-  const rnd = new Random(createSeedFromCoords(seed, coord, cols))
+  // Use SHA-256 to consistently sample a point by coordinate and produce a
+  // random outcome that is relatively isolated from its position in space.
+  // biome-ignore lint/security/noGlobalEval:
+  const crypto = eval(`require('node:crypto')`)
+  const hash = crypto.createHash('md5')
+  hash.update(`${seed}:${coord.x},${coord.y}`)
+  const digest = hash.digest()
 
-  return rnd.num < config.mineDensity / 100
-}
+  // Convert first 4 bytes of digest to a random u32 in interval [0, 2^32).
+  let value = 0n
+  for (let i = 0; i < 4; i++) {
+    value = (value << 8n) | BigInt(digest[i])
+  }
 
-function createSeedFromCoords(seed: Seed, coord: XY, cols: number): Seed {
-  return Math.trunc(seed + coord.y * cols + coord.x) as Seed
+  // Scale up mine density by 2^32/100.
+  const density = (BigInt(config.mineDensity) * 4294967296n) / 100n
+  return value < density
 }
 
 /**
@@ -64,7 +72,7 @@ export function minefieldGetTotalMineCount({
   let total = 0
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      if (minefieldIsMine({seed, coord: {x, y}, cols, config})) {
+      if (minefieldIsMine({seed, coord: {x, y}, config})) {
         total++
       }
     }

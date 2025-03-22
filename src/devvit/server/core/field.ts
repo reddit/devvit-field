@@ -121,7 +121,6 @@ const produceValidBatch = ({
     const isBan = minefieldIsMine({
       seed: challengeConfig.seed,
       coord,
-      cols: challengeConfig.size,
       config: {mineDensity: challengeConfig.mineDensity},
     })
 
@@ -899,7 +898,6 @@ export async function fieldGetPartitionMap(
       isBan: minefieldIsMine({
         seed: meta.seed,
         coord: globalXY,
-        cols: meta.size,
         config: {mineDensity: meta.mineDensity},
       }),
     }
