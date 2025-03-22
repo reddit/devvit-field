@@ -17,6 +17,8 @@ import {cssReset} from './css-reset.ts'
 import './bf-header.ts'
 import './bf-button.ts'
 import './bf-footer.ts'
+import {hydrateString} from '../../shared/format.ts'
+import {localize} from '../../shared/locale.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -131,9 +133,11 @@ export class BFTerminal extends LitElement {
     // to-do: fix PascalCase team.
     const claim = this.team
       ? this.cooldown
-        ? 'Claiming...'
-        : `Claim for ${this.team}`
-      : 'Claim'
+        ? localize('game-claim-button-label-working')
+        : hydrateString(localize('game-claim-button-label'), {
+            TeamName: this.team,
+          })
+      : localize('game-claim-button-label-fallback')
     return html`
       <div
         class='terminal ${this.level == null ? '' : levelPascalCase[this.level]}'

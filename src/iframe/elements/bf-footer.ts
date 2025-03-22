@@ -95,12 +95,12 @@ export class BFFooter extends LitElement {
     .scores {
       list-style-type: none;
       padding: 0 24px;
-      margin: ${spacePx}px 0 0 0;
+      margin: 6px 0 0 0; /* center in artwork */
       display: flex;
       flex-direction: row;
       gap: ${spacePx * 1.5}px;
       width: 100%;
-      max-width: 420px;
+      max-width: 380px;
     }
 
     .scores li {
@@ -222,7 +222,7 @@ export class BFFooter extends LitElement {
             @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
             class="button-wrapper"
         >
-        <p>GOR</p>
+        <p>GOR?</p>
         </div>
       </div>
     `
