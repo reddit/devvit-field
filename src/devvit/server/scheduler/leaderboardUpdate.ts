@@ -6,6 +6,7 @@ import {
 } from '@devvit/public-api'
 import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const'
 import {fillAndSortByTeamNumber, teamPascalCase} from '../../../shared/team.js'
+import {currentChallengeStartTimeMillisKey} from '../../../shared/types/challenge-config.js'
 import type {
   LeaderboardUpdate,
   TeamBoxCounts,
@@ -75,11 +76,21 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
     metrics.score.labels(teamPascalCase[team.member]).set(team.score)
   }
 
+  let startTimeMs = 0
+  const startedStr = await ctx.redis.get(currentChallengeStartTimeMillisKey)
+  if (startedStr) startTimeMs = parseFloat(startedStr) || 0
+
   // Whether or not the challenge is over determines what event we emit
-  const score = computeScore({size: config.size, teams})
+  const score = computeScore({size: config.size, teams, startTimeMs})
   if (score.isOver) {
     // Fire a challenge complete event and start the new challenge!
-    await fieldEndGame(ctx, currentChallengeNumber, teams)
+    await fieldEndGame(
+      ctx,
+      currentChallengeNumber,
+      teams,
+      config.targetGameDurationSeconds,
+      score,
+    )
   } else {
     const message: LeaderboardUpdate = {
       type: 'LeaderboardUpdate',

@@ -31,6 +31,7 @@ describe('emitDeltas', async () => {
       mineDensity: 0,
       seed: makeRandomSeed(),
       totalNumberOfMines: 250,
+      targetGameDurationSeconds: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,

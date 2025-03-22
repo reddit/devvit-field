@@ -57,6 +57,7 @@ DevvitTest.it(
       mineDensity: 59,
       seed: expect.any(Number),
       totalNumberOfMines: expect.any(Number),
+      targetGameDurationSeconds: expect.any(Number),
     } satisfies ChallengeConfig)
   },
 )

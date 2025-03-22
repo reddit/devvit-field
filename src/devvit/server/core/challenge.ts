@@ -1,3 +1,4 @@
+import {gauge} from '@devvit/metrics'
 // biome-ignore lint/style/useImportType: <explanation>
 import {Devvit} from '@devvit/public-api'
 import {makeRandomSeed} from '../../../shared/save'
@@ -5,11 +6,39 @@ import {
   type ChallengeConfig,
   createChallengeConfigKey,
   currentChallengeNumberKey,
+  currentChallengeStartTimeMillisKey,
 } from '../../../shared/types/challenge-config'
 import {validateChallengeConfig} from '../../../shared/validateChallengeConfig'
 import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 import {minefieldGetTotalMineCount} from './minefield'
+
+const metrics = {
+  size: gauge({
+    name: 'challenge_config_size',
+    labels: [],
+  }),
+
+  partitionSize: gauge({
+    name: 'challenge_config_partition_size',
+    labels: [],
+  }),
+
+  mineDensity: gauge({
+    name: 'challenge_config_mine_density',
+    labels: [],
+  }),
+
+  totalNumberOfMines: gauge({
+    name: 'challenge_config_mine_total',
+    labels: [],
+  }),
+
+  targetGameDurationSeconds: gauge({
+    name: 'target_game_duration_seconds',
+    labels: [],
+  }),
+}
 
 /* Fallback config to be used if no default has been set through the subreddit menu action */
 export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => {
@@ -25,6 +54,7 @@ export const makeFallbackDefaultChallengeConfig = (): ChallengeConfig => {
       cols: size,
       rows: size,
     }),
+    targetGameDurationSeconds: 0,
   }
 }
 
@@ -56,6 +86,15 @@ export const challengeConfigGet = async ({
   }
   const challengeConfig = deserializeChallengeConfig(config)
   challengeConfigCache[cacheKey] = challengeConfig
+  metrics.size.labels().set(challengeConfig.size)
+  metrics.partitionSize.labels().set(challengeConfig.partitionSize)
+  metrics.mineDensity.labels().set(challengeConfig.mineDensity)
+  metrics.totalNumberOfMines.labels().set(challengeConfig.totalNumberOfMines)
+  if (challengeConfig.targetGameDurationSeconds) {
+    metrics.targetGameDurationSeconds
+      .labels()
+      .set(challengeConfig.targetGameDurationSeconds)
+  }
   return challengeConfig
 }
 
@@ -135,7 +174,9 @@ export const challengeGetCurrentChallengeNumber = async ({
 export const challengeIncrementCurrentChallengeNumber = async ({
   redis,
 }: {redis: Devvit.Context['redis']}): Promise<number> => {
-  return await redis.incrBy(currentChallengeNumberKey, 1)
+  const challengeNumber = await redis.incrBy(currentChallengeNumberKey, 1)
+  await redis.set(currentChallengeStartTimeMillisKey, `${Date.now()}`)
+  return challengeNumber
 }
 
 export const challengeSetCurrentChallengeNumber = async ({
@@ -231,6 +272,7 @@ function deserializeChallengeConfig(
         'partitionSize',
         'seed',
         'totalNumberOfMines',
+        'targetGameDurationSeconds',
       ]
       if (numberKeys.includes(key as keyof ChallengeConfig)) {
         val = parseFloat(value)

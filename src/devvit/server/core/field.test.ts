@@ -482,6 +482,7 @@ DevvitTest.it(
       mineDensity: 0,
       partitionSize: 2,
       totalNumberOfMines: 0,
+      targetGameDurationSeconds: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,
@@ -567,6 +568,7 @@ DevvitTest.it(
       mineDensity: 0,
       partitionSize: 2,
       totalNumberOfMines: 0,
+      targetGameDurationSeconds: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,
@@ -639,6 +641,7 @@ DevvitTest.it(
       mineDensity: 0,
       partitionSize: 2,
       totalNumberOfMines: 0,
+      targetGameDurationSeconds: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,

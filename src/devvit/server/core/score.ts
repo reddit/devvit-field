@@ -9,16 +9,20 @@ export type ComputeScoreResponse = {
   winner?: Team | undefined
   /** The remaining % of the grid (0 - 100) */
   remainingPercentage: number
+  /** Used for guidance in autoscaling of next round */
+  claimsPerSecond: number
 }
 
 export const computeScore = ({
   size,
   teams,
+  startTimeMs,
 }: {
   /** Size of the grid */
   size: number
   /** Teams playing */
   teams: {member: Team; score: number}[]
+  startTimeMs: number
 }): ComputeScoreResponse => {
   const area = size * size
 
@@ -44,9 +48,11 @@ export const computeScore = ({
   // if(difference === 0 && remainingSquares === 0) {
   // }
 
+  const durationSeconds = Math.min(30, Date.now() - startTimeMs)
   return {
     isOver,
     winner: isOver ? topTeam.member : undefined,
     remainingPercentage: Math.round((remainingSquares / area) * 100),
+    claimsPerSecond: claimedSquares / durationSeconds,
   }
 }

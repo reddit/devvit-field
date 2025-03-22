@@ -44,6 +44,14 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
           helpText: 'Number between 0 and 100. 0:No mines. 100:Only mines.',
           required: true,
         },
+        {
+          type: 'number',
+          name: 'targetGameDurationSeconds',
+          label: 'Target Game Duration (seconds)',
+          defaultValue: 0,
+          helpText:
+            'Zero to disable autoscaling. Positive value gives target game duration (in seconds) for autoscaler to target.',
+        },
       ],
     } as const
   },
@@ -53,6 +61,7 @@ export const setDefaultConfigFormKey: FormKey = Devvit.createForm(
         size: values.size,
         partitionSize: values.partitionSize,
         mineDensity: values.mineDensity,
+        targetGameDurationSeconds: values.targetGameDurationSeconds,
       }
 
       validateChallengeConfig(defaultConfig)

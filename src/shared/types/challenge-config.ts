@@ -36,6 +36,8 @@ export type ChallengeConfig = {
 
   totalNumberOfMines: number
 
+  targetGameDurationSeconds: number
+
   // TODO: Theme variables and other config that we want to change per sub?
 
   // TODO: Add a debug flag here
@@ -43,6 +45,8 @@ export type ChallengeConfig = {
 
 export const defaultChallengeConfigKey = 'default_challenge_config'
 export const currentChallengeNumberKey = 'current_challenge_number'
+export const currentChallengeStartTimeMillisKey =
+  'current_challenge_start_time_millis'
 export const createChallengeConfigKey = (
   challengeNumber: number,
 ): `challenge:${number}:config` =>

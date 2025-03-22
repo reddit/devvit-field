@@ -27,6 +27,7 @@ import {
 } from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
 import {minefieldIsMine} from './minefield'
+import type {ComputeScoreResponse} from './score.ts'
 import {
   userDescendLevel,
   userGet,
@@ -147,6 +148,8 @@ export const fieldEndGame = async (
     member: Team
     score: number
   }[],
+  targetGameDurationSeconds?: number,
+  score?: ComputeScoreResponse,
 ): Promise<void> => {
   const msg: ChallengeCompleteMessage = {
     challengeNumber,
@@ -158,9 +161,27 @@ export const fieldEndGame = async (
 
   // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
   // Make a new game immediately, because yolo
-  await challengeMakeNew({
-    ctx,
-  })
+  if (targetGameDurationSeconds && score) {
+    // Use performance of the game just ended to determine the scale of the next game.
+    const targetArea = targetGameDurationSeconds * score.claimsPerSecond
+    let targetWidth = Math.min(
+      3200,
+      Math.max(8, Math.floor(Math.sqrt(targetArea))),
+    )
+    // Drop any modulus so we evenly divide into 4x4 partitions.
+    targetWidth -= targetWidth % 4
+
+    const config = {
+      size: targetWidth,
+      partitionSize: targetWidth / 4,
+    }
+    await challengeMakeNew({
+      ctx,
+      config,
+    })
+  } else {
+    await challengeMakeNew({ctx})
+  }
 }
 
 /**

@@ -11,11 +11,13 @@ it('score should return 0 if no scores', () => {
         {member: 1, score: 0},
         {member: 0, score: 0},
       ],
+      startTimeMs: 0,
     }),
   ).toStrictEqual({
     isOver: false,
     remainingPercentage: 100,
     winner: undefined,
+    claimsPerSecond: 0,
   } satisfies ComputeScoreResponse)
 })
 
@@ -29,11 +31,13 @@ it('does not require teams to be provided in order', () => {
         {member: 3, score: 3},
         {member: 1, score: 0},
       ],
+      startTimeMs: 0,
     }),
   ).toStrictEqual({
     isOver: true,
     remainingPercentage: 25,
     winner: 3,
+    claimsPerSecond: 0.1,
   } satisfies ComputeScoreResponse)
 })
 
@@ -47,11 +51,13 @@ it('score declare winner when no one can pass the person in the lead', () => {
         {member: 1, score: 0},
         {member: 0, score: 0},
       ],
+      startTimeMs: 0,
     }),
   ).toStrictEqual({
     isOver: true,
     remainingPercentage: 25,
     winner: 3,
+    claimsPerSecond: 0.1,
   } satisfies ComputeScoreResponse)
 })
 
@@ -65,10 +71,12 @@ it('score does not blow up on a tie and chooses someone', () => {
         {member: 1, score: 0},
         {member: 0, score: 0},
       ],
+      startTimeMs: 0,
     }),
   ).toStrictEqual({
     isOver: true,
     remainingPercentage: 0,
     winner: expect.any(Number),
+    claimsPerSecond: 4 / 30,
   } satisfies ComputeScoreResponse)
 })

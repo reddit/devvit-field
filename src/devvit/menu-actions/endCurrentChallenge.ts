@@ -32,6 +32,8 @@ export const endGameFormKey: FormKey = Devvit.createForm(
         ctx.redis,
         challengeNumber,
       )
+      // Note: ending the game through this form bypasses the autoscaler,
+      // resetting to the default game config.
       await fieldEndGame(ctx, challengeNumber, standings)
 
       ctx.ui.showToast(`Challenge #${challengeNumber} has been ended.`)

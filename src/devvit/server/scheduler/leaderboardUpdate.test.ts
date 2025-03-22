@@ -31,6 +31,7 @@ describe('leaderboardUpdate', async () => {
       mineDensity: 0,
       seed: makeRandomSeed(),
       totalNumberOfMines: 0,
+      targetGameDurationSeconds: 0,
     }
     const {challengeNumber} = await challengeMakeNew({
       ctx,
