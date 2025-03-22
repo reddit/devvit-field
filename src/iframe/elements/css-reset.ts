@@ -84,9 +84,6 @@ export const cssReset: CSSResult = css`
     --color-white: ${unsafeCSS(cssHex(paletteWhite))};
 
     font-family: 'Departure Mono';
-    /* All fonts are pixelated. */
-    font-smooth: never;
-    -webkit-font-smoothing : none;
   }
 
   button, input, select, textarea {
