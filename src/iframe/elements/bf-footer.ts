@@ -159,6 +159,14 @@ export class BFFooter extends LitElement {
 
     .Sunshine {
       background-color: var(--color-sunshine);
+    }
+   
+    .logo {
+      margin-top: ${spacePx}px;
+      cursor: pointer;
+      display: block;
+      height: 29px;
+      width: 128px;
     }`
 
   @property({type: Object}) accessor msg:
@@ -218,12 +226,12 @@ export class BFFooter extends LitElement {
               </li>`
           })}
         </ul>
-        <div 
-            @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
-            class="button-wrapper"
-        >
-        <p>GOR?</p>
-        </div>
+
+        <img
+          @click='${() => this.dispatchEvent(Bubble('open-leaderboard', undefined))}'
+          src="/assets/gor-disabled.webp"
+          alt="r/GamesOnReddit logo"
+          class="logo" />
       </div>
     `
   }
