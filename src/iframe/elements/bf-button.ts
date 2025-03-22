@@ -8,10 +8,8 @@ import {
 import {customElement, property} from 'lit/decorators.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
 import {radiusPx, spacePx} from '../../shared/theme.ts'
-import type {Icon} from './bf-icon.ts'
 import {cssReset} from './css-reset.ts'
 
-import './bf-icon.ts'
 import type {Level} from '../../shared/types/level.ts'
 
 declare global {
@@ -92,11 +90,6 @@ export class BFButton extends LitElement {
       line-height: 26px;
       letter-spacing: -0.3px;
       font-family: 'Departure Mono', 'Courier New', monospace;
-    }
-
-    button.icon-button {
-      padding-right: 8px;
-      padding-left: 8px;
     }
 
     button::after {
@@ -304,38 +297,14 @@ export class BFButton extends LitElement {
 
   @property() accessor appearance: TeamPascalCase | Level | undefined
   @property({type: Boolean}) accessor disabled: boolean = false
-  @property() accessor endIcon: Icon | undefined
-  @property() accessor icon: Icon | undefined
-  @property({attribute: 'icon-color'}) accessor iconColor: string = ''
   @property() accessor size: 'Small' | 'Medium' = 'Medium'
   @property() accessor label = ''
 
   protected override render(): TemplateResult {
-    const iconOnly = this.icon && !this.label && !this.endIcon
-    const icon =
-      this.icon &&
-      html`
-        <bf-icon
-          size=${this.size}
-          icon=${this.icon}
-          color=${this.iconColor}
-        ></bf-icon>
-      `
-    const endIcon =
-      this.endIcon &&
-      html`
-        <bf-icon
-          size=${this.size}
-          icon=${this.endIcon}
-          color=${this.iconColor}
-        ></bf-icon>
-      `
     return html`
-      <button ?disabled=${this.disabled} class=${iconOnly ? 'icon-button' : ''}>
-        ${icon}
+      <button ?disabled=${this.disabled}>
         <slot></slot>
         ${this.label && html`<span>${this.label}</span>`}
-        ${endIcon}
       </button>
     `
   }
