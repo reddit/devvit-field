@@ -74,12 +74,9 @@ export class BFButton extends LitElement {
       background-position: 2px 0;
       background-size: calc(100% - 4px) 100%;
       background-repeat: no-repeat;
-
       width: var(--width);
-
       /* Position pseudoelement relative. */
       position: relative;
-
       padding-top: 3px;
       padding-right: 16px;
       padding-bottom: 3px;
@@ -127,23 +124,6 @@ export class BFButton extends LitElement {
 
     button:focus {
       outline-color: var(--color-black);
-    }
-
-    /* Size: small. */
-    :host([size='Small']) button {
-      padding-top: 12px;
-      padding-right: 16px;
-      padding-bottom: 12px;
-      padding-left: 16px;
-      font-size: 10px;
-      font-style: normal;
-      font-weight: 600;
-      line-height: 26px;
-      letter-spacing: -0.3px;
-    }
-    :host([size='Small']) button.icon-button {
-      padding-right: 10px;
-      padding-left: 10px;
     }
 
     /* Appearance: flamingo. */
@@ -297,7 +277,6 @@ export class BFButton extends LitElement {
 
   @property() accessor appearance: TeamPascalCase | Level | undefined
   @property({type: Boolean}) accessor disabled: boolean = false
-  @property() accessor size: 'Small' | 'Medium' = 'Medium'
   @property() accessor label = ''
 
   protected override render(): TemplateResult {
