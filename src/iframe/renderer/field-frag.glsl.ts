@@ -13,7 +13,7 @@ uniform highp uint uGridRGBA;
 
 in highp vec2 vUV;
 
-out highp vec4 oFrag;
+out highp vec4 oRGBA;
 
 vec4 rgbaToVec4(highp uint rgba) {
   float r = float((rgba >> 24u) & 0xffu);
@@ -41,7 +41,7 @@ void main() {
   ) {
     bool loading = color == ${fieldArrayColorLoading}u;
     highp vec4 alpha = loading ? vec4(1, 1, 1, abs(float(uFrame % 120u) / 60. - 1.)) : vec4(1, 1, 1, 1);
-    oFrag = rgbaToVec4(uGridRGBA) * alpha;
+    oRGBA = rgbaToVec4(uGridRGBA) * alpha;
     return;
   }
 
@@ -50,7 +50,7 @@ void main() {
   // Hack: trim transparent one pixel off the border to be flush with grid.
   highp vec2 wh = vec2(texXYWH.z - 2u, texXYWH.w - 2u);
   highp vec2 px = vec2(texXYWH.x + 1u, texXYWH.y + 1u) + mod(xy * wh, wh);
-  oFrag = texture(uTex, px / vec2(uTexWH));
+  oRGBA = texture(uTex, px / vec2(uTexWH));
 }`
 
 import {fieldArrayColorLoading} from './field-array.ts'

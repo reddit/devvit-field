@@ -9,7 +9,7 @@ uniform highp ivec4 uViewfinder;
 
 in vec2 vXY;
 
-out highp vec4 oFrag;
+out highp vec4 oRGBA;
 
 vec4 rgbaToVec4(highp uint rgba) {
   float r = float((rgba >> 24u) & 0xffu);
@@ -34,7 +34,7 @@ void main() {
     intXY.x >= borderW && intXY.x < (borderW + int(uSize)) && 
     intXY.y >= borderW && intXY.y < (borderW + int(uSize))
   ) {
-    oFrag = rgbaToVec4(uRGBAByColor[2]);
+    oRGBA = rgbaToVec4(uRGBAByColor[2]);
     return;
   }
 
@@ -49,12 +49,12 @@ void main() {
       (intXY.y == w || intXY.y == end) ||
       intXY.y >= w && intXY.y <= end &&
       (intXY.x == w || intXY.x == end);
-    oFrag = rgbaToVec4(border ? ${paletteBlack}u : ${paletteConsole}u);
+    oRGBA = rgbaToVec4(border ? ${paletteBlack}u : ${paletteConsole}u);
     return;
   }
 
   lowp uint color = texelFetch(uMap, ivec2((vXY - uBorderW) * ${mapSize}. / uSize), 0).r;
-  oFrag = rgbaToVec4(uRGBAByColor[color]);
+  oRGBA = rgbaToVec4(uRGBAByColor[color]);
 }`
 
 import {paletteBlack, paletteConsole} from '../../shared/theme.js'

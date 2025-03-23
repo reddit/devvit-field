@@ -11,6 +11,7 @@ export type Shader = {
   readonly uniforms: GLUniforms
   readonly vao: WebGLVertexArrayObject | null
   readonly textures: readonly GLTexture[]
+  frameBuf?: WebGLFramebuffer
 }
 
 export function Shader(

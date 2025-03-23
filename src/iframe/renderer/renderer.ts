@@ -25,10 +25,12 @@ import type {Tag} from '../game/config.js'
 import type {Atlas} from '../graphics/atlas.js'
 import type {AttribBuffer} from './attrib-buffer.js'
 import type {Cam} from './cam.js'
+import {crtFragGLSL} from './crt-frag.glsl.js'
 import {fieldFragGLSL} from './field-frag.glsl.js'
 import {fieldVertGLSL} from './field-vert.glsl.js'
 import {mapFragGLSL} from './map-frag.glsl.js'
 import {mapVertGLSL} from './map-vert.glsl.js'
+import {screenVertGLSL} from './screen-vert.glsl.js'
 import {type GL, Shader} from './shader.js'
 import {spriteFragGLSL} from './sprite-frag.glsl.js'
 import {spriteVertGLSL} from './sprite-vert.glsl.js'
@@ -40,6 +42,7 @@ export class Renderer {
   readonly #canvas: HTMLCanvasElement
   #cels: Readonly<Uint16Array> = new Uint16Array()
   #clearRGBA: number = 0x000000ff
+  #crtShader: Shader | undefined
   #field: Readonly<Uint8Array> | undefined
   #fieldConfig: Readonly<FieldConfig> | undefined
   #fieldShader: Shader | undefined
@@ -110,6 +113,8 @@ export class Renderer {
     this.#spriteShader = this.#atlasImage
       ? SpriteShader(gl, this.#atlasImage, this.#cels)
       : undefined
+
+    this.#crtShader = CRTShader(gl)
   }
 
   get loseContext(): WEBGL_lose_context | null {
@@ -178,12 +183,22 @@ export class Renderer {
     bmps: Readonly<AttribBuffer>,
     fieldScale: number,
   ): void {
-    if (!this.#gl) return
+    if (!this.#gl || !this.#crtShader) return
+
+    this.#gl.bindFramebuffer(this.#gl.FRAMEBUFFER, this.#crtShader.frameBuf!)
+
     this.#resize(cam)
     this.#gl.clear(this.#gl.COLOR_BUFFER_BIT | this.#gl.DEPTH_BUFFER_BIT)
 
     this.#renderField(cam, frame, fieldScale)
     this.#renderSprites(cam, frame, bmps)
+
+    this.#gl.bindFramebuffer(this.#gl.FRAMEBUFFER, null)
+
+    this.#resize(cam)
+    this.#gl.clear(this.#gl.COLOR_BUFFER_BIT | this.#gl.DEPTH_BUFFER_BIT)
+
+    this.#renderCRT(cam, frame)
     this.#renderMap(cam, fieldConfig)
   }
 
@@ -228,6 +243,36 @@ export class Renderer {
       new Uint8Array([val]),
     )
     this.#gl.bindTexture(this.#gl.TEXTURE_2D, null)
+  }
+
+  #renderCRT(cam: Readonly<Cam>, frame: number): void {
+    if (!this.#gl || !this.#crtShader) return
+
+    this.#gl.useProgram(this.#crtShader.pgm)
+
+    this.#gl.uniform1i(this.#crtShader.uniforms.uScene!, 0)
+
+    this.#gl.uniform4f(
+      this.#crtShader.uniforms.uCam!,
+      cam.x,
+      cam.y,
+      cam.w,
+      cam.h,
+    )
+    this.#gl.uniform1ui(this.#crtShader.uniforms.uFrame!, frame)
+
+    for (const [i, tex] of this.#crtShader.textures.entries()) {
+      this.#gl.activeTexture(this.#gl.TEXTURE0 + i)
+      this.#gl.bindTexture(this.#gl.TEXTURE_2D, tex)
+    }
+
+    this.#gl.bindVertexArray(this.#crtShader.vao)
+    this.#gl.drawArrays(
+      this.#gl.TRIANGLE_STRIP,
+      0,
+      uv.length / 2, // d
+    )
+    this.#gl.bindVertexArray(null)
   }
 
   #renderField(cam: Readonly<Cam>, frame: number, fieldScale: number): void {
@@ -399,12 +444,17 @@ export class Renderer {
 
   #resize(cam: Readonly<Cam>): void {
     const canvas = this.#canvas
+    const gl = this.#gl
 
     if (canvas.width !== cam.w || canvas.height !== cam.h) {
       canvas.width = cam.w
       canvas.height = cam.h
-      this.#gl!.viewport(0, 0, cam.w, cam.h)
-      this.#canvas.focus() // hack: propagate key events.
+      canvas.focus() // hack: propagate key events.
+
+      if (gl) {
+        gl.viewport(0, 0, cam.w, cam.h)
+        if (this.#crtShader) initFrameBuffer(gl, this.#crtShader)
+      }
     }
 
     // These pixels may be greater than, less than, or equal to cam. ratio
@@ -424,6 +474,24 @@ export class Renderer {
       canvas.style.height = `${clientH}px`
     }
   }
+}
+
+function CRTShader(gl: GL): Shader {
+  const shader = Shader(gl, screenVertGLSL, crtFragGLSL, [gl.createTexture()])
+
+  gl.bindVertexArray(shader.vao)
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer())
+  gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW)
+  gl.enableVertexAttribArray(0)
+  gl.vertexAttribIPointer(0, 2, gl.BYTE, 0, 0)
+  gl.bindVertexArray(null)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+  shader.frameBuf = gl.createFramebuffer()
+
+  initFrameBuffer(gl, shader)
+
+  return shader
 }
 
 function FieldShader(
@@ -494,6 +562,36 @@ function FieldShader(
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4)
 
   return shader
+}
+
+function initFrameBuffer(gl: GL, shader: Readonly<Shader>): void {
+  gl.bindTexture(gl.TEXTURE_2D, shader.textures[0]!)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    gl.canvas.width,
+    gl.canvas.height,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    null,
+  )
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, shader.frameBuf!)
+  gl.framebufferTexture2D(
+    gl.FRAMEBUFFER,
+    gl.COLOR_ATTACHMENT0,
+    gl.TEXTURE_2D,
+    shader.textures[0]!,
+    0,
+  )
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+  gl.bindTexture(gl.TEXTURE_2D, null)
 }
 
 function MapShader(gl: GL, map: Uint8Array): Shader {
