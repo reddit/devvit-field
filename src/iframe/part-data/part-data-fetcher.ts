@@ -197,7 +197,7 @@ export class PartDataFetcher {
 
     switch (msg.type) {
       case 'Cells': {
-        const {cells, key, workerID} = msg
+        const {cells, key, workerID, is404Err} = msg
         const worker = this.#workers.find(worker => worker.id === workerID)
         if (worker) {
           if (worker.state === 'Dying')
@@ -208,7 +208,7 @@ export class PartDataFetcher {
         const part = this.#part[makePartitionKey(key.partitionXY)]
         if (!part) break
 
-        part.resolve(utcMillisNow(), !!cells)
+        part.resolve(utcMillisNow(), !!cells, is404Err)
 
         if (!cells) break
 

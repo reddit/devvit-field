@@ -15,6 +15,11 @@ export class PartData {
   /** Pixel coords. */
   readonly xy: Readonly<XY>
 
+  /**
+   * Timing to offset successive guesses by if we're getting 404s.
+   * This can (and typically will) be negative to indicate adjusting guesses into the past.
+   */
+  #adaptiveGuessOffsetMillis: number = 0
   readonly #avail: {
     changed: Seq | NoSeq
     seq: Seq | NoSeq
@@ -37,6 +42,7 @@ export class PartData {
   #pending:
     | {
         readonly droppedPatches: number
+        readonly isGuess: boolean
         readonly kind: S3Kind
         readonly seq: Seq
       }
@@ -78,6 +84,7 @@ export class PartData {
 
     const inputs = _calcNextSeqInputs(
       this.#avail,
+      this.#adaptiveGuessOffsetMillis,
       this.#live,
       maxSeq,
       maxSeqUpdated,
@@ -100,7 +107,7 @@ export class PartData {
 
     if (!avail && guess && this.#live.globalPDFDebug) {
       console.debug(
-        `[pdf] guess xy=${this.partXY.x}-${this.partXY.y} seq=${guess.seq}${guess.kind === 'deltas' ? 'p' : 'r'} maxSeq=${maxSeq} maxSeqAge=${now - maxSeqUpdated} avail=${this.#avail.seq} changed=${this.#avail.changed}`,
+        `[pdf] guess xy=${this.partXY.x}-${this.partXY.y} seq=${guess.seq}${guess.kind === 'deltas' ? 'p' : 'r'} maxSeq=${maxSeq} maxSeqAge=${now - maxSeqUpdated} avail=${this.#avail.seq} changed=${this.#avail.changed} adapt=${this.#adaptiveGuessOffsetMillis}`,
       )
     }
 
@@ -115,6 +122,7 @@ export class PartData {
           this.#droppedPatches -
             ((avail ? inputs.avail : inputs.guess) % partitionPeriod),
         ),
+        isGuess: !avail && !!guess,
         kind: seq.kind,
         seq: seq.seq,
       }
@@ -155,7 +163,7 @@ export class PartData {
     this.#avail.updated = now
   }
 
-  resolve(now: UTCMillis, ok: boolean): void {
+  resolve(now: UTCMillis, ok: boolean, is404Err: boolean): void {
     if (!this.#pending) return
     if (ok) {
       this.#droppedPatches = Math.max(
@@ -167,6 +175,12 @@ export class PartData {
         this.#pending.seq
       this.#written[this.#pending.kind === 'deltas' ? 'patched' : 'replaced'] =
         now
+    }
+    if (is404Err) {
+      this.#adaptiveGuessOffsetMillis -= 500
+    } else if (!this.#pending.isGuess) {
+      // If we get an _avail_ response, backtrack on the adaptive guess offset.
+      this.#adaptiveGuessOffsetMillis /= 2
     }
     this.#pending = undefined
   }
@@ -182,6 +196,7 @@ export class PartData {
  */
 export function _calcNextSeqInputs(
   avail: {readonly changed: Seq | NoSeq; readonly updated: UTCMillis | 0},
+  adaptiveGuessOffsetMillis: number,
   live: {
     readonly globalPDFGuessAfterMillis: number
     readonly globalPDFGuessOffsetMillis: number
@@ -198,7 +213,13 @@ export function _calcNextSeqInputs(
 
   const guessOffset = Math.max(
     0,
-    Math.trunc((now - maxSeqUpdated + live.globalPDFGuessOffsetMillis) / 1_000),
+    Math.trunc(
+      (now -
+        maxSeqUpdated +
+        live.globalPDFGuessOffsetMillis +
+        adaptiveGuessOffsetMillis) /
+        1_000,
+    ),
   )
   possible.guess = Seq(maxSeq + guessOffset)
   return possible

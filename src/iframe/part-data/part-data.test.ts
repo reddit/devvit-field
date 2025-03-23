@@ -56,7 +56,15 @@ describe('_calcNextSeqInputs()', () => {
     const maxSeq = noSeq
     const maxSeqUpdated = 0
     const now = 2000 as UTCMillis
-    const possible = _calcNextSeqInputs(avail, live, maxSeq, maxSeqUpdated, now)
+    const offsetMillis = 0 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
     expect(possible).toStrictEqual({avail: -1, guess: -1})
   })
 
@@ -69,7 +77,15 @@ describe('_calcNextSeqInputs()', () => {
     const maxSeq = noSeq
     const maxSeqUpdated = 0
     const now = 2000 as UTCMillis
-    const possible = _calcNextSeqInputs(avail, live, maxSeq, maxSeqUpdated, now)
+    const offsetMillis = 0 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
     expect(possible).toStrictEqual({avail: avail.changed, guess: -1})
   })
 
@@ -82,7 +98,15 @@ describe('_calcNextSeqInputs()', () => {
     const maxSeq = Seq(2)
     const maxSeqUpdated = 1 as UTCMillis
     const now = 500 as UTCMillis
-    const possible = _calcNextSeqInputs(avail, live, maxSeq, maxSeqUpdated, now)
+    const offsetMillis = 0 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
     expect(possible).toStrictEqual({avail: avail.changed, guess: -1})
   })
 
@@ -95,7 +119,15 @@ describe('_calcNextSeqInputs()', () => {
     const maxSeq = Seq(2)
     const maxSeqUpdated = 1 as UTCMillis
     const now = 2000 as UTCMillis
-    const possible = _calcNextSeqInputs(avail, live, maxSeq, maxSeqUpdated, now)
+    const offsetMillis = 0 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
     expect(possible).toStrictEqual({avail: avail.changed, guess: maxSeq})
   })
 
@@ -108,7 +140,15 @@ describe('_calcNextSeqInputs()', () => {
     const maxSeq = Seq(2)
     const maxSeqUpdated = 1 as UTCMillis
     const now = 2000 as UTCMillis
-    const possible = _calcNextSeqInputs(avail, live, maxSeq, maxSeqUpdated, now)
+    const offsetMillis = 0 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
     expect(possible).toStrictEqual({avail: avail.changed, guess: maxSeq})
   })
 
@@ -121,8 +161,37 @@ describe('_calcNextSeqInputs()', () => {
     const maxSeq = Seq(2)
     const maxSeqUpdated = 1 as UTCMillis
     const now = 2001 as UTCMillis
-    const possible = _calcNextSeqInputs(avail, live, maxSeq, maxSeqUpdated, now)
+    const offsetMillis = 0 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
     expect(possible).toStrictEqual({avail: avail.changed, guess: 3})
+  })
+
+  test('guess accounts for adjusted offset', () => {
+    const avail = {changed: Seq(1), updated: 1 as UTCMillis} as const
+    const live = {
+      globalPDFGuessAfterMillis: 1000,
+      globalPDFGuessOffsetMillis: -1000,
+    }
+    const maxSeq = Seq(2)
+    const maxSeqUpdated = 1 as UTCMillis
+    const now = 5001 as UTCMillis
+    const offsetMillis = -500 as UTCMillis
+    const possible = _calcNextSeqInputs(
+      avail,
+      offsetMillis,
+      live,
+      maxSeq,
+      maxSeqUpdated,
+      now,
+    )
+    expect(possible).toStrictEqual({avail: avail.changed, guess: 5})
   })
 })
 

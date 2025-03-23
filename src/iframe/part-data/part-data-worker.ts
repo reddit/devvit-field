@@ -40,9 +40,11 @@ class PartitionWorker {
       case 'Fetch': {
         const {key, partSize, workerID} = msg
         let rsp
+        let is404Err = false
         try {
           rsp = await fetchPart(key, this.#abortCtrl)
         } catch (err) {
+          is404Err = err instanceof FetchError404
           // Don't retry. Assume another update is coming soon.
           if (
             !this.#abortCtrl.signal.aborted &&
@@ -70,7 +72,7 @@ class PartitionWorker {
           }
         }
 
-        postMessage({type: 'Cells', cells, key, workerID})
+        postMessage({type: 'Cells', cells, key, workerID, is404Err})
 
         break
       }

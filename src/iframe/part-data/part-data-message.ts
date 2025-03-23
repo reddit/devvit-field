@@ -13,4 +13,5 @@ export type PartDataWorkerMessage = {
   cells: Delta[] | ArrayBuffer | undefined
   key: DeltaSnapshotKey
   workerID: V4
+  is404Err: boolean
 }
