@@ -45,6 +45,7 @@ export class BFTerminal extends LitElement {
 
     main {
       width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
@@ -173,15 +174,15 @@ export class BFTerminal extends LitElement {
             ?disabled='${!this.team || this.cooldown}'
             style='--width: 256px;'
           ></bf-button>
+          <bf-footer
+            flamingo='${this.globalScoreFlamingo}'
+            juiceBox='${this.globalScoreJuiceBox}'
+            lasagna='${this.globalScoreLasagna}'
+            sunshine='${this.globalScoreSunshine}'
+            team='${ifDefined(this.team)}'
+          ></bf-footer>
         </main>
 
-        <bf-footer
-          flamingo='${this.globalScoreFlamingo}'
-          juiceBox='${this.globalScoreJuiceBox}'
-          lasagna='${this.globalScoreLasagna}'
-          sunshine='${this.globalScoreSunshine}'
-          team='${ifDefined(this.team)}'
-        ></bf-footer>
       </div>
     `
   }
