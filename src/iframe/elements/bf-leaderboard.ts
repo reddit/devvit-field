@@ -68,7 +68,7 @@ export class BFLeaderboard extends LitElement {
     const lasagna = (this.lasagna / boxes) * 100
     const sunshine = (this.sunshine / boxes) * 100
     return html`
-      ${`${Math.trunc((claimed * 100) / boxes)}`}%
+      <span>${`${Math.trunc(claimed / boxes)}`}%</span>
       <div class='board'>
         <div class='bar flamingo' style='width: ${flamingo}%;'></div>
         <div class='bar juice-box' style='width: ${juiceBox}%;'></div>

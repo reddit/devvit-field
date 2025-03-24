@@ -186,12 +186,12 @@ export class BFFooter extends LitElement {
       score: number
     }[] = [
       {
-        id: 1,
-        score: this.juiceBox,
-      },
-      {
         id: 0,
         score: this.flamingo,
+      },
+      {
+        id: 1,
+        score: this.juiceBox,
       },
       {
         id: 2,
