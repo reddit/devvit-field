@@ -93,6 +93,7 @@ DevvitTest.it(
         t2: 't2_1cgemlvzgq',
         username: 'foo',
       },
+      globalStandings: [0, 0, 0, 0],
       team: 2,
       visible: 100,
     })
