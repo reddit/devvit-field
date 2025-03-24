@@ -248,7 +248,7 @@ export class WorkQueue {
 
   async #claimTasksUnderLock(n: number): Promise<Task[]> {
     const removed = await this.#timed('zRemRangeByScore', () =>
-      this.ctx.redis.zRemRangeByScore(claimsKey, 0, Date.now() - maxTaskAgeMs),
+      this.ctx.redis.zRemRangeByScore(tasksKey, 0, Date.now() - maxTaskAgeMs),
     )
     if (removed) {
       console.warn(`[workqueue] dropped ${removed} old tasks`)
@@ -355,6 +355,7 @@ export class WorkQueue {
         if (error instanceof Error && error.stack) {
           console.log(`workqueue: stack trace:\n${error.stack}`)
         }
+        await this.ctx.redis.zRem(claimsKey, [task.key!])
       } else {
         await sleep(task.attempts * 100 + 50 * Math.random())
         // Add back to claims queue with score adjusted back in time, to give
