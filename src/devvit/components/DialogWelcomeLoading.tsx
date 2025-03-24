@@ -8,7 +8,6 @@ import {
 } from '../../shared/theme'
 import {
   type Level,
-  levelBaseColor,
   levelHighlightColor,
   levelPascalCase,
 } from '../../shared/types/level'
@@ -33,12 +32,12 @@ export function DialogWelcomeLoading(
       buttonColor={cssHex(paletteDisabled)}
     >
       <BorderedContainer
-        height={80}
+        height={72}
         width={256}
         {...props}
         lines
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[props.level])}
+        borderColor={cssHex(levelHighlightColor[props.level])}
       >
         <PixelText
           {...props}
