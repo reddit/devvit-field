@@ -79,7 +79,7 @@ export const activePlayersGet = async ({
     ),
   )
 
-  return Math.trunc(
+  return Math.ceil(
     results.reduce<number>((acc, x) => acc + (x ?? 0), 0) /
       activePlayersLookBackWindow || 1,
   )
