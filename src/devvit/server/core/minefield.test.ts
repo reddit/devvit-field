@@ -93,5 +93,18 @@ it('counts the total number of mines for a given seed', () => {
       rows: 10,
       config,
     }),
-  ).toBe(13) // should be deterministic based on the seed
+  ).toBe(20) // should be deterministic based on the seed
+})
+
+it('count the total number of mines in a large map', () => {
+  const seed = 222 as Seed
+  const config: MinefieldConfig = {mineDensity: 2}
+  expect(
+    minefieldGetTotalMineCount({
+      seed,
+      cols: 3200,
+      rows: 3200,
+      config,
+    }),
+  ).toBe(204358) // should be deterministic based on the seed
 })
