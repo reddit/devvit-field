@@ -71,6 +71,7 @@ export class Game {
   // to-do: SavableGame for LocalStorage savable state.
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
   ac: AudioContext
+  activePlayerHeartbeat: number = 0
   appConfig: AppConfig = getDefaultAppConfig()
   assets: AssetMap | undefined
   atlas: Atlas<Tag>
@@ -269,6 +270,8 @@ export class Game {
 
     this.partDataFetcher.resume()
 
+    this.#resumeActivePlayerHeartbeat(false)
+
     document.body.style.background = cssHex(paletteBlack)
     // Transition from invisible. No line height spacing.
     this.canvas.style.display = 'block'
@@ -287,6 +290,7 @@ export class Game {
     this.looper?.cancel()
     this.looper?.register('remove')
     this.ctrl?.register('remove')
+    this.#pauseActivePlayerHeartbeat()
   }
 
   #clearLoadingForPart(partXY: Readonly<XY>): void {
@@ -620,6 +624,8 @@ export class Game {
       case 'ConfigUpdate':
         this.appConfig = msg.config
         this.partDataFetcher.setLiveConfig(this.appConfig)
+        this.#pauseActivePlayerHeartbeat()
+        this.#resumeActivePlayerHeartbeat(true)
         console.log('live config updated', msg.config)
         break
       case 'SetTimeout':
@@ -699,6 +705,26 @@ export class Game {
       }
 
     this.#invalidatePart(partXY)
+  }
+
+  #resumeActivePlayerHeartbeat(jitter: boolean): void {
+    const heartbeatInterval = this.appConfig.globalActivePlayerHeartbeatMillis
+    const jitterTime = jitter ? Math.random() * heartbeatInterval : 0
+    console.log(
+      'resuming heartbeat with interval',
+      this.appConfig.globalActivePlayerHeartbeatMillis,
+      'after jitter',
+      jitterTime,
+    )
+    setTimeout(() => {
+      this.activePlayerHeartbeat = setInterval(() => {
+        this.postMessage({type: 'ActivePlayerHeartbeat'})
+      }, heartbeatInterval)
+    }, jitterTime)
+  }
+
+  #pauseActivePlayerHeartbeat(): void {
+    clearInterval(this.activePlayerHeartbeat)
   }
 
   #onResize = (): void => {}

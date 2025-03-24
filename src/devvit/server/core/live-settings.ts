@@ -5,6 +5,7 @@ import {
   getDefaultAppConfig,
 } from '../../../shared/types/app-config.js'
 import type {ConfigUpdateMessage} from '../../../shared/types/message'
+import {type UTCMillis, utcMillisNow} from '../../../shared/types/time.js'
 
 // Global settings key
 const globalSettingsKey: string = 'global:settings'
@@ -90,4 +91,38 @@ export async function liveSettingsGet(
     ...JSON.parse(globalSettingsJson || '{}'),
     ...JSON.parse(installationSettingsJson || '{}'),
   }
+}
+
+// While it's a little inappropriate to be storing and reading things outside
+// of the request context, this prevents a barrage of requests to redis for the
+// same global settings that don't update often.
+type CachedAppConfig = {
+  config: AppConfig
+  lastUpdatedUtc: UTCMillis | 0
+}
+const globalSettingsCache: CachedAppConfig = {
+  config: getDefaultAppConfig(),
+  lastUpdatedUtc: 0,
+}
+
+/**
+ * Get the global settings from Redis, but cached if they were fetched within the last minute
+ * from this process. This should be used when the settings are needed frequently across
+ * user requests.
+ */
+export async function liveSettingsGetGlobalCached(
+  ctx: Pick<Context, 'redis'>,
+): Promise<AppConfig> {
+  // Update settings once/minute
+  if (Date.now() - globalSettingsCache.lastUpdatedUtc < 1000 * 60) {
+    return globalSettingsCache.config
+  }
+
+  const globalSettingsJson = await ctx.redis.global.get(globalSettingsKey)
+  globalSettingsCache.lastUpdatedUtc = utcMillisNow()
+  globalSettingsCache.config = {
+    ...getDefaultAppConfig(),
+    ...JSON.parse(globalSettingsJson || '{}'),
+  }
+  return globalSettingsCache.config
 }

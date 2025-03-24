@@ -92,6 +92,8 @@ export type IframeMessage =
   | {type: 'OpenLeaderboard'}
   /** The entire app should be reloaded. */
   | {type: 'ReloadApp'}
+  /** Send a heartbeat that this player is active */
+  | {type: 'ActivePlayerHeartbeat'}
   /** Only lives here because the iFrame produces Jitter and forwards us this message back over to block to handle */
   | ChallengeCompleteMessage
 

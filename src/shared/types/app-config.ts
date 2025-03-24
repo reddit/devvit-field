@@ -10,10 +10,10 @@ export type AppConfig = {
   globalClickCooldownMillis: number
 
   /**
-   * How long clients should wait before polling the server for updates.
-   * Configured globally.
+   * How often clients should send a heartbeat to the server for their
+   * active player status.
    */
-  globalServerPollingTimeMillis: number
+  globalActivePlayerHeartbeatMillis: number
 
   /**
    * If this counter is changed, all clients should reload the page.
@@ -58,7 +58,7 @@ export type AppConfig = {
 export function getDefaultAppConfig(): AppConfig {
   return {
     globalClickCooldownMillis: 1000,
-    globalServerPollingTimeMillis: 60_000,
+    globalActivePlayerHeartbeatMillis: 30_000,
     globalReloadSequence: 0,
     globalPDFDebug: 0,
     globalPDFGuessAfterMillis: 10_000,

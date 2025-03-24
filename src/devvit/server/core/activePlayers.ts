@@ -1,8 +1,8 @@
 import {gauge} from '@devvit/metrics'
 import type {Context} from '@devvit/public-api'
 import {type Team, teamPascalCase, teams} from '../../../shared/team'
+import {liveSettingsGetGlobalCached} from './live-settings'
 
-const activePlayersSecondsInterval = 30
 const activePlayersLookBackWindow = 3
 
 const metrics = {
@@ -38,8 +38,6 @@ function getLastNIntervalTimestamps(
 // member is going to be a guessable interval timestamp
 // score is going to incrementing int
 
-// TODO: configurable polling
-
 export const activePlayersIncrement = async ({
   redis,
   team,
@@ -47,14 +45,17 @@ export const activePlayersIncrement = async ({
   redis: Context['redis']
   team: Team
 }): Promise<void> => {
+  const activePlayersSecondsInterval =
+    (await liveSettingsGetGlobalCached({redis}))
+      .globalActivePlayerHeartbeatMillis / 1000
   const interval = getIntervalStartTimestamp(
     activePlayersSecondsInterval,
   ).toString()
-  const value = await redis.zIncrBy(getActivePlayersKey(team), interval, 1)
+  await redis.zIncrBy(getActivePlayersKey(team), interval, 1)
 
-  console.log(
-    `Increment active players for ${team} to ${value} for interval ${interval}`,
-  )
+  // console.log(
+  //   `Increment active players for ${team} to ${value} for interval ${interval}`,
+  // )
 }
 
 export const activePlayersGet = async ({
@@ -62,6 +63,9 @@ export const activePlayersGet = async ({
 }: {
   redis: Context['redis']
 }): Promise<number> => {
+  const activePlayersSecondsInterval =
+    (await liveSettingsGetGlobalCached({redis}))
+      .globalActivePlayerHeartbeatMillis / 1000
   const lastNTimestamps = getLastNIntervalTimestamps(
     activePlayersSecondsInterval,
     activePlayersLookBackWindow,

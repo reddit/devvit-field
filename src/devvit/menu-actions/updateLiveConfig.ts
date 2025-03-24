@@ -33,12 +33,12 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
         },
         {
           type: 'number',
-          name: 'globalServerPollingTimeMillis',
-          label: 'Server polling time (ms)',
+          name: 'globalActivePlayerHeartbeatMillis',
+          label: 'Active heartbeat interval (ms)',
           defaultValue:
-            current.globalServerPollingTimeMillis ??
-            defaults.globalServerPollingTimeMillis,
-          helpText: `How long clients should wait before polling the server for updates (default ${defaults.globalServerPollingTimeMillis}).`,
+            current.globalActivePlayerHeartbeatMillis ??
+            defaults.globalActivePlayerHeartbeatMillis,
+          helpText: `How often clients should send a heartbeat to the server (default ${defaults.globalActivePlayerHeartbeatMillis}).`,
           required: true,
         },
         {
@@ -132,7 +132,7 @@ export const updateLiveConfigFormKey: FormKey = Devvit.createForm(
 function validateLiveConfig(newConfig: AppConfig): void {
   if (
     !Number.isInteger(newConfig.globalClickCooldownMillis) ||
-    !Number.isInteger(newConfig.globalServerPollingTimeMillis) ||
+    !Number.isInteger(newConfig.globalActivePlayerHeartbeatMillis) ||
     !Number.isInteger(newConfig.globalReloadSequence)
   ) {
     throw new Error(
@@ -148,7 +148,7 @@ function validateLiveConfig(newConfig: AppConfig): void {
     throw new Error('Reload sequence must be greater than or equal to 0')
   }
 
-  if (newConfig.globalServerPollingTimeMillis < 250) {
+  if (newConfig.globalActivePlayerHeartbeatMillis < 250) {
     throw new Error(
       'Server polling time must be greater than or equal to 250ms',
     )

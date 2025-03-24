@@ -1,5 +1,5 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, useAsync, useInterval} from '@devvit/public-api'
+import {Devvit, useAsync} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {INSTALL_REALTIME_CHANNEL} from '../../shared/const.ts'
@@ -109,14 +109,6 @@ export function App(ctx: Devvit.Context): JSX.Element {
       />
     )
   }
-
-  const activePlayerInterval = useInterval(async () => {
-    await activePlayersIncrement({
-      redis: ctx.redis,
-      team: appState.team,
-    })
-  }, 30_000)
-  activePlayerInterval.start()
 
   const postMessageChallengeEndedStay = ({
     profile,
@@ -425,6 +417,14 @@ export function App(ctx: Devvit.Context): JSX.Element {
       }
       case 'ChallengeComplete': {
         setChallengeEndedState(msg)
+        break
+      }
+      case 'ActivePlayerHeartbeat': {
+        if (appState.status !== 'pass') break
+        await activePlayersIncrement({
+          redis: ctx.redis,
+          team: appState.team,
+        })
         break
       }
 
