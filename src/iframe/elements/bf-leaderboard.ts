@@ -61,12 +61,13 @@ export class BFLeaderboard extends LitElement {
   @property({type: Number}) accessor sunshine: number = 0
 
   protected override render(): TemplateResult {
-    const boxes = this.boxes - this.bans || 1
+    const boxes = this.boxes || 1 // don't want to divide by zero
     const claimed = this.flamingo + this.juiceBox + this.lasagna + this.sunshine
     const flamingo = (this.flamingo / boxes) * 100
     const juiceBox = (this.juiceBox / boxes) * 100
     const lasagna = (this.lasagna / boxes) * 100
     const sunshine = (this.sunshine / boxes) * 100
+
     return html`
       <span>${`${Math.trunc(claimed / boxes)}`}%</span>
       <div class='board'>

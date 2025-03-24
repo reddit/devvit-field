@@ -151,8 +151,8 @@ export class BFTerminal extends LitElement {
           <bf-header
             sub='${ifDefined(this.sub)}'
             players='${this.players}'
-            bans='${this.fieldBans}'
-            boxes='${this.fieldBoxes}'
+            fieldBans='${this.fieldBans}'
+            fieldBoxes='${this.fieldBoxes}'
             flamingo='${this.challengeScoreFlamingo}'
             juiceBox='${this.challengeScoreJuiceBox}'
             lasagna='${this.challengeScoreLasagna}'
