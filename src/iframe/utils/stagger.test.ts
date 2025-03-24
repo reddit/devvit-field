@@ -44,12 +44,14 @@ describe('stagger', async () => {
     const renders = new Map<number, number>()
     const seen = new Array<boolean>(640_000).fill(false)
     const start = performance.now()
-    const p = staggerMap(elems, 1_000, (v: number) => {
-      if (seen[v]) {
-        dupes++
+    const p = staggerMap(elems, 1_000, (v: number[]) => {
+      for (const vv of v) {
+        if (seen[vv]) {
+          dupes++
+        }
+        seen[vv] = true
+        renders.set(frameCount, (renders.get(frameCount) ?? 0) + 1)
       }
-      seen[v] = true
-      renders.set(frameCount, (renders.get(frameCount) ?? 0) + 1)
     })
 
     for (let f = 1; f <= 61; f++) {

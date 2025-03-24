@@ -676,14 +676,16 @@ export class Game {
       }
       this.#invalidatePart(partXY)
     } else
-      staggerMap(boxes, 1_000, ({globalXY, isBan, team}) => {
-        // console.log(
-        //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
-        // )
+      staggerMap(boxes, 1_000, cells => {
         if (!this.fieldConfig) return
-        const i = fieldArrayIndex(this.fieldConfig, globalXY)
-        if (isBan) this.field[i] = fieldArrayColorBan
-        else fieldArraySetTeam(this.field, i, team)
+        for (const {globalXY, isBan, team} of cells) {
+          // console.log(
+          //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
+          // )
+          const i = fieldArrayIndex(this.fieldConfig, globalXY)
+          if (isBan) this.field[i] = fieldArrayColorBan
+          else fieldArraySetTeam(this.field, i, team)
+        }
         this.#invalidatePart(partXY)
       })
   }

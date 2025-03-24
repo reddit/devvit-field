@@ -1,7 +1,7 @@
 export async function staggerMap<T>(
   elems: readonly T[],
   durMs: number,
-  fn: (elem: T) => void,
+  fn: (elems: T[]) => void,
 ): Promise<void> {
   if (!elems?.length) {
     return
@@ -27,27 +27,32 @@ export async function staggerMap<T>(
 }
 
 class ScheduledProcessor<T> {
-  readonly #elems: Readonly<T[]>
+  readonly #elems: readonly T[]
   #arrivals: number[]
-  #fn: (elem: T) => void
+  #fn: (elems: T[]) => void
   #idx: number = 0
 
-  constructor(elems: Readonly<T[]>, arrivals: number[], fn: (elem: T) => void) {
+  constructor(
+    elems: readonly T[],
+    arrivals: number[],
+    fn: (elem: T[]) => void,
+  ) {
     this.#elems = elems
     this.#arrivals = arrivals
     this.#fn = fn
   }
 
   processAt(elapsedMs: number): boolean {
+    const elems = []
     // Consume head of elems with past arrival times.
     let nextIdx: number
     for (
       nextIdx = this.#idx;
       nextIdx < this.#arrivals.length && this.#arrivals[nextIdx]! <= elapsedMs;
       nextIdx++
-    ) {
-      this.#fn(this.#elems[nextIdx]!)
-    }
+    )
+      elems.push(this.#elems[nextIdx]!)
+    if (elems.length) this.#fn(elems)
     this.#idx = nextIdx
     return this.#idx < this.#arrivals.length
   }
