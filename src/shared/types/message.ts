@@ -68,6 +68,8 @@ export type InitDevvitMessage = {
   initialMapKey?: DeltaSnapshotKey
   /** Will be true if this is the init message to play a new challenge */
   reinit?: boolean
+  /** The global leaderboard state */
+  globalStandings: TeamBoxCounts
 }
 
 /** The Devvit API wraps all messages from Blocks to the iframe. */
@@ -136,6 +138,7 @@ export type LeaderboardUpdate = {
   teamBoxCounts: TeamBoxCounts
   bannedPlayers: number
   activePlayers: number
+  globalStandings: TeamBoxCounts
 }
 
 export type ConfigUpdateMessage = {

@@ -243,6 +243,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       visible,
       initialGlobalXY,
       reinit,
+      globalStandings: state.globalStandings,
     }
     if (initialMapKey) {
       msg.initialMapKey = initialMapKey

@@ -19,6 +19,7 @@ import {
 import {fieldEndGame} from '../core/field.ts'
 import {teamStatsCellsClaimedGetTotal} from '../core/leaderboards/challenge/team.cellsClaimed.ts'
 import {teamStatsMinesHitGet} from '../core/leaderboards/challenge/team.minesHit'
+import {leaderboardGet} from '../core/leaderboards/global/leaderboard.ts'
 import {computeScore} from '../core/score.ts'
 
 const metrics = {
@@ -53,15 +54,17 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   })
   if (!config) return
 
-  const [leaderboard, banned, activePlayers] = await Promise.all([
-    teamStatsCellsClaimedGetTotal(ctx.redis, currentChallengeNumber, 'DESC'),
-    teamStatsMinesHitGet({
-      challengeNumber: currentChallengeNumber,
-      redis: ctx.redis,
-      sort: 'DESC',
-    }),
-    activePlayersGet({redis: ctx.redis}),
-  ])
+  const [challengeLeaderboard, banned, activePlayers, globalStandings] =
+    await Promise.all([
+      teamStatsCellsClaimedGetTotal(ctx.redis, currentChallengeNumber, 'DESC'),
+      teamStatsMinesHitGet({
+        challengeNumber: currentChallengeNumber,
+        redis: ctx.redis,
+        sort: 'DESC',
+      }),
+      activePlayersGet({redis: ctx.redis}),
+      leaderboardGet({redis: ctx.redis, sort: 'DESC'}),
+    ])
 
   const bannedPlayers = banned.reduce((acc, x) => acc + x.score, 0)
   for (const team of banned) {
@@ -70,9 +73,10 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
 
   // Zeroes from Redis aren't necessarily initialized. Set them here to
   // ensure we score all teams.
-  const teams = fillAndSortByTeamNumber(leaderboard)
+  const challengeLeaderboardTeams =
+    fillAndSortByTeamNumber(challengeLeaderboard)
 
-  for (const team of teams) {
+  for (const team of challengeLeaderboardTeams) {
     metrics.score.labels(teamPascalCase[team.member]).set(team.score)
   }
 
@@ -81,22 +85,31 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   if (startedStr) startTimeMs = parseFloat(startedStr) || 0
 
   // Whether or not the challenge is over determines what event we emit
-  const score = computeScore({size: config.size, teams, startTimeMs})
+  const score = computeScore({
+    size: config.size,
+    teams: challengeLeaderboardTeams,
+    startTimeMs,
+  })
   if (score.isOver) {
     // Fire a challenge complete event and start the new challenge!
     await fieldEndGame(
       ctx,
       currentChallengeNumber,
-      teams,
+      challengeLeaderboardTeams,
       config.targetGameDurationSeconds,
       score,
     )
   } else {
     const message: LeaderboardUpdate = {
       type: 'LeaderboardUpdate',
-      teamBoxCounts: teams.map(x => x.score) as TeamBoxCounts,
+      teamBoxCounts: challengeLeaderboardTeams.map(
+        x => x.score,
+      ) as TeamBoxCounts,
       bannedPlayers,
       activePlayers,
+      globalStandings: fillAndSortByTeamNumber(globalStandings).map(
+        x => x.score,
+      ) as TeamBoxCounts,
     }
     await ctx.realtime.send(INSTALL_REALTIME_CHANNEL, message)
   }

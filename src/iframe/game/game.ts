@@ -115,6 +115,7 @@ export class Game {
   t5: T5 = noT5
   team: Team | undefined
   teamBoxCounts: TeamBoxCounts | undefined
+  globalStandings: TeamBoxCounts | undefined
   ui: BFGame
   /** Number of boxes in the field visible; [0, field size]. */
   visible: number | undefined
@@ -379,6 +380,7 @@ export class Game {
           type: 'Init',
           visible,
           initialGlobalXY: {x: 0, y: 0},
+          globalStandings: [0, 0, 0, 0],
         })
       },
       Math.trunc(rnd.num * 1000),
@@ -637,6 +639,7 @@ export class Game {
         this.teamBoxCounts = msg.teamBoxCounts
         this.bannedPlayers = msg.bannedPlayers
         this.players = msg.activePlayers
+        this.globalStandings = msg.globalStandings
         this.canvas.dispatchEvent(Bubble('game-update', undefined))
         break
       case 'BatchMessage':

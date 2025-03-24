@@ -7,7 +7,7 @@ import {
 } from '../../../shared/team'
 import type {XY} from '../../../shared/types/2d'
 import {type LevelConfig, config2} from '../../../shared/types/level'
-import type {DialogMessage} from '../../../shared/types/message'
+import type {DialogMessage, TeamBoxCounts} from '../../../shared/types/message'
 import {activePlayersIncrement} from './activePlayers'
 import {
   challengeConfigGet,
@@ -17,6 +17,7 @@ import {
 import {fieldGetPartitionMapLatestSnapshotKey} from './field'
 import {teamStatsCellsClaimedGetTotal} from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitGet} from './leaderboards/challenge/team.minesHit'
+import {leaderboardGet} from './leaderboards/global/leaderboard'
 import {levelsIsUserInRightPlace} from './levels'
 import {liveSettingsGet} from './live-settings'
 import {getPathPrefix} from './s3'
@@ -39,6 +40,7 @@ export type AppState =
         ReturnType<typeof teamStatsCellsClaimedGetTotal>
       >
       minesHitByTeam: Awaited<ReturnType<typeof teamStatsMinesHitGet>>
+      globalStandings: TeamBoxCounts
       initialGlobalXY: XY
       visible: number
       level: LevelConfig
@@ -89,20 +91,25 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     return {status: 'dialog', ...rest, profile}
   }
 
-  const [challengeConfig, initialCellsClaimed, minesHitByTeam] =
-    await Promise.all([
-      challengeConfigGet({
-        redis: ctx.redis,
-        subredditId: ctx.subredditId,
-        challengeNumber,
-      }),
-      teamStatsCellsClaimedGetTotal(ctx.redis, challengeNumber, 'DESC'),
-      teamStatsMinesHitGet({
-        challengeNumber,
-        redis: ctx.redis,
-        sort: 'DESC',
-      }),
-    ])
+  const [
+    challengeConfig,
+    initialCellsClaimed,
+    minesHitByTeam,
+    globalStandings,
+  ] = await Promise.all([
+    challengeConfigGet({
+      redis: ctx.redis,
+      subredditId: ctx.subredditId,
+      challengeNumber,
+    }),
+    teamStatsCellsClaimedGetTotal(ctx.redis, challengeNumber, 'DESC'),
+    teamStatsMinesHitGet({
+      challengeNumber,
+      redis: ctx.redis,
+      sort: 'DESC',
+    }),
+    leaderboardGet({redis: ctx.redis, sort: 'DESC'}),
+  ])
 
   const initialGlobalXY: XY = {
     x: Math.trunc(Math.random() * challengeConfig.size),
@@ -149,6 +156,9 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     visible,
     level,
     minesHitByTeam,
+    globalStandings: fillAndSortByTeamNumber(globalStandings).map(
+      x => x.score,
+    ) as TeamBoxCounts,
     team,
   }
 }

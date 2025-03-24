@@ -115,10 +115,14 @@ export class BFTerminal extends LitElement {
   @property({type: Number}) accessor fieldBans: number = 0
   @property({type: Number}) accessor fieldBoxes: number = 0
   /** Boxes scored. */
-  @property({type: Number}) accessor flamingo: number = 0
-  @property({type: Number}) accessor juiceBox: number = 0
-  @property({type: Number}) accessor lasagna: number = 0
-  @property({type: Number}) accessor sunshine: number = 0
+  @property({type: Number}) accessor challengeScoreFlamingo: number = 0
+  @property({type: Number}) accessor challengeScoreJuiceBox: number = 0
+  @property({type: Number}) accessor challengeScoreLasagna: number = 0
+  @property({type: Number}) accessor challengeScoreSunshine: number = 0
+  @property({type: Number}) accessor globalScoreFlamingo: number = 0
+  @property({type: Number}) accessor globalScoreJuiceBox: number = 0
+  @property({type: Number}) accessor globalScoreLasagna: number = 0
+  @property({type: Number}) accessor globalScoreSunshine: number = 0
   @property({type: Number}) accessor level: Level | undefined
   @property({type: Boolean}) accessor loading: boolean = false
   @property({type: Boolean}) accessor online: boolean = false
@@ -149,10 +153,10 @@ export class BFTerminal extends LitElement {
             players='${this.players}'
             bans='${this.fieldBans}'
             boxes='${this.fieldBoxes}'
-            flamingo='${this.flamingo}'
-            juiceBox='${this.juiceBox}'
-            lasagna='${this.lasagna}'
-            sunshine='${this.sunshine}'
+            flamingo='${this.challengeScoreFlamingo}'
+            juiceBox='${this.challengeScoreJuiceBox}'
+            lasagna='${this.challengeScoreLasagna}'
+            sunshine='${this.challengeScoreSunshine}'
           ></bf-header>
 
           <div class='canvas-box'>
@@ -172,10 +176,10 @@ export class BFTerminal extends LitElement {
         </main>
 
         <bf-footer
-          flamingo='${this.flamingo}'
-          juiceBox='${this.juiceBox}'
-          lasagna='${this.lasagna}'
-          sunshine='${this.sunshine}'
+          flamingo='${this.globalScoreFlamingo}'
+          juiceBox='${this.globalScoreJuiceBox}'
+          lasagna='${this.globalScoreLasagna}'
+          sunshine='${this.globalScoreSunshine}'
           team='${ifDefined(this.team)}'
         ></bf-footer>
       </div>
