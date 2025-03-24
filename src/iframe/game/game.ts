@@ -8,6 +8,7 @@ import {
   getDefaultAppConfig,
 } from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
+import type {Delta} from '../../shared/types/field.ts'
 import {
   type Level,
   type LevelPascalCase,
@@ -36,7 +37,6 @@ import type {Atlas} from '../graphics/atlas.ts'
 import {type DefaultButton, Input} from '../input/input.ts'
 import {
   PartDataFetcher,
-  type RenderPatch,
   type RenderReplace,
 } from '../part-data/part-data-fetcher.ts'
 import {BmpAttribBuffer} from '../renderer/attrib-buffer.ts'
@@ -585,7 +585,7 @@ export class Game {
           cells[0].globalXY,
           this.fieldConfig.partSize,
         )
-        this.#renderPatch(cells, partXY)
+        this.#renderPatch(cells, partXY, 'Immediate')
 
         break
       }
@@ -658,21 +658,34 @@ export class Game {
     this.partDataFetcher.pause()
   }
 
-  #renderPatch: RenderPatch = (boxes, partXY) => {
+  #renderPatch = (
+    boxes: readonly Delta[],
+    partXY: Readonly<XY>,
+    mode: 'Immediate' | 'Stagger' = 'Stagger',
+  ) => {
     if (!this.fieldConfig) return
 
     this.#clearLoadingForPart(partXY) // Must be called for any partition write.
 
-    staggerMap(boxes, 1_000, ({globalXY, isBan, team}) => {
-      // console.log(
-      //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
-      // )
+    if (mode === 'Immediate') {
       if (!this.fieldConfig) return
-      const i = fieldArrayIndex(this.fieldConfig, globalXY)
-      if (isBan) this.field[i] = fieldArrayColorBan
-      else fieldArraySetTeam(this.field, i, team)
+      for (const {globalXY, isBan, team} of boxes) {
+        const i = fieldArrayIndex(this.fieldConfig, globalXY)
+        if (isBan) this.field[i] = fieldArrayColorBan
+        else fieldArraySetTeam(this.field, i, team)
+      }
       this.#invalidatePart(partXY)
-    })
+    } else
+      staggerMap(boxes, 1_000, ({globalXY, isBan, team}) => {
+        // console.log(
+        //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
+        // )
+        if (!this.fieldConfig) return
+        const i = fieldArrayIndex(this.fieldConfig, globalXY)
+        if (isBan) this.field[i] = fieldArrayColorBan
+        else fieldArraySetTeam(this.field, i, team)
+        this.#invalidatePart(partXY)
+      })
   }
 
   #renderReplace: RenderReplace = (buf, partXY) => {
