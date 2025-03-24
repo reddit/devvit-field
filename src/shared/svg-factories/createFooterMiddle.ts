@@ -1,6 +1,7 @@
 import {
   cssHex,
   paletteBlack,
+  paletteConsole,
   paletteShade80,
   paletteTint6,
   paletteTint19,
@@ -80,7 +81,7 @@ export function createFooterMiddle(): string {
   const bottomTint = ['M0,76', `H${MIDDLE_WIDTH}`, 'V100', 'H0']
 
   const insetContainer = [
-    `M${CAP_WIDTH},8`,
+    'M0,8',
     `H${MIDDLE_WIDTH}`,
     `M${CAP_WIDTH},76`,
     `H${MIDDLE_WIDTH}`,
@@ -145,5 +146,5 @@ export function createFooterMiddle(): string {
     `H${MIDDLE_WIDTH}`,
   ]
 
-  return `<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${insetContainer.join('')}${createTextureLine(cx2 + 16, 69)}${createTextureLine(cx1 - 16, 69, true)}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /><path d="${wingsDark.join('')}" stroke-width="1" stroke="${cssHex(paletteShade80)}" fill="none" /><path d="${wingsLight.join('')}${bottomRidgeTop.join('')}${createTextureLine(cx2 + 16, 68)}${createTextureLine(cx1 - 16, 68, true)}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /><path d="${bottomRidgeBottom.join('')}" stroke-width="1" stroke="${cssHex(paletteTint6)}" fill="none" /></svg>`
+  return `<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="${cssHex(paletteConsole)}" /><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${insetContainer.join('')}${createTextureLine(cx2 + 16, 69)}${createTextureLine(cx1 - 16, 69, true)}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /><path d="${wingsDark.join('')}" stroke-width="1" stroke="${cssHex(paletteShade80)}" fill="none" /><path d="${wingsLight.join('')}${bottomRidgeTop.join('')}${createTextureLine(cx2 + 16, 68)}${createTextureLine(cx1 - 16, 68, true)}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /><path d="${bottomRidgeBottom.join('')}" stroke-width="1" stroke="${cssHex(paletteTint6)}" fill="none" /></svg>`
 }
