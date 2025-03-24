@@ -23,7 +23,7 @@ export class BFLeaderboard extends LitElement {
     :host {
       display: flex;
       flex-direction: row;
-      column-gap: ${spacePx / 2}px;
+      column-gap: ${spacePx}px;
       color: var(--color-theme);
       font-size: 12px;
       width: 100%;
