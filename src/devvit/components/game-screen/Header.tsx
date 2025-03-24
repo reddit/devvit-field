@@ -6,7 +6,6 @@ import {
   paletteBlack,
   paletteField,
   paletteFieldLight,
-  paletteTint60,
 } from '../../../shared/theme'
 import {PixelText} from '../PixelText'
 
@@ -65,33 +64,15 @@ export function Header(props: HeaderProps): JSX.Element {
     </hstack>
   )
 
-  const topRow = (
-    <hstack alignment='middle'>
-      <PixelText {...props} size={16} color={cssHex(paletteFieldLight)}>
-        {localize('point-claim-title')}
-      </PixelText>
-      <spacer grow />
-      <hstack
-        height='16px'
-        width='16px'
-        alignment='center middle'
-        borderColor={cssHex(paletteTint60)}
-        cornerRadius='full'
-      >
-        <PixelText {...props} size={12} color={cssHex(paletteTint60)}>
-          ?
-        </PixelText>
-      </hstack>
-    </hstack>
-  )
-
   return (
     <zstack width='100%' height={`${CAP_HEIGHT}px`} onPress={props.onPress}>
       {background}
       <hstack width='100%' height='100%'>
         <spacer width='8px' />
         <vstack grow height='100%' alignment='middle'>
-          {topRow}
+          <PixelText {...props} size={16} color={cssHex(paletteFieldLight)}>
+            {localize('point-claim-title')}
+          </PixelText>
           <spacer height='2px' />
           <spacer height='12px' />
         </vstack>
