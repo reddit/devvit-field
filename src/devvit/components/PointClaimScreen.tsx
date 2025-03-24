@@ -7,7 +7,6 @@ import {
   paletteBlack,
   paletteConsole,
   paletteDisabled,
-  paletteField,
   paletteFieldLight,
 } from '../../shared/theme'
 import {StyledButton} from './StyledButton'
