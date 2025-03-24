@@ -45,8 +45,6 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
           width='100%'
           grow
           backgroundColor={cssHex(paletteBlack)}
-          border='thin'
-          borderColor={cssHex(paletteField)}
           padding='small'
           alignment='center middle'
         >
