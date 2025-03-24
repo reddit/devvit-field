@@ -40,7 +40,7 @@ void main() {
      fracXY.y < borderW || fracXY.y > 1.0 - borderW)
   ) {
     bool loading = color == ${fieldArrayColorLoading}u;
-    highp vec4 alpha = loading ? vec4(1, 1, 1, abs(float(uFrame % 120u) / 60. - 1.)) : vec4(1, 1, 1, 1);
+    highp vec4 alpha = loading ? vec4(1, 1, 1, (.3 + abs(float(uFrame % 120u) * .4 / 60. - .4))) : vec4(1, 1, 1, 1);
     oRGBA = rgbaToVec4(uGridRGBA) * alpha;
     return;
   }
