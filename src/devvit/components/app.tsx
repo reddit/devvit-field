@@ -15,6 +15,10 @@ import type {
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
+import {
+  parseDevvitUserAgent,
+  shouldShowUpgradeAppScreen,
+} from '../appUpgradeUtils.ts'
 import {useSession} from '../hooks/use-session.ts'
 import {useState2} from '../hooks/use-state2.ts'
 import {activePlayersIncrement} from '../server/core/activePlayers.js'
@@ -26,6 +30,7 @@ import {DialogBeatGame} from './DialogBeatGame.tsx'
 import {DialogHowToPlay} from './DialogHowToPlay.tsx'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
+import {DialogUnsupportedClient} from './DialogUnsupportedClient.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
 import {DialogWelcome} from './DialogWelcome.tsx'
 import {LeaderboardController} from './LeaderboardController.tsx'
@@ -41,6 +46,20 @@ export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
 export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
 export function App(ctx: Devvit.Context): JSX.Element {
+  const parsedUserAgent = parseDevvitUserAgent(
+    ctx.debug.metadata['devvit-user-agent']?.values?.[0] ?? '',
+  )
+
+  if (parsedUserAgent && shouldShowUpgradeAppScreen(parsedUserAgent)) {
+    return (
+      <DialogUnsupportedClient
+        pixelRatio={ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio}
+        level={0}
+        platform={parsedUserAgent.platform}
+      />
+    )
+  }
+
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
 
   if (ctx.subredditId === config2.leaderboard.subredditId) {
