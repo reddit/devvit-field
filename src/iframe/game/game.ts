@@ -6,7 +6,6 @@ import {type XY, xyEq} from '../../shared/types/2d.ts'
 import {
   type AppConfig,
   getDefaultAppConfig,
-  mapSize,
 } from '../../shared/types/app-config.ts'
 import type {FieldConfig} from '../../shared/types/field-config.ts'
 import {
@@ -51,6 +50,7 @@ import {
   fieldArraySetTeam,
 } from '../renderer/field-array.ts'
 import {Renderer} from '../renderer/renderer.ts'
+import {mapSize} from '../ui.ts'
 import {staggerMap} from '../utils/stagger.ts'
 import atlas from './atlas.json' with {type: 'json'}
 import type {Tag} from './config.ts'

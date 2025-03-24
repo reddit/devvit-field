@@ -58,4 +58,4 @@ void main() {
 }`
 
 import {paletteBlack, paletteConsole} from '../../shared/theme.js'
-import {mapSize} from '../../shared/types/app-config.js'
+import {mapSize} from '../ui.ts'

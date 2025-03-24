@@ -55,9 +55,6 @@ export type AppConfig = {
   globalPDFMaxPatchesWithoutReplace: number
 }
 
-/** Number of boxes per side of the minimap. */
-export const mapSize: number = 120
-
 export function getDefaultAppConfig(): AppConfig {
   return {
     globalClickCooldownMillis: 1000,
