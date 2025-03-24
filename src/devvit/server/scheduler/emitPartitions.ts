@@ -31,6 +31,12 @@ const metrics = {
     labels: ['challenge', 'partition'],
     buckets,
   }),
+
+  writeDurationSeconds: histogram({
+    name: 'emit_partition_write_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
+  }),
 }
 
 type EmitPartitionTask = Task & {
@@ -51,12 +57,7 @@ WorkQueue.register<EmitPartitionTask>(
       task.challengeNumber,
       task.partitionXY,
     )
-    metrics.durationSeconds
-      .labels(
-        `${task.challengeNumber}`,
-        `${task.partitionXY.x},${task.partitionXY.y}`,
-      )
-      .observe((performance.now() - start) / 1_000)
+    const setStart = performance.now()
     await wq.ctx.redis.set(
       createFieldPartitionSnapshotKey(
         task.challengeNumber,
@@ -66,6 +67,12 @@ WorkQueue.register<EmitPartitionTask>(
       encoded,
       {expiration: new Date(Date.now() + 600_000)}, // 10 minutes
     )
+    metrics.writeDurationSeconds
+      .labels(
+        `${task.challengeNumber}`,
+        `${task.partitionXY.x},${task.partitionXY.y}`,
+      )
+      .observe((performance.now() - setStart) / 1_000)
 
     const key: DeltaSnapshotKey = {
       kind: 'partition',
@@ -79,6 +86,13 @@ WorkQueue.register<EmitPartitionTask>(
       type: 'PublishPartition',
       ref: key,
     })
+
+    metrics.durationSeconds
+      .labels(
+        `${task.challengeNumber}`,
+        `${task.partitionXY.x},${task.partitionXY.y}`,
+      )
+      .observe((performance.now() - start) / 1_000)
   },
 )
 

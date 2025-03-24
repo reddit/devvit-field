@@ -76,6 +76,12 @@ const metrics = {
     labels: ['challenge', 'partition'],
     buckets,
   }),
+
+  isMineDurationSeconds: histogram({
+    name: 'emit_partition_is_mine_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
+  }),
 }
 
 const createFieldPartitionKey = (challengeNumber: number, partitionXY: XY) =>
@@ -890,16 +896,15 @@ export async function fieldPartitionPublish(
   let encodedB64: string | undefined = undefined
   let attempts = 0
   const maxAttempts = 5
+  const redisKey = createFieldPartitionSnapshotKey(
+    challengeNumber,
+    partitionXY,
+    sequenceNumber,
+  )
   while (attempts < maxAttempts) {
     attempts++
     // TODO: Use getBuffer to avoid base64 encoding.
-    encodedB64 = await redis.get(
-      createFieldPartitionSnapshotKey(
-        challengeNumber,
-        partitionXY,
-        sequenceNumber,
-      ),
-    )
+    encodedB64 = await redis.get(redisKey)
     if (encodedB64 !== undefined) {
       break
     }
@@ -907,7 +912,7 @@ export async function fieldPartitionPublish(
   }
   if (encodedB64 === undefined) {
     throw new Error(
-      `unable to get buffer for challengeNumber=${challengeNumber}, sequenceNumber=${sequenceNumber}`,
+      `unable to get buffer for challengeNumber=${challengeNumber}, sequenceNumber=${sequenceNumber}, redisKey=${redisKey}`,
     )
   }
 
@@ -947,6 +952,7 @@ export async function fieldGetPartitionMap(
   })
 
   const start = performance.now()
+  let isMineMs = 0
   for (let i = 0; i < n; i++) {
     const {claimed, team} = decodeVTT(fieldData[i]!)
     if (!claimed) {
@@ -957,6 +963,7 @@ export async function fieldGetPartitionMap(
       y: Math.floor(i / meta.partitionSize),
     }
     const globalXY = getGlobalCoords(partitionXY, localXY, meta.partitionSize)
+    const s = performance.now()
     cells[i] = {
       team,
       isBan: minefieldIsMine({
@@ -965,10 +972,14 @@ export async function fieldGetPartitionMap(
         config: {mineDensity: meta.mineDensity},
       }),
     }
+    isMineMs += performance.now() - s
   }
   metrics.constructDurationSeconds
     .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
     .observe((performance.now() - start) / 1_000)
+  metrics.isMineDurationSeconds
+    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
+    .observe(isMineMs / 1_000)
   return cells
 }
 

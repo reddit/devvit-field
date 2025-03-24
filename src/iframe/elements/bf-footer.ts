@@ -10,6 +10,7 @@ import {abbreviateNumber} from '../../shared/format.ts'
 import {localize} from '../../shared/locale.ts'
 import {createFooterEnd} from '../../shared/svg-factories/createFooterEnd.ts'
 import {createFooterMiddle} from '../../shared/svg-factories/createFooterMiddle.ts'
+import {createFooterMiddleExtension} from '../../shared/svg-factories/createFooterMiddleExtension.ts'
 import {createFooterStart} from '../../shared/svg-factories/createFooterStart.ts'
 import {createPersonIcon} from '../../shared/svg-factories/createPersonIcon.ts'
 import {TITLE_NOTCH_HEIGHT} from '../../shared/svg-factories/footerSettings.ts'
@@ -61,6 +62,7 @@ export class BFFooter extends LitElement {
     }
 
     .background {
+      position: relative;
       display: flex;
       flex-direction: row;
       width: 100%;
@@ -78,6 +80,20 @@ export class BFFooter extends LitElement {
       overflow: hidden;
       justify-content: center;
       align-content: center;
+    }
+
+    .middle-extension {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 48px;
+      right: 48px;
+      bottom: 0;
+    }
+
+    .middle-extension svg {
+      height: 100%;
+      width: 100%;
     }
 
     .background svg {
@@ -204,9 +220,12 @@ export class BFFooter extends LitElement {
     ]
 
     return html`
+      <div class="middle-extension" .innerHTML=${createFooterMiddleExtension()}>
+      </div>
       <div class="background">
         <div class="cap" .innerHTML=${createFooterStart()}></div>
-        <div class="middle" .innerHTML=${createFooterMiddle()}></div>
+        <div class="middle" .innerHTML=${createFooterMiddle()}>
+        </div>
         <div class="cap" .innerHTML=${createFooterEnd()}></div>
       </div>
       <div class="content">

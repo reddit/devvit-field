@@ -26,6 +26,7 @@ export function DialogHowToPlay(props: DialogHowToPlayProps): JSX.Element {
         {...props}
         backgroundColor={cssHex(paletteBlack)}
         padding='none'
+        lines
       >
         <vstack height='100%' width='100%' alignment='center middle'>
           <image
