@@ -91,5 +91,6 @@ function vibrateBan(): void {
     // N (−·).
     dash, intraGap, dot, gap
   ]
+  // eslint-disable-next-line compat/compat -- Vibrate isn't supported by Safari
   navigator.vibrate?.(ban)
 }
