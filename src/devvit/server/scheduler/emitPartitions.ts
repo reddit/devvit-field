@@ -1,3 +1,4 @@
+import {histogram} from '@devvit/metrics'
 import {
   type DeltaSnapshotKey,
   fieldS3Path,
@@ -19,6 +20,19 @@ import {
 import {sendRealtime} from './sendRealtime.ts'
 import {type Task, WorkQueue} from './workqueue.ts'
 
+const buckets = [
+  0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0,
+  30.0,
+]
+
+const metrics = {
+  durationSeconds: histogram({
+    name: 'emit_partition_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
+  }),
+}
+
 type EmitPartitionTask = Task & {
   type: 'EmitPartition'
   subredditId: string
@@ -30,12 +44,19 @@ type EmitPartitionTask = Task & {
 WorkQueue.register<EmitPartitionTask>(
   'EmitPartition',
   async (wq: WorkQueue, task: EmitPartitionTask): Promise<void> => {
+    const start = performance.now()
     const encoded = await fieldGetPartitionMapEncoded(
       wq.ctx.redis,
       wq.ctx.subredditId,
       task.challengeNumber,
       task.partitionXY,
     )
+    metrics.durationSeconds
+      .labels(
+        `${task.challengeNumber}`,
+        `${task.partitionXY.x},${task.partitionXY.y}`,
+      )
+      .observe((performance.now() - start) / 1_000)
     await wq.ctx.redis.set(
       createFieldPartitionSnapshotKey(
         task.challengeNumber,

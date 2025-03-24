@@ -158,7 +158,7 @@ export const onRun: ScheduledJobHandler<JSONObject | undefined> = async (
   const wq = await newWorkQueue(ctx)
   const start = Date.now()
   await emitAllPartitions(ctx, wq)
-  await wq.runUntil(new Date(start + 5_000))
+  await wq.runUntil(new Date(start + 20_000))
 }
 
 async function emitAllPartitions(ctx: JobContext, wq: WorkQueue) {

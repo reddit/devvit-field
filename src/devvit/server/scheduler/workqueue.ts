@@ -18,7 +18,7 @@ export const claimsKey = '{workqueue}:claims'
 const lockKey = '{workqueue}:lock'
 
 // TODO: make into settings
-const maxConcurrentClaims = 128
+const maxConcurrentClaims = 4
 const defaultMaxAttempts = 5
 const maxTransactionAttempts = 10
 const maxTaskHandleTimeSec = 1
@@ -32,7 +32,7 @@ type WorkQueueSettings = {
 // Metrics.
 
 const buckets = [
-  0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 1.0,
+  0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0,
 ]
 const metrics = {
   tasksCompleted: counter({
@@ -206,10 +206,22 @@ export class WorkQueue {
     )
   }
 
+  async #timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const start = performance.now()
+    try {
+      return await fn()
+    } finally {
+      const dur = performance.now() - start
+      if (dur > 1_000) {
+        console.log(`slow operation ${name} took ${dur} ms`)
+      }
+    }
+  }
+
   async #claimOneBatchUnderLock(n: number): Promise<Task[]> {
     const [numTasks, numClaims] = await Promise.all([
-      this.ctx.redis.zCard(tasksKey),
-      this.ctx.redis.zCard(claimsKey),
+      this.#timed('zcard tasks', () => this.ctx.redis.zCard(tasksKey)),
+      this.#timed('zcard claims', () => this.ctx.redis.zCard(claimsKey)),
     ])
     this.#debug(`numTasks=${numTasks}, numClaims=${numClaims}`)
     metrics.numTasks.labels().set(numTasks)
@@ -235,25 +247,20 @@ export class WorkQueue {
   }
 
   async #claimTasksUnderLock(n: number): Promise<Task[]> {
-    const removed = await this.ctx.redis.zRemRangeByScore(
-      tasksKey,
-      0,
-      Date.now() - maxTaskAgeMs,
+    const removed = await this.#timed('zRemRangeByScore', () =>
+      this.ctx.redis.zRemRangeByScore(claimsKey, 0, Date.now() - maxTaskAgeMs),
     )
     if (removed) {
       console.warn(`[workqueue] dropped ${removed} old tasks`)
     }
-    const claimableMembers = await this.ctx.redis.zRange(
-      tasksKey,
-      '-inf',
-      '+inf',
-      {
+    const claimableMembers = await this.#timed('zRange', () =>
+      this.ctx.redis.zRange(tasksKey, '-inf', '+inf', {
         by: 'score',
         limit: {
           offset: 0,
           count: n,
         },
-      },
+      }),
     )
     if (!claimableMembers || !claimableMembers.length) {
       //this.#debug('no tasks available to claim, discarding transaction')
@@ -267,34 +274,38 @@ export class WorkQueue {
       member: task.key!,
       score: now,
     }))
-    await this.ctx.redis.zAdd(claimsKey, ...claimedMembers)
-    await this.ctx.redis.zRem(
-      tasksKey,
-      tasksToClaim.map(task => task.key!),
+    await this.#timed('zAdd', () =>
+      this.ctx.redis.zAdd(claimsKey, ...claimedMembers),
+    )
+    await this.#timed('zRem', () =>
+      this.ctx.redis.zRem(
+        tasksKey,
+        tasksToClaim.map(task => task.key!),
+      ),
     )
     return tasksToClaim
   }
 
   async #stealTasksUnderLock(n: number): Promise<Task[]> {
-    const removed = await this.ctx.redis.zRemRangeByScore(
-      claimsKey,
-      0,
-      Date.now() - maxTaskAgeMs,
+    const removed = await this.#timed('zRemRangeByScore claims', () =>
+      this.ctx.redis.zRemRangeByScore(claimsKey, 0, Date.now() - maxTaskAgeMs),
     )
     if (removed) {
       console.warn(`[workqueue] dropped ${removed} old claims`)
     }
-    const claimableMembers = await this.ctx.redis.zRange(
-      claimsKey,
-      '-inf',
-      Date.now() - taskDeadlineMillis,
-      {
-        by: 'score',
-        limit: {
-          offset: 0,
-          count: n,
+    const claimableMembers = await this.#timed('zRange claims', () =>
+      this.ctx.redis.zRange(
+        claimsKey,
+        '-inf',
+        Date.now() - taskDeadlineMillis,
+        {
+          by: 'score',
+          limit: {
+            offset: 0,
+            count: n,
+          },
         },
-      },
+      ),
     )
     if (!claimableMembers || !claimableMembers.length) {
       return []
@@ -306,7 +317,9 @@ export class WorkQueue {
       member: task.key!,
       score: now,
     }))
-    await this.ctx.redis.zAdd(claimsKey, ...claimedMembers)
+    await this.#timed('zadd', () =>
+      this.ctx.redis.zAdd(claimsKey, ...claimedMembers),
+    )
     return tasksToSteal
   }
 

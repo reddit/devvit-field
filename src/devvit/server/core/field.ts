@@ -36,6 +36,11 @@ import {
   userSetPlayedIfNotExists,
 } from './user'
 
+const buckets = [
+  0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0,
+  30.0,
+]
+
 const metrics = {
   claims: counter({
     name: 'field_cell_claims',
@@ -45,9 +50,31 @@ const metrics = {
   claimDurations: histogram({
     name: 'field_cell_claim_duration_seconds_step1',
     labels: [],
-    buckets: [
-      0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 1.0,
-    ],
+    buckets,
+  }),
+
+  readDurationSeconds: histogram({
+    name: 'emit_partition_read_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
+  }),
+
+  decodeDurationSeconds: histogram({
+    name: 'emit_partition_decode_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
+  }),
+
+  constructDurationSeconds: histogram({
+    name: 'emit_partition_construct_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
+  }),
+
+  encodeDurationSeconds: histogram({
+    name: 'emit_partition_encode_duration_seconds',
+    labels: ['challenge', 'partition'],
+    buckets,
   }),
 }
 
@@ -732,9 +759,13 @@ export const fieldGet = async ({
   )
   if (data === 0) return []
 
+  let start = performance.now()
   let bytes = await redis.getBuffer(
     createFieldPartitionKey(challengeNumber, partitionXY),
   )
+  metrics.readDurationSeconds
+    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
+    .observe((performance.now() - start) / 1_000)
   if (!bytes) {
     return []
   }
@@ -747,6 +778,8 @@ export const fieldGet = async ({
     bytes = new Buffer(expectedLength)
     bytes.set(trunc)
   }
+
+  start = performance.now()
   const nums = new Array<number>(meta.partitionSize * meta.partitionSize)
 
   const getu3 = (idx: number) => {
@@ -772,6 +805,9 @@ export const fieldGet = async ({
   for (let i = 0; i < nums.length; i++) {
     nums[i] = getu3(i)
   }
+  metrics.decodeDurationSeconds
+    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
+    .observe((performance.now() - start) / 1_000)
   return nums
 }
 
@@ -788,8 +824,13 @@ export async function fieldGetPartitionMapEncoded(
     challengeNumber,
     partitionXY,
   )
+  const start = performance.now()
   const bytes = codec.encode(map.values())
-  return Buffer.from(bytes).toString('base64')
+  const encoded = Buffer.from(bytes).toString('base64')
+  metrics.encodeDurationSeconds
+    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
+    .observe((performance.now() - start) / 1_000)
+  return encoded
 }
 
 export async function fieldSetPartitionMapLatestSnapshotKey(
@@ -904,6 +945,8 @@ export async function fieldGetPartitionMap(
     redis,
     partitionXY,
   })
+
+  const start = performance.now()
   for (let i = 0; i < n; i++) {
     const {claimed, team} = decodeVTT(fieldData[i]!)
     if (!claimed) {
@@ -923,6 +966,9 @@ export async function fieldGetPartitionMap(
       }),
     }
   }
+  metrics.constructDurationSeconds
+    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
+    .observe((performance.now() - start) / 1_000)
   return cells
 }
 
