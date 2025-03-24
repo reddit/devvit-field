@@ -5,7 +5,6 @@ import {type Team, teamColor, teamTitleCase} from '../../shared/team'
 import {cssHex, fontMSize, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
-  levelBaseColor,
   levelHighlightColor,
   levelPascalCase,
 } from '../../shared/types/level'
@@ -47,12 +46,12 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
       }
     >
       <BorderedContainer
-        height={80}
+        height={72}
         width={256}
         {...props}
         lines
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[props.level])}
+        borderColor={cssHex(levelHighlightColor[props.level])}
       >
         <PixelText
           {...props}
@@ -89,9 +88,11 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
 
           {/* Team Badge */}
 
-          <spacer size='small' />
+          <spacer grow />
+
           <TeamBadge {...props} />
-          <spacer size='small' />
+
+          <spacer grow />
 
           {/* Team Overview */}
 
