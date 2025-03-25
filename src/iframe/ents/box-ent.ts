@@ -1,6 +1,7 @@
 import {type Team, teamPascalCase} from '../../shared/team.js'
 import type {XY} from '../../shared/types/2d.js'
 import {type Level, levelWord} from '../../shared/types/level.js'
+import type {UTCMillis} from '../../shared/types/time.js'
 import {audioPlay} from '../audio.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
@@ -9,11 +10,14 @@ import {Sprite} from '../graphics/sprite.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
+const maxPendingMillis: number = 100_000
+
 // to-do: extract sequence to animation.
 
 export class BoxEnt implements Ent {
   readonly eid: EID
   readonly fieldXY: Readonly<XY>
+  readonly #born: UTCMillis
   readonly #seq: (Tag | 'Banned' | 'Claimed' | 'Lost')[] = []
   readonly #sprite: Sprite<Tag>
 
@@ -26,6 +30,7 @@ export class BoxEnt implements Ent {
     this.#sprite.z = Layer.UIBack
     this.#sprite.stretch = true
     this.#sprite.cel = game.looper.frame / 4
+    this.#born = game.now
   }
 
   draw(game: Readonly<Game>): void {
@@ -51,6 +56,15 @@ export class BoxEnt implements Ent {
 
   update(game: Game): void {
     const {cam} = game
+
+    if (
+      this.#sprite.tag.endsWith('Pending') &&
+      game.now - this.#born > maxPendingMillis
+    ) {
+      // Never got a resolution. Give up.
+      game.zoo.remove(this)
+      return
+    }
 
     if (this.#seq.length && this.#sprite.isLooped(game)) {
       const next = this.#seq.shift()!
