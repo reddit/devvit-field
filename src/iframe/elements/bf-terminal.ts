@@ -75,7 +75,6 @@ export class BFTerminal extends LitElement {
       flex-shrink: 1;
       width: 100%;
       overflow: hidden;
-      border-color: var(--color-black);
       border-bottom-left-radius: ${radiusPx}px;
       border-bottom-right-radius: ${radiusPx}px;
     }
