@@ -16,6 +16,7 @@ Devvit.addSchedulerJob({
 
 type DriveLoadSettings = {
   'drive-load-claims-per-sec': number
+  'drive-load-stride': boolean
 }
 
 async function onRun(
@@ -39,7 +40,9 @@ async function onRun(
   for (let i = 0; i < claimRps; i++) {
     const nextArrivalMs = -Math.log(1 - Math.random()) / (claimRps / 1_000)
     await new Promise(resolve => setTimeout(resolve, nextArrivalMs))
-    promises.push(generateClaim(ctx, currentChallengeNumber))
+    promises.push(
+      generateClaim(ctx, currentChallengeNumber, settings['drive-load-stride']),
+    )
   }
   const results = await Promise.all(promises)
   console.log(

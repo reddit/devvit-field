@@ -6,9 +6,12 @@ import {fieldClaimCells} from './field.ts'
 
 export type ClaimResult = ReturnType<typeof fieldClaimCells>
 
+const strideKey = 'driveLoad:stride'
+
 export async function generateClaim(
   ctx: JobContext,
   challengeNumber: number,
+  stride: boolean = false,
 ): Promise<ClaimResult> {
   const challenge = await challengeConfigGet({
     challengeNumber,
@@ -16,8 +19,17 @@ export async function generateClaim(
     redis: ctx.redis,
   })
 
-  const x = getRandomIntBetween(0, challenge.size)
-  const y = getRandomIntBetween(0, challenge.size)
+  let x: number
+  let y: number
+
+  if (stride) {
+    const next = await ctx.redis.incrBy(strideKey, 1)
+    x = next % challenge.size
+    y = Math.floor(next / challenge.size) % challenge.size
+  } else {
+    x = getRandomIntBetween(0, challenge.size)
+    y = getRandomIntBetween(0, challenge.size)
+  }
 
   if (!ctx.userId) {
     const values = Object.values(USER_IDS)
