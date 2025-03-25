@@ -26,7 +26,9 @@ export class BFButton extends LitElement {
     :host {
       --width: fit-content;
       display: inline-block;
-      width: var(--width);
+      width: 100%;
+      max-width: 468px;
+      padding: 0 24px;
     }
 
     /* Pre-compute keyframe animations for consistency. */
@@ -74,7 +76,7 @@ export class BFButton extends LitElement {
       background-position: 2px 0;
       background-size: calc(100% - 4px) 100%;
       background-repeat: no-repeat;
-      width: var(--width);
+      width: 100%;
       /* Position pseudoelement relative. */
       position: relative;
       padding-top: 3px;
@@ -98,10 +100,8 @@ export class BFButton extends LitElement {
       position: absolute;
       bottom: -13px;
       border-color: var(--color-black);
-      border-inline-start-width: 2px;
-      border-inline-end-width: 2px;
-      border-end-start-radius: ${radiusPx}px;
-      border-end-end-radius: ${radiusPx}px;
+      border-width: 2px;
+      border-radius: ${radiusPx}px;
       border-style: solid;
       box-shadow: 0 4px var(--color-shade-50);
       background-color: var(--color-grey);

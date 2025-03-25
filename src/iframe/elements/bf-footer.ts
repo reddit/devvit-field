@@ -110,13 +110,13 @@ export class BFFooter extends LitElement {
 
     .scores {
       list-style-type: none;
-      padding: 0 24px;
       margin: 6px 0 0 0; /* center in artwork */
+      padding: 0 24px;
       display: flex;
       flex-direction: row;
       gap: ${spacePx * 1.5}px;
       width: 100%;
-      max-width: 420px;
+      max-width: 468px;
     }
 
     .scores li {
@@ -161,21 +161,10 @@ export class BFFooter extends LitElement {
       display: block;
     }
 
-    .JuiceBox {
-      background-color: var(--color-juice-box);
-    }
-
-    .Flamingo {
-      background-color: var(--color-flamingo);
-    }
-
-    .Lasagna {
-      background-color: var(--color-lasagna);
-    }
-
-    .Sunshine {
-      background-color: var(--color-sunshine);
-    }
+    .JuiceBox { background-color: var(--color-juice-box); }
+    .Flamingo { background-color: var(--color-flamingo); }
+    .Lasagna { background-color: var(--color-lasagna); }
+    .Sunshine { background-color: var(--color-sunshine); }
    
     .logo {
       margin-top: ${spacePx}px;
