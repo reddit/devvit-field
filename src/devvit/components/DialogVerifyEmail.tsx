@@ -1,6 +1,6 @@
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
-import {cssHex, paletteBlack} from '../../shared/theme'
+import {cssHex, fontMSize, paletteBlack} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -36,7 +36,7 @@ export function DialogVerifyEmail(props: DialogVerifyEmailProps): JSX.Element {
             <PixelText
               key={copy}
               {...props}
-              size={24}
+              size={fontMSize}
               color={cssHex(levelHighlightColor[props.level])}
             >
               {copy}

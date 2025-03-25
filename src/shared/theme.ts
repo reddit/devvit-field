@@ -42,8 +42,9 @@ export const fallbackPixelRatio: number = 2
 
 export const minCanvasWH: Readonly<WH> = {w: 288, h: 320}
 
-export const fontSSize: number = 10
-export const fontMSize: number = 14
+export const fontSSize: number = 12
+export const fontMSize: number = 16
+export const fontLSize: number = 22
 
 export const thinStroke: number = 2 // to-do: fix.
 

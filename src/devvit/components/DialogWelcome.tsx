@@ -2,7 +2,13 @@ import {Devvit} from '@devvit/public-api'
 import {hydrateString} from '../../shared/format'
 import {lineBreakToken, localize} from '../../shared/locale'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team'
-import {cssHex, fontMSize, paletteBlack, paletteWhite} from '../../shared/theme'
+import {
+  cssHex,
+  fontMSize,
+  fontSSize,
+  paletteBlack,
+  paletteWhite,
+} from '../../shared/theme'
 import {
   type Level,
   levelHighlightColor,
@@ -78,7 +84,7 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
             .map(line => (
               <PixelText
                 key={line}
-                size={12}
+                size={fontSSize}
                 color={cssHex(paletteWhite)}
                 {...props}
               >
@@ -96,32 +102,32 @@ export function DialogWelcome(props: DialogWelcomeProps): JSX.Element {
 
           {/* Team Overview */}
 
-          <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+          <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
             {localize('welcome-dialog-team-overview')}
           </PixelText>
           <hstack>
             <PixelText
-              size={12}
+              size={fontSSize}
               color={cssHex(teamColor[opponentTeams[0]!])}
               {...props}
             >
               {teamTitleCase[opponentTeams[0]!].toUpperCase()}
             </PixelText>
-            <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+            <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
               {', '}
             </PixelText>
             <PixelText
-              size={12}
+              size={fontSSize}
               color={cssHex(teamColor[opponentTeams[1]!])}
               {...props}
             >
               {teamTitleCase[opponentTeams[1]!].toUpperCase()}
             </PixelText>
-            <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+            <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
               {', & '}
             </PixelText>
             <PixelText
-              size={12}
+              size={fontSSize}
               color={cssHex(teamColor[opponentTeams[2]!])}
               {...props}
             >

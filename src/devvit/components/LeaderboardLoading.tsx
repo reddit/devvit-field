@@ -3,6 +3,8 @@ import {localize} from '../../shared/locale.ts'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
 import {
   cssHex,
+  fontMSize,
+  fontSSize,
   paletteBlack,
   paletteConsole,
   paletteDisabled,
@@ -61,7 +63,7 @@ export function LeaderboardLoading(
         <spacer height='8px' />
 
         {/* Online Status */}
-        <PixelText {...props} size={16} color={cssHex(paletteOffline)}>
+        <PixelText {...props} size={fontMSize} color={cssHex(paletteOffline)}>
           {`•${localize('leaderboard-offline')}`}
         </PixelText>
         <spacer height='24px' />
@@ -71,7 +73,12 @@ export function LeaderboardLoading(
         </StyledButton>
         <spacer height='24px' />
 
-        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
+        <PixelText
+          {...props}
+          size={fontMSize}
+          color={cssHex(paletteWhite)}
+          underline
+        >
           {localize('leaderboard-teams-header')}
         </PixelText>
         <spacer height='8px' />
@@ -87,7 +94,12 @@ export function LeaderboardLoading(
         </hstack>
         <spacer height='24px' />
 
-        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
+        <PixelText
+          {...props}
+          size={fontMSize}
+          color={cssHex(paletteWhite)}
+          underline
+        >
           {localize('leaderboard-stats-header')}
         </PixelText>
         <spacer height='8px' />
@@ -123,7 +135,7 @@ function TeamTile(props: {
       <spacer height='31px' />
       <PixelText
         pixelRatio={props.pixelRatio}
-        size={12}
+        size={fontSSize}
         color={cssHex(paletteBlack)}
       >
         {props.label}
@@ -145,7 +157,7 @@ function StatTile(props: {label: string; pixelRatio: number}) {
       <spacer height='31px' />
       <PixelText
         pixelRatio={props.pixelRatio}
-        size={12}
+        size={fontSSize}
         color={cssHex(paletteFieldLight)}
       >
         {props.label}

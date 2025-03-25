@@ -7,7 +7,7 @@ import {
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import {localize} from '../../../../shared/locale.ts'
-import {spacePx} from '../../../../shared/theme.ts'
+import {fontSSize, spacePx} from '../../../../shared/theme.ts'
 import type {Level} from '../../../../shared/types/level.ts'
 import {cssReset} from '../../css-reset.ts'
 
@@ -42,7 +42,7 @@ export class InnerContainer extends LitElement {
     }
 
     p {
-      font-size: 12px;
+      font-size: ${fontSSize}px;
       color: var(--color-);
       text-transform: uppercase;
     }

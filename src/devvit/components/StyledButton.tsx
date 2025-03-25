@@ -2,6 +2,7 @@ import {Devvit} from '@devvit/public-api'
 
 import {
   cssHex,
+  fontMSize,
   paletteBlack,
   paletteFieldLight,
   paletteWhite,
@@ -77,7 +78,7 @@ export function StyledButton(props: StyledButtonProps): JSX.Element {
         <spacer height='6px' />
         <PixelText
           {...props}
-          size={17}
+          size={fontMSize}
           color={cssHex(paletteBlack)}
           opacity={0.6}
         >

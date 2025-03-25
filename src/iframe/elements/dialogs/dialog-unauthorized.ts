@@ -45,7 +45,7 @@ export class DialogUnauthorized extends LitElement {
     }
 
     h1 {
-      font-size: 16px;
+      font-size: ${fontMSize}px;
       flex-grow: 0;
     }`
 

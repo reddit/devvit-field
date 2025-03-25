@@ -1,6 +1,6 @@
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
-import {cssHex, paletteBlack} from '../../shared/theme'
+import {cssHex, fontMSize, paletteBlack} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -16,9 +16,8 @@ type DialogErrorProps = {
 }
 
 export function DialogError(props: DialogErrorProps): JSX.Element {
-  const size = 16
   const sharedProps = {
-    size,
+    size: fontMSize,
     color: cssHex(levelHighlightColor[props.level]),
     ...props,
   }

@@ -19,7 +19,7 @@ import {
   type TeamPascalCase,
   teamPascalCase,
 } from '../../shared/team.ts'
-import {spacePx} from '../../shared/theme.ts'
+import {fontMSize, fontSSize, spacePx} from '../../shared/theme.ts'
 import type {
   ChallengeCompleteMessage,
   DialogMessage,
@@ -104,7 +104,7 @@ export class BFFooter extends LitElement {
     .title {
       margin-top: ${spacePx}px;
       line-height: ${TITLE_NOTCH_HEIGHT}px;
-      font-size: 12px;
+      font-size: ${fontSSize}px;
       color: var(--color-white);
     }
 
@@ -116,7 +116,7 @@ export class BFFooter extends LitElement {
       flex-direction: row;
       gap: ${spacePx * 1.5}px;
       width: 100%;
-      max-width: 380px;
+      max-width: 420px;
     }
 
     .scores li {
@@ -134,7 +134,7 @@ export class BFFooter extends LitElement {
       flex-grow: 1;
       flex-shrink: 1;
       text-align: center;
-      font-size: 14px;
+      font-size: ${fontMSize}px;
       border-width: ${spacePx / 2}px;
       border-style: solid;
       border-color: var(--color-shade-60);

@@ -7,7 +7,7 @@ import {
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import type {TeamPascalCase} from '../../shared/team.ts'
-import {radiusPx, spacePx} from '../../shared/theme.ts'
+import {fontMSize, radiusPx, spacePx} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 import type {Level} from '../../shared/types/level.ts'
@@ -81,7 +81,7 @@ export class BFButton extends LitElement {
       padding-right: 16px;
       padding-bottom: 3px;
       padding-left: 16px;
-      font-size: 16px;
+      font-size: ${fontMSize}px;
       font-style: normal;
       font-weight: 600;
       line-height: 26px;

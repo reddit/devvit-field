@@ -1,6 +1,12 @@
 import {type Context, Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
-import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
+import {
+  cssHex,
+  fontMSize,
+  fontSSize,
+  paletteBlack,
+  paletteWhite,
+} from '../../shared/theme'
 import {
   type Level,
   config2,
@@ -43,7 +49,7 @@ export function DialogBeatGame(
               <PixelText
                 key={copy}
                 {...props}
-                size={14}
+                size={fontMSize}
                 color={cssHex(levelHighlightColor[props.level])}
               >
                 {copy}
@@ -54,7 +60,7 @@ export function DialogBeatGame(
       </BorderedContainer>
       <spacer grow />
 
-      <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
+      <PixelText {...props} size={fontSSize} color={cssHex(paletteWhite)}>
         {localize('beat-game-dialog-metadata')}
       </PixelText>
       <spacer grow />

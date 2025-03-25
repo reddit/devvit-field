@@ -1,7 +1,7 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
-import {cssHex, paletteBlack} from '../../shared/theme'
+import {cssHex, fontMSize, paletteBlack} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -25,9 +25,8 @@ export function DialogUnsupportedClient(
   props: DialogUnsupportedClientProps,
   ctx: Devvit.Context,
 ): JSX.Element {
-  const size = 16
   const sharedProps = {
-    size,
+    size: fontMSize,
     color: cssHex(levelHighlightColor[props.level]),
     ...props,
   }

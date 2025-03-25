@@ -4,6 +4,9 @@ import {localize} from '../../shared/locale.ts'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
 import {
   cssHex,
+  fontLSize,
+  fontMSize,
+  fontSSize,
   paletteBlack,
   paletteBlandBlue,
   paletteConsole,
@@ -64,7 +67,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         {/* Online Status */}
         <PixelText
           {...props}
-          size={16}
+          size={fontMSize}
           color={cssHex(props.online ? paletteFieldLight : paletteOffline)}
         >
           {`•${localize(
@@ -82,7 +85,12 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         </StyledButton>
         <spacer height='24px' />
 
-        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
+        <PixelText
+          {...props}
+          size={fontMSize}
+          color={cssHex(paletteWhite)}
+          underline
+        >
           {localize('leaderboard-teams-header')}
         </PixelText>
         <spacer height='8px' />
@@ -99,7 +107,12 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         </hstack>
         <spacer height='24px' />
 
-        <PixelText {...props} size={16} color={cssHex(paletteWhite)} underline>
+        <PixelText
+          {...props}
+          size={fontMSize}
+          color={cssHex(paletteWhite)}
+          underline
+        >
           {localize('leaderboard-stats-header')}
         </PixelText>
         <spacer height='8px' />
@@ -124,13 +137,13 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
         <spacer height='24px' />
 
         <hstack width='100%' alignment='center'>
-          <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
+          <PixelText {...props} size={fontSSize} color={cssHex(paletteWhite)}>
             DOWNLOAD THE FULL DATA SET
           </PixelText>
           <spacer width='6px' />
           <PixelText
             {...props}
-            size={12}
+            size={fontSSize}
             color={cssHex(paletteBlandBlue)}
             underline
           >
@@ -159,14 +172,14 @@ function TeamTile(props: {
     >
       <PixelText
         pixelRatio={props.pixelRatio}
-        size={24}
+        size={fontLSize}
         color={cssHex(paletteBlack)}
       >
         {abbreviateNumber(props.value)}
       </PixelText>
       <PixelText
         pixelRatio={props.pixelRatio}
-        size={12}
+        size={fontSSize}
         color={cssHex(paletteBlack)}
       >
         {props.label}
@@ -187,14 +200,14 @@ function StatTile(props: {label: string; value: number; pixelRatio: number}) {
     >
       <PixelText
         pixelRatio={props.pixelRatio}
-        size={24}
+        size={fontLSize}
         color={cssHex(paletteFieldLight)}
       >
         {abbreviateNumber(props.value)}
       </PixelText>
       <PixelText
         pixelRatio={props.pixelRatio}
-        size={12}
+        size={fontSSize}
         color={cssHex(paletteFieldLight)}
       >
         {props.label}

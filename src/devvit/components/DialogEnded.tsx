@@ -1,7 +1,13 @@
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
 import type {Team} from '../../shared/team'
-import {cssHex, fontMSize, paletteBlack, paletteWhite} from '../../shared/theme'
+import {
+  cssHex,
+  fontLSize,
+  fontMSize,
+  paletteBlack,
+  paletteWhite,
+} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -31,7 +37,7 @@ export function DialogEnded(props: DialogEndedProps): JSX.Element {
       >
         <PixelText
           {...props}
-          size={22}
+          size={fontLSize}
           color={cssHex(levelHighlightColor[props.level])}
         >
           {localize('ended-dialog-title')}

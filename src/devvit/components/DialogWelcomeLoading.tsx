@@ -2,6 +2,7 @@ import {Devvit} from '@devvit/public-api'
 import {localize} from '../../shared/locale'
 import {
   cssHex,
+  fontLSize,
   fontMSize,
   paletteBlack,
   paletteDisabled,
@@ -48,7 +49,7 @@ export function DialogWelcomeLoading(
         </PixelText>
         <PixelText
           {...props}
-          size={22}
+          size={fontLSize}
           color={cssHex(levelHighlightColor[props.level])}
         >
           {`r/${levelName}`}

@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {spacePx} from '../../shared/theme.ts'
+import {fontSSize, spacePx} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -25,7 +25,7 @@ export class BFLeaderboard extends LitElement {
       flex-direction: row;
       column-gap: ${spacePx}px;
       color: var(--color-theme);
-      font-size: 12px;
+      font-size: ${fontSSize}px;
       width: 100%;
       align-items: center;
     }

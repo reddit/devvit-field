@@ -1,6 +1,12 @@
 import {type Context, Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize, variableStartToken} from '../../shared/locale'
-import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
+import {
+  cssHex,
+  fontMSize,
+  fontSSize,
+  paletteBlack,
+  paletteWhite,
+} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -56,7 +62,7 @@ export function DialogUnauthorized(
               <PixelText
                 key={copy}
                 {...props}
-                size={16}
+                size={fontMSize}
                 color={cssHex(levelHighlightColor[props.level])}
               >
                 {copy}
@@ -67,7 +73,7 @@ export function DialogUnauthorized(
       </BorderedContainer>
       <spacer grow />
 
-      <PixelText {...props} size={12} color={cssHex(paletteWhite)}>
+      <PixelText {...props} size={fontSSize} color={cssHex(paletteWhite)}>
         {localize('unauthorized-dialog-metadata')}
       </PixelText>
       <spacer grow />

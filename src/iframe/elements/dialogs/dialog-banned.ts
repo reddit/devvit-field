@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontMSize, spacePx} from '../../../shared/theme.ts'
+import {fontLSize, fontMSize, spacePx} from '../../../shared/theme.ts'
 import {cssReset} from '../css-reset.ts'
 
 import {
@@ -45,7 +45,7 @@ export class DialogBanned extends LitElement {
     }
 
     h1 {
-      font-size: 24px;
+      font-size: ${fontLSize}px;
       flex-grow: 0;
     }`
 

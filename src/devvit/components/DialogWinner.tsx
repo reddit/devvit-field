@@ -1,7 +1,13 @@
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
 import type {Team} from '../../shared/team'
-import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
+import {
+  cssHex,
+  fontLSize,
+  fontSSize,
+  paletteBlack,
+  paletteWhite,
+} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -36,7 +42,7 @@ export function DialogWinner(props: DialogWinnerProps): JSX.Element {
       >
         <PixelText
           {...props}
-          size={22}
+          size={fontLSize}
           color={cssHex(levelHighlightColor[props.level])}
         >
           {localize('winner-dialog-title')}
@@ -50,7 +56,7 @@ export function DialogWinner(props: DialogWinnerProps): JSX.Element {
         .map(line => (
           <PixelText
             key={line}
-            size={12}
+            size={fontSSize}
             color={cssHex(paletteWhite)}
             {...props}
           >
@@ -66,7 +72,7 @@ export function DialogWinner(props: DialogWinnerProps): JSX.Element {
 
       {/* Team Overview */}
 
-      <PixelText size={12} color={cssHex(paletteWhite)} {...props}>
+      <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
         {localize('winner-dialog-metadata-2')}
       </PixelText>
 

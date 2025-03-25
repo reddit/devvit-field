@@ -6,7 +6,7 @@ import {
   variableStartToken,
 } from '../../shared/locale'
 import {type Team, teamTitleCase} from '../../shared/team'
-import {cssHex, paletteBlack, paletteWhite} from '../../shared/theme'
+import {cssHex, fontMSize, paletteBlack, paletteWhite} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -25,9 +25,8 @@ type DialogChallengeEndedAscendProps = {
 export function DialogChallengeEndedAscend(
   props: DialogChallengeEndedAscendProps,
 ): JSX.Element {
-  const size = 16
   const sharedProps = {
-    size,
+    size: fontMSize,
     color: cssHex(levelHighlightColor[props.level]),
     ...props,
   }
@@ -65,7 +64,7 @@ export function DialogChallengeEndedAscend(
                       <PixelText key={copy} {...sharedProps}>
                         {pre}
                       </PixelText>
-                      <spacer width={`${getGlyphWidth(size)}px`} />
+                      <spacer width={`${getGlyphWidth(fontMSize)}px`} />
                     </>
                   )}
 
@@ -75,7 +74,7 @@ export function DialogChallengeEndedAscend(
 
                   {post.length > 0 && (
                     <>
-                      <spacer width={`${getGlyphWidth(size)}px`} />
+                      <spacer width={`${getGlyphWidth(fontMSize)}px`} />
                       <PixelText key={copy} {...sharedProps}>
                         {post}
                       </PixelText>

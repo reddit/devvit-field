@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontSSize, radiusPx, spacePx} from '../../shared/theme.ts'
+import {fontMSize, fontSSize, radiusPx, spacePx} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -51,26 +51,9 @@ export class BFHeader extends LitElement {
       flex-shrink: 0;
       flex-grow: 0;
     }
-
-    .header-top {
-      display: flex;
-      width: 100%;
-      justify-content: space-between;
-    }
+  
     .title {
-      font-size: 16px;
-    }
-
-    .help {
-      height: 16px;
-      width: 16px;
-      text-align: center;
-      border-radius: 100%;
-      border-style: solid;
-      border-width: 1px;
-      border-color: var(--color-tint-60);
-      color: var(--color-tint-60);
-      font-size: ${fontSSize}px;
+      font-size: ${fontMSize}px;
     }
 
     .stats {
@@ -78,7 +61,7 @@ export class BFHeader extends LitElement {
       flex-direction: row;
       gap: 12px;
       width: 100%;
-      font-size: 12px;
+      font-size: ${fontSSize}px;
       line-height: 12px;
     }
 

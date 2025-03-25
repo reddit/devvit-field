@@ -1,7 +1,7 @@
 import {type Context, Devvit, svg} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale.ts'
 import {createGorLogo} from '../../shared/svg-factories/createGorLogo.ts'
-import {cssHex, paletteWhite} from '../../shared/theme.ts'
+import {cssHex, fontSSize, paletteWhite} from '../../shared/theme.ts'
 import {config2} from '../../shared/types/level.ts'
 import {PixelText} from './PixelText.tsx'
 
@@ -24,7 +24,12 @@ export function GamesOnRedditBanner(
       gap='small'
     >
       {label.split(lineBreakToken).map(line => (
-        <PixelText {...props} key={line} size={12} color={cssHex(paletteWhite)}>
+        <PixelText
+          {...props}
+          key={line}
+          size={fontSSize}
+          color={cssHex(paletteWhite)}
+        >
           {line}
         </PixelText>
       ))}

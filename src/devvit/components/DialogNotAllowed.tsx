@@ -1,6 +1,6 @@
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
-import {cssHex, paletteBlack} from '../../shared/theme'
+import {cssHex, fontLSize, paletteBlack} from '../../shared/theme'
 import {
   type Level,
   levelBaseColor,
@@ -32,7 +32,7 @@ export function DialogNotAllowed(props: DialogNotAllowedProps): JSX.Element {
             <PixelText
               key={copy}
               {...props}
-              size={24}
+              size={fontLSize}
               color={cssHex(levelHighlightColor[props.level])}
             >
               {copy}
