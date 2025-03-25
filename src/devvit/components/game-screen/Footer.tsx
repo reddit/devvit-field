@@ -4,6 +4,7 @@ import {localize} from '../../../shared/locale'
 import {createFooterEnd} from '../../../shared/svg-factories/createFooterEnd'
 import {createFooterMiddle} from '../../../shared/svg-factories/createFooterMiddle'
 import {createFooterStart} from '../../../shared/svg-factories/createFooterStart'
+import {createPersonIcon} from '../../../shared/svg-factories/createPersonIcon'
 import {
   CAP_HEIGHT,
   CAP_WIDTH,
@@ -13,6 +14,7 @@ import {
 import {type Team, teamColor} from '../../../shared/team'
 import {
   cssHex,
+  fontMSize,
   paletteBlack,
   paletteShade50,
   paletteWhite,
@@ -25,9 +27,14 @@ type FooterProps = {
   claimed?: boolean
   onPress?: () => void
   scores: {member: Team; score: number}[]
+  team: Team
 }
 
 export function Footer(props: FooterProps, context: Context): JSX.Element {
+  const teamHeight = 28
+  const teamHeightString = `${teamHeight}px`
+  const teamGap = 12
+
   const background = (
     <hstack height={`${CAP_HEIGHT}px`} width='100%'>
       <image
@@ -80,33 +87,69 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
           </PixelText>
         </vstack>
 
+        <spacer height='6px' />
+
         {/* Team Scores */}
-        <hstack width='100%' grow padding='small'>
-          <spacer width='14px' />
-          <hstack height='100%' grow>
+        <hstack
+          width='100%'
+          height={teamHeightString}
+          alignment='center middle'
+        >
+          <spacer width='24px' />
+          <hstack grow maxWidth={`${420 + teamGap}px`}>
             {props.scores.map(({member, score}) => (
-              <hstack key={`team-score-${member}`} height='100%' width='25%'>
-                <spacer width='2px' />
+              <hstack key={`team-score-${member}`} width='25%'>
+                <spacer width={`${teamGap / 2}px`} />
                 <vstack
                   grow
-                  height='100%'
-                  alignment='center middle'
+                  height={teamHeightString}
                   border='thick'
                   borderColor={cssHex(paletteShade50)}
                   backgroundColor={cssHex(teamColor[member])}
                 >
-                  <PixelText {...props} size={22} color={cssHex(paletteBlack)}>
-                    {abbreviateNumber(score)}
-                  </PixelText>
+                  <hstack
+                    width='100%'
+                    height='100%'
+                    alignment='center middle'
+                    border='thick'
+                    borderColor={cssHex(paletteShade50)}
+                  >
+                    {props.team === member && (
+                      <hstack
+                        height='100%'
+                        alignment='center middle'
+                        backgroundColor={cssHex(paletteShade50)}
+                      >
+                        <spacer width='4px' />
+                        <image
+                          imageHeight={12 * props.pixelRatio}
+                          imageWidth={12 * props.pixelRatio}
+                          width='12px'
+                          height='12px'
+                          url={svg`${createPersonIcon(props.team)}`}
+                        />
+                        <spacer width='8px' />
+                      </hstack>
+                    )}
+                    <spacer grow />
+                    <PixelText
+                      {...props}
+                      size={fontMSize}
+                      color={cssHex(paletteBlack)}
+                    >
+                      {abbreviateNumber(score)}
+                    </PixelText>
+                    <spacer grow />
+                  </hstack>
                 </vstack>
-                <spacer width='2px' />
+                <spacer width={`${teamGap / 2}px`} />
               </hstack>
             ))}
           </hstack>
-          <spacer width='14px' />
+          <spacer width='24px' />
         </hstack>
 
-        <spacer height='4px' />
+        <spacer height='6px' />
 
         {/* GOR Button */}
         <image

@@ -29,76 +29,74 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
   return (
     <zstack height='100%' width='100%' backgroundColor={cssHex(paletteConsole)}>
       <InnerBorder {...props} />
-      <vstack
-        height='100%'
-        width='100%'
-        alignment='center middle'
-        padding='small'
-      >
-        <Header {...props} scores={props.standings} />
 
-        <spacer size='xsmall' />
+      <vstack height='100%' width='100%' padding='xsmall'>
+        <vstack width='100%' grow alignment='center middle' padding='small'>
+          <Header {...props} scores={props.standings} />
 
-        {/* FIELD */}
-        <vstack
-          width='100%'
-          grow
-          backgroundColor={cssHex(paletteBlack)}
-          padding='small'
-          alignment='center middle'
-        >
-          <zstack width='184px' height='184px' alignment='center middle'>
-            <image
-              imageHeight={184}
-              imageWidth={184}
-              width='184px'
-              height='184px'
-              description='Ban Box Shadow'
-              resizeMode='fill'
-              url='final-cell-glow.png'
-            />
-            <hstack
-              width='120px'
-              height='120px'
-              border='thick'
-              borderColor={cssHex(paletteFieldLight)}
-            />
-            {claimed && (
+          <spacer height='8px' />
+
+          {/* FIELD */}
+          <vstack
+            width='100%'
+            grow
+            backgroundColor={cssHex(paletteBlack)}
+            padding='small'
+            alignment='center middle'
+          >
+            <zstack width='184px' height='184px' alignment='center middle'>
               <image
-                imageHeight={Math.ceil(symbolHeight * props.pixelRatio)}
-                imageWidth={Math.ceil(symbolHeight * props.pixelRatio)}
+                imageHeight={184}
+                imageWidth={184}
+                width='184px'
+                height='184px'
+                description='Ban Box Shadow'
+                resizeMode='fill'
+                url='final-cell-glow.png'
+              />
+              <hstack
                 width='120px'
                 height='120px'
-                description='Ban Box Illustration'
-                resizeMode='fill'
-                url={svg`${createBanBoxBadge()}`}
+                border='thick'
+                borderColor={cssHex(paletteFieldLight)}
               />
-            )}
-          </zstack>
+              {claimed && (
+                <image
+                  imageHeight={Math.ceil(symbolHeight * props.pixelRatio)}
+                  imageWidth={Math.ceil(symbolHeight * props.pixelRatio)}
+                  width='120px'
+                  height='120px'
+                  description='Ban Box Illustration'
+                  resizeMode='fill'
+                  url={svg`${createBanBoxBadge()}`}
+                />
+              )}
+            </zstack>
+          </vstack>
+
+          <spacer size='medium' />
+
+          <hstack width='100%' alignment='center middle'>
+            <RaisedPanel {...props} active={claimed} />
+            <spacer width='12px' />
+            <StyledButton
+              {...props}
+              color={cssHex(claimed ? paletteDisabled : teamColor[props.team])}
+              onPress={async () => {
+                await props.onClaimPress()
+                setClaimed(true)
+              }}
+            >
+              {claimed
+                ? localize('point-claim-button-label-after')
+                : localize('point-claim-button-label')}
+            </StyledButton>
+            <spacer width='12px' />
+            <RaisedPanel {...props} active={claimed} />
+          </hstack>
+
+          <spacer size='small' />
         </vstack>
-
-        <spacer size='medium' />
-
-        <hstack width='100%' alignment='center middle'>
-          <RaisedPanel {...props} active={claimed} />
-          <spacer width='12px' />
-          <StyledButton
-            {...props}
-            color={cssHex(claimed ? paletteDisabled : teamColor[props.team])}
-            onPress={async () => {
-              await props.onClaimPress()
-              setClaimed(true)
-            }}
-          >
-            {claimed
-              ? localize('point-claim-button-label-after')
-              : localize('point-claim-button-label')}
-          </StyledButton>
-          <spacer width='12px' />
-          <RaisedPanel {...props} active={claimed} />
-        </hstack>
-
-        <spacer size='small' />
 
         <Footer {...props} scores={props.standings} claimed={claimed} />
       </vstack>
