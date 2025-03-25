@@ -37,44 +37,42 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
           <spacer height='8px' />
 
           {/* FIELD */}
-          <vstack
+          <zstack
             width='100%'
             grow
             backgroundColor={cssHex(paletteBlack)}
             padding='small'
             alignment='center middle'
           >
-            <zstack width='184px' height='184px' alignment='center middle'>
+            <image
+              imageHeight={184}
+              imageWidth={184}
+              width='184px'
+              height='184px'
+              description='Ban Box Shadow'
+              resizeMode='fill'
+              url='final-cell-glow.png'
+            />
+            <hstack
+              width='120px'
+              height='120px'
+              border='thick'
+              borderColor={cssHex(paletteFieldLight)}
+            />
+            {claimed && (
               <image
-                imageHeight={184}
-                imageWidth={184}
-                width='184px'
-                height='184px'
-                description='Ban Box Shadow'
-                resizeMode='fill'
-                url='final-cell-glow.png'
-              />
-              <hstack
+                imageHeight={Math.ceil(symbolHeight * props.pixelRatio)}
+                imageWidth={Math.ceil(symbolHeight * props.pixelRatio)}
                 width='120px'
                 height='120px'
-                border='thick'
-                borderColor={cssHex(paletteFieldLight)}
+                description='Ban Box Illustration'
+                resizeMode='fill'
+                url={svg`${createBanBoxBadge()}`}
               />
-              {claimed && (
-                <image
-                  imageHeight={Math.ceil(symbolHeight * props.pixelRatio)}
-                  imageWidth={Math.ceil(symbolHeight * props.pixelRatio)}
-                  width='120px'
-                  height='120px'
-                  description='Ban Box Illustration'
-                  resizeMode='fill'
-                  url={svg`${createBanBoxBadge()}`}
-                />
-              )}
-            </zstack>
-          </vstack>
+            )}
+          </zstack>
 
-          <spacer size='medium' />
+          <spacer height='8px' />
 
           <hstack width='100%' alignment='center middle'>
             <RaisedPanel {...props} active={claimed} />
@@ -94,8 +92,6 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
             <spacer width='12px' />
             <RaisedPanel {...props} active={claimed} />
           </hstack>
-
-          <spacer size='small' />
         </vstack>
 
         <Footer {...props} scores={props.standings} claimed={claimed} />
