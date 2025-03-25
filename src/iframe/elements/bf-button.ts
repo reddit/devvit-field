@@ -49,18 +49,18 @@ export class BFButton extends LitElement {
       display: flex;
       flex-direction: row;
       align-items: center;
+      justify-content: center;
       height: min-content;
       cursor: pointer;
       user-select: none;
       /* white-space: nowrap; */
       border-style: none;
-      justify-content: center;
       border-style: solid;
       border-color: var(--color-black);
       color: var(--color-black);
       border-radius: ${radiusPx}px;
       box-shadow: 0 5px #000;
-      margin-block-start: ${spacePx / 2}px;
+      margin-block-start: ${spacePx}px;
       margin-block-end: ${13 + spacePx / 2}px;
       text-transform: inherit;
       /* Gleam. */

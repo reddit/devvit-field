@@ -14,6 +14,9 @@ import {
   paletteVeryBannedField,
   paletteVeryBannedFieldDark,
   paletteVeryBannedFieldLight,
+  paletteWhatIsField,
+  paletteWhatIsFieldDark,
+  paletteWhatIsFieldLight,
 } from '../theme'
 // to-do: Make sure we don't spoil the levels in the client bundle by getting the colors here.
 import type {T3, T5} from './tid'
@@ -78,7 +81,7 @@ export type LevelShadowColor =
   | typeof paletteFieldDark
   | typeof paletteBannedFieldDark
   | typeof paletteVeryBannedFieldDark
-  | typeof paletteBananaFieldDark
+  | typeof paletteWhatIsFieldDark
 
 export const levelShadowColor: {
   readonly [level in Level]: LevelShadowColor
@@ -87,7 +90,7 @@ export const levelShadowColor: {
   1: paletteBannedFieldDark,
   2: paletteVeryBannedFieldDark,
   3: paletteBananaFieldDark,
-  4: paletteBananaFieldDark,
+  4: paletteWhatIsFieldDark,
 }
 
 /** Base color per level. */
@@ -96,7 +99,7 @@ export type LevelBaseColor =
   | typeof paletteBannedField
   | typeof paletteVeryBannedField
   | typeof paletteBananaField
-  | typeof paletteBananaField
+  | typeof paletteWhatIsField
 
 export const levelBaseColor: {
   readonly [level in Level]: LevelBaseColor
@@ -105,7 +108,7 @@ export const levelBaseColor: {
   1: paletteBannedField,
   2: paletteVeryBannedField,
   3: paletteBananaField,
-  4: paletteBananaField,
+  4: paletteWhatIsField,
 }
 
 /** Highlight color per level. */
@@ -114,7 +117,7 @@ export type LevelHighlightColor =
   | typeof paletteBannedFieldLight
   | typeof paletteVeryBannedFieldLight
   | typeof paletteBananaFieldLight
-  | typeof paletteBananaField
+  | typeof paletteWhatIsFieldLight
 
 export const levelHighlightColor: {
   readonly [level in Level]: LevelHighlightColor
@@ -123,7 +126,7 @@ export const levelHighlightColor: {
   1: paletteBannedFieldLight,
   2: paletteVeryBannedFieldLight,
   3: paletteBananaFieldLight,
-  4: paletteBananaField,
+  4: paletteWhatIsFieldLight,
 }
 
 // to-do: file a bug. I think the sandboxed runtime is injecting a variable
