@@ -43,7 +43,7 @@ export class InnerContainer extends LitElement {
 
     p {
       font-size: ${fontSSize}px;
-      color: var(--color-);
+      color: var(--color-white);
       text-transform: uppercase;
     }
 

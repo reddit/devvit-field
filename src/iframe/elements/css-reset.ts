@@ -21,6 +21,8 @@ import {
   paletteShade60,
   paletteShade80,
   paletteSunshine,
+  paletteTint6,
+  paletteTint19,
   paletteTint60,
   paletteTint75,
   paletteVeryBannedField,
@@ -61,7 +63,6 @@ export const cssReset: CSSResult = css`
     --color-flamingo-dark: #9a2564;
     --color-flamingo-light: #df659f;
     --color-flamingo: ${unsafeCSS(cssHex(paletteFlamingo))};
-    --color-another-grey: #3a3a3a;
     --color-grey: #696969;
     --color-juice-box-dark: #5772c9;
     --color-juice-box-light: #91b1ff;
@@ -76,6 +77,8 @@ export const cssReset: CSSResult = css`
     --color-sunshine-dark: #c18a28;
     --color-sunshine-light: #ffc96f;
     --color-sunshine: ${unsafeCSS(cssHex(paletteSunshine))};
+    --color-tint-6: ${unsafeCSS(cssHex(paletteTint6))};
+    --color-tint-19: ${unsafeCSS(cssHex(paletteTint19))};
     --color-tint-60: ${unsafeCSS(cssHex(paletteTint60))};
     --color-tint-75: ${unsafeCSS(cssHex(paletteTint75))};
     --color-very-banned-field-dark: ${unsafeCSS(cssHex(paletteVeryBannedFieldDark))};

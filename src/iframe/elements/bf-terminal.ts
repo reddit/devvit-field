@@ -70,11 +70,6 @@ export class BFTerminal extends LitElement {
       outline: none; /* Disable focus outline. */
     }
 
-    .Field {color: var(--color-field-light); border-color: var(--color-field-light);}
-    .BannedField {color: var(--color-banned-field-light);}
-    .VeryBannedField {color: var(--color-very-banned-field-light);}
-    .BananaField {color: var(--color-banana-field-light);}
-
     .canvas-box {
       flex-grow: 1;
       flex-shrink: 1;
@@ -167,13 +162,21 @@ export class BFTerminal extends LitElement {
 
           <!-- Claim Button -->
           <bf-button
-            @click='${() => this.dispatchEvent(Bubble('claim', {x: this.x, y: this.y}))}'
+            @click='${() =>
+              this.dispatchEvent(
+                Bubble('claim', {
+                  x: this.x,
+                  y: this.y,
+                }),
+              )}'
             appearance='${ifDefined(this.team)}'
             class='claim-button'
             label='${claim}'
             ?disabled='${!this.team || this.cooldown}'
             style='--width: 256px;'
           ></bf-button>
+
+          <!-- Scoreboard Footer -->
           <bf-footer
             flamingo='${this.globalScoreFlamingo}'
             juiceBox='${this.globalScoreJuiceBox}'
@@ -187,16 +190,3 @@ export class BFTerminal extends LitElement {
     `
   }
 }
-
-/*
-<table class='stats'>
-  <tr>
-    <td class='label'>Banned</td>
-    <td class='num'>${this.bannedPlayers}</td>
-  </tr>
-  <tr>
-    <td class='label'>Online</td>
-    <td class='num'>${this.players}</td>
-  </tr>
-</table>
-*/

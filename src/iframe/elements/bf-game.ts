@@ -9,21 +9,7 @@ import {
 import {customElement, property, queryAsync} from 'lit/decorators.js'
 import {ifDefined} from 'lit/directives/if-defined.js'
 import {teamPascalCase} from '../../shared/team.ts'
-import {
-  cssHex,
-  paletteBananaField,
-  paletteBananaFieldDark,
-  paletteBananaFieldLight,
-  paletteBannedField,
-  paletteBannedFieldDark,
-  paletteBannedFieldLight,
-  paletteField,
-  paletteFieldDark,
-  paletteFieldLight,
-  paletteVeryBannedField,
-  paletteVeryBannedFieldDark,
-  paletteVeryBannedFieldLight,
-} from '../../shared/theme.ts'
+import {cssHex} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import type {DialogMessage} from '../../shared/types/message.ts'
 import {Game} from '../game/game.ts'
@@ -37,7 +23,12 @@ import './dialogs/dialog-banned.ts'
 import './dialogs/dialog-staying.ts'
 import './dialogs/dialog-unauthorized.ts'
 import './dialogs/dialog-webgl.ts'
-import type {Level} from '../../shared/types/level.ts'
+import {
+  type Level,
+  levelBaseColor,
+  levelHighlightColor,
+  levelShadowColor,
+} from '../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementEventMap {
@@ -81,8 +72,11 @@ export class BFGame extends LitElement {
       background: #fff;
     }
 
-    .box {display: flex; flex-direction: column; height: 100%;}
-  `
+    .box {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }`
 
   @property({reflect: true}) accessor ui: UI = 'Loading'
   @queryAsync('bf-terminal') accessor _terminal!: Promise<BFTerminal>
@@ -215,33 +209,6 @@ export class BFGame extends LitElement {
         this.ui satisfies never
     }
 
-    const theme =
-      this.#game.sub == null
-        ? undefined
-        : {
-            0: paletteField,
-            1: paletteBannedField,
-            2: paletteVeryBannedField,
-            3: paletteBananaField,
-          }[this.#game.sub]
-    const themeDark =
-      this.#game.sub == null
-        ? undefined
-        : {
-            0: paletteFieldDark,
-            1: paletteBannedFieldDark,
-            2: paletteVeryBannedFieldDark,
-            3: paletteBananaFieldDark,
-          }[this.#game.sub]
-    const themeLight =
-      this.#game.sub == null
-        ? undefined
-        : {
-            0: paletteFieldLight,
-            1: paletteBannedFieldLight,
-            2: paletteVeryBannedFieldLight,
-            3: paletteBananaFieldLight,
-          }[this.#game.sub]
     const boxes = this.#game.fieldConfig
       ? this.#game.fieldConfig.wh.w * this.#game.fieldConfig.wh.h
       : 0
@@ -249,11 +216,16 @@ export class BFGame extends LitElement {
       <div
         class='box'
         style='
-          --color-theme: ${theme ? unsafeCSS(cssHex(theme)) : 'initial'};
-          --color-theme-dark: ${themeDark ? unsafeCSS(cssHex(themeDark)) : 'initial'};
-          --color-theme-light: ${themeLight ? unsafeCSS(cssHex(themeLight)) : 'initial'};
-        '
-      >
+          --color-theme: ${unsafeCSS(
+            cssHex(levelBaseColor[this.#game.subLvl ?? 0]),
+          )};
+          --color-theme-dark: ${unsafeCSS(
+            cssHex(levelShadowColor[this.#game.subLvl ?? 0]),
+          )};
+          --color-theme-light: ${unsafeCSS(
+            cssHex(levelHighlightColor[this.#game.subLvl ?? 0]),
+          )};
+        '>
         <bf-terminal
           @game-debug='${(ev: CustomEvent<string>) => {
             this.#dbgLog += `\n${ev.detail}`

@@ -6,7 +6,13 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontMSize, fontSSize, radiusPx, spacePx} from '../../shared/theme.ts'
+import {
+  fontMSize,
+  fontSSize,
+  radiusPx,
+  spacePx,
+  thinStroke,
+} from '../../shared/theme.ts'
 import type {XY} from '../../shared/types/2d.ts'
 import {cssReset} from './css-reset.ts'
 
@@ -29,11 +35,6 @@ export class BFHeader extends LitElement {
   static override readonly styles: CSSResultGroup = css`
     ${cssReset}
 
-    .Field {color: var(--color-field-light); border-color: var(--color-field-light);}
-    .BannedField {color: var(--color-banned-field-light);}
-    .VeryBannedField {color: var(--color-very-banned-field-light);}
-    .BananaField {color: var(--color-banana-field-light);}
-
     :host {
       display: flex;
       flex-direction: column;
@@ -42,8 +43,9 @@ export class BFHeader extends LitElement {
       padding: 0 ${spacePx}px;
       border-top-left-radius: ${radiusPx * 2}px;
       border-top-right-radius: ${radiusPx * 2}px;
-      border-width: 1px;
+      border-width: ${thinStroke}px;
       border-style: solid;
+      border-color: var(--color-theme);
       position: relative;
       width: 100%;
       height: 48px;
@@ -54,14 +56,16 @@ export class BFHeader extends LitElement {
   
     .title {
       font-size: ${fontMSize}px;
+      color: var(--color-theme);
     }
 
     .stats {
       display: flex;
       flex-direction: row;
-      gap: 12px;
+      gap: ${spacePx * 1.5}px;
       width: 100%;
       font-size: ${fontSSize}px;
+      color: var(--color-theme);
       line-height: 12px;
     }
 
@@ -85,7 +89,7 @@ export class BFHeader extends LitElement {
 
   protected override render(): TemplateResult {
     return html`
-        <h2 class='title'>${this.sub}</h2>
+      <h2 class='title'>${this.sub}</h2>
 
       <div class='stats'>
         <div class="stat">

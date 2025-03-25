@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontSSize, spacePx} from '../../shared/theme.ts'
+import {fontSSize, spacePx, thinStroke} from '../../shared/theme.ts'
 import {cssReset} from './css-reset.ts'
 
 declare global {
@@ -24,10 +24,13 @@ export class BFLeaderboard extends LitElement {
       display: flex;
       flex-direction: row;
       column-gap: ${spacePx}px;
-      color: var(--color-theme);
-      font-size: ${fontSSize}px;
       width: 100%;
       align-items: center;
+    }
+
+    .label {
+      font-size: ${fontSSize}px;
+      color: var(--color-theme);
     }
 
     .board {
@@ -35,15 +38,15 @@ export class BFLeaderboard extends LitElement {
       height: 12px;
       column-gap: ${spacePx / 4}px;
       width: 100%;
-      background-color: var(--color-another-grey);
+      background-color: var(--color-tint-19);
     }
 
     .bar {
       height: 100%;
       transition-property: width;
       transition-duration: 0.3s;
-      transition-timing-function: ease;
-      min-width: 1px;
+      transition-timing-function: ease-out;
+      min-width: ${thinStroke}px;
     }
 
     .flamingo {background-color: var(--color-flamingo);}
@@ -69,7 +72,7 @@ export class BFLeaderboard extends LitElement {
     const sunshine = (this.sunshine / boxes) * 100
 
     return html`
-      <span>${`${Math.trunc(claimed / boxes)}`}%</span>
+      <div class="label">${`${Math.trunc(claimed / boxes)}`}%</div>
       <div class='board'>
         <div class='bar flamingo' style='width: ${flamingo}%;'></div>
         <div class='bar juice-box' style='width: ${juiceBox}%;'></div>

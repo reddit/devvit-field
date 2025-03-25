@@ -1,12 +1,10 @@
 import type {WH} from './types/2d.ts'
 
+// Basic colors
 export const paletteBlack: number = 0x000000ff
 export const paletteWhite: number = 0xffffffff
-export const paletteConsole: number = 0x1f2430ff
-export const paletteFlamingo: number = 0xbc4681ff // oklch(57.17% 0.1632 352.48)
-export const paletteJuiceBox: number = 0x7391ebff // oklch(67.36% 0.1379 268.6)
-export const paletteLasagna: number = 0xda6939ff // oklch(64.8% 0.1549 42.23)
-export const paletteSunshine: number = 0xe2a94dff // oklch(77.11% 0.127 76.74)
+
+// Graytones
 export const paletteShade19: number = 0x00000030
 export const paletteShade50: number = 0x00000080
 export const paletteShade60: number = 0x00000099
@@ -16,8 +14,20 @@ export const paletteTint19: number = 0xffffff30
 export const paletteTint60: number = 0xffffff99
 export const paletteTint75: number = 0xffffffb0
 
+// UI element colors
+export const paletteConsole: number = 0x1f2430ff
+export const paletteOffline: number = 0xff0000ff
+export const paletteDisabled: number = 0x505050ff
+
+// Team colors
+export const paletteFlamingo: number = 0xbc4681ff // oklch(57.17% 0.1632 352.48)
+export const paletteJuiceBox: number = 0x7391ebff // oklch(67.36% 0.1379 268.6)
+export const paletteLasagna: number = 0xda6939ff // oklch(64.8% 0.1549 42.23)
+export const paletteSunshine: number = 0xe2a94dff // oklch(77.11% 0.127 76.74)
+
+// Level colors
 export const paletteField: number = 0x0a7f18ff
-export const paletteFieldLight: number = 0x7dff00ff // also used for leaderboard game stat text
+export const paletteFieldLight: number = 0x7dff00ff
 export const paletteFieldDark: number = 0x002e00ff
 export const paletteBannedField: number = 0xb72216ff
 export const paletteBannedFieldLight: number = 0xff7260ff
@@ -33,21 +43,19 @@ export const paletteWhatIsField: number = 0xa955b7ff
 export const paletteWhatIsFieldLight: number = 0xda57fbff
 export const paletteWhatIsFieldDark: number = 0x300f38ff
 
-export const paletteOffline: number = 0xff0000ff
-export const paletteDisabled: number = 0x505050ff
-
-export const spacePx: number = 8
-
+// Used to determine which resolution to render SVGs at if context is not available (e.g. in a preview state).
 export const fallbackPixelRatio: number = 2
 
 export const minCanvasWH: Readonly<WH> = {w: 288, h: 320}
 
+// Typography
 export const fontSSize: number = 12
 export const fontMSize: number = 16
 export const fontLSize: number = 22
 
-export const thinStroke: number = 2 // to-do: fix.
-
+// Styles
+export const spacePx: number = 8
+export const thinStroke: number = 1
 export const radiusPx: number = spacePx / 2
 
 export const peerDisconnectIntervalMillis: number = 1_000
