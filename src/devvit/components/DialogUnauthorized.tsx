@@ -9,7 +9,6 @@ import {
 } from '../../shared/theme'
 import {
   type Level,
-  levelBaseColor,
   levelHighlightColor,
   levelPascalCase,
 } from '../../shared/types/level'
@@ -52,7 +51,7 @@ export function DialogUnauthorized(
         lines
         padding='none'
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[props.level])}
+        borderColor={cssHex(levelHighlightColor[props.level])}
       >
         <vstack height='100%' width='100%' alignment='center middle'>
           <spacer height='16px' />

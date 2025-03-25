@@ -1,12 +1,14 @@
 import {Devvit} from '@devvit/public-api'
 import {localize} from '../../shared/locale'
 import {cssHex, paletteBlack} from '../../shared/theme'
+import {type Level, levelHighlightColor} from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
 
 type DialogHowToPlayProps = {
   pixelRatio: number
   onPress: () => void
+  level: Level
 }
 
 export function DialogHowToPlay(props: DialogHowToPlayProps): JSX.Element {
@@ -16,7 +18,6 @@ export function DialogHowToPlay(props: DialogHowToPlayProps): JSX.Element {
 
   return (
     <Dialog
-      level={0}
       {...props}
       buttonLabel={localize('how-to-play-dialog-button-label')}
     >
@@ -25,6 +26,7 @@ export function DialogHowToPlay(props: DialogHowToPlayProps): JSX.Element {
         width={256}
         {...props}
         backgroundColor={cssHex(paletteBlack)}
+        borderColor={cssHex(levelHighlightColor[props.level])}
         padding='none'
         lines
       >

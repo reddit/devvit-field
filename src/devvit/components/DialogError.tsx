@@ -1,11 +1,7 @@
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
 import {cssHex, fontMSize, paletteBlack} from '../../shared/theme'
-import {
-  type Level,
-  levelBaseColor,
-  levelHighlightColor,
-} from '../../shared/types/level'
+import {type Level, levelHighlightColor} from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
 import {PixelText} from './PixelText'
@@ -30,7 +26,7 @@ export function DialogError(props: DialogErrorProps): JSX.Element {
         {...props}
         lines
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[props.level])}
+        borderColor={cssHex(levelHighlightColor[props.level])}
       >
         {localize('error-dialog')
           .split(lineBreakToken)

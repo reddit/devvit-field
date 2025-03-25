@@ -519,6 +519,10 @@ export function App(ctx: Devvit.Context): JSX.Element {
     return (
       <DialogHowToPlay
         pixelRatio={pixelRatio}
+        level={
+          config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
+          0
+        }
         onPress={() => {
           setShowHowToPlay(false)
           iframe.mount()

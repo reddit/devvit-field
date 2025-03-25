@@ -8,11 +8,7 @@ import {
   paletteBlack,
   paletteWhite,
 } from '../../shared/theme'
-import {
-  type Level,
-  levelBaseColor,
-  levelHighlightColor,
-} from '../../shared/types/level'
+import {type Level, levelHighlightColor} from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
 import {PixelText} from './PixelText'
@@ -33,7 +29,7 @@ export function DialogEnded(props: DialogEndedProps): JSX.Element {
         {...props}
         lines
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[props.level])}
+        borderColor={cssHex(levelHighlightColor[props.level])}
       >
         <PixelText
           {...props}

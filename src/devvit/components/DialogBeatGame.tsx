@@ -10,7 +10,6 @@ import {
 import {
   type Level,
   config2,
-  levelBaseColor,
   levelHighlightColor,
 } from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
@@ -39,7 +38,7 @@ export function DialogBeatGame(
         lines
         padding='none'
         backgroundColor={cssHex(paletteBlack)}
-        borderColor={cssHex(levelBaseColor[props.level])}
+        borderColor={cssHex(levelHighlightColor[props.level])}
       >
         <vstack height='100%' width='100%' alignment='center middle'>
           <spacer height='16px' />
