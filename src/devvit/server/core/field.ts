@@ -1,4 +1,5 @@
 import {counter, histogram} from '@devvit/metrics'
+import type {ZMember} from '@devvit/protos'
 import type {BitfieldCommand, Devvit, JobContext} from '@devvit/public-api'
 import type {DeltaSnapshotKey} from '../../../shared/codecs/deltacodec.js'
 import {MapCodec} from '../../../shared/codecs/mapcodec.js'
@@ -29,7 +30,7 @@ import {
 } from './leaderboards/challenge/team.cellsClaimed'
 import {teamStatsMinesHitIncrementForMember} from './leaderboards/challenge/team.minesHit'
 import {minefieldIsMine} from './minefield'
-import type {ComputeScoreResponse} from './score.ts'
+import {type ComputeScoreResponse, updatePartitionScore} from './score.ts'
 import {
   userDescendLevel,
   userGet,
@@ -829,12 +830,21 @@ export const fieldGet = async ({
         return (bytes[msbIdx]! >> (5 - (bitIdx % 8))) & 7
     }
   }
+  const scores = new Array<ZMember>(4)
+  for (let i = 0; i < 4; i++) {
+    scores[i] = {member: `${i}`, score: 0}
+  }
   for (let i = 0; i < nums.length; i++) {
     nums[i] = getu3(i)
+    const {claimed, team} = decodeVTT(nums[i]!)
+    if (claimed && team >= 0 && team < 4) {
+      scores[team]!.score++
+    }
   }
   metrics.decodeDurationSeconds
     .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
     .observe((performance.now() - start) / 1_000)
+  await updatePartitionScore(redis, challengeNumber, partitionXY, scores)
   return nums
 }
 
@@ -851,6 +861,9 @@ export async function fieldGetPartitionMapEncoded(
     challengeNumber,
     partitionXY,
   )
+
+  // As a side effect, update this partition's scorekeeping.
+
   const start = performance.now()
   const cells = fieldData.generateFieldMap()
   const bytes = await codec.encode(cells)
