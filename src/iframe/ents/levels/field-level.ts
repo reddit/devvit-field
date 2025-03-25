@@ -1,5 +1,5 @@
 import {consoleBorderW} from '../../../shared/theme.ts'
-import {boxHits} from '../../../shared/types/2d.ts'
+import {boxHits, xyAdd} from '../../../shared/types/2d.ts'
 import type {LevelPascalCase} from '../../../shared/types/level.ts'
 import {audioPlayMusic} from '../../audio.ts'
 import type {Game} from '../../game/game.ts'
@@ -47,6 +47,7 @@ export class FieldLevel implements LevelEnt {
 
     if (
       fieldConfig &&
+      ctrl.pointOn &&
       !ctrl.pinch &&
       !ctrl.handled &&
       (ctrl.isOnStart('A') || ctrl.drag) &&
@@ -111,8 +112,11 @@ export class FieldLevel implements LevelEnt {
       ),
     }
 
+    // to-do: allow passing in a device type. This isn't right because the
+    //        player move the mouse while using the spacebar to trigger.
     if (
       ctrl.isOnStart('A') &&
+      ctrl.pointOn &&
       !ctrl.drag &&
       !ctrl.pinch &&
       !ctrl.handled &&
@@ -122,6 +126,17 @@ export class FieldLevel implements LevelEnt {
       //        cycle. This was an issue when trying to use isOffStart().
       ctrl.handled = true
       game.selectBox(select)
+    }
+
+    if (
+      ctrl.isOnStart('A') &&
+      !ctrl.pointOn &&
+      !ctrl.drag &&
+      !ctrl.pinch &&
+      !ctrl.handled
+    ) {
+      ctrl.handled = true
+      game.claimBox(game.select)
     }
   }
 
@@ -154,14 +169,13 @@ export class FieldLevel implements LevelEnt {
       ctrl.handled = true
 
       const dir = {x: 0, y: 0}
-      if (ctrl.isOn('L')) dir.x--
-      if (ctrl.isOn('R')) dir.x++
-      if (ctrl.isOn('U')) dir.y--
-      if (ctrl.isOn('D')) dir.y++
+      if (ctrl.isOnStart('L')) dir.x--
+      if (ctrl.isOnStart('R')) dir.x++
+      if (ctrl.isOnStart('U')) dir.y--
+      if (ctrl.isOnStart('D')) dir.y++
 
-      const speed =
-        (dir.x && dir.y ? Math.sqrt(25 / 2) : 5) / cam.scale / cam.fieldScale
-      game.moveTo({x: cam.x + dir.x * speed, y: cam.y + dir.y * speed})
+      game.selectBox(xyAdd(game.select, dir))
+      game.centerBox(game.select)
     }
   }
 

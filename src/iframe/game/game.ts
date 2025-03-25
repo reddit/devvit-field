@@ -217,8 +217,8 @@ export class Game {
     if (!this.fieldConfig) return
     // to-do: move this mutation to a centralized store so it's easier to see
     // //     how state changes.
-    this.select.x = xy.x
-    this.select.y = xy.y
+    this.select.x = Math.max(0, Math.min(this.fieldConfig.wh.w - 1, xy.x))
+    this.select.y = Math.max(0, Math.min(this.fieldConfig.wh.h - 1, xy.y))
     this.canvas.dispatchEvent(Bubble('game-update', undefined))
   }
 
