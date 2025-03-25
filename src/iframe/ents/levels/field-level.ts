@@ -136,7 +136,7 @@ export class FieldLevel implements LevelEnt {
       !ctrl.handled
     ) {
       ctrl.handled = true
-      game.claimBox(game.select)
+      game.claimBox({...game.select})
     }
   }
 

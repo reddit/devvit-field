@@ -23,7 +23,7 @@ export class BoxEnt implements Ent {
     this.fieldXY = fieldXY
     const team = teamPascalCase[game.team]
     this.#sprite = new Sprite(game.atlas, `box--${team}Pending`)
-    this.#sprite.z = Layer.UIFore
+    this.#sprite.z = Layer.UIBack
     this.#sprite.stretch = true
     this.#sprite.cel = game.looper.frame / 4
   }

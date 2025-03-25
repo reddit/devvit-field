@@ -185,7 +185,10 @@ export class Renderer {
   ): void {
     if (!this.#gl || !this.#crtShader) return
 
-    this.#gl.bindFramebuffer(this.#gl.FRAMEBUFFER, this.#crtShader.frameBuf!)
+    this.#gl.bindFramebuffer(
+      this.#gl.FRAMEBUFFER,
+      this.#crtShader.frameBufColor!,
+    )
 
     this.#resize(cam)
     this.#gl.clear(this.#gl.COLOR_BUFFER_BIT | this.#gl.DEPTH_BUFFER_BIT)
@@ -487,7 +490,8 @@ function CRTShader(gl: GL): Shader {
   gl.bindVertexArray(null)
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
-  shader.frameBuf = gl.createFramebuffer()
+  shader.frameBufColor = gl.createFramebuffer()
+  shader.frameBufDepth = gl.createRenderbuffer()
 
   initFrameBuffer(gl, shader)
 
@@ -580,8 +584,10 @@ function initFrameBuffer(gl: GL, shader: Readonly<Shader>): void {
     gl.UNSIGNED_BYTE,
     null,
   )
+  gl.bindTexture(gl.TEXTURE_2D, null)
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, shader.frameBuf!)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, shader.frameBufColor!)
+
   gl.framebufferTexture2D(
     gl.FRAMEBUFFER,
     gl.COLOR_ATTACHMENT0,
@@ -589,9 +595,27 @@ function initFrameBuffer(gl: GL, shader: Readonly<Shader>): void {
     shader.textures[0]!,
     0,
   )
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 
-  gl.bindTexture(gl.TEXTURE_2D, null)
+  gl.bindRenderbuffer(gl.RENDERBUFFER, shader.frameBufDepth!)
+  gl.renderbufferStorage(
+    gl.RENDERBUFFER,
+    gl.DEPTH_COMPONENT16,
+    gl.canvas.width,
+    gl.canvas.height,
+  )
+  gl.framebufferRenderbuffer(
+    gl.FRAMEBUFFER,
+    gl.DEPTH_ATTACHMENT,
+    gl.RENDERBUFFER,
+    shader.frameBufDepth!,
+  )
+
+  const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER)
+  if (status !== gl.FRAMEBUFFER_COMPLETE)
+    console.error(`incomplete frame buffer; status=${status.toString(16)}`)
+
+  gl.bindRenderbuffer(gl.RENDERBUFFER, null)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 }
 
 function MapShader(gl: GL, map: Uint8Array): Shader {
