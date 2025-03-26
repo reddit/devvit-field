@@ -77,8 +77,12 @@ export class PartDataFetcher {
 
   /** Called on reinit to clear any pending fetches. */
   deinit(): void {
-    for (const worker of this.#workers)
-      if (worker.state !== 'Dying') worker.worker.postMessage({type: 'Kill'})
+    for (const worker of [...this.#workers])
+      if (worker.state === 'Free' || worker.state === 'Fetching') {
+        worker.worker.postMessage({type: 'Kill'})
+        if (worker.state === 'Free') this.#removeWorker(worker)
+        worker.state = 'Dying'
+      }
     this.#config = undefined
     this.#maxSeq = noSeq
     this.#maxSeqUpdated = 0
@@ -120,6 +124,8 @@ export class PartDataFetcher {
       const worker = this.#workers.find(worker => worker.state !== 'Dying')
       if (!worker) break
       worker.worker.postMessage({type: 'Kill'})
+      if (worker.state === 'Free') this.#removeWorker(worker)
+      worker.state = 'Dying'
       living--
     }
     while (living < live.globalPDFMaxParallelFetches) {
@@ -200,8 +206,7 @@ export class PartDataFetcher {
         const {cells, key, workerID, is404Err} = msg
         const worker = this.#workers.find(worker => worker.id === workerID)
         if (worker) {
-          if (worker.state === 'Dying')
-            worker.worker.removeEventListener('message', this.#onWorkerMsg)
+          if (worker.state === 'Dying') this.#removeWorker(worker)
           else worker.state = 'Free'
         }
 
@@ -246,6 +251,12 @@ export class PartDataFetcher {
       this.#maxSeq = Seq(key.sequenceNumber)
       this.#maxSeqUpdated = now
     }
+  }
+
+  #removeWorker(worker: Readonly<PartWorker>): void {
+    worker.worker.removeEventListener('message', this.#onWorkerMsg)
+    const i = this.#workers.indexOf(worker)
+    if (i !== -1) this.#workers.splice(i, 1)
   }
 }
 

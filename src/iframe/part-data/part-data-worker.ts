@@ -15,7 +15,7 @@ import type {
   PartDataWorkerMessage,
 } from './part-data-message.ts'
 
-console.log('part-data-worker')
+console.log('part-data-worker created')
 
 class FetchError404 extends Error {}
 
@@ -79,7 +79,10 @@ class PartitionWorker {
       case 'Kill':
         this.#abortCtrl.abort()
         this.deregister()
-        setTimeout(close, 1000)
+        setTimeout(() => {
+          console.log('part-data-worker destroyed')
+          close()
+        }, 1000)
         break
       default:
         msg satisfies never
