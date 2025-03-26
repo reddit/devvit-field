@@ -146,6 +146,7 @@ export function App(ctx: Devvit.Context): JSX.Element {
       redirectURL: '',
       profile,
       standings,
+      lvl: profile.currentLevel,
     })
   }
 

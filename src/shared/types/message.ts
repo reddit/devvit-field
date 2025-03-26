@@ -155,6 +155,8 @@ export type SetTimeoutMessage = {
 
 type DialogMessageBase = {
   type: 'Dialog'
+  /** Level user is allowed to be on. */
+  lvl: Level
   redirectURL: string
   message: string
 }

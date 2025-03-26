@@ -78,6 +78,7 @@ export const levelsIsUserInRightPlace = async ({
     return {
       pass: false,
       message: `You have been permanently banned from r/${subredditLevel.subredditName}`,
+      lvl: userLevel.id,
       redirectURL: userLevel.url,
       code: 'WrongLevelBanned',
       profile,
@@ -127,6 +128,7 @@ export const levelsIsUserInRightPlace = async ({
     )!
 
     return {
+      lvl: userLevel.id,
       pass: false,
       message: `You were on the winning team and claimed more than one cell. You have ascended to level ${newLevelForUser}.`,
       code: 'ChallengeEndedAscend',

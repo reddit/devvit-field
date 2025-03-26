@@ -145,6 +145,7 @@ DevvitTest.it(
       team: 2,
       redirectURL: expect.any(String),
       profile: expect.any(Object),
+      lvl: 0,
     })
   },
 )
