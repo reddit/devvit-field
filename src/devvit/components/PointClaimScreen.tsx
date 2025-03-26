@@ -53,23 +53,23 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
               resizeMode='fill'
               url='final-cell-glow.png'
             />
+            {claimed && (
+              <image
+                imageHeight={240}
+                imageWidth={240}
+                width='120px'
+                height='120px'
+                description='Ban Box Animation'
+                resizeMode='fill'
+                url='logo-grow.gif'
+              />
+            )}
             <hstack
               width='120px'
               height='120px'
               border='thick'
               borderColor={cssHex(paletteFieldLight)}
             />
-            {claimed && (
-              <image
-                imageHeight={Math.ceil(symbolHeight * props.pixelRatio)}
-                imageWidth={Math.ceil(symbolHeight * props.pixelRatio)}
-                width='120px'
-                height='120px'
-                description='Ban Box Illustration'
-                resizeMode='fill'
-                url={svg`${createBanBoxBadge()}`}
-              />
-            )}
           </zstack>
 
           <spacer height='8px' />
