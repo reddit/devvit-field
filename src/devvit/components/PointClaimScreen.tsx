@@ -1,6 +1,5 @@
-import {Devvit, svg, useState} from '@devvit/public-api'
+import {Devvit, useState} from '@devvit/public-api'
 import {localize} from '../../shared/locale'
-import {createBanBoxBadge} from '../../shared/svg-factories/createBanBoxBadge'
 import {type Team, teamColor} from '../../shared/team'
 import {
   cssHex,
@@ -24,7 +23,6 @@ type PointClaimScreenProps = {
 
 export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
   const [claimed, setClaimed] = useState(false)
-  const symbolHeight = 120
 
   return (
     <zstack height='100%' width='100%' backgroundColor={cssHex(paletteConsole)}>
