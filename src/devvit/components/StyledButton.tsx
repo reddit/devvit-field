@@ -76,12 +76,7 @@ export function StyledButton(props: StyledButtonProps): JSX.Element {
       />
       <vstack height='100%' width='100%' alignment='top center'>
         <spacer height='6px' />
-        <PixelText
-          {...props}
-          size={fontMSize}
-          color={cssHex(paletteBlack)}
-          opacity={0.6}
-        >
+        <PixelText {...props} size={fontMSize} color={cssHex(paletteBlack)}>
           {props.children}
         </PixelText>
       </vstack>
