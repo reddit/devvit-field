@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {cssHex, fontMSize, spacePx} from '../../../shared/theme.ts'
+import {cssHex, fontMSize} from '../../../shared/theme.ts'
 import {cssReset} from '../css-reset.ts'
 
 import {
@@ -37,24 +37,12 @@ export class DialogAscended extends LitElement {
       align-items: center;
     }
 
-    .metadata {
-      color: var(--color-white);
-      flex-grow: 2;
-      align-content: center;
-      font-size: ${fontMSize}px;
-      padding-top: ${spacePx}px;
-    }
-
-    .my-points {
-      font-size: 32px;
-      color: var(--dialog-team-base-color);
-    }
-
     .team {
       color: var(--color-white);
     }
 
     h1 {
+      color: var(--color-theme-light);
       font-size: ${fontMSize}px;
       flex-grow: 0;
     }`
@@ -96,7 +84,9 @@ export class DialogAscended extends LitElement {
         buttonLevel=${this.subLvl ?? 0}
         .buttonHandler=${this.buttonHandler}>
         <div class="container">
-          <dialog-container .height=${200} .subLvl=${this.subLvl ?? 0} backgroundColor=${cssHex(levelHighlightColor[this.subLvl ?? 0])}>
+          <dialog-container
+            .height=${200} 
+            .subLvl=${this.subLvl ?? 0}>
             <div .innerHTML=${title.join('')}></div>
           </dialog-container>
         </div>

@@ -11,10 +11,7 @@ import {cssReset} from '../../css-reset.ts'
 import './dialog-badge.ts'
 import {createBorderedContainer} from '../../../../shared/svg-factories/createBorderedContainer.ts'
 import {createCrtLines} from '../../../../shared/svg-factories/createCrtLines.ts'
-import {
-  type Level,
-  levelHighlightColor,
-} from '../../../../shared/types/level.ts'
+import type {Level} from '../../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -31,9 +28,8 @@ export class DialogContainer extends LitElement {
   @property({type: Number}) accessor height: number = 200
   @property({type: String}) accessor backgroundColor: string =
     cssHex(paletteBlack)
-  @property({type: String}) accessor borderColor: string = cssHex(
-    levelHighlightColor[this.subLvl ?? 0],
-  )
+  @property({type: String}) accessor borderColor: string =
+    'var(--color-theme-light)'
   @property({type: String}) accessor verticalAlignment: string = 'center'
 
   static override readonly styles: CSSResultGroup = css`

@@ -24,8 +24,9 @@ export class BFButton extends LitElement {
     ${cssReset}
 
     :host {
-      --width: fit-content;
-      display: inline-block;
+      width: 100%;
+      display: flex;
+      justify-content: center;
       padding: 0 24px;
     }
 

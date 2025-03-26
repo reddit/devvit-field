@@ -72,7 +72,9 @@ export class DialogUnauthorized extends LitElement {
         buttonLabel=${buttonLabel}
         .buttonHandler=${this.buttonHandler}>
         <div class="container">
-          <dialog-container .height=${96} .subLvl=${this.subLvl ?? 0}>
+          <dialog-container
+            .height=${200}
+            .subLvl=${this.subLvl ?? 0}>
             ${localize(`unauthorized-dialog-level-${this.subLvl ?? 0}`)
               .split(lineBreakToken)
               .map(line => html`<h1>${line}</h1>`)}

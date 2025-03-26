@@ -5,10 +5,11 @@ import {
   css,
   html,
 } from 'lit'
-import {customElement} from 'lit/decorators.js'
+import {customElement, property} from 'lit/decorators.js'
 import {cssReset} from '../css-reset.ts'
 
 import {lineBreakToken, localize} from '../../../shared/locale.ts'
+import type {Level} from '../../../shared/types/level.ts'
 declare global {
   interface HTMLElementTagNameMap {
     'dialog-webgl': DialogWebgl
@@ -29,14 +30,16 @@ export class DialogWebgl extends LitElement {
       align-items: center;
     }`
 
+  @property({type: Number}) accessor subLvl: Level | undefined = 0
+
   protected override render(): TemplateResult {
     return html`
       <bf-dialog
-        .subLvl=${0}
+        .subLvl=${this.subLvl}
         .showButton=${false}
         .showMarketing=${false}>
         <div class="container">
-          <dialog-container .height=${200} .subLvl=${0}>
+          <dialog-container .height=${200}>
           ${localize('error-dialog-no-webgl')
             .split(lineBreakToken)
             .map(line => html`<p>${line}</p>`)}

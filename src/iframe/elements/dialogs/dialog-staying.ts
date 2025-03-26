@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {cssHex, fontMSize, spacePx} from '../../../shared/theme.ts'
+import {cssHex, fontMSize, fontSSize, spacePx} from '../../../shared/theme.ts'
 import {cssReset} from '../css-reset.ts'
 
 import {padNumber} from '../../../shared/format.ts'
@@ -42,8 +42,12 @@ export class DialogStaying extends LitElement {
         color: var(--color-white);
         flex-grow: 2;
         align-content: center;
-        font-size: ${fontMSize}px;
+        justify-content: center;
+        font-size: ${fontSSize}px;
         padding-top: ${spacePx}px;
+        display: flex;
+        flex-direction: column;
+        gap: ${spacePx / 4}px;
       }
   
       .my-points {
@@ -93,11 +97,7 @@ export class DialogStaying extends LitElement {
           if (token === '{TeamName}') {
             value = teamTitleCase[this.team].toUpperCase()
           }
-          if (token === '{RoundNumber}') {
-            value = this.roundNumber.toString()
-          }
-          words[tokenIndex] =
-            `<span class="${token === '{TeamName}' ? 'team' : ''}">${value}</span>`
+          words[tokenIndex] = `<span class="team">${value}</span>`
         }
         title.push(`<h1>${words.join(' ')}</h1>`)
       } else {
@@ -112,7 +112,10 @@ export class DialogStaying extends LitElement {
           buttonLevel=${this.subLvl ?? 0}
           .buttonHandler=${this.buttonHandler}>
           <div class="container">
-            <dialog-container .height=${96} .subLvl=${this.subLvl ?? 0}>
+            <dialog-container
+              .height=${96}
+              .subLvl=${this.subLvl ?? 0}
+              borderColor=${cssHex(levelHighlightColor[this.subLvl ?? 0])}>
               <div .innerHTML=${title.join('')}></div>
             </dialog-container>
             <div class="metadata">
