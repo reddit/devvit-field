@@ -51,9 +51,6 @@ export class BFTerminal extends LitElement {
       flex-grow: 1;
       flex-shrink: 1;
       align-items: center;
-      padding-top: ${spacePx}px;
-      padding-left: ${spacePx}px;
-      padding-right: ${spacePx}px;
     }
 
     bf-header {
@@ -70,10 +67,19 @@ export class BFTerminal extends LitElement {
       outline: none; /* Disable focus outline. */
     }
 
-    .canvas-box {
+    .canvas-container {
+      position: relative;
       flex-grow: 1;
       flex-shrink: 1;
       width: 100%;
+    }
+
+    .canvas-box {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: ${spacePx}px;
+      right: ${spacePx}px;
       overflow: hidden;
       border-bottom-left-radius: ${radiusPx}px;
       border-bottom-right-radius: ${radiusPx}px;
@@ -154,10 +160,14 @@ export class BFTerminal extends LitElement {
             sunshine='${this.challengeScoreSunshine}'
           ></bf-header>
 
-          <div class='canvas-box'>
-            <!--- Set tabIndex to propagate key events. -->
-            <canvas tabIndex='0'></canvas>
+
+          <div class="canvas-container">
+            <div class='canvas-box'>
+              <!--- Set tabIndex to propagate key events. -->
+              <canvas tabIndex='0'></canvas>
+            </div>
           </div>
+
 
           <!-- Claim Button -->
           <bf-button
