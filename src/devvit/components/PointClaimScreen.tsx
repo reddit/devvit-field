@@ -96,6 +96,34 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
 
         <Footer {...props} scores={props.standings} claimed={claimed} />
       </vstack>
+
+      {claimed && (
+        <vstack height='100%' width='100%'>
+          <hstack width='100%' grow alignment='center bottom'>
+            <spacer width='28px' />
+            <hstack
+              grow
+              height='100%'
+              maxWidth='432px'
+              alignment='center bottom'
+            >
+              <spacer width={`${props.team * 25}%`} />
+              <image
+                imageHeight={512}
+                imageWidth={256}
+                width='25%'
+                height='128px'
+                description='Point earned'
+                resizeMode='fit'
+                url='earned-a-point.gif'
+              />
+              <spacer width={`${100 - (props.team + 1) * 25}%`} />
+            </hstack>
+            <spacer width='28px' />
+          </hstack>
+          <spacer height='90px' />
+        </vstack>
+      )}
     </zstack>
   )
 }
