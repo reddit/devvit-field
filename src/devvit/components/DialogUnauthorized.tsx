@@ -70,6 +70,7 @@ export function DialogUnauthorized(
           <spacer height='16px' />
         </vstack>
       </BorderedContainer>
+      <spacer height='4px' />
       <spacer grow />
 
       <PixelText {...props} size={fontSSize} color={cssHex(paletteWhite)}>

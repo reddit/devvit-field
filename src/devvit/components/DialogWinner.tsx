@@ -17,14 +17,17 @@ import {TeamBadge} from './TeamBadge'
 type DialogWinnerProps = {
   team: Team
   level: Level
-  button?: boolean
   pixelRatio: number
   onPress?: () => void
 }
 
 export function DialogWinner(props: DialogWinnerProps): JSX.Element {
   return (
-    <Dialog {...props} marketingLabel={localize('winner-dialog-footer')}>
+    <Dialog
+      {...props}
+      marketingLabel={localize('winner-dialog-footer')}
+      button={false}
+    >
       <BorderedContainer
         height={80}
         width={256}

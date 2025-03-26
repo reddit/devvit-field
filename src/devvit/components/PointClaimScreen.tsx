@@ -30,12 +30,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
 
   if (redirect) {
     return (
-      <DialogWinner
-        button={false}
-        pixelRatio={props.pixelRatio}
-        team={props.team}
-        level={0}
-      />
+      <DialogWinner pixelRatio={props.pixelRatio} team={props.team} level={0} />
     )
   }
 

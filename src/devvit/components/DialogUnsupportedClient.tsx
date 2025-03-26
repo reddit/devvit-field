@@ -31,7 +31,7 @@ export function DialogUnsupportedClient(
     <Dialog
       {...props}
       marketing={false}
-      buttonLabel='Upgrade'
+      buttonLabel={localize('unsupported-client-dialog-button-label')}
       onPress={() => {
         const upgradeLink = getUpgradeLinkForPlatform(props.platform)
 

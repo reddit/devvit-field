@@ -17,6 +17,7 @@ export function DialogVerifyEmail(props: DialogVerifyEmailProps): JSX.Element {
     <Dialog
       {...props}
       buttonLabel={localize('verify-email-dialog-button-label')}
+      marketing={false}
     >
       <BorderedContainer
         height={200}

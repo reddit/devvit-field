@@ -22,7 +22,11 @@ type DialogEndedProps = {
 
 export function DialogEnded(props: DialogEndedProps): JSX.Element {
   return (
-    <Dialog {...props} buttonLabel={localize('ended-dialog-button-label')}>
+    <Dialog
+      {...props}
+      button={false}
+      marketingLabel={localize('ended-dialog-footer')}
+    >
       <BorderedContainer
         height={128}
         width={256}
@@ -37,6 +41,14 @@ export function DialogEnded(props: DialogEndedProps): JSX.Element {
           color={cssHex(levelHighlightColor[props.level])}
         >
           {localize('ended-dialog-title')}
+        </PixelText>
+        <spacer height='4px' />
+        <PixelText
+          {...props}
+          size={fontMSize}
+          color={cssHex(levelHighlightColor[props.level])}
+        >
+          {localize('ended-dialog-subtitle')}
         </PixelText>
       </BorderedContainer>
 
