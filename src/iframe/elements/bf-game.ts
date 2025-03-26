@@ -24,7 +24,6 @@ import './dialogs/dialog-staying.ts'
 import './dialogs/dialog-unauthorized.ts'
 import './dialogs/dialog-webgl.ts'
 import {
-  type Level,
   levelBaseColor,
   levelHighlightColor,
   levelShadowColor,
@@ -118,9 +117,6 @@ export class BFGame extends LitElement {
 
     let dialog
 
-    const currentLvl: Level | undefined = this.#game.subLvl
-    const bannedLevel = (currentLvl! + 1) as Level
-    const ascendALevel = currentLvl! > 0 ? currentLvl! - 1 : 0
     const winningTeam =
       this.#msg?.code === 'ChallengeEndedAscend' ||
       this.#msg?.code === 'ChallengeEndedStay'
@@ -146,8 +142,8 @@ export class BFGame extends LitElement {
           case 'ClaimedABanBox':
             dialog = html`
               <dialog-banned
-                subLvl=${ifDefined(currentLvl)}
-                buttonLevel=${bannedLevel}
+                subLvl=${ifDefined(this.#game.subLvl)}
+                buttonLevel=${this.#msg.lvl}
                 .buttonHandler=${() => {
                   this.#msg
                     ? this.#game.postMessage(this.#msg)
@@ -159,8 +155,8 @@ export class BFGame extends LitElement {
           case 'ChallengeEndedAscend':
             dialog = html`
               <dialog-ascended
-                subLvl=${ifDefined(currentLvl)}
-                buttonLevel=${ascendALevel}
+                subLvl=${ifDefined(this.#game.subLvl)}
+                buttonLevel=${this.#msg.lvl}
                 .buttonHandler=${() => {
                   this.#msg
                     ? this.#game.postMessage(this.#msg)
@@ -173,7 +169,7 @@ export class BFGame extends LitElement {
           case 'ChallengeEndedStay':
             dialog = html`
               <dialog-staying
-                subLvl=${ifDefined(currentLvl)}
+                subLvl=${ifDefined(this.#game.subLvl)}
                 roundNumber=${0}
                 .team=${winningTeam ? winningTeam : 0}
                 myPoints=${this.#msg.profile.lastPlayedChallengeNumberCellsClaimed}
@@ -187,7 +183,7 @@ export class BFGame extends LitElement {
             //TODO: update button text w/ next sub name
             dialog = html`
               <dialog-unauthorized
-              subLvl=${ifDefined(currentLvl)}
+              subLvl=${ifDefined(this.#game.subLvl)}
               roundNumber=${0}
               team=${this.#msg.team}
               myPoints=${this.#msg.profile.lastPlayedChallengeNumberCellsClaimed}
