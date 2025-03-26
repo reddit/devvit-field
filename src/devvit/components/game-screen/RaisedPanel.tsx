@@ -1,5 +1,4 @@
 import {Devvit, svg} from '@devvit/public-api'
-import {createBanBoxBadge} from '../../../shared/svg-factories/createBanBoxBadge'
 import {
   cssHex,
   paletteBlack,
