@@ -22,7 +22,7 @@ export function noProfile(): Profile {
 
 // 2 because I switch this over to a hash and we don't have a way
 // to truncate redis for an app at the moment
-const getUserKey = (userId: T2) => `user5:${userId}` as const
+const getUserKey = (userId: T2) => `user6:${userId}` as const
 
 export const userMaybeGet = async ({
   redis,
