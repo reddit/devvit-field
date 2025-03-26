@@ -94,12 +94,13 @@ export function RaisedPanel(props: RaisedPanelProps): JSX.Element {
           <vstack height='100%' width='100%' alignment='center top'>
             <spacer height='6px' />
             <image
-              imageWidth={20 * props.pixelRatio}
-              imageHeight={20 * props.pixelRatio}
+              imageHeight={48}
+              imageWidth={48}
               width='20px'
               height='20px'
-              description='Ban Box Icon'
-              url={svg`${createBanBoxBadge()}`}
+              description='Ban Box Animation'
+              resizeMode='fit'
+              url='logo-flicker.gif'
             />
           </vstack>
         ) : null}
