@@ -12,12 +12,6 @@ type DialogErrorProps = {
 }
 
 export function DialogError(props: DialogErrorProps): JSX.Element {
-  const sharedProps = {
-    size: fontMSize,
-    color: cssHex(levelHighlightColor[props.level]),
-    ...props,
-  }
-
   return (
     <Dialog {...props} button={false} marketing={false}>
       <BorderedContainer
@@ -31,7 +25,12 @@ export function DialogError(props: DialogErrorProps): JSX.Element {
         {localize('error-dialog')
           .split(lineBreakToken)
           .map(copy => (
-            <PixelText key={copy} {...sharedProps}>
+            <PixelText
+              {...props}
+              key={copy}
+              size={fontMSize}
+              color={cssHex(levelHighlightColor[props.level])}
+            >
               {copy}
             </PixelText>
           )) ?? null}

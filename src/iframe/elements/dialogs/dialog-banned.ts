@@ -6,7 +6,7 @@ import {
   html,
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import {fontLSize, fontMSize, spacePx} from '../../../shared/theme.ts'
+import {cssHex, fontLSize, fontSSize, spacePx} from '../../../shared/theme.ts'
 import {cssReset} from '../css-reset.ts'
 
 import {
@@ -14,7 +14,11 @@ import {
   localize,
   variableStartToken,
 } from '../../../shared/locale.ts'
-import {type Level, levelPascalCase} from '../../../shared/types/level.ts'
+import {
+  type Level,
+  levelHighlightColor,
+  levelPascalCase,
+} from '../../../shared/types/level.ts'
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -40,7 +44,7 @@ export class DialogBanned extends LitElement {
       color: var(--color-white);
       flex-grow: 2;
       align-content: center;
-      font-size: ${fontMSize}px;
+      font-size: ${fontSSize}px;
       padding-top: ${spacePx}px;
     }
 
@@ -72,7 +76,10 @@ export class DialogBanned extends LitElement {
         buttonLabel=${buttonLabel}
         .buttonHandler=${this.buttonHandler}>
         <div class="container">
-          <dialog-container .height=${96} .subLvl=${this.subLvl ?? 0}>
+          <dialog-container
+            .height=${96}
+            .subLvl=${this.subLvl}
+            borderColor=${cssHex(levelHighlightColor[this.subLvl ?? 0])}>
             ${localize(`banned-dialog-level-${this.subLvl ?? 0}-title`)
               .split(lineBreakToken)
               .map(line => html`<h1>${line}</h1>`)}

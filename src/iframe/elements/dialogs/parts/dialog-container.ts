@@ -31,6 +31,9 @@ export class DialogContainer extends LitElement {
   @property({type: Number}) accessor height: number = 200
   @property({type: String}) accessor backgroundColor: string =
     cssHex(paletteBlack)
+  @property({type: String}) accessor borderColor: string = cssHex(
+    levelHighlightColor[this.subLvl ?? 0],
+  )
   @property({type: String}) accessor verticalAlignment: string = 'center'
 
   static override readonly styles: CSSResultGroup = css`
@@ -40,7 +43,7 @@ export class DialogContainer extends LitElement {
       position: relative;
       width: var(--dialog-width, 256px);
       height: var(--dialog-height, 200px);
-      color: var(--dialog-text-color);
+      color: var(--color-theme-light);
     }
 
     .container > * {
@@ -61,10 +64,6 @@ export class DialogContainer extends LitElement {
     this.style.setProperty('--dialog-width', `${this.width}px`)
     this.style.setProperty('--dialog-height', `${this.height}px`)
     this.style.setProperty(
-      '--dialog-text-color',
-      cssHex(levelHighlightColor[this.subLvl ?? 0]),
-    )
-    this.style.setProperty(
       '--dialog-vertical-alignment',
       this.verticalAlignment,
     )
@@ -72,12 +71,12 @@ export class DialogContainer extends LitElement {
     return html`
       <div class="container">
         <!-- Container Graphic -->
-        ${html`<div .innerHTML=${createBorderedContainer({
+        <div .innerHTML=${createBorderedContainer({
           height: this.height,
           width: this.width,
-          borderColor: cssHex(levelHighlightColor[this.subLvl ?? 0]),
+          borderColor: this.borderColor,
           backgroundColor: this.backgroundColor,
-        })}></div>`}
+        })}></div>
 
         <!-- Content Container -->
         <div class="content-container">

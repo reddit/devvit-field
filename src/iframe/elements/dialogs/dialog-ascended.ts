@@ -96,7 +96,7 @@ export class DialogAscended extends LitElement {
         buttonLevel=${this.subLvl ?? 0}
         .buttonHandler=${this.buttonHandler}>
         <div class="container">
-          <dialog-container .height=${200} .subLvl=${this.subLvl ?? 0}>
+          <dialog-container .height=${200} .subLvl=${this.subLvl ?? 0} backgroundColor=${cssHex(levelHighlightColor[this.subLvl ?? 0])}>
             <div .innerHTML=${title.join('')}></div>
           </dialog-container>
         </div>

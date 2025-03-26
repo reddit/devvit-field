@@ -26,8 +26,6 @@ export class BFButton extends LitElement {
     :host {
       --width: fit-content;
       display: inline-block;
-      width: 100%;
-      max-width: 468px;
       padding: 0 24px;
     }
 
@@ -77,6 +75,7 @@ export class BFButton extends LitElement {
       background-size: calc(100% - 4px) 100%;
       background-repeat: no-repeat;
       width: 100%;
+      max-width: var(--max-width);
       /* Position pseudoelement relative. */
       position: relative;
       padding-top: 3px;
@@ -89,6 +88,7 @@ export class BFButton extends LitElement {
       line-height: 26px;
       letter-spacing: -0.3px;
       font-family: 'Departure Mono', 'Courier New', monospace;
+      white-space: nowrap;
     }
 
     button::after {
@@ -277,9 +277,12 @@ export class BFButton extends LitElement {
 
   @property() accessor appearance: TeamPascalCase | Level | undefined
   @property({type: Boolean}) accessor disabled: boolean = false
+  @property({type: Number}) accessor maxWidth: number = 468
   @property() accessor label = ''
 
   protected override render(): TemplateResult {
+    this.style.setProperty('--max-width', `${this.maxWidth}px`)
+
     return html`
       <button ?disabled=${this.disabled}>
         <slot></slot>

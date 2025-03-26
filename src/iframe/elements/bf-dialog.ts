@@ -7,7 +7,11 @@ import {
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import {cssHex, spacePx} from '../../shared/theme.ts'
-import {type Level, levelShadowColor} from '../../shared/types/level.ts'
+import {
+  type Level,
+  levelBaseColor,
+  levelShadowColor,
+} from '../../shared/types/level.ts'
 import type {
   ChallengeCompleteMessage,
   DialogMessage,
@@ -54,7 +58,7 @@ export class BFDialog extends LitElement {
     }
 
     bf-button {
-      margin-top: ${spacePx * 2}px;
+      margin-top: ${spacePx}px;
     }
   `
 
@@ -81,7 +85,8 @@ export class BFDialog extends LitElement {
         height=${height}
         width=${width}
         verticalAlignment="top"
-        backgroundColor=${cssHex(levelShadowColor[this.subLvl ?? 0])}>
+        .backgroundColor=${cssHex(levelShadowColor[this.subLvl ?? 0])}
+        .borderColor=${cssHex(levelBaseColor[this.subLvl ?? 0])}>
         <div>
           <slot></slot>
         </div>
@@ -92,6 +97,7 @@ export class BFDialog extends LitElement {
         this.showButton
           ? html`
           <bf-button
+            maxWidth=${256}
             appearance=${this.buttonLevel}
             @click=${this.buttonHandler}>
           ${this.buttonLabel}

@@ -7,6 +7,7 @@ import {
 } from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import {localize} from '../../../../shared/locale.ts'
+import {createGorLogo} from '../../../../shared/svg-factories/createGorLogo.ts'
 import {fontSSize, spacePx} from '../../../../shared/theme.ts'
 import type {Level} from '../../../../shared/types/level.ts'
 import {cssReset} from '../../css-reset.ts'
@@ -23,18 +24,18 @@ export class InnerContainer extends LitElement {
     ${cssReset}
 
     :host {
-      padding-top: 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: ${spacePx}px;
+      padding-top: ${spacePx * 2}px;
     }
 
     .marketing {
       opacity: 1;
       transition: opacity 0.2s ease-out;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: ${spacePx}px;
     }
 
     .marketing:hover {
@@ -47,8 +48,8 @@ export class InnerContainer extends LitElement {
       text-transform: uppercase;
     }
 
-    img {
-      width: 256px;
+    svg {
+      height: 32px;
     }`
 
   @property({type: Number}) accessor subLvl: Level | undefined
@@ -57,11 +58,7 @@ export class InnerContainer extends LitElement {
     return html`
       <div class="marketing" @click=${() => console.log('to-do: navigate to r/GamesOnReddit')}>
         <p>${localize('games-on-reddit-header')}</p>
-        <!-- to-do: swap to a higher res asset. + swap based on level. -->
-        <img
-          src="/assets/games-on-reddit-logo.webp"
-          alt="r/GamesOnReddit logo"
-          class="logo" />
+        <div class="logo-wrapper" .innerHTML=${createGorLogo()}></div>
       </div>`
   }
 }
