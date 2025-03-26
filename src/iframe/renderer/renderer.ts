@@ -573,12 +573,16 @@ function initFrameBuffer(gl: GL, shader: Readonly<Shader>): void {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
+  const {width, height} = gl.canvas
+
+  if (!width || !height) return
+
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
     gl.RGBA,
-    gl.canvas.width,
-    gl.canvas.height,
+    width,
+    height,
     0,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
@@ -597,12 +601,7 @@ function initFrameBuffer(gl: GL, shader: Readonly<Shader>): void {
   )
 
   gl.bindRenderbuffer(gl.RENDERBUFFER, shader.frameBufDepth!)
-  gl.renderbufferStorage(
-    gl.RENDERBUFFER,
-    gl.DEPTH_COMPONENT16,
-    gl.canvas.width,
-    gl.canvas.height,
-  )
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
   gl.framebufferRenderbuffer(
     gl.FRAMEBUFFER,
     gl.DEPTH_ATTACHMENT,
