@@ -125,17 +125,12 @@ export class BFGame extends LitElement {
 
     switch (this.ui) {
       case 'Loading':
-        // to-do: no background, no nothing.
         break
       case 'Playing':
         break
       case 'NoWebGL':
         dialog = html`<dialog-webgl></dialog-webgl>`
-        dialog = html`
-        `
         break
-      // case 'Scored':
-      //   return html`to-do: fix me.`
       case 'DialogMessage': {
         if (this.#msg?.type !== 'Dialog') throw new Error('no dialog message')
         switch (this.#msg?.code) {
@@ -156,7 +151,6 @@ export class BFGame extends LitElement {
             dialog = html`
               <dialog-ascended
                 subLvl=${ifDefined(this.#game.subLvl)}
-                buttonLevel=${this.#msg.lvl}
                 .buttonHandler=${() => {
                   this.#msg
                     ? this.#game.postMessage(this.#msg)
@@ -180,13 +174,10 @@ export class BFGame extends LitElement {
             </dialog-staying>`
             break
           case 'WrongLevelBanned':
-            //TODO: update button text w/ next sub name
             dialog = html`
               <dialog-unauthorized
               subLvl=${ifDefined(this.#game.subLvl)}
-              roundNumber=${0}
-              team=${this.#msg.team}
-              myPoints=${this.#msg.profile.lastPlayedChallengeNumberCellsClaimed}
+              .buttonLevel=${this.#msg.lvl}
               .buttonHandler=${() => {
                 this.#msg
                   ? this.#game.postMessage(this.#msg)
