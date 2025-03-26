@@ -28,7 +28,7 @@ const fieldScaleLvls: readonly number[] = [
   202, 210, 218, 226, 234, 242, 250,
 ]
 const minUserFieldScaleLvl: number = fieldScaleLvls.indexOf(20)!
-const defaultFieldScaleLvl: number = fieldScaleLvls.indexOf(98)!
+const defaultFieldScaleLvl: number = fieldScaleLvls.indexOf(50)!
 
 export class Cam {
   /** Fractional (but only integral is ever honored). */
