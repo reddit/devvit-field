@@ -278,7 +278,7 @@ export class BFButton extends LitElement {
 
   @property() accessor appearance: TeamPascalCase | Level | undefined
   @property({type: Boolean}) accessor disabled: boolean = false
-  @property({type: Number}) accessor maxWidth: number = 468
+  @property({type: Number}) accessor maxWidth: number = 420
   @property() accessor label = ''
 
   protected override render(): TemplateResult {
