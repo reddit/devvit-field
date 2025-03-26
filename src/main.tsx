@@ -215,6 +215,14 @@ Devvit.addSettings([
   },
   {
     scope: SettingScope.App,
+    name: 'drive-load-stride',
+    label:
+      'Set to true, and driven load will select cells in order instead of randomly',
+    type: 'boolean',
+    defaultValue: false,
+  },
+  {
+    scope: SettingScope.App,
     name: 'realtime-batch-enabled',
     label: 'Set to true to reduce realtime publish RPS',
     type: 'boolean',
