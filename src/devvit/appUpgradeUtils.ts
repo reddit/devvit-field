@@ -113,13 +113,11 @@ export const shouldShowUpgradeAppScreen = (
   }
 
   if (parsedDevvitUserAgent.platform === 'Android') {
-    // TODO: Version number
-    return parsedDevvitUserAgent.versionNumber < 1875012
+    return parsedDevvitUserAgent.versionNumber < 2511120
   }
 
   if (parsedDevvitUserAgent.platform === 'iOS') {
-    // TODO: Version number
-    return parsedDevvitUserAgent.versionNumber < 614973
+    return parsedDevvitUserAgent.versionNumber < 615988
   }
 
   // Default to trying to render since we couldn't explicitly get the version number
