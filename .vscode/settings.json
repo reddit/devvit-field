@@ -22,5 +22,21 @@
     "reinit",
     "snoovatar",
     "webroot"
-  ]
+  ],
+
+  "lit-plugin.strict": true,
+  "lit-plugin.rules.no-missing-element-type-definition": "error",
+  "lit-plugin.rules.no-unknown-event": "error",
+  "lit-plugin.rules.no-boolean-in-attribute-binding": "error",
+  "lit-plugin.rules.no-complex-attribute-binding": "error",
+  "lit-plugin.rules.no-incompatible-property-type": "error",
+  "lit-plugin.rules.no-invalid-attribute-name": "error",
+  "lit-plugin.rules.no-incompatible-type-binding": "error",
+  "lit-plugin.rules.no-invalid-boolean-binding": "error",
+  "lit-plugin.rules.no-invalid-directive-binding": "error",
+  "lit-plugin.rules.no-unclosed-tag": "error",
+  "lit-plugin.rules.no-unknown-attribute": "error",
+  "lit-plugin.rules.no-unknown-property": "error",
+  "lit-plugin.rules.no-unknown-slot": "error",
+  "lit-plugin.rules.no-unknown-tag-name": "error"
 }
