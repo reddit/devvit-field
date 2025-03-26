@@ -63,8 +63,8 @@
   "ended-dialog-metadata": "Thank you for trying.↵(Place was better.)",
   "ended-dialog-button-label": "THANKS!",
   "winner-dialog-title": "CONGRATULATIONS!",
-  "winner-dialog-metadata-1": "YOU GOT A POINT FOR",
-  "winner-dialog-metadata-2": "ADD IT TO YOUR LINKEDIN",
+  "winner-dialog-metadata-1": "YOU EARNED A POINT FOR",
+  "winner-dialog-metadata-2": "Your time in r/Field↵has ended gloriously.",
   "winner-dialog-button-label": "THANKS!",
   "winner-dialog-footer": "VIEW YOUR STATS↵AND TEAM STANDINGS AT"
 }

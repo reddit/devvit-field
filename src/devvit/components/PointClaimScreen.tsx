@@ -1,4 +1,4 @@
-import {Devvit, useState} from '@devvit/public-api'
+import {Devvit, useInterval, useState} from '@devvit/public-api'
 import {localize} from '../../shared/locale'
 import {type Team, teamColor} from '../../shared/team'
 import {
@@ -8,6 +8,7 @@ import {
   paletteDisabled,
   paletteFieldLight,
 } from '../../shared/theme'
+import {DialogWinner} from './DialogWinner'
 import {StyledButton} from './StyledButton'
 import {Footer} from './game-screen/Footer'
 import {Header} from './game-screen/Header'
@@ -22,7 +23,32 @@ type PointClaimScreenProps = {
 }
 
 export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
+  const REDIRECT_DELAY_MILLIS = 2_000
+
   const [claimed, setClaimed] = useState(false)
+  const [redirect, setRedirect] = useState(false)
+
+  if (redirect) {
+    return (
+      <DialogWinner
+        button={false}
+        pixelRatio={props.pixelRatio}
+        team={props.team}
+        level={0}
+      />
+    )
+  }
+
+  const redirectTimer = useInterval(
+    () => setRedirect(true),
+    REDIRECT_DELAY_MILLIS,
+  )
+
+  async function handlePress() {
+    await props.onClaimPress()
+    setClaimed(true)
+    redirectTimer.start()
+  }
 
   return (
     <zstack height='100%' width='100%' backgroundColor={cssHex(paletteConsole)}>
@@ -78,10 +104,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
             <StyledButton
               {...props}
               color={cssHex(claimed ? paletteDisabled : teamColor[props.team])}
-              onPress={async () => {
-                await props.onClaimPress()
-                setClaimed(true)
-              }}
+              onPress={handlePress}
             >
               {claimed
                 ? localize('point-claim-button-label-after')

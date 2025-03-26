@@ -21,7 +21,6 @@ export function GamesOnRedditBanner(
       width='100%'
       alignment='center middle'
       onPress={() => context.ui.navigateTo(config2.leaderboard.url)}
-      gap='small'
     >
       {label.split(lineBreakToken).map(line => (
         <PixelText
@@ -33,6 +32,8 @@ export function GamesOnRedditBanner(
           {line}
         </PixelText>
       ))}
+
+      <spacer height='8px' />
 
       <image
         imageWidth={173 * props.pixelRatio}

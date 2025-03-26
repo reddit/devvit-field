@@ -17,17 +17,14 @@ import {TeamBadge} from './TeamBadge'
 type DialogWinnerProps = {
   team: Team
   level: Level
+  button?: boolean
   pixelRatio: number
   onPress?: () => void
 }
 
 export function DialogWinner(props: DialogWinnerProps): JSX.Element {
   return (
-    <Dialog
-      {...props}
-      buttonLabel={localize('winner-dialog-button-label')}
-      marketingLabel={localize('winner-dialog-footer')}
-    >
+    <Dialog {...props} marketingLabel={localize('winner-dialog-footer')}>
       <BorderedContainer
         height={80}
         width={256}
@@ -45,6 +42,7 @@ export function DialogWinner(props: DialogWinnerProps): JSX.Element {
         </PixelText>
       </BorderedContainer>
 
+      <spacer height='4px' />
       <spacer grow />
 
       {localize('winner-dialog-metadata-1')
@@ -62,15 +60,26 @@ export function DialogWinner(props: DialogWinnerProps): JSX.Element {
 
       {/* Team Badge */}
 
-      <spacer size='small' />
+      <spacer grow />
+
       <TeamBadge {...props} />
-      <spacer size='small' />
+
+      <spacer grow />
 
       {/* Team Overview */}
 
-      <PixelText size={fontSSize} color={cssHex(paletteWhite)} {...props}>
-        {localize('winner-dialog-metadata-2')}
-      </PixelText>
+      {localize('winner-dialog-metadata-2')
+        .split(lineBreakToken)
+        .map(line => (
+          <PixelText
+            key={line}
+            size={fontSSize}
+            color={cssHex(paletteWhite)}
+            {...props}
+          >
+            {line}
+          </PixelText>
+        ))}
 
       <spacer grow />
     </Dialog>
