@@ -8,7 +8,7 @@
   "unauthorized-dialog-level-4": "Oh... it’s you again.↵Ya, still banned.",
   "unauthorized-dialog-metadata": "YOUR TEAM NEEDS YOU HERE:",
   "unauthorized-dialog-button-label": "Go to {rSlashSubredditName}",
-  "beat-game-dialog": "You’ve earned your point.↵Your time here has ended.↵Go home. Go on, get.",
+  "beat-game-dialog": "You've earned a point.↵Your time here is over.↵Go home. Go on, get.",
   "beat-game-dialog-metadata": "For more games:",
   "beat-game-dialog-button-label": "Go to r/GamesOnReddit",
   "beat-game-dialog-footer": "VIEW YOUR STATS↵AND TEAM STANDINGS AT",
