@@ -15,8 +15,7 @@ import type {
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
-import type { T2 } from '../../shared/types/tid.ts'
-import type { T2 } from '../../shared/types/tid.ts'
+import type {T2} from '../../shared/types/tid.ts'
 import {
   parseDevvitUserAgent,
   shouldShowUpgradeAppScreen,
@@ -35,7 +34,8 @@ import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogUnsupportedClient} from './DialogUnsupportedClient.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
-import {DialogWelcome} from './DialogWelcome.tsx'Controller.tsx'
+import {DialogWelcome} from './DialogWelcome.tsx'
+import {LeaderboardController} from './LeaderboardController.tsx'
 
 /** @ret true if code is executing locally on device, false if remotely on server. */
 function isLocal(): boolean {
