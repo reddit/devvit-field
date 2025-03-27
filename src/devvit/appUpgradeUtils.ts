@@ -25,6 +25,8 @@ export type ParsedDevvitUserAgent =
 const getVersionNumberFromRawVersion = (
   rawVersion: string,
 ): number | undefined => {
+  // Alpha build, assume it's good
+  if (rawVersion.includes('+')) return 999999999999999
   const versionNumber = Number(rawVersion.trim().split('.').pop())
   return Number.isNaN(versionNumber) ? undefined : versionNumber
 }
