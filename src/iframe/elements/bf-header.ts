@@ -60,9 +60,21 @@ export class BFHeader extends LitElement {
       flex-shrink: 0;
       flex-grow: 0;
     }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+    }
   
     .title {
       font-size: ${fontMSize}px;
+      color: var(--color-theme-light);
+    }
+  
+    .coordinates {
+      font-size: ${fontSSize}px;
       color: var(--color-theme-light);
     }
 
@@ -85,6 +97,8 @@ export class BFHeader extends LitElement {
   `
 
   @property() accessor sub: string | undefined
+  @property({type: Number}) accessor x: number = 0
+  @property({type: Number}) accessor y: number = 0
   @property({type: Number}) accessor players: number = 0
   @property({type: Number}) accessor fieldBans: number = 0
   @property({type: Number}) accessor fieldBoxes: number = 0
@@ -97,7 +111,10 @@ export class BFHeader extends LitElement {
   protected override render(): TemplateResult {
     return html`
       <header>
-        <h2 class='title'>${this.sub}</h2>
+        <div class='title-row'>
+          <h2 class='title'>${this.sub}</h2>
+          <p class='coordinates'>${this.x}, ${this.y}</p>
+        </div>
 
         <div class='stats'>
           <div class="stat">

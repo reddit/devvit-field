@@ -158,6 +158,8 @@ export class BFTerminal extends LitElement {
             juiceBox='${this.challengeScoreJuiceBox}'
             lasagna='${this.challengeScoreLasagna}'
             sunshine='${this.challengeScoreSunshine}'
+            x='${this.x}'
+            y='${this.y}'
           ></bf-header>
 
 

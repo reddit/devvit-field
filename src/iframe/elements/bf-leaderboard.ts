@@ -71,8 +71,10 @@ export class BFLeaderboard extends LitElement {
     const lasagna = (this.lasagna / boxes) * 100
     const sunshine = (this.sunshine / boxes) * 100
 
+    const percentageClaimed = (claimed / boxes) * 100
+
     return html`
-      <div class="label">${`${Math.trunc(claimed / boxes)}`}%</div>
+      <div class="label">${`${percentageClaimed.toFixed(2)}`}%</div>
       <div class='board'>
         <div class='bar flamingo' style='width: ${flamingo}%;'></div>
         <div class='bar juice-box' style='width: ${juiceBox}%;'></div>
