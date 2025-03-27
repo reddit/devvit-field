@@ -694,7 +694,7 @@ export class Game {
       let beeps = 0
       const maxBeeps = Math.trunc(Math.max(3, Math.random() * 10))
       const currentChallenge = this.challenge
-      staggerMap(boxes, 1_000, cells => {
+      staggerMap(boxes, 2_000, cells => {
         if (!this.fieldConfig) return
         if (this.challenge !== currentChallenge) return
 
