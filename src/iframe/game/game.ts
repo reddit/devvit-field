@@ -491,7 +491,6 @@ export class Game {
 
         if (msg.reinit) {
           console.log('reinit')
-          if (this.audio) this.audio.ctx = new AudioContext()
           this.partDataFetcher.deinit()
           this.pending.length = 0
           if (!this.assets) throw Error('no assets')
@@ -562,8 +561,8 @@ export class Game {
       }
       case 'Box': {
         // console.log(
-        //  `Box message claimed=[${msg.claimedCells.map(claim => xyStr(claim.globalXY)).join()}] lost=[${msg.lostCells.map(claim => xyStr(claim.globalXY)).join()}]`,
-        //)
+        //   `Box message claimed=[${msg.claimedCells.map(claim => xyStr(claim.globalXY)).join()}] lost=[${msg.lostCells.map(claim => xyStr(claim.globalXY)).join()}]`,
+        // )
         if (!this.p1) return
         this.p1BoxCount += msg.claimedCells.length
 
