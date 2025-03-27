@@ -26,7 +26,7 @@ export class FieldLevel implements LevelEnt {
     if (!game.audio) throw Error('no audio')
     if (game.sub?.includes('BananaField' satisfies LevelPascalCase))
       audioPlayMusic(
-        game.ac,
+        game.audio,
         game.audio['16ItemsInThe15OrLessAtA60sGroceryStore'],
         true,
         true,

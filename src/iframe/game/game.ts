@@ -25,7 +25,7 @@ import {SID} from '../../shared/types/sid.ts'
 import {type T5, noT5} from '../../shared/types/tid.ts'
 import {type UTCMillis, utcMillisNow} from '../../shared/types/time.ts'
 import {AssetMap} from '../asset-map.ts'
-import {Audio, type AudioBufferByName, audioPlay} from '../audio.ts'
+import {Audio, audioPlay, beep} from '../audio.ts'
 import {devProfiles} from '../dev-profiles.ts'
 import type {BFGame} from '../elements/bf-game.ts'
 import {Bubble} from '../elements/bubble.ts'
@@ -70,12 +70,11 @@ import {Looper} from './looper.ts'
 export class Game {
   // to-do: SavableGame for LocalStorage savable state.
   // to-do: encapsulate and review need for pre vs postload state given load screen is in HTML.
-  ac: AudioContext
   activePlayerHeartbeat: number = 0
   appConfig: AppConfig = getDefaultAppConfig()
   assets: AssetMap | undefined
   atlas: Atlas<Tag>
-  audio?: AudioBufferByName
+  audio?: Audio
   bannedPlayers: number = 0
   bmps: BmpAttribBuffer
   cam: Cam
@@ -126,7 +125,6 @@ export class Game {
   #fulfil!: () => void
 
   constructor(ui: BFGame) {
-    this.ac = new AudioContext()
     this.atlas = atlas as Atlas<Tag>
     this.bmps = new BmpAttribBuffer(1000)
     this.cam = new Cam()
@@ -438,8 +436,8 @@ export class Game {
 
     this.bmps.size = 0
 
-    if (this.ctrl.gestured && this.ac.state !== 'running')
-      void this.ac.resume().catch(console.warn) // Don't await; this can hang.
+    if (this.ctrl.gestured && this.audio?.ctx.state !== 'running')
+      void this.audio?.ctx.resume().catch(console.warn) // Don't await; this can hang.
 
     this.now = utcMillisNow()
 
@@ -493,7 +491,7 @@ export class Game {
 
         if (msg.reinit) {
           console.log('reinit')
-          this.ac = new AudioContext()
+          if (this.audio) this.audio.ctx = new AudioContext()
           this.partDataFetcher.deinit()
           this.#pending.length = 0
           if (!this.assets) throw Error('no assets')
@@ -654,8 +652,23 @@ export class Game {
 
   #onPause = (): void => {
     console.log('paused')
-    void this.ac.suspend().catch(console.warn)
+    void this.audio?.ctx.suspend().catch(console.warn)
     this.partDataFetcher.pause()
+  }
+
+  #onResize = (): void => {}
+
+  #onResume = (): void => {
+    console.log('resumed')
+    this.partDataFetcher.resume()
+  }
+
+  #pauseActivePlayerHeartbeat(): void {
+    clearInterval(this.activePlayerHeartbeat)
+  }
+
+  #pop(delayMillis: number): void {
+    if (this.audio) beep(this.audio, 'sine', 500, 800, 0.02, delayMillis)
   }
 
   #renderPatch = (
@@ -663,8 +676,6 @@ export class Game {
     partXY: Readonly<XY>,
     mode: 'Immediate' | 'Stagger' = 'Stagger',
   ) => {
-    if (!this.fieldConfig) return
-
     this.#clearLoadingForPart(partXY) // Must be called for any partition write.
 
     if (mode === 'Immediate') {
@@ -675,19 +686,31 @@ export class Game {
         else fieldArraySetTeam(this.field, i, team)
       }
       this.#invalidatePart(partXY)
-    } else
+    } else {
+      let beeps = 0
+      const maxBeeps = Math.trunc(Math.max(3, Math.random() * 10))
       staggerMap(boxes, 1_000, cells => {
         if (!this.fieldConfig) return
+
         for (const {globalXY, isBan, team} of cells) {
+          // if (this.cam.isVisible(globalXY)) {
+          //   this.#pop(Math.random() * 0.3 * 1000)
+          //   beeps++
+          // }
           // console.log(
           //   `patch part=${partXY.x}-${partXY.y} xy=${globalXY.x}-${globalXY.y}`,
           // )
-          const i = fieldArrayIndex(this.fieldConfig, globalXY)
-          if (isBan) this.field[i] = fieldArrayColorBan
-          else fieldArraySetTeam(this.field, i, team)
+          const index = fieldArrayIndex(this.fieldConfig, globalXY)
+          if (isBan) this.field[index] = fieldArrayColorBan
+          else fieldArraySetTeam(this.field, index, team)
+        }
+        if (beeps < maxBeeps) {
+          this.#pop(Math.random() * (0.3 + beeps / 10) * 1000)
+          beeps++
         }
         this.#invalidatePart(partXY)
       })
+    }
   }
 
   #renderReplace: RenderReplace = (buf, partXY) => {
@@ -739,17 +762,6 @@ export class Game {
         this.postMessage({type: 'ActivePlayerHeartbeat'})
       }, heartbeatInterval)
     }, jitterTime)
-  }
-
-  #pauseActivePlayerHeartbeat(): void {
-    clearInterval(this.activePlayerHeartbeat)
-  }
-
-  #onResize = (): void => {}
-
-  #onResume = (): void => {
-    console.log('resumed')
-    this.partDataFetcher.resume()
   }
 
   postMessage(msg: Readonly<IframeMessage>): void {
