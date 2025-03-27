@@ -34,7 +34,7 @@ async function onRun(
   if (!currentChallengeNumber) return
 
   // Spread load using a Poisson process. Assume we're running every second.
-  console.log(`generating ${claimRps} requests across one second`)
+  console.log(`[load] generating ${claimRps} requests across one second`)
   const start = performance.now()
   const promises: Promise<ClaimResult>[] = []
   for (let i = 0; i < claimRps; i++) {
@@ -46,7 +46,7 @@ async function onRun(
   }
   const results = await Promise.all(promises)
   console.log(
-    `completed ${claimRps} requests in ${(performance.now() - start) / 1_000} seconds`,
+    `[load] completed ${claimRps} requests in ${(performance.now() - start) / 1_000} seconds`,
   )
 
   let numDeltas = 0
@@ -55,5 +55,5 @@ async function onRun(
     if (claimedCells.length) numDeltas++
     if (newLevel) numNewLevels++
   }
-  console.log(`numDeltas=${numDeltas}, numNewLevels=${numNewLevels}`)
+  console.log(`[load] numDeltas=${numDeltas}, numNewLevels=${numNewLevels}`)
 }
