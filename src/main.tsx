@@ -24,10 +24,6 @@ import {LeaderboardLoading} from './devvit/components/LeaderboardLoading.js'
 import {App} from './devvit/components/app.js'
 import {blockUsersMenuAction} from './devvit/menu-actions/blockUsers.js'
 import {endCurrentChallengeMenuAction} from './devvit/menu-actions/endCurrentChallenge.js'
-import {
-  flushWorkQueueAction,
-  joltWorkQueueAction,
-} from './devvit/menu-actions/flushWorkQueue.ts'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
 import {makeSuperUserMenuAction} from './devvit/menu-actions/makeSuperUser.js'
 import {nukeCellsMenuAction} from './devvit/menu-actions/nukeCells.ts'
@@ -187,8 +183,6 @@ Devvit.addMenuItem(blockUsersMenuAction())
 Devvit.addMenuItem(unblockUsersMenuAction())
 Devvit.addMenuItem(resetUserStartedPlayingAtMenuAction())
 Devvit.addMenuItem(resetUserGlobalPointCountMenuAction())
-Devvit.addMenuItem(joltWorkQueueAction())
-Devvit.addMenuItem(flushWorkQueueAction())
 
 Devvit.addSettings([
   {
