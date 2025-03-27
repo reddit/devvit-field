@@ -1,7 +1,6 @@
 import {type Team, teamPascalCase} from '../../shared/team.js'
 import type {XY} from '../../shared/types/2d.js'
 import {levelWord} from '../../shared/types/level.js'
-import type {UTCMillis} from '../../shared/types/time.js'
 import {audioPlay} from '../audio.js'
 import type {Tag} from '../game/config.js'
 import type {Game} from '../game/game.js'
@@ -10,14 +9,11 @@ import {Sprite} from '../graphics/sprite.js'
 import type {EID} from './eid.js'
 import type {Ent} from './ent.js'
 
-const maxPendingMillis: number = 100_000
-
 // to-do: extract sequence to animation.
 
 export class BoxEnt implements Ent {
   readonly eid: EID
   readonly fieldXY: Readonly<XY>
-  readonly #born: UTCMillis
   readonly #seq: (Tag | 'Banned' | 'Claimed' | 'Lost')[] = []
   readonly #sprite: Sprite<Tag>
 
@@ -30,7 +26,6 @@ export class BoxEnt implements Ent {
     this.#sprite.z = Layer.UIBack
     this.#sprite.stretch = true
     this.#sprite.cel = game.looper.frame / 4
-    this.#born = game.now
   }
 
   draw(game: Readonly<Game>): void {
@@ -48,21 +43,11 @@ export class BoxEnt implements Ent {
       ban ? `box--BanFill${pascalLvl}` : `box--${pascalTeam}Fill`,
       ban && isFromP1 ? 'Banned' : game.team === team ? 'Claimed' : 'Lost',
     )
-    console.log('resolved', ...this.#seq)
+    console.log('resolved', ...this.#seq) //
   }
 
   update(game: Game): void {
     const {cam} = game
-
-    if (
-      this.#sprite.tag.endsWith('Pending') &&
-      game.now - this.#born > maxPendingMillis
-    ) {
-      console.log('removing ent')
-      // Never got a resolution. Give up.
-      game.zoo.remove(this)
-      return
-    }
 
     if (this.#seq.length && this.#sprite.isLooped(game)) {
       const next = this.#seq.shift()!
@@ -74,8 +59,7 @@ export class BoxEnt implements Ent {
           vibrateBan()
         }
 
-        console.log('removing ent2')
-        game.zoo.remove(this)
+        this.#remove(game)
         return
       }
       this.#sprite.tag = next
@@ -85,6 +69,13 @@ export class BoxEnt implements Ent {
     this.#sprite.x = (-cam.x + this.fieldXY.x) * cam.scale * cam.fieldScale
     this.#sprite.y = (-cam.y + this.fieldXY.y) * cam.scale * cam.fieldScale
     this.#sprite.w = this.#sprite.h = cam.fieldScale
+  }
+
+  #remove(game: Game): void {
+    game.zoo.remove(this)
+    const index = game.pending.indexOf(this)
+    if (index === -1) return
+    game.pending.splice(index, 1)
   }
 }
 

@@ -2,7 +2,7 @@ import {getPartitionCoords} from '../../shared/partition.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
-import {type XY, xyEq, xyStr} from '../../shared/types/2d.ts'
+import {type XY, xyEq} from '../../shared/types/2d.ts'
 import {
   type AppConfig,
   getDefaultAppConfig,
@@ -120,7 +120,7 @@ export class Game {
   visible: number | undefined
   zoo: Zoo
 
-  readonly #pending: BoxEnt[] = []
+  readonly pending: BoxEnt[] = []
 
   #fulfil!: () => void
 
@@ -175,7 +175,7 @@ export class Game {
     )
 
     const box = new BoxEnt(this, xy)
-    this.#pending.push(box)
+    this.pending.push(box)
     this.zoo.add(box)
   }
 
@@ -311,7 +311,7 @@ export class Game {
   }
 
   #findPending(xy: Readonly<XY>): BoxEnt | undefined {
-    return this.#pending.find(box => xyEq(box.fieldXY, xy))
+    return this.pending.find(box => xyEq(box.fieldXY, xy))
   }
 
   #initDevMode(): void {
@@ -493,7 +493,7 @@ export class Game {
           console.log('reinit')
           if (this.audio) this.audio.ctx = new AudioContext()
           this.partDataFetcher.deinit()
-          this.#pending.length = 0
+          this.pending.length = 0
           if (!this.assets) throw Error('no assets')
           this.p1BoxCount = 0
           this.renderer.load(
@@ -561,9 +561,9 @@ export class Game {
         break
       }
       case 'Box': {
-        console.log(
-          `Box message claimed=[${msg.claimedCells.map(claim => xyStr(claim.globalXY)).join()}] lost=[${msg.lostCells.map(claim => xyStr(claim.globalXY)).join()}]`,
-        )
+        // console.log(
+        //  `Box message claimed=[${msg.claimedCells.map(claim => xyStr(claim.globalXY)).join()}] lost=[${msg.lostCells.map(claim => xyStr(claim.globalXY)).join()}]`,
+        //)
         if (!this.p1) return
         this.p1BoxCount += msg.claimedCells.length
 
@@ -572,23 +572,16 @@ export class Game {
         if (!this.fieldConfig || !cells[0]) return
 
         for (const [i, cell] of cells.entries()) {
-          const pendIndex = this.#pending.findIndex(pend =>
+          const pend = this.pending.find(pend =>
             xyEq(cell.globalXY, pend.fieldXY),
           )
-          const pend = this.#pending[pendIndex]
           if (pend) {
-            console.log(
-              'resolved box message pend',
-              cell.globalXY.x,
-              cell.globalXY.y,
-            )
             pend.resolve(
               this,
               cell.isBan,
               cell.team,
               i < msg.claimedCells.length,
             )
-            this.#pending.splice(pendIndex, 1)
           }
         }
         const partXY = getPartitionCoords(
@@ -707,14 +700,11 @@ export class Game {
         if (this.challenge !== currentChallenge) return
 
         for (const {globalXY, isBan, team} of cells) {
-          const pendIndex = this.#pending.findIndex(pend =>
-            xyEq(globalXY, pend.fieldXY),
-          )
-          const pend = this.#pending[pendIndex]
+          // to-do: remove.
+          const pend = this.pending.find(pend => xyEq(globalXY, pend.fieldXY))
           if (pend) {
-            console.log('got a pend in patch', globalXY.x, globalXY.y)
+            // console.log('got a pend in patch', globalXY.x, globalXY.y)
             pend.resolve(this, isBan, team, false)
-            this.#pending.splice(pendIndex, 1)
           }
           // if (this.cam.isVisible(globalXY)) {
           //   this.#pop(Math.random() * 0.3 * 1000)
