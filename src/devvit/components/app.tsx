@@ -15,6 +15,8 @@ import type {
   RealtimeMessage,
   TeamBoxCounts,
 } from '../../shared/types/message.ts'
+import type { T2 } from '../../shared/types/tid.ts'
+import type { T2 } from '../../shared/types/tid.ts'
 import {
   parseDevvitUserAgent,
   shouldShowUpgradeAppScreen,
@@ -27,13 +29,13 @@ import {fieldClaimCells} from '../server/core/field.js'
 import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {userGet} from '../server/core/user.js'
 import {DialogBeatGame} from './DialogBeatGame.tsx'
+import {DialogEnded} from './DialogEnded.tsx'
 import {DialogHowToPlay} from './DialogHowToPlay.tsx'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
 import {DialogUnsupportedClient} from './DialogUnsupportedClient.tsx'
 import {DialogVerifyEmail} from './DialogVerifyEmail.tsx'
-import {DialogWelcome} from './DialogWelcome.tsx'
-import {LeaderboardController} from './LeaderboardController.tsx'
+import {DialogWelcome} from './DialogWelcome.tsx'Controller.tsx'
 
 /** @ret true if code is executing locally on device, false if remotely on server. */
 function isLocal(): boolean {
@@ -46,6 +48,20 @@ export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
 export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
 export function App(ctx: Devvit.Context): JSX.Element {
+  // When the game ends according to rules
+  if (Date.now() > new Date('2025-04-03T22:00:00.000Z').getTime()) {
+    return (
+      <DialogEnded
+        team={ctx.userId ? getTeamFromUserId(ctx.userId as T2) : 0}
+        level={
+          levels.find(x => x.subredditId === ctx.subredditId)?.id ??
+          levels[0]!.id
+        }
+        pixelRatio={ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio}
+      />
+    )
+  }
+
   const parsedUserAgent = parseDevvitUserAgent(
     ctx.debug.metadata['devvit-user-agent']?.values?.[0] ?? '',
   )
