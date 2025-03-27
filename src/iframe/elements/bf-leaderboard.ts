@@ -30,7 +30,7 @@ export class BFLeaderboard extends LitElement {
 
     .label {
       font-size: ${fontSSize}px;
-      color: var(--color-theme);
+      color: var(--color-theme-light);
     }
 
     .board {

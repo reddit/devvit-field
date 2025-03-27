@@ -63,7 +63,7 @@ export class BFHeader extends LitElement {
   
     .title {
       font-size: ${fontMSize}px;
-      color: var(--color-theme);
+      color: var(--color-theme-light);
     }
 
     .stats {
@@ -72,7 +72,7 @@ export class BFHeader extends LitElement {
       gap: ${spacePx * 1.5}px;
       width: 100%;
       font-size: ${fontSSize}px;
-      color: var(--color-theme);
+      color: var(--color-theme-light);
       line-height: 12px;
     }
 
