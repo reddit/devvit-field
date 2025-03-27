@@ -5,6 +5,7 @@ import {fallbackPixelRatio} from '../../shared/theme.js'
 import {config2} from '../../shared/types/level.js'
 import type {T2} from '../../shared/types/tid.js'
 import {useState2} from '../hooks/use-state2.js'
+import {globalStatsGet} from '../server/core/globalStats.js'
 import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
 import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
@@ -47,6 +48,7 @@ type LeaderboardControllerState =
         score: number
       }[]
       profile: Profile | null
+      globalStats: Awaited<ReturnType<typeof globalStatsGet>>
     }
 
 export function LeaderboardController(
@@ -57,10 +59,13 @@ export function LeaderboardController(
     context.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
 
   const [state, setState] = useState2<LeaderboardControllerState>(async () => {
-    const [standings, profile] = await Promise.all([
+    const [standings, globalStats, profile] = await Promise.all([
       leaderboardGet({
         redis: context.redis,
         sort: 'DESC',
+      }),
+      globalStatsGet({
+        redis: context.redis,
       }),
       context.userId
         ? userGet({
@@ -75,6 +80,7 @@ export function LeaderboardController(
         status: 'viewLeaderboard',
         standings,
         profile: null,
+        globalStats,
       }
     }
 
@@ -95,6 +101,7 @@ export function LeaderboardController(
         status: 'viewLeaderboard',
         standings,
         profile,
+        globalStats,
       }
     }
 
@@ -116,6 +123,7 @@ export function LeaderboardController(
       status: 'viewLeaderboard',
       standings,
       profile,
+      globalStats,
     }
   })
 
@@ -181,9 +189,9 @@ export function LeaderboardController(
       standings={state.standings.sort((a, b) => a.member - b.member)}
       pixelRatio={props.pixelRatio}
       onPlay={() => context.ui.navigateTo(config2.levels[0]!.url)}
-      players={0}
-      bans={0}
-      fields={0}
+      players={state.globalStats.totalPlayers}
+      bans={state.globalStats.totalBans}
+      fields={state.globalStats.totalFields}
     />
   )
 }

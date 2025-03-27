@@ -21,6 +21,7 @@ import {validateFieldArea} from '../../../shared/validateFieldArea.js'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {type Uploader, deltasAdd} from './deltas'
+import {globalStatsIncrement} from './globalStats.ts'
 import {
   teamStatsCellsClaimedIncrementForMemberPartitioned,
   teamStatsCellsClaimedIncrementForMemberTotal,
@@ -297,11 +298,19 @@ export const _fieldClaimCellsSuccess = async ({
 
   const teamNumber = getTeamFromUserId(userId)
   if (isGameOverForUser) {
-    await teamStatsMinesHitIncrementForMember({
-      challengeNumber,
-      member: teamNumber,
-      redis: ctx.redis,
-    })
+    // These are both writes to non-sharded keys, but only happen
+    // on bans (infrequently), not every click/cell claim.
+    await Promise.all([
+      globalStatsIncrement({
+        redis: ctx.redis,
+        field: 'totalBans',
+      }),
+      teamStatsMinesHitIncrementForMember({
+        challengeNumber,
+        member: teamNumber,
+        redis: ctx.redis,
+      }),
+    ])
   }
 
   // Team stats are incremented by partition

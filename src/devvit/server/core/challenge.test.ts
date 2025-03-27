@@ -11,9 +11,11 @@ import {
   makeFallbackDefaultChallengeConfig,
 } from './challenge'
 import {defaultChallengeConfigSet} from './defaultChallengeConfig'
+import {globalStatsGet} from './globalStats'
 
-beforeEach(() => {
+beforeEach(async () => {
   challengeConfigClearCache()
+  await DevvitTest.resetRedis()
 })
 
 DevvitTest.it(
@@ -36,7 +38,7 @@ DevvitTest.it(
 )
 
 DevvitTest.it(
-  'challengeMakeNew - increments challenge number, config inits to defaults, can be overridden, and config deserializes correctly',
+  'challengeMakeNew - increments challenge number, bumps global stats, config inits to defaults, can be overridden, and config deserializes correctly',
   async ctx => {
     await challengeOnInstall({redis: ctx.redis})
 
@@ -59,6 +61,9 @@ DevvitTest.it(
       totalNumberOfMines: expect.any(Number),
       targetGameDurationSeconds: expect.any(Number),
     } satisfies ChallengeConfig)
+    await expect(globalStatsGet({redis: ctx.redis})).resolves.toStrictEqual(
+      expect.objectContaining({totalFields: 1}),
+    )
   },
 )
 

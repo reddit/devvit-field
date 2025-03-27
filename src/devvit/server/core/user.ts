@@ -119,7 +119,6 @@ export const userGetOrSet = async ({
 
   await globalStatsIncrement({
     redis: ctx.redis,
-    globalNumber: 0,
     field: 'totalPlayers',
   })
 

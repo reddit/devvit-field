@@ -10,6 +10,7 @@ import {
 } from '../../../shared/types/challenge-config'
 import {validateChallengeConfig} from '../../../shared/validateChallengeConfig'
 import {defaultChallengeConfigMaybeGet} from './defaultChallengeConfig'
+import {globalStatsIncrement} from './globalStats'
 import {teamStatsMinesHitInit} from './leaderboards/challenge/team.minesHit'
 import {minefieldGetTotalMineCount} from './minefield'
 
@@ -218,6 +219,11 @@ export const challengeMakeNew = async ({
   validateChallengeConfig(config)
 
   const newChallengeNumber = await challengeIncrementCurrentChallengeNumber({
+    redis: ctx.redis,
+  })
+
+  await globalStatsIncrement({
+    field: 'totalFields',
     redis: ctx.redis,
   })
 

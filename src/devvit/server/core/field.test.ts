@@ -18,6 +18,7 @@ import {
   fieldGetDeltas,
   fieldNukeCells,
 } from './field'
+import {globalStatsGet} from './globalStats.js'
 import {
   teamStatsCellsClaimedForTeamPartitioned,
   teamStatsCellsClaimedGetTotal,
@@ -25,8 +26,9 @@ import {
 import {teamStatsMinesHitForTeam} from './leaderboards/challenge/team.minesHit'
 import {userGet, userSet} from './user'
 
-beforeEach(() => {
+beforeEach(async () => {
   challengeConfigClearCache()
+  await DevvitTest.resetRedis()
 })
 
 // TODO: Tests for the partition level checks
@@ -539,6 +541,11 @@ DevvitTest.it(
         team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
     ).resolves.toStrictEqual(1)
+    await expect(
+      globalStatsGet({
+        redis: ctx.redis,
+      }),
+    ).resolves.toStrictEqual(expect.objectContaining({totalBans: 1}))
 
     // Not called because game is technically not over at 50% claimed
     expect(ctx.realtime.send).toHaveBeenCalledTimes(0)
@@ -629,6 +636,12 @@ DevvitTest.it(
         team: getTeamFromUserId(USER_IDS.TEAM_2_PLAYER_1),
       }),
     ).resolves.toStrictEqual(0)
+
+    await expect(
+      globalStatsGet({
+        redis: ctx.redis,
+      }),
+    ).resolves.toStrictEqual(expect.objectContaining({totalBans: 0}))
   },
 )
 
