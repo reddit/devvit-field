@@ -1,30 +1,28 @@
 import {Devvit} from '@devvit/public-api'
-import {abbreviateNumber} from '../../shared/format.js'
 import {localize} from '../../shared/locale.ts'
 import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
 import {
   cssHex,
-  fontLSize,
   fontMSize,
-  fontSSize,
   paletteBlack,
-  paletteBlandBlue,
   paletteConsole,
-  paletteFieldLight,
-  paletteOffline,
   paletteWhite,
 } from '../../shared/theme.js'
 import {PixelText} from './PixelText.js'
+import {StatTile} from './StatTile.tsx'
 import {StyledButton} from './StyledButton.js'
+import {TeamTile} from './TeamTile.tsx'
 
 type LeaderboardViewProps = {
   standings?: {
     member: Team
     score: number
   }[]
+  players?: number
+  bans?: number
+  fields?: number
   pixelRatio: number
-  online: boolean
-  onPlay?: () => void
+  onPlay: () => void
 }
 
 export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
@@ -62,28 +60,13 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
           url='field-logo-dark.png'
           resizeMode='fit'
         />
-        <spacer height='8px' />
 
-        {/* Online Status */}
-        <PixelText
-          {...props}
-          size={fontMSize}
-          color={cssHex(props.online ? paletteFieldLight : paletteOffline)}
-        >
-          {`•${localize(
-            props.online ? 'leaderboard-online' : 'leaderboard-offline',
-          )}`}
-        </PixelText>
-        <spacer height='24px' />
+        <spacer height='32px' />
 
-        <StyledButton
-          width={200}
-          {...props}
-          onPress={props.onPlay! ? props.onPlay : () => {}}
-        >
+        <StyledButton width={200} {...props} onPress={props.onPlay}>
           Play r/Field
         </StyledButton>
-        <spacer height='24px' />
+        <spacer height='32px' />
 
         <PixelText
           {...props}
@@ -105,7 +88,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
             />
           ))}
         </hstack>
-        <spacer height='24px' />
+        <spacer height='32px' />
 
         <PixelText
           {...props}
@@ -120,98 +103,20 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
           <StatTile
             {...props}
             label={localize('leaderboard-stats-players')}
-            value={1001923}
+            value={props.players ?? 0}
           />
           <StatTile
             {...props}
             label={localize('leaderboard-stats-bans')}
-            value={12334}
+            value={props.bans ?? 0}
           />
           <StatTile
             {...props}
             label={localize('leaderboard-stats-fields')}
-            value={15}
+            value={props.fields ?? 0}
           />
         </hstack>
-
-        <spacer height='24px' />
-
-        <hstack width='100%' alignment='center'>
-          <PixelText {...props} size={fontSSize} color={cssHex(paletteWhite)}>
-            DOWNLOAD THE FULL DATA SET
-          </PixelText>
-          <spacer width='6px' />
-          <PixelText
-            {...props}
-            size={fontSSize}
-            color={cssHex(paletteBlandBlue)}
-            underline
-          >
-            HERE
-          </PixelText>
-        </hstack>
       </vstack>
-    </vstack>
-  )
-}
-
-function TeamTile(props: {
-  key: string
-  label: string
-  value: number
-  color: `#${string}`
-  pixelRatio: number
-}) {
-  return (
-    <vstack
-      width='25%'
-      height='52px'
-      backgroundColor={props.color}
-      alignment='center middle'
-      key={props.key}
-    >
-      <PixelText
-        pixelRatio={props.pixelRatio}
-        size={fontLSize}
-        color={cssHex(paletteBlack)}
-      >
-        {abbreviateNumber(props.value)}
-      </PixelText>
-      <PixelText
-        pixelRatio={props.pixelRatio}
-        size={fontSSize}
-        color={cssHex(paletteBlack)}
-      >
-        {props.label}
-      </PixelText>
-    </vstack>
-  )
-}
-
-function StatTile(props: {label: string; value: number; pixelRatio: number}) {
-  return (
-    <vstack
-      width='33.332%'
-      height='52px'
-      backgroundColor={cssHex(paletteBlack)}
-      alignment='center middle'
-      border='thin'
-      borderColor={cssHex(paletteFieldLight)}
-    >
-      <PixelText
-        pixelRatio={props.pixelRatio}
-        size={fontLSize}
-        color={cssHex(paletteFieldLight)}
-      >
-        {abbreviateNumber(props.value)}
-      </PixelText>
-      <PixelText
-        pixelRatio={props.pixelRatio}
-        size={fontSSize}
-        color={cssHex(paletteFieldLight)}
-      >
-        {props.label}
-      </PixelText>
     </vstack>
   )
 }

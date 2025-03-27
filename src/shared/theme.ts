@@ -16,7 +16,6 @@ export const paletteTint75: number = 0xffffffb0
 
 // UI element colors
 export const paletteConsole: number = 0x1f2430ff
-export const paletteOffline: number = 0xff0000ff
 export const paletteDisabled: number = 0x505050ff
 
 // Team colors
@@ -32,7 +31,6 @@ export const paletteFieldDark: number = 0x002e00ff
 export const paletteBannedField: number = 0xb72216ff
 export const paletteBannedFieldLight: number = 0xff7260ff
 export const paletteBannedFieldDark: number = 0x380c09ff
-export const paletteBlandBlue: number = 0x5f86d0ff
 export const paletteVeryBannedField: number = 0x1897b5ff
 export const paletteVeryBannedFieldLight: number = 0x1ad0b3ff
 export const paletteVeryBannedFieldDark: number = 0x07232aff

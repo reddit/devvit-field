@@ -8,7 +8,6 @@ import {
   paletteBannedFieldDark,
   paletteBannedFieldLight,
   paletteBlack,
-  paletteBlandBlue,
   paletteConsole,
   paletteField,
   paletteFieldDark,
@@ -55,7 +54,6 @@ export const cssReset: CSSResult = css`
     --color-banned-field-light: ${unsafeCSS(cssHex(paletteBannedFieldLight))};
     --color-banned-field: ${unsafeCSS(cssHex(paletteBannedField))};
     --color-black: ${unsafeCSS(cssHex(paletteBlack))};
-    --color-bland-blue: ${unsafeCSS(cssHex(paletteBlandBlue))};
     --color-console: ${unsafeCSS(cssHex(paletteConsole))};
     --color-field-dark: ${unsafeCSS(cssHex(paletteFieldDark))};
     --color-field-light: ${unsafeCSS(cssHex(paletteFieldLight))};

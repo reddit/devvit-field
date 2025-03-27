@@ -21,7 +21,6 @@ import {PointClaimScreen} from './PointClaimScreen.js'
 // between the default and preview states.
 
 type LeaderboardControllerProps = {
-  online?: boolean
   pixelRatio: number
 }
 
@@ -54,7 +53,6 @@ export function LeaderboardController(
   props: LeaderboardControllerProps,
   context: Context,
 ): JSX.Element {
-  const online = props.online ?? false
   const pixelRatio =
     context.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
 
@@ -177,12 +175,15 @@ export function LeaderboardController(
     )
   }
 
+  // to-do: add the number of players, bans, and fields
   return (
     <LeaderboardView
-      standings={state.standings}
+      standings={state.standings.sort((a, b) => a.member - b.member)}
       pixelRatio={props.pixelRatio}
-      online={online} // to-do: implement online status
       onPlay={() => context.ui.navigateTo(config2.levels[0]!.url)}
+      players={0}
+      bans={0}
+      fields={0}
     />
   )
 }

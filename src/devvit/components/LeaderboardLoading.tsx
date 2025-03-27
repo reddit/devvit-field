@@ -1,15 +1,13 @@
 import {Devvit} from '@devvit/public-api'
 import {localize} from '../../shared/locale.ts'
-import {type Team, teamColor, teamTitleCase} from '../../shared/team.ts'
+import {type Team, teamColor} from '../../shared/team.ts'
 import {
   cssHex,
   fontMSize,
-  fontSSize,
   paletteBlack,
   paletteConsole,
   paletteDisabled,
   paletteFieldLight,
-  paletteOffline,
   paletteWhite,
 } from '../../shared/theme.js'
 import {PixelText} from './PixelText.js'
@@ -32,6 +30,16 @@ export function LeaderboardLoading(
     {member: 2, score: 0},
     {member: 3, score: 0},
   ]
+
+  const placeholderStat = (
+    <vstack
+      width='33.332%'
+      height='52px'
+      backgroundColor={cssHex(paletteBlack)}
+      border='thin'
+      borderColor={cssHex(paletteFieldLight)}
+    />
+  )
 
   return (
     <vstack
@@ -60,18 +68,12 @@ export function LeaderboardLoading(
           url='field-logo-dark.png'
           resizeMode='fit'
         />
-        <spacer height='8px' />
-
-        {/* Online Status */}
-        <PixelText {...props} size={fontMSize} color={cssHex(paletteOffline)}>
-          {`•${localize('leaderboard-offline')}`}
-        </PixelText>
-        <spacer height='24px' />
+        <spacer height='32px' />
 
         <StyledButton width={200} {...props} color={cssHex(paletteDisabled)}>
           {localize('leaderboard-play-button-loading')}
         </StyledButton>
-        <spacer height='24px' />
+        <spacer height='32px' />
 
         <PixelText
           {...props}
@@ -84,15 +86,15 @@ export function LeaderboardLoading(
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
           {standings.map(team => (
-            <TeamTile
-              {...props}
-              label={teamTitleCase[team.member]}
-              color={cssHex(teamColor[team.member])}
+            <vstack
+              width='25%'
+              height='52px'
+              backgroundColor={cssHex(teamColor[team.member])}
               key={`team-${team.member}`}
             />
           ))}
         </hstack>
-        <spacer height='24px' />
+        <spacer height='32px' />
 
         <PixelText
           {...props}
@@ -104,64 +106,11 @@ export function LeaderboardLoading(
         </PixelText>
         <spacer height='8px' />
         <hstack width='100%' gap='small' alignment='center'>
-          <StatTile {...props} label={localize('leaderboard-stats-players')} />
-          <StatTile {...props} label={localize('leaderboard-stats-bans')} />
-          <StatTile {...props} label={localize('leaderboard-stats-fields')} />
+          {placeholderStat}
+          {placeholderStat}
+          {placeholderStat}
         </hstack>
-
-        <spacer height='24px' />
-
-        {/* Data Link */}
-        <spacer height='15px' />
       </vstack>
-    </vstack>
-  )
-}
-
-function TeamTile(props: {
-  key: string
-  label: string
-  color: `#${string}`
-  pixelRatio: number
-}) {
-  return (
-    <vstack
-      width='25%'
-      height='52px'
-      backgroundColor={props.color}
-      alignment='center middle'
-      key={props.key}
-    >
-      <spacer height='31px' />
-      <PixelText
-        pixelRatio={props.pixelRatio}
-        size={fontSSize}
-        color={cssHex(paletteBlack)}
-      >
-        {props.label}
-      </PixelText>
-    </vstack>
-  )
-}
-
-function StatTile(props: {label: string; pixelRatio: number}) {
-  return (
-    <vstack
-      width='33.332%'
-      height='52px'
-      backgroundColor={cssHex(paletteBlack)}
-      alignment='center middle'
-      border='thin'
-      borderColor={cssHex(paletteFieldLight)}
-    >
-      <spacer height='31px' />
-      <PixelText
-        pixelRatio={props.pixelRatio}
-        size={fontSSize}
-        color={cssHex(paletteFieldLight)}
-      >
-        {props.label}
-      </PixelText>
     </vstack>
   )
 }
