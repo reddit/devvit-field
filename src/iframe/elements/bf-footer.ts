@@ -167,7 +167,7 @@ export class BFFooter extends LitElement {
     .Sunshine { background-color: var(--color-sunshine); }
    
     .logo {
-      margin-top: ${spacePx}px;
+      margin-top: 7px;
       cursor: pointer;
       display: block;
       height: 29px;

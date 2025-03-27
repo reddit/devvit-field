@@ -16,59 +16,12 @@ import {
   TITLE_NOTCH_WIDTH,
 } from './footerSettings'
 
-function createTextureLine(x: number, y: number, flip?: boolean): string {
-  return [
-    `M${x},${y}`,
-    `h${flip ? '-' : ''}8`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}8`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}8`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}8`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}22`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}22`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}8,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}3`,
-    `m${flip ? '-' : ''}3,0`,
-    `h${flip ? '-' : ''}22`,
-  ].join('')
+function createLeftTextureLine(x: number, y: number): string {
+  return `M${x},${y}h-8m-3,0h-3m-3,0h-8m-8,0h-3m-3,0h-8m-3,0h-3m-3,0h-8m-8,0h-8m-3,0h-3m-3,0h-3m-8,0h-3m-3,0h-8m-3,0h-3m-3,0h-3m-3,0h-16`
+}
+
+function createRightTextureLine(x: number, y: number): string {
+  return `M${x},${y}h8m3,0h3m8,0h3m3,0h8m8,0h8m3,0h8m3,0h3m3,0h3m8,0h3m3,0h3m8,0h3m3,0h3m3,0h3m8,0h22`
 }
 
 /*
@@ -121,30 +74,30 @@ export function createFooterMiddle(): string {
 
   const logoNotch = [
     `M${cx1 - RADIUS},${76}`,
-    `C${cx1},${76} ${cx1},${76 - 12} ${cx1 + RADIUS},${76 - 12}`,
-    `H${cx2 - RADIUS}`,
-    `C${cx2},${76 - 12} ${cx2},${76} ${cx2 + RADIUS},${76}`,
+    `C${cx1 - RADIUS / 2},${76} ${cx1 - RADIUS / 2},${76 - 12} ${cx1 + RADIUS},${76 - 12}`, // First Bezier curve (smooth curve to the left)
+    `H${cx2 - RADIUS}`, // Horizontal line before the second curve
+    `C${cx2 + RADIUS / 2},${76 - 12} ${cx2 + RADIUS / 2},${76} ${cx2 + RADIUS},${76}`, // Second Bezier curve (smooth curve to the right)
     `H${cx2 + RADIUS}`,
     'Z',
   ]
 
   const bottomRidgeTop = [
     `M0,${84}`,
-    `H${cx1 - RADIUS}`,
-    `C${cx1},${84} ${cx1},${84 + 12} ${cx1 + RADIUS},${84 + 12}`,
-    `H${cx2 - RADIUS}`,
-    `C${cx2},${84 + 12} ${cx2},${84} ${cx2 + RADIUS},${84}`,
-    `H${MIDDLE_WIDTH}`,
+    `H${cx1 - RADIUS}`, // Horizontal line before the first curve
+    `C${cx1 - RADIUS / 2},${84} ${cx1 - RADIUS / 2},${84 + 12} ${cx1 + RADIUS},${84 + 12}`, // First Bezier curve (smooth downward curve to the left)
+    `H${cx2 - RADIUS}`, // Horizontal line before the second curve
+    `C${cx2 + RADIUS / 2},${84 + 12} ${cx2 + RADIUS / 2},${84} ${cx2 + RADIUS},${84}`, // Second Bezier curve (smooth downward curve to the right)
+    `H${MIDDLE_WIDTH}`, // Final horizontal line
   ]
 
   const bottomRidgeBottom = [
     `M0,${85}`,
-    `H${cx1 - 1 - RADIUS}`,
-    `C${cx1 - 1},${85} ${cx1 - 1},${85 + 12} ${cx1 - 1 + RADIUS},${85 + 12}`,
-    `H${cx2 + 1 - RADIUS}`,
-    `C${cx2 + 1},${85 + 12} ${cx2 + 1},${85} ${cx2 + 1 + RADIUS},${85}`,
-    `H${MIDDLE_WIDTH}`,
+    `H${cx1 - 1 - RADIUS}`, // Horizontal line before the first curve
+    `C${cx1 - 1},${85} ${cx1 - 1},${85 + 12} ${cx1 - 1 + RADIUS},${85 + 12}`, // First Bezier curve (smooth downward curve to the left)
+    `H${cx2 + 1 - RADIUS}`, // Horizontal line before the second curve
+    `C${cx2 + 1},${85 + 12} ${cx2 + 1},${85} ${cx2 + 1 + RADIUS},${85}`, // Second Bezier curve (smooth downward curve to the right)
+    `H${MIDDLE_WIDTH}`, // Final horizontal line
   ]
 
-  return `<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="${cssHex(paletteConsole)}" /><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${insetContainer.join('')}${createTextureLine(cx2 + 16, 69)}${createTextureLine(cx1 - 16, 69, true)}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /><path d="${wingsDark.join('')}" stroke-width="1" stroke="${cssHex(paletteShade80)}" fill="none" /><path d="${wingsLight.join('')}${bottomRidgeTop.join('')}${createTextureLine(cx2 + 16, 68)}${createTextureLine(cx1 - 16, 68, true)}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /><path d="${bottomRidgeBottom.join('')}" stroke-width="1" stroke="${cssHex(paletteTint6)}" fill="none" /></svg>`
+  return `<svg viewBox="0 0 ${MIDDLE_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="${cssHex(paletteConsole)}" /><path d="${titleNotch.join('')}${bottomTint.join('')}${logoNotch.join('')}" fill="${cssHex(paletteBlack)}" /><path d="${insetContainer.join('')}${createRightTextureLine(cx2 + 16, 69)}${createLeftTextureLine(cx1 - 16, 69)}" stroke-width="1" stroke="${cssHex(paletteBlack)}" fill="none" /><path d="${wingsDark.join('')}" stroke-width="1" stroke="${cssHex(paletteShade80)}" fill="none" /><path d="${wingsLight.join('')}${bottomRidgeTop.join('')}${createRightTextureLine(cx2 + 16, 68)}${createLeftTextureLine(cx1 - 16, 68)}" stroke-width="1" stroke="${cssHex(paletteTint19)}" fill="none" /><path d="${bottomRidgeBottom.join('')}" stroke-width="1" stroke="${cssHex(paletteTint6)}" fill="none" /></svg>`
 }
