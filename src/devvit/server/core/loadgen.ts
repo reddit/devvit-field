@@ -4,7 +4,10 @@ import {T2} from '../../../shared/types/tid.js'
 import {challengeConfigGet} from './challenge.ts'
 import {fieldClaimCells} from './field.ts'
 
-export type ClaimResult = ReturnType<typeof fieldClaimCells>
+export type ClaimResult = {
+  currentChallenge: number
+  claim: Awaited<ReturnType<typeof fieldClaimCells>>
+}
 
 const strideKey = 'driveLoad:stride'
 
@@ -37,12 +40,16 @@ export async function generateClaim(
     ctx.userId = values[idx]!
   }
 
-  return await fieldClaimCells({
+  const claim = await fieldClaimCells({
     coords: [{x, y}],
     challengeNumber,
     ctx,
     userId: T2(ctx.userId),
   })
+  return {
+    currentChallenge: challengeNumber,
+    claim,
+  }
 }
 
 /** Returns whole numbers in [min, max). */

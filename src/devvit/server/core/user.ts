@@ -255,7 +255,11 @@ export const userSetLastPlayedChallenge = async ({
 
   await userSet({
     redis,
-    user: {...user, lastPlayedChallengeNumberForLevel: challengeNumber},
+    user: {
+      ...user,
+      t2: userId, // technically duplicative, but helps not break things for load tests / bot users
+      lastPlayedChallengeNumberForLevel: challengeNumber,
+    },
   })
 
   return challengeNumber

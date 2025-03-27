@@ -34,6 +34,7 @@ import {setUserLevelMenuAction} from './devvit/menu-actions/setUserLevel.js'
 import {unblockUsersMenuAction} from './devvit/menu-actions/unblockUsers.js'
 import {updateLiveConfigMenuAction} from './devvit/menu-actions/updateLiveConfig.js'
 import {
+  challengeGetCurrentChallengeNumber,
   challengeMakeNew,
   makeFallbackDefaultChallengeConfig,
 } from './devvit/server/core/challenge.js'
@@ -290,8 +291,9 @@ export default class extends Devvit implements Hello {
       getContextFromMetadata(meta ?? {}),
     )
 
-    await generateClaim(ctx, msg.delayMillis)
+    const number = await challengeGetCurrentChallengeNumber({redis: ctx.redis})
 
+    await generateClaim(ctx, number)
     return msg
   }
 }
