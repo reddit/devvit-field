@@ -31,9 +31,10 @@ export function InnerBorder(props: InnerBorderProps): JSX.Element {
         imageHeight={height * pixelRatio}
         width={`${width}px`}
         height={`${height}px`}
+        resizeMode='fill'
         description='Inset Border: Left Edge Segment'
         url={`data:image/svg+xml;charset=UTF-8,
-<svg viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="
 M${width},${inset}
 h-${width - radius - inset}
@@ -59,7 +60,7 @@ h${width - radius - inset}
           height={`${borderWidth / 2}px`}
           backgroundColor={borderColor}
         />
-        <spacer height={`${inset - borderWidth / 4}px`} />
+        <spacer height={`${inset - borderWidth / 2}px`} />
       </vstack>
 
       {/* Right Edge Segment */}
@@ -68,9 +69,10 @@ h${width - radius - inset}
         imageHeight={height * pixelRatio}
         width={`${width}px`}
         height={`${height}px`}
+        resizeMode='fill'
         description='Inset Border: Right Edge Segment'
         url={`data:image/svg+xml;charset=UTF-8,
-<svg viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="
 M0,${inset}
 h${width - radius - inset}

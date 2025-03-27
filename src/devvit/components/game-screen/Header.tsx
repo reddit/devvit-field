@@ -44,9 +44,10 @@ export function Header(props: HeaderProps): JSX.Element {
         imageWidth={CAP_WIDTH * props.pixelRatio}
         imageHeight={CAP_HEIGHT * props.pixelRatio}
         width={`${CAP_WIDTH}px`}
-        height='100%'
+        height={`${CAP_HEIGHT}px`}
+        resizeMode='fill'
         description='Background: Left Cap'
-        url={svg`<svg viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${leftCapSegments.join('')}" fill="${cssHex(paletteBlack)}" stroke-width="2" stroke="${borderColor}" /></svg>`}
+        url={svg`<svg width="${CAP_WIDTH}" height="${CAP_HEIGHT}" viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${leftCapSegments.join('')}" fill="${cssHex(paletteBlack)}" stroke-width="2" stroke="${borderColor}" /></svg>`}
       />
       <vstack height='100%' grow backgroundColor={cssHex(paletteBlack)}>
         <hstack height='1px' width='100%' backgroundColor={borderColor} />
@@ -57,9 +58,10 @@ export function Header(props: HeaderProps): JSX.Element {
         imageWidth={CAP_WIDTH * props.pixelRatio}
         imageHeight={CAP_HEIGHT * props.pixelRatio}
         width={`${CAP_WIDTH}px`}
-        height='100%'
+        height={`${CAP_HEIGHT}px`}
+        resizeMode='fill'
         description='Background: Right Cap'
-        url={svg`<svg viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${rightCapSegments.join('')}" fill="${cssHex(paletteBlack)}" stroke-width="2" stroke="${borderColor}" /></svg>`}
+        url={svg`<svg width="${CAP_WIDTH}" height="${CAP_HEIGHT}" viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="${rightCapSegments.join('')}" fill="${cssHex(paletteBlack)}" stroke-width="2" stroke="${borderColor}" /></svg>`}
       />
     </hstack>
   )

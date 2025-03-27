@@ -36,12 +36,13 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
   const teamGap = 12
 
   const background = (
-    <hstack height={`${CAP_HEIGHT}px`} width='100%'>
+    <hstack height='100%' width='100%'>
       <image
         imageWidth={CAP_WIDTH * props.pixelRatio}
         imageHeight={CAP_HEIGHT * props.pixelRatio}
         width={`${CAP_WIDTH}px`}
         height={`${CAP_HEIGHT}px`}
+        resizeMode='fill'
         url={svg`${createFooterStart()}`}
       />
       <zstack grow height='100%' alignment='center middle'>
@@ -50,6 +51,7 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
           imageHeight={CAP_HEIGHT * props.pixelRatio}
           width={`${MIDDLE_WIDTH}px`}
           height={`${CAP_HEIGHT}px`}
+          resizeMode='fill'
           url={svg`${createFooterMiddle()}`}
         />
       </zstack>
@@ -58,6 +60,7 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
         imageHeight={CAP_HEIGHT * props.pixelRatio}
         width={`${CAP_WIDTH}px`}
         height={`${CAP_HEIGHT}px`}
+        resizeMode='fill'
         url={svg`${createFooterEnd()}`}
       />
     </hstack>

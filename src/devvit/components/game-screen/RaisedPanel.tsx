@@ -21,13 +21,15 @@ export function RaisedPanel(props: RaisedPanelProps): JSX.Element {
 
   return (
     <hstack height={`${CAP_HEIGHT}px`} grow>
-      <image
-        imageWidth={CAP_WIDTH * props.pixelRatio}
-        imageHeight={CAP_HEIGHT * props.pixelRatio}
-        width={`${CAP_WIDTH}px`}
-        height='100%'
-        description='Background: Left Cap'
-        url={svg`<svg viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <hstack height='100%' width='100%'>
+        <image
+          imageWidth={CAP_WIDTH * props.pixelRatio}
+          imageHeight={CAP_HEIGHT * props.pixelRatio}
+          width={`${CAP_WIDTH}px`}
+          height={`${CAP_HEIGHT}px`}
+          resizeMode='fill'
+          description='Background: Left Cap'
+          url={svg`<svg width="${CAP_WIDTH}" height="${CAP_HEIGHT}" viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
         
         <!-- Shadow -->
         <path d="M${CAP_WIDTH},0H${RADIUS_OUTER}Q0,0 0,${RADIUS_OUTER}V${CAP_HEIGHT - RADIUS_OUTER}Q0,${CAP_HEIGHT} ${RADIUS_OUTER},${CAP_HEIGHT}H${CAP_WIDTH}" fill="${cssHex(paletteShade19)}" />
@@ -49,69 +51,70 @@ export function RaisedPanel(props: RaisedPanelProps): JSX.Element {
 
         <!-- Inset: Fill -->
         <path d="M${CAP_WIDTH},5H${5 + RADIUS_INNER}Q5,5 5,${5 + RADIUS_INNER}V${27 - RADIUS_INNER}Q5,27 ${5 + RADIUS_INNER},27H${CAP_WIDTH}" fill="#021007" /></svg>`}
-      />
+        />
 
-      <zstack grow height='100%' alignment='center middle'>
-        <vstack height='100%' width='100%'>
-          <hstack height='1px' width='100%' backgroundColor={borderColor} />
+        <zstack grow height='100%' alignment='center middle'>
+          <vstack height='100%' width='100%'>
+            <hstack height='1px' width='100%' backgroundColor={borderColor} />
 
-          <hstack
-            height='3px'
-            width='100%'
-            backgroundColor={cssHex(paletteConsole)}
-          />
+            <hstack
+              height='3px'
+              width='100%'
+              backgroundColor={cssHex(paletteConsole)}
+            />
 
-          <hstack height='1px' width='100%' backgroundColor={borderColor} />
+            <hstack height='1px' width='100%' backgroundColor={borderColor} />
 
-          <hstack height='22px' width='100%' backgroundColor='#021007' />
+            <hstack height='22px' width='100%' backgroundColor='#021007' />
 
-          <hstack height='1px' width='100%' backgroundColor={borderColor} />
+            <hstack height='1px' width='100%' backgroundColor={borderColor} />
 
-          <hstack
-            height='3px'
-            width='100%'
-            backgroundColor={cssHex(paletteConsole)}
-          />
+            <hstack
+              height='3px'
+              width='100%'
+              backgroundColor={cssHex(paletteConsole)}
+            />
 
-          <hstack height='1px' width='100%' backgroundColor={borderColor} />
+            <hstack height='1px' width='100%' backgroundColor={borderColor} />
 
-          <hstack
-            height='7px'
-            width='100%'
-            backgroundColor={cssHex(paletteConsole)}
-          />
+            <hstack
+              height='7px'
+              width='100%'
+              backgroundColor={cssHex(paletteConsole)}
+            />
 
-          <hstack height='1px' width='100%' backgroundColor={borderColor} />
+            <hstack height='1px' width='100%' backgroundColor={borderColor} />
 
-          <hstack
-            height='4px'
-            width='100%'
-            backgroundColor={cssHex(paletteShade19)}
-          />
-        </vstack>
-        {props.active ? (
-          <vstack height='100%' width='100%' alignment='center top'>
-            <spacer height='6px' />
-            <image
-              imageHeight={48}
-              imageWidth={48}
-              width='20px'
-              height='20px'
-              description='Ban Box Animation'
-              resizeMode='fit'
-              url='logo-flicker.gif'
+            <hstack
+              height='4px'
+              width='100%'
+              backgroundColor={cssHex(paletteShade19)}
             />
           </vstack>
-        ) : null}
-      </zstack>
+          {props.active ? (
+            <vstack height='100%' width='100%' alignment='center top'>
+              <spacer height='6px' />
+              <image
+                imageHeight={48}
+                imageWidth={48}
+                width='20px'
+                height='20px'
+                description='Ban Box Animation'
+                resizeMode='fit'
+                url='logo-flicker.gif'
+              />
+            </vstack>
+          ) : null}
+        </zstack>
 
-      <image
-        imageWidth={CAP_WIDTH * props.pixelRatio}
-        imageHeight={CAP_HEIGHT * props.pixelRatio}
-        width={`${CAP_WIDTH}px`}
-        height='100%'
-        description='Background: Right Cap'
-        url={svg`<svg viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <image
+          imageWidth={CAP_WIDTH * props.pixelRatio}
+          imageHeight={CAP_HEIGHT * props.pixelRatio}
+          width={`${CAP_WIDTH}px`}
+          height={`${CAP_HEIGHT}px`}
+          resizeMode='fill'
+          description='Background: Right Cap'
+          url={svg`<svg width="${CAP_WIDTH}" height="${CAP_HEIGHT}" viewBox="0 0 ${CAP_WIDTH} ${CAP_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
         
         <!-- Shadow -->
         <path d="M0,0H${CAP_WIDTH - RADIUS_OUTER}Q${CAP_WIDTH},0 ${CAP_WIDTH},${RADIUS_OUTER}V${CAP_HEIGHT - RADIUS_OUTER}Q${CAP_WIDTH},${CAP_HEIGHT} ${CAP_WIDTH - RADIUS_OUTER},${CAP_HEIGHT}H0" fill="${cssHex(paletteShade19)}" />
@@ -133,7 +136,8 @@ export function RaisedPanel(props: RaisedPanelProps): JSX.Element {
 
         <!-- Inset: Fill -->
         <path d="M0,5H${CAP_WIDTH - 5 - RADIUS_INNER}Q${CAP_WIDTH - 5},5 ${CAP_WIDTH - 5},${5 + RADIUS_INNER}V${27 - RADIUS_INNER}Q${CAP_WIDTH - 5},27 ${CAP_WIDTH - 5 - RADIUS_INNER},27H0" fill="#021007" /></svg>`}
-      />
+        />
+      </hstack>
     </hstack>
   )
 }
