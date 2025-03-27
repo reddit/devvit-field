@@ -259,6 +259,14 @@ Devvit.addSettings([
   },
   {
     scope: SettingScope.App,
+    name: 'workqueue-batch-realtime-send',
+    label:
+      'Set to "true" to use realtime batching, which transmits fewer messages',
+    type: 'string',
+    defaultValue: 'false',
+  },
+  {
+    scope: SettingScope.App,
     name: 'skip-comment-create',
     label: 'Set to "true" to skip comment creation handling',
     type: 'string',

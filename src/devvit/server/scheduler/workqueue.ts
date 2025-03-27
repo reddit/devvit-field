@@ -1,6 +1,11 @@
 import {counter, gauge, histogram} from '@devvit/metrics'
 import type {ZMember} from '@devvit/protos'
-import type {Context, JobContext, TriggerContext} from '@devvit/public-api'
+import type {JobContext, TriggerContext} from '@devvit/public-api'
+import {INSTALL_REALTIME_CHANNEL} from '../../../shared/const.js'
+import type {
+  BatchMessage,
+  DevvitMessage,
+} from '../../../shared/types/message.js'
 
 export const taskDeadlineMillis = 2000
 
@@ -13,9 +18,18 @@ export type Task = {
 
 export type Handler<T extends Task> = (wq: WorkQueue, task: T) => Promise<void>
 
-const tasksKey = '{workqueue}:tasks'
-export const claimsKey = '{workqueue}:claims'
-const lockKey = '{workqueue}:lock'
+type SendRealtimeMessageTask = Task & {
+  type: 'SendRealtimeMessage'
+  msg: DevvitMessage
+}
+
+const tasksKey = 'workqueue:tasks'
+export const claimsKey = 'workqueue:claims'
+const lockKey = 'workqueue:lock'
+const announceBatchKey = 'workqueue:announce:batch'
+const announceCounterKey = 'workqueue:announce:counter'
+const announceLastTimeKey = 'workqueue:announce:last-time'
+const announceLockKey = 'workqueue:announce:lock'
 
 // TODO: make into settings
 const maxConcurrentClaims = 4
@@ -23,10 +37,13 @@ const defaultMaxAttempts = 5
 const maxTransactionAttempts = 10
 const maxTaskHandleTimeSec = 1
 const maxTaskAgeMs = 300_000
+const announceBatchMaxHoldTimeMillis = 1_000
+const announceBatchMaxSize = 8
 
 type WorkQueueSettings = {
   'workqueue-debug'?: string
   'workqueue-polling-interval-ms'?: number
+  'workqueue-batch-realtime-send'?: string
 }
 
 // Metrics.
@@ -100,14 +117,6 @@ export async function workQueueInit(ctx: TriggerContext): Promise<void> {
   await ctx.redis.expire(lockKey, maxTaskHandleTimeSec)
 }
 
-export async function flushWorkQueue(ctx: Context): Promise<void> {
-  await ctx.redis.del(tasksKey, claimsKey, lockKey)
-}
-
-export async function joltWorkQueue(ctx: Context): Promise<void> {
-  await ctx.redis.del(lockKey)
-}
-
 export async function newWorkQueue(ctx: JobContext): Promise<WorkQueue> {
   const settings = await ctx.settings.getAll<WorkQueueSettings>()
   return new WorkQueue(ctx, settings)
@@ -119,6 +128,7 @@ export class WorkQueue {
   readonly ctx: JobContext
   #id: string
   #debugEnabled = false
+  #batchRealtimeSendEnabled = false
   #pollIntervalMs: number
 
   static register<T extends Task>(
@@ -133,6 +143,8 @@ export class WorkQueue {
     this.ctx = ctx
     this.#id = `workqueue[${Date.now() % 60_000}]:`
     this.#debugEnabled = settings['workqueue-debug'] === 'true'
+    this.#batchRealtimeSendEnabled =
+      settings['workqueue-batch-realtime-send'] === 'true'
     this.#pollIntervalMs = settings['workqueue-polling-interval-ms'] ?? 10
   }
 
@@ -189,6 +201,8 @@ export class WorkQueue {
       }
       this.#debug(`handling ${nextTasks.length} tasks`)
       handleTasks(nextTasks)
+      // No need to await this flush before sleeping.
+      this.#maybeFlushAnnounceBatch()
       await sleep(this.#pollIntervalMs)
     }
     for (const [type, count] of Object.entries(observations)) {
@@ -388,6 +402,56 @@ export class WorkQueue {
     task.key = key
     return key
   }
+
+  async sendRealtime(msg: DevvitMessage): Promise<void> {
+    if (this.#batchRealtimeSendEnabled) {
+      const msgId = await this.ctx.redis.incrBy(announceCounterKey, 1)
+      await this.ctx.redis.hSet(announceBatchKey, {
+        [`${msgId}`]: JSON.stringify(msg),
+      })
+      // As good a time as any to flush. No need to await.
+      this.#maybeFlushAnnounceBatch()
+    } else {
+      await this.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, msg)
+    }
+  }
+
+  async #maybeFlushAnnounceBatch(): Promise<void> {
+    await withLock<void>(
+      this.ctx,
+      announceLockKey,
+      async () => {
+        const lastTimeMillis =
+          parseInt((await this.ctx.redis.get(announceLastTimeKey)) ?? '0') || 0
+        if (Date.now() - lastTimeMillis < announceBatchMaxHoldTimeMillis) {
+          // Too soon to send, unless batch size is large enough.
+          const length = await this.ctx.redis.hLen(announceBatchKey)
+          if (length < announceBatchMaxSize) return
+        }
+
+        const fields = await this.ctx.redis.hGetAll(announceBatchKey)
+        const msgIds: string[] = []
+        const batch: DevvitMessage[] = []
+        for (const [msgId, msg] of Object.entries(fields)) {
+          msgIds.push(msgId)
+          batch.push(JSON.parse(msg) as DevvitMessage)
+        }
+        if (msgIds.length === 0) return undefined
+        const batchMessage: BatchMessage = {
+          type: 'BatchMessage',
+          batch,
+        }
+        await this.enqueue<SendRealtimeMessageTask>({
+          type: 'SendRealtimeMessage',
+          msg: batchMessage,
+        })
+        await this.ctx.redis.hDel(announceBatchKey, msgIds)
+        await this.ctx.redis.set(announceLastTimeKey, `${Date.now()}`)
+        this.#debug(`batched ${msgIds.length} realtime messages`)
+      },
+      undefined,
+    )
+  }
 }
 
 export async function withLock<T>(
@@ -449,3 +513,10 @@ export async function withLock<T>(
 async function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
+
+WorkQueue.register<SendRealtimeMessageTask>(
+  'SendRealtimeMessage',
+  async (wq: WorkQueue, task: SendRealtimeMessageTask) => {
+    await wq.ctx.realtime.send(INSTALL_REALTIME_CHANNEL, task.msg)
+  },
+)

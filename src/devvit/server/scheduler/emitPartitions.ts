@@ -17,7 +17,6 @@ import {
   Client as S3Client,
   getPathPrefix,
 } from '../core/s3.ts'
-import {sendRealtime} from './sendRealtime.ts'
 import {type Task, WorkQueue} from './workqueue.ts'
 
 const buckets = [
@@ -151,7 +150,7 @@ type AnnouncePartitionTask = Task & {
 WorkQueue.register<AnnouncePartitionTask>(
   'AnnouncePartition',
   async (wq: WorkQueue, task: AnnouncePartitionTask): Promise<void> => {
-    await sendRealtime(wq, {
+    await wq.sendRealtime({
       type: 'PartitionUpdate',
       key: task.ref,
     } satisfies PartitionUpdate)

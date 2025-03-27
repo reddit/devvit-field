@@ -22,7 +22,6 @@ import {
   Client as S3Client,
   getPathPrefix,
 } from '../core/s3.ts'
-import {sendRealtime} from './sendRealtime.ts'
 import {type Task, WorkQueue, newWorkQueue} from './workqueue.ts'
 
 /**
@@ -130,7 +129,7 @@ type AnnounceDeltasTask = Task & {
 WorkQueue.register<AnnounceDeltasTask>(
   'AnnounceDeltas',
   async (wq: WorkQueue, task: AnnounceDeltasTask): Promise<void> => {
-    await sendRealtime(wq, {
+    await wq.sendRealtime({
       type: 'PartitionUpdate',
       key: task.ref,
     } satisfies PartitionUpdate)
