@@ -1,6 +1,6 @@
 import {type Team, teamPascalCase} from '../../shared/team.js'
 import type {XY} from '../../shared/types/2d.js'
-import {type Level, levelWord} from '../../shared/types/level.js'
+import {levelWord} from '../../shared/types/level.js'
 import type {UTCMillis} from '../../shared/types/time.js'
 import {audioPlay} from '../audio.js'
 import type {Tag} from '../game/config.js'
@@ -37,21 +37,18 @@ export class BoxEnt implements Ent {
     game.bmps.push(this.#sprite)
   }
 
-  resolve(
-    game: Game,
-    ban: boolean,
-    team: Team,
-    lvl: Level,
-    isFromP1: boolean,
-  ): void {
+  resolve(game: Game, ban: boolean, team: Team, isFromP1: boolean): void {
+    if (game.subLvl == null) return
+
     const pascalTeam = teamPascalCase[team]
-    const pascalLvl = levelWord[lvl]
+    const pascalLvl = levelWord[game.subLvl]
     // to-do: PascalCase basename in script.
     this.#seq.push(
       `box--${pascalTeam}Grow`,
       ban ? `box--BanFill${pascalLvl}` : `box--${pascalTeam}Fill`,
       ban && isFromP1 ? 'Banned' : game.team === team ? 'Claimed' : 'Lost',
     )
+    console.log('resolved', ...this.#seq)
   }
 
   update(game: Game): void {
@@ -61,6 +58,7 @@ export class BoxEnt implements Ent {
       this.#sprite.tag.endsWith('Pending') &&
       game.now - this.#born > maxPendingMillis
     ) {
+      console.log('removing ent')
       // Never got a resolution. Give up.
       game.zoo.remove(this)
       return
@@ -76,6 +74,7 @@ export class BoxEnt implements Ent {
           vibrateBan()
         }
 
+        console.log('removing ent2')
         game.zoo.remove(this)
         return
       }

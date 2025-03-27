@@ -51,3 +51,7 @@ export function xyMagnitude(xy: Readonly<XY>): number {
 export function xySub(lhs: Readonly<XY>, rhs: Readonly<XY>): XY {
   return {x: lhs.x - rhs.x, y: lhs.y - rhs.y}
 }
+
+export function xyStr(xy: Readonly<XY>): string {
+  return `(${xy.x}, ${xy.y})`
+}

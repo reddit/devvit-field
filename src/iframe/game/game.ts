@@ -2,7 +2,7 @@ import {getPartitionCoords} from '../../shared/partition.ts'
 import type {Player} from '../../shared/save.ts'
 import type {Team} from '../../shared/team.ts'
 import {cssHex, paletteBlack} from '../../shared/theme.ts'
-import {type XY, xyEq} from '../../shared/types/2d.ts'
+import {type XY, xyEq, xyStr} from '../../shared/types/2d.ts'
 import {
   type AppConfig,
   getDefaultAppConfig,
@@ -561,6 +561,9 @@ export class Game {
         break
       }
       case 'Box': {
+        console.log(
+          `Box message claimed=[${msg.claimedCells.map(claim => xyStr(claim.globalXY)).join()}] lost=[${msg.lostCells.map(claim => xyStr(claim.globalXY)).join()}]`,
+        )
         if (!this.p1) return
         this.p1BoxCount += msg.claimedCells.length
 
@@ -569,15 +572,24 @@ export class Game {
         if (!this.fieldConfig || !cells[0]) return
 
         for (const [i, cell] of cells.entries()) {
-          const pend = this.#findPending(cell.globalXY)
-          if (pend)
+          const pendIndex = this.#pending.findIndex(pend =>
+            xyEq(cell.globalXY, pend.fieldXY),
+          )
+          const pend = this.#pending[pendIndex]
+          if (pend) {
+            console.log(
+              'resolved box message pend',
+              cell.globalXY.x,
+              cell.globalXY.y,
+            )
             pend.resolve(
               this,
               cell.isBan,
               cell.team,
-              this.subLvl!,
               i < msg.claimedCells.length,
             )
+            this.#pending.splice(pendIndex, 1)
+          }
         }
         const partXY = getPartitionCoords(
           cells[0].globalXY,
@@ -676,10 +688,10 @@ export class Game {
     partXY: Readonly<XY>,
     mode: 'Immediate' | 'Stagger' = 'Stagger',
   ) => {
+    if (!this.fieldConfig) return
     this.#clearLoadingForPart(partXY) // Must be called for any partition write.
 
     if (mode === 'Immediate') {
-      if (!this.fieldConfig) return
       for (const {globalXY, isBan, team} of boxes) {
         const i = fieldArrayIndex(this.fieldConfig, globalXY)
         if (isBan) this.field[i] = fieldArrayColorBan
@@ -693,6 +705,15 @@ export class Game {
         if (!this.fieldConfig) return
 
         for (const {globalXY, isBan, team} of cells) {
+          const pendIndex = this.#pending.findIndex(pend =>
+            xyEq(globalXY, pend.fieldXY),
+          )
+          const pend = this.#pending[pendIndex]
+          if (pend) {
+            console.log('got a pend in patch', globalXY.x, globalXY.y)
+            pend.resolve(this, isBan, team, false)
+            this.#pending.splice(pendIndex, 1)
+          }
           // if (this.cam.isVisible(globalXY)) {
           //   this.#pop(Math.random() * 0.3 * 1000)
           //   beeps++
