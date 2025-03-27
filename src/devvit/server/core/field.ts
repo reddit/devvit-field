@@ -202,12 +202,20 @@ export const fieldEndGame = async (
       3200,
       Math.max(8, Math.floor(Math.sqrt(targetArea))),
     )
-    // Drop any modulus so we evenly divide into 4x4 partitions.
-    targetWidth -= targetWidth % 4
+
+    let partitionSize = targetWidth
+    if (partitionSize > 800) {
+      targetWidth -= targetWidth % 2
+      partitionSize = targetWidth / 2
+    }
+    if (partitionSize > 800) {
+      targetWidth -= targetWidth % 4
+      partitionSize = targetWidth / 4
+    }
 
     const config = {
       size: targetWidth,
-      partitionSize: targetWidth / 4,
+      partitionSize,
     }
     await challengeMakeNew({
       ctx,
