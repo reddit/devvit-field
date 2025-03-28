@@ -51,9 +51,9 @@ async function onRun(
 
   let numDeltas = 0
   let numNewLevels = 0
-  for (const {claimedCells, newLevel} of results) {
-    if (claimedCells.length) numDeltas++
-    if (newLevel) numNewLevels++
+  for (const {claim} of results) {
+    if (claim.claimedCells.length) numDeltas++
+    if (claim.newLevel) numNewLevels++
   }
   console.log(`[load] numDeltas=${numDeltas}, numNewLevels=${numNewLevels}`)
 }
