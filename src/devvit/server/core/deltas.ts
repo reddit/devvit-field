@@ -117,7 +117,7 @@ export async function deltasRotate(
   }
 
   const codec = new DeltaCodec(partitionXY, partitionSize)
-  const encoded = codec.encode(deltas)
+  const encoded = await codec.encode(deltas)
 
   await redis.set(
     getChallengeDeltasEncodedSnapshotKey(

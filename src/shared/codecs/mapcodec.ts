@@ -6,6 +6,7 @@ type Run = {kind: 'Run'; trit: number; team: Team | undefined; length: number}
 type Group = {kind: 'Group'; trits: number[]; teams: Team[]}
 
 const maxRunLength = 264
+const maxCellsPerChunk = 102_400 // In largest map, break up into 100 chunks.
 
 /**
  * A map is encoded into a header followed by two sections.
@@ -54,12 +55,20 @@ const maxRunLength = 264
  * to the next byte. Each pair of bits encodes a team number.
  */
 export class MapCodec {
-  encode(cells: IterableIterator<Cell>): Uint8Array {
+  async encode(cells: IterableIterator<Cell>): Promise<Uint8Array> {
     const sec1 = new Writer()
     const sec2 = new U2Writer()
     let n = 0
+    let chunkCount = 0
 
     for (const elem of this.#runs(cells)) {
+      chunkCount++
+      if (chunkCount > maxCellsPerChunk) {
+        // yield execution momentarily
+        await Promise.resolve()
+        chunkCount = 1
+      }
+
       //console.log('elem:', elem)
       if (elem.kind === 'Group') {
         n += elem.trits.length

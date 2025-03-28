@@ -6,6 +6,8 @@ import type {Delta} from '../types/field.ts'
 const b0BanMask = 32
 const b0PosMask = b0BanMask - 1
 
+const maxDeltasPerChunk = 200
+
 export type DeltaSnapshotKey = FieldS3Key & {
   kind: S3Kind
   /** Multiply by partition size ot get global. */
@@ -99,13 +101,16 @@ export class DeltaCodec {
     this.#partitionSize = partitionSize
   }
 
-  encode(deltas: Delta[]): Uint8Array {
+  async encode(deltas: Delta[]): Promise<Uint8Array> {
     // Each delta is encoded as three bytes.
     // The first three bytes are a u24 position, given in big endian order.
     // The final byte gives the state of the cell.
     const bytes = new Uint8Array(3 * deltas.length)
     for (const [i, delta] of deltas.entries()) {
       this.#encodeDelta(bytes.subarray(3 * i, 3 * (i + 1)), delta)
+      if (i > 0 && i % maxDeltasPerChunk === 0) {
+        await Promise.resolve()
+      }
     }
     return bytes
   }

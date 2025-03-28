@@ -67,6 +67,11 @@ class PartitionWorker {
               else if (cell.isBan) buf[i] = fieldArrayColorBan
               else fieldArraySetTeam(buf, i, cell.team)
               i++
+              // In full size map, yield to event loop 10 times over
+              // the course of decoding the map.
+              if (i >= 1_024_000) {
+                await Promise.resolve()
+              }
             }
             cells = buf.buffer
           }

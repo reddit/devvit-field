@@ -31,7 +31,7 @@ function shuffle(length: number): Cell[] {
   return cells
 }
 
-describe('MapCodec', () => {
+describe('MapCodec', async () => {
   const codec = new MapCodec()
   const testCases: {
     name: string
@@ -69,8 +69,8 @@ describe('MapCodec', () => {
     },
   ]
   for (const {name, cells, validate} of testCases) {
-    test(name, () => {
-      const bytes = codec.encode(cells.values())
+    test(name, async () => {
+      const bytes = await codec.encode(cells.values())
       console.log(`${name}: encoded ${cells.length} into ${bytes.length} bytes`)
       const copy = [...codec.decode(bytes)]
       expect(copy).toStrictEqual(cells)

@@ -13,7 +13,7 @@ import {
 import {type Team, getTeamFromUserId, teams} from '../../../shared/team'
 import type {PartitionKey, XY} from '../../../shared/types/2d'
 import type {ChallengeConfig} from '../../../shared/types/challenge-config'
-import type {Delta, FieldMap} from '../../../shared/types/field'
+import type {Cell, Delta, FieldMap} from '../../../shared/types/field'
 import type {Level} from '../../../shared/types/level'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
@@ -841,14 +841,15 @@ export async function fieldGetPartitionMapEncoded(
   partitionXY: XY,
 ): Promise<string> {
   const codec = new MapCodec()
-  const map = await fieldGetPartitionMap(
+  const fieldData = await fieldGetPartitionData(
     redis,
     subredditId,
     challengeNumber,
     partitionXY,
   )
   const start = performance.now()
-  const bytes = codec.encode(map.values())
+  const cells = fieldData.generateFieldMap()
+  const bytes = await codec.encode(cells)
   const encoded = Buffer.from(bytes).toString('base64')
   metrics.encodeDurationSeconds
     .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
@@ -951,53 +952,99 @@ export async function fieldPartitionPublish(
   return key
 }
 
-export async function fieldGetPartitionMap(
+export class PartitionData {
+  readonly challengeNumber: number
+  readonly partitionXY: XY
+  readonly meta: ChallengeConfig
+  readonly data: number[]
+
+  constructor(
+    challengeNumber: number,
+    partitionXY: XY,
+    meta: ChallengeConfig,
+    data: number[],
+  ) {
+    this.challengeNumber = challengeNumber
+    this.partitionXY = partitionXY
+    this.meta = meta
+    this.data = data
+  }
+
+  *generateFieldMap(): IterableIterator<Cell> {
+    const localXY = {x: 0, y: 0}
+    for (; localXY.y < this.meta.partitionSize; localXY.y++) {
+      for (localXY.x = 0; localXY.x < this.meta.partitionSize; localXY.x++) {
+        const idx = localXY.y * this.meta.partitionSize + localXY.x
+        const {claimed, team} = decodeVTT(this.data[idx]!)
+        if (!claimed) {
+          yield undefined
+          continue
+        }
+        const globalXY = getGlobalCoords(
+          this.partitionXY,
+          localXY,
+          this.meta.partitionSize,
+        )
+        yield {
+          team,
+          isBan: minefieldIsMine({
+            seed: this.meta.seed,
+            coord: globalXY,
+            config: {mineDensity: this.meta.mineDensity},
+          }),
+        }
+      }
+    }
+  }
+
+  toFieldMap(): FieldMap {
+    const start = performance.now()
+    const n = this.meta.partitionSize * this.meta.partitionSize
+    const cells: FieldMap = new Array<FieldMap[number]>(n)
+    let i = 0
+    for (const cell of this.generateFieldMap()) {
+      if (i >= cells.length) break
+      cells[i++] = cell
+    }
+    metrics.constructDurationSeconds
+      .labels(
+        `${this.challengeNumber}`,
+        `${this.partitionXY.x},${this.partitionXY.y}`,
+      )
+      .observe((performance.now() - start) / 1_000)
+    return cells
+  }
+}
+
+export async function fieldGetPartitionData(
   redis: Devvit.Context['redis'],
   subredditId: string,
   challengeNumber: number,
   partitionXY: XY,
-): Promise<FieldMap> {
+): Promise<PartitionData> {
   const meta = await challengeConfigGet({redis, subredditId, challengeNumber})
-  const n = meta.partitionSize * meta.partitionSize
-  const cells: FieldMap = new Array<FieldMap[number]>(n)
-
   const fieldData = await fieldGet({
     challengeNumber,
     subredditId,
     redis,
     partitionXY,
   })
+  return new PartitionData(challengeNumber, partitionXY, meta, fieldData)
+}
 
-  const start = performance.now()
-  let isMineMs = 0
-  for (let i = 0; i < n; i++) {
-    const {claimed, team} = decodeVTT(fieldData[i]!)
-    if (!claimed) {
-      continue
-    }
-    const localXY = {
-      x: i % meta.partitionSize,
-      y: Math.floor(i / meta.partitionSize),
-    }
-    const globalXY = getGlobalCoords(partitionXY, localXY, meta.partitionSize)
-    const s = performance.now()
-    cells[i] = {
-      team,
-      isBan: minefieldIsMine({
-        seed: meta.seed,
-        coord: globalXY,
-        config: {mineDensity: meta.mineDensity},
-      }),
-    }
-    isMineMs += performance.now() - s
-  }
-  metrics.constructDurationSeconds
-    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
-    .observe((performance.now() - start) / 1_000)
-  metrics.isMineDurationSeconds
-    .labels(`${challengeNumber}`, `${partitionXY.x},${partitionXY.y}`)
-    .observe(isMineMs / 1_000)
-  return cells
+async function fieldGetPartitionMap(
+  redis: Devvit.Context['redis'],
+  subredditId: string,
+  challengeNumber: number,
+  partitionXY: XY,
+): Promise<FieldMap> {
+  const data = await fieldGetPartitionData(
+    redis,
+    subredditId,
+    challengeNumber,
+    partitionXY,
+  )
+  return data.toFieldMap()
 }
 
 export const fieldGetDeltas = async ({
