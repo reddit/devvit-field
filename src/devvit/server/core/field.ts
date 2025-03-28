@@ -18,6 +18,7 @@ import type {Level} from '../../../shared/types/level'
 import type {ChallengeCompleteMessage} from '../../../shared/types/message'
 import type {T2} from '../../../shared/types/tid'
 import {validateFieldArea} from '../../../shared/validateFieldArea.js'
+import {activePlayersGet} from './activePlayers.ts'
 import {decodeVTT, encodeVTT} from './bitfieldHelpers'
 import {challengeConfigGet, challengeMakeNew} from './challenge'
 import {type Uploader, deltasAdd} from './deltas'
@@ -185,9 +186,12 @@ export const fieldEndGame = async (
   targetGameDurationSeconds?: number,
   score?: ComputeScoreResponse,
 ): Promise<void> => {
+  const activePlayers = await activePlayersGet({redis: ctx.redis})
+
   const msg: ChallengeCompleteMessage = {
     challengeNumber,
     standings,
+    activePlayers,
     type: 'ChallengeComplete',
   }
   // TODO: Increment user stats here or do it somewhere else?

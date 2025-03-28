@@ -510,7 +510,13 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
       if (msg.type === 'ChallengeComplete') {
         if (isIframeMounted) {
-          const timeoutMillis = Math.floor(Math.random() * 15_000)
+          // We want to spread the transition of players over a brief period of
+          // time, so that the system doesn't get stampeded too hard. But, if no
+          // one is playing, then we shouldn't delay much at all.
+          // Let's aim for 10k players/sec.
+          const maxMillis = Math.min(15_000, msg.activePlayers / 10_000)
+
+          const timeoutMillis = Math.floor(Math.random() * maxMillis)
           console.log(`Challenge complete, handling in ${timeoutMillis}ms.`)
           iframe.postMessage({
             type: 'SetTimeout',

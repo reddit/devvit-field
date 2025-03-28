@@ -131,6 +131,7 @@ export type ChallengeCompleteMessage = {
   type: 'ChallengeComplete'
   challengeNumber: number
   standings: {member: Team; score: number}[]
+  activePlayers: number
 }
 
 export type LeaderboardUpdate = {
