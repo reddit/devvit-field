@@ -22,6 +22,7 @@ type LeaderboardViewProps = {
   bans?: number
   fields?: number
   pixelRatio: number
+  showPlayButton: boolean
   onPlay: () => void
 }
 
@@ -63,9 +64,13 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
 
         <spacer height='32px' />
 
-        <StyledButton width={200} {...props} onPress={props.onPlay}>
-          Play r/Field
-        </StyledButton>
+        {props.showPlayButton ? (
+          <StyledButton width={200} {...props} onPress={props.onPlay}>
+            Play r/Field
+          </StyledButton>
+        ) : (
+          <spacer height='44px' />
+        )}
         <spacer height='32px' />
 
         <PixelText

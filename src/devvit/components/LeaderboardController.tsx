@@ -96,7 +96,11 @@ export function LeaderboardController(
       }
     }
 
-    if (profile.globalPointCount > 0) {
+    if (
+      profile.globalPointCount > 0 ||
+      // Always show leaderboard if they're on the leaderboard subreddit
+      config2.leaderboard.subredditId === context.subredditId
+    ) {
       return {
         status: 'viewLeaderboard',
         standings,
@@ -110,7 +114,11 @@ export function LeaderboardController(
       profile: profile,
     })
 
-    if (result.pass) {
+    if (
+      result.pass &&
+      // We only show claim global point when they're on the last subreddit now
+      config2.levels.at(-1)!.subredditId === context.subredditId
+    ) {
       return {
         status: 'claimGlobalPoint',
         standings,
@@ -118,6 +126,9 @@ export function LeaderboardController(
         team: getTeamFromUserId(profile.t2),
       }
     }
+
+    // NOTE: After claiming a global point that subreddit will show view leaderboard
+    // unless we force redirect them to games on reddit here.
 
     return {
       status: 'viewLeaderboard',
@@ -188,6 +199,10 @@ export function LeaderboardController(
     <LeaderboardView
       standings={state.standings.sort((a, b) => a.member - b.member)}
       pixelRatio={props.pixelRatio}
+      showPlayButton={
+        state.profile?.globalPointCount == null ||
+        state.profile.globalPointCount === 0
+      }
       onPlay={() => context.ui.navigateTo(config2.levels[0]!.url)}
       players={state.globalStats.totalPlayers}
       bans={state.globalStats.totalBans}

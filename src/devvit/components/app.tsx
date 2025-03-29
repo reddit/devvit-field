@@ -1,5 +1,7 @@
 // biome-ignore lint/style/useImportType: Devvit is a functional dependency of JSX.
-import {Devvit, useAsync} from '@devvit/public-api'
+import {Devvit} from '@devvit/public-api'
+
+import {type UseIntervalResult, useAsync} from '@devvit/public-api'
 import {useChannel, useWebView} from '@devvit/public-api'
 import {ChannelStatus} from '@devvit/public-api/types/realtime'
 import {INSTALL_REALTIME_CHANNEL} from '../../shared/const.ts'
@@ -47,7 +49,24 @@ export const LEADERBOARD_CONFIG: Readonly<FieldFixtureData['leaderboard']> =
 
 export const levels: Readonly<FieldFixtureData['levels']> = config2.levels
 
-export function App(ctx: Devvit.Context): JSX.Element {
+export function App(
+  ctx: Devvit.Context,
+  pause: UseIntervalResult,
+): JSX.Element {
+  const session = useSession(ctx)
+
+  if (session.userAgent.client === 'iOS') {
+    const navigateTo = ctx.ui.navigateTo.bind(ctx.ui)
+    ctx.ui.navigateTo = url => {
+      navigateTo(url)
+
+      // We pause all views EXCEPT the leaderboard
+      if (ctx.subredditId !== config2.leaderboard.subredditId) {
+        pause.start()
+      }
+    }
+  }
+
   // When the game ends according to rules
   if (Date.now() > new Date('2025-04-03T22:00:00.000Z').getTime()) {
     return (
@@ -78,10 +97,15 @@ export function App(ctx: Devvit.Context): JSX.Element {
 
   const pixelRatio = ctx.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
 
-  if (ctx.subredditId === config2.leaderboard.subredditId) {
+  if (
+    ctx.subredditId === config2.leaderboard.subredditId ||
+    // We now claims a global point on WhatIsField and we're trying to not redo all of the code
+    // so we handle this case inside of the same component as it was before.
+    ctx.subredditId === levels.at(-1)!.subredditId
+  ) {
     return <LeaderboardController pixelRatio={pixelRatio} />
   }
-  const session = useSession(ctx)
+
   const [challengeEndedState, setChallengeEndedState] =
     useState2<ChallengeCompleteMessage | null>(null)
   const [appState, setAppState] = useState2(async () => await appInitState(ctx))

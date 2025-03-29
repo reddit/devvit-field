@@ -21,7 +21,7 @@ import {getContextFromMetadata} from '@devvit/public-api/devvit/internals/contex
 import type {Config} from '@devvit/shared-types/Config.js'
 import {DialogWelcomeLoading} from './devvit/components/DialogWelcomeLoading.js'
 import {LeaderboardLoading} from './devvit/components/LeaderboardLoading.js'
-import {App} from './devvit/components/app.js'
+import {AppPauser} from './devvit/components/app-pauser.tsx'
 import {blockUsersMenuAction} from './devvit/menu-actions/blockUsers.js'
 import {endCurrentChallengeMenuAction} from './devvit/menu-actions/endCurrentChallenge.js'
 import {getDefaultConfigMenuAction} from './devvit/menu-actions/getDefaultConfig.js'
@@ -47,7 +47,7 @@ import {validateFieldArea} from './shared/validateFieldArea.js'
 
 Devvit.configure({http: true, redditAPI: true, redis: true, realtime: true})
 
-Devvit.addCustomPostType({name: '', height: 'tall', render: App})
+Devvit.addCustomPostType({name: '', height: 'tall', render: AppPauser})
 
 const newPostFormKey = Devvit.createForm(
   (data: {

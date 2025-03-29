@@ -1,3 +1,4 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import {Devvit} from '@devvit/public-api'
 import {lineBreakToken, localize} from '../../shared/locale'
 import type {Team} from '../../shared/team'
@@ -8,7 +9,11 @@ import {
   paletteBlack,
   paletteWhite,
 } from '../../shared/theme'
-import {type Level, levelHighlightColor} from '../../shared/types/level'
+import {
+  type Level,
+  config2,
+  levelHighlightColor,
+} from '../../shared/types/level'
 import {BorderedContainer} from './BorderedContainer'
 import {Dialog} from './Dialog'
 import {PixelText} from './PixelText'
@@ -21,12 +26,18 @@ type DialogWinnerProps = {
   onPress?: () => void
 }
 
-export function DialogWinner(props: DialogWinnerProps): JSX.Element {
+export function DialogWinner(
+  props: DialogWinnerProps,
+  ctx: Devvit.Context,
+): JSX.Element {
   return (
     <Dialog
       {...props}
       marketingLabel={localize('winner-dialog-footer')}
-      button={false}
+      buttonLabel='Play more games'
+      onPress={() => {
+        ctx.ui.navigateTo(config2.leaderboard.url)
+      }}
     >
       <BorderedContainer
         height={80}

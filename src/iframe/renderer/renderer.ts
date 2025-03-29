@@ -11,8 +11,6 @@ import {
   paletteJuiceBox,
   paletteLasagna,
   paletteSunshine,
-  paletteVeryBannedField,
-  paletteVeryBannedFieldDark,
   paletteWhatIsField,
   paletteWhatIsFieldDark,
 } from '../../shared/theme.js'
@@ -152,9 +150,8 @@ export class Renderer {
       const theme = {
         0: paletteField,
         1: paletteBannedField,
-        2: paletteVeryBannedField,
-        3: paletteBananaField,
-        4: paletteWhatIsField,
+        2: paletteBananaField,
+        3: paletteWhatIsField,
       }[lvl]
       this.#rgbaByColor = new Uint32Array([
         paletteBlack,
@@ -168,9 +165,8 @@ export class Renderer {
       this.#themeDark = {
         0: paletteFieldDark,
         1: paletteBannedFieldDark,
-        2: paletteVeryBannedFieldDark,
-        3: paletteBananaFieldDark,
-        4: paletteWhatIsFieldDark,
+        2: paletteBananaFieldDark,
+        3: paletteWhatIsFieldDark,
       }[lvl]
     }
     this.initGL()

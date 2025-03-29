@@ -284,7 +284,7 @@ DevvitTest.it(
 
     await userMethods.userSet({
       redis: ctx.redis,
-      user: {...user, currentLevel: 4},
+      user: {...user, currentLevel: 3},
     })
 
     await expect(() =>
@@ -321,7 +321,7 @@ DevvitTest.it(
 
     await userMethods.userSet({
       redis: ctx.redis,
-      user: {...user, currentLevel: 4},
+      user: {...user, currentLevel: 3},
     })
 
     await expect(() =>
@@ -344,7 +344,7 @@ DevvitTest.it('userAttemptToClaimGlobalPointForTeam - succeeds', async ctx => {
   } as User)
 
   const user: Profile = {
-    currentLevel: 4,
+    currentLevel: 3,
     lastPlayedChallengeNumberForLevel: 0,
     lastPlayedChallengeNumberCellsClaimed: 0,
     t2: ctx.userId as T2,
@@ -358,7 +358,7 @@ DevvitTest.it('userAttemptToClaimGlobalPointForTeam - succeeds', async ctx => {
 
   await userMethods.userSet({
     redis: ctx.redis,
-    user: {...user, currentLevel: 4},
+    user: {...user, currentLevel: 3},
   })
 
   await expect(

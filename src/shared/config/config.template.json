@@ -30,27 +30,18 @@
       "subredditId": "t5_",
       "postId": "t3_",
       "url": "https://www.reddit.com/r/",
-      "subredditName": "VeryBannedField",
+      "subredditName": "BananaField",
       "theme": {},
-      "title": "VeryBannedField"
+      "title": "BananaField"
     },
     {
       "id": 3,
       "subredditId": "t5_",
       "postId": "t3_",
       "url": "https://www.reddit.com/r/",
-      "subredditName": "BananaField",
+      "subredditName": "WhatIsField",
       "theme": {},
-      "title": "BananaField"
-    },
-    {
-      "id": 4,
-      "subredditId": "t5_",
-      "postId": "t3_",
-      "url": "https://www.reddit.com/r/",
-      "subredditName": "GamesOnRedditDev",
-      "theme": {},
-      "title": "GamesOnRedditDev"
+      "title": "WhatIsField"
     }
   ]
 }
