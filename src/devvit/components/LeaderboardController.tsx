@@ -3,14 +3,13 @@ import type {Profile} from '../../shared/save.js'
 import {type Team, getTeamFromUserId} from '../../shared/team.js'
 import {fallbackPixelRatio} from '../../shared/theme.js'
 import {config2} from '../../shared/types/level.js'
-import type {T2} from '../../shared/types/tid.js'
 import {useState2} from '../hooks/use-state2.js'
 import {globalStatsGet} from '../server/core/globalStats.js'
 import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
 import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
   userAttemptToClaimGlobalPointForTeam,
-  userGet,
+  userGetOrSet,
 } from '../server/core/user.js'
 import {DialogNotAllowed} from './DialogNotAllowed.js'
 import {DialogVerifyEmail} from './DialogVerifyEmail.js'
@@ -68,9 +67,8 @@ export function LeaderboardController(
         redis: context.redis,
       }),
       context.userId
-        ? userGet({
-            redis: context.redis,
-            userId: context.userId as T2,
+        ? userGetOrSet({
+            ctx: context,
           })
         : null,
     ])
