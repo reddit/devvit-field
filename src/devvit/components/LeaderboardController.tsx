@@ -236,7 +236,6 @@ export function LeaderboardController(
     )
   }
 
-  // to-do: add the number of players, bans, and fields
   return (
     <LeaderboardView
       standings={state.standings.sort((a, b) => a.member - b.member)}
@@ -246,6 +245,10 @@ export function LeaderboardController(
         state.profile.globalPointCount === 0
       }
       onPlay={() => context.ui.navigateTo(config2.levels[0]!.url)}
+      onSubscribe={async () => {
+        await context.reddit.subscribeToCurrentSubreddit()
+        context.ui.showToast('Subscribed to r/GamesOnReddit')
+      }}
       players={state.globalStats.totalPlayers}
       bans={state.globalStats.totalBans}
       fields={state.globalStats.totalFields}

@@ -24,6 +24,7 @@ type LeaderboardViewProps = {
   pixelRatio: number
   showPlayButton: boolean
   onPlay: () => void
+  onSubscribe: () => void
 }
 
 export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
@@ -64,14 +65,14 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
 
         <spacer height='32px' />
 
-        {props.showPlayButton ? (
-          <StyledButton width={200} {...props} onPress={props.onPlay}>
-            Play r/Field
-          </StyledButton>
-        ) : (
-          <spacer height='44px' />
+        {props.showPlayButton && (
+          <>
+            <StyledButton width={256} {...props} onPress={props.onPlay}>
+              Play r/Field
+            </StyledButton>
+            <spacer height='32px' />
+          </>
         )}
-        <spacer height='32px' />
 
         <PixelText
           {...props}
@@ -121,6 +122,20 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
             value={props.fields ?? 0}
           />
         </hstack>
+
+        {!props.showPlayButton && (
+          <>
+            <spacer height='32px' />
+            <StyledButton
+              pixelRatio={props.pixelRatio}
+              width={256}
+              color={cssHex(paletteWhite)}
+              onPress={props.onSubscribe}
+            >
+              Subscribe for more
+            </StyledButton>
+          </>
+        )}
       </vstack>
     </vstack>
   )
