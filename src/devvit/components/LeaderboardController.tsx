@@ -3,6 +3,7 @@ import type {Profile} from '../../shared/save.js'
 import {type Team, getTeamFromUserId} from '../../shared/team.js'
 import {fallbackPixelRatio} from '../../shared/theme.js'
 import {config2} from '../../shared/types/level.js'
+import type {DialogMessage} from '../../shared/types/message.js'
 import {useState2} from '../hooks/use-state2.js'
 import {globalStatsGet} from '../server/core/globalStats.js'
 import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
@@ -11,7 +12,9 @@ import {
   userAttemptToClaimGlobalPointForTeam,
   userGetOrSet,
 } from '../server/core/user.js'
+import {DialogBeatGame} from './DialogBeatGame.js'
 import {DialogNotAllowed} from './DialogNotAllowed.js'
+import {DialogUnauthorized} from './DialogUnauthorized.js'
 import {DialogVerifyEmail} from './DialogVerifyEmail.js'
 import {LeaderboardView} from './LeaderboardView.js'
 import {PointClaimScreen} from './PointClaimScreen.js'
@@ -33,6 +36,13 @@ type LeaderboardControllerState =
       }[]
       profile: Profile
       team: Team
+    }
+  | ({
+      status: 'dialog'
+      profile: Awaited<ReturnType<typeof userGetOrSet>>
+    } & DialogMessage)
+  | {
+      status: 'beatTheGame'
     }
   | {
       status: 'notAllowed'
@@ -94,16 +104,21 @@ export function LeaderboardController(
       }
     }
 
-    if (
-      profile.globalPointCount > 0 ||
-      // Always show leaderboard if they're on the leaderboard subreddit
-      config2.leaderboard.subredditId === context.subredditId
-    ) {
+    if (profile.globalPointCount > 0) {
+      if (
+        // Always show leaderboard if they're on the leaderboard subreddit
+        config2.leaderboard.subredditId === context.subredditId
+      ) {
+        return {
+          status: 'viewLeaderboard',
+          standings,
+          profile,
+          globalStats,
+        }
+      }
+
       return {
-        status: 'viewLeaderboard',
-        standings,
-        profile,
-        globalStats,
+        status: 'beatTheGame',
       }
     }
 
@@ -113,20 +128,23 @@ export function LeaderboardController(
     })
 
     if (
-      result.pass &&
       // We only show claim global point when they're on the last subreddit now
       config2.levels.at(-1)!.subredditId === context.subredditId
     ) {
-      return {
-        status: 'claimGlobalPoint',
-        standings,
-        profile,
-        team: getTeamFromUserId(profile.t2),
+      // Only show this screen if they're on the right leaderboard
+      // and they pass the check
+      if (result.pass) {
+        return {
+          status: 'claimGlobalPoint',
+          standings,
+          profile,
+          team: getTeamFromUserId(profile.t2),
+        }
       }
-    }
 
-    // NOTE: After claiming a global point that subreddit will show view leaderboard
-    // unless we force redirect them to games on reddit here.
+      const {pass: _pass, ...rest} = result
+      return {status: 'dialog', ...rest, profile}
+    }
 
     return {
       status: 'viewLeaderboard',
@@ -147,6 +165,32 @@ export function LeaderboardController(
         onPress={async () => {
           console.log('to-do: not yet implemented!')
         }}
+      />
+    )
+  }
+
+  if (state.status === 'beatTheGame') {
+    return (
+      <DialogBeatGame
+        level={
+          config2.levels.find(lvl => lvl.subredditId === context.subredditId)
+            ?.id ?? 0
+        }
+        pixelRatio={pixelRatio}
+      />
+    )
+  }
+
+  if (state.status === 'dialog') {
+    return (
+      <DialogUnauthorized
+        level={
+          config2.levels.find(lvl => lvl.subredditId === context.subredditId)
+            ?.id ?? 0
+        }
+        currentLevel={state.profile.currentLevel}
+        redirectURL={state.redirectURL}
+        pixelRatio={pixelRatio}
       />
     )
   }
