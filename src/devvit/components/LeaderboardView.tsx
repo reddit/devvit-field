@@ -27,7 +27,7 @@ type LeaderboardViewProps = {
 }
 
 export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
-  const standings = props.standings ?? [
+  const standings = props.standings?.sort((a, b) => a.member - b.member) ?? [
     {member: 0, score: 0},
     {member: 1, score: 0},
     {member: 2, score: 0},

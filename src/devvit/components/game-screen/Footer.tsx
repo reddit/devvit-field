@@ -100,54 +100,56 @@ export function Footer(props: FooterProps, context: Context): JSX.Element {
         >
           <spacer width='24px' />
           <hstack grow maxWidth={`${420 + teamGap}px`}>
-            {props.scores.map(({member, score}) => (
-              <hstack key={`team-score-${member}`} width='25%'>
-                <spacer width={`${teamGap / 2}px`} />
-                <vstack
-                  grow
-                  height={teamHeightString}
-                  border='thick'
-                  borderColor={cssHex(paletteShade50)}
-                  backgroundColor={cssHex(teamColor[member])}
-                >
-                  <hstack
-                    width='100%'
-                    height='100%'
-                    alignment='center middle'
+            {props.scores
+              .sort((a, b) => a.member - b.member)
+              .map(({member, score}) => (
+                <hstack key={`team-score-${member}`} width='25%'>
+                  <spacer width={`${teamGap / 2}px`} />
+                  <vstack
+                    grow
+                    height={teamHeightString}
                     border='thick'
                     borderColor={cssHex(paletteShade50)}
+                    backgroundColor={cssHex(teamColor[member])}
                   >
-                    {props.team === member && (
-                      <hstack
-                        height='100%'
-                        alignment='center middle'
-                        backgroundColor={cssHex(paletteShade50)}
-                      >
-                        <spacer width='4px' />
-                        <image
-                          imageHeight={12 * props.pixelRatio}
-                          imageWidth={12 * props.pixelRatio}
-                          width='12px'
-                          height='12px'
-                          url={svg`${createPersonIcon(props.team)}`}
-                        />
-                        <spacer width='8px' />
-                      </hstack>
-                    )}
-                    <spacer grow />
-                    <PixelText
-                      {...props}
-                      size={fontMSize}
-                      color={cssHex(paletteBlack)}
+                    <hstack
+                      width='100%'
+                      height='100%'
+                      alignment='center middle'
+                      border='thick'
+                      borderColor={cssHex(paletteShade50)}
                     >
-                      {abbreviateNumber(score)}
-                    </PixelText>
-                    <spacer grow />
-                  </hstack>
-                </vstack>
-                <spacer width={`${teamGap / 2}px`} />
-              </hstack>
-            ))}
+                      {props.team === member && (
+                        <hstack
+                          height='100%'
+                          alignment='center middle'
+                          backgroundColor={cssHex(paletteShade50)}
+                        >
+                          <spacer width='4px' />
+                          <image
+                            imageHeight={12 * props.pixelRatio}
+                            imageWidth={12 * props.pixelRatio}
+                            width='12px'
+                            height='12px'
+                            url={svg`${createPersonIcon(props.team)}`}
+                          />
+                          <spacer width='8px' />
+                        </hstack>
+                      )}
+                      <spacer grow />
+                      <PixelText
+                        {...props}
+                        size={fontMSize}
+                        color={cssHex(paletteBlack)}
+                      >
+                        {abbreviateNumber(score)}
+                      </PixelText>
+                      <spacer grow />
+                    </hstack>
+                  </vstack>
+                  <spacer width={`${teamGap / 2}px`} />
+                </hstack>
+              ))}
           </hstack>
           <spacer width='24px' />
         </hstack>

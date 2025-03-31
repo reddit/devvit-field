@@ -104,19 +104,19 @@ export function LeaderboardController(
       }
     }
 
-    if (profile.globalPointCount > 0) {
-      if (
-        // Always show leaderboard if they're on the leaderboard subreddit
-        config2.leaderboard.subredditId === context.subredditId
-      ) {
-        return {
-          status: 'viewLeaderboard',
-          standings,
-          profile,
-          globalStats,
-        }
+    if (
+      // Always show leaderboard if they're on the leaderboard subreddit
+      config2.leaderboard.subredditId === context.subredditId
+    ) {
+      return {
+        status: 'viewLeaderboard',
+        standings,
+        profile,
+        globalStats,
       }
+    }
 
+    if (profile.globalPointCount > 0) {
       return {
         status: 'beatTheGame',
       }
