@@ -132,7 +132,7 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
               color={cssHex(paletteWhite)}
               onPress={props.onSubscribe}
             >
-              Subscribe for more
+              Join r/GamesOnReddit
             </StyledButton>
           </>
         )}
