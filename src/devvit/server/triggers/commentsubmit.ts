@@ -3,6 +3,22 @@ import {asT2ID} from '@devvit/shared-types/tid.js'
 import {config2} from '../../../shared/types/level.js'
 import {userMaybeGet} from '../core/user.js'
 
+const COMMENT_REASONS = [
+  'was banned into oblivion.',
+  'got a swift ban in the bannery.',
+  'clicked around and found out (got banned).',
+  'was banned and we hope they feel banned.',
+  'found a ban box and boy howdy did they get banned.',
+  'bought a one-way ticket to Banburgh.',
+  'got banned. We all saw that coming.',
+  'got banned and the world moved on.',
+  'got banned and nobody noticed.',
+  "was here to click boxes and avoid bans, and they're all out of avoiding bans.",
+  "is banned, violets are blue. This is a poem, it's not a haiku.",
+  'got banned. Tell a friend!',
+  "got banned... or never existed? Who's to say?",
+]
+
 export const commentSubmit: CommentSubmitDefinition = {
   event: 'CommentSubmit',
   onEvent: async (event, ctx) => {
@@ -35,30 +51,29 @@ export const commentSubmit: CommentSubmitDefinition = {
       return
     }
 
-    let reason = ''
+    let message = ''
     if (!profile) {
-      reason = 'you must play the game before you can comment.'
-    } else if (profile.blocked) {
-      reason = 'you have been banned from playing Field.'
+      message = 'You must play the game before you can comment.'
     } else if (profile.hasVerifiedEmail === false) {
-      reason = 'you must first verify your email to play Field.'
-    } else if (profile.globalPointCount > 0) {
-      reason = 'you beat the game!'
-    } else if (profile.currentLevel !== subredditLevel.id) {
-      reason = `you have been permanently banned from r/${subredditLevel.subredditName}.`
+      message = 'You must first verify your email to play Field.'
+    } else if (
+      profile.blocked ||
+      profile.globalPointCount > 0 ||
+      profile.currentLevel !== subredditLevel.id
+    ) {
+      // For most "banned" cases, pick one of the fun messages.
+      message = `u/${profile.username} ${COMMENT_REASONS[Math.floor(Math.random() * COMMENT_REASONS.length)]}`
     } else {
       // Only delete the comment if we came up with a reason to do so
       return
     }
-
-    const messageTemplate = `Your comment was removed, because ${reason}`
 
     const comment = await ctx.reddit.getCommentById(event.comment.id)
     await Promise.all([
       comment.remove(false),
       ctx.reddit.submitComment({
         id: event.comment.id,
-        text: messageTemplate,
+        text: message,
       }),
     ])
   },
