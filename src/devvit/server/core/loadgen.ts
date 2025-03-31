@@ -34,17 +34,18 @@ export async function generateClaim(
     y = getRandomIntBetween(0, challenge.size)
   }
 
-  if (!ctx.userId) {
+  let {userId} = ctx
+  if (!userId) {
     const values = Object.values(USER_IDS)
     const idx = Math.floor(Math.random() * values.length)
-    ctx.userId = values[idx]!
+    userId = values[idx]!
   }
 
   const claim = await fieldClaimCells({
     coords: [{x, y}],
     challengeNumber,
     ctx,
-    userId: T2(ctx.userId),
+    userId: T2(userId),
   })
   return {
     currentChallenge: challengeNumber,
