@@ -43,7 +43,6 @@ export class BoxEnt implements Ent {
       ban ? `box--BanFill${pascalLvl}` : `box--${pascalTeam}Fill`,
       ban && isFromP1 ? 'Banned' : game.team === team ? 'Claimed' : 'Lost',
     )
-    console.log('resolved', ...this.#seq) //
   }
 
   update(game: Game): void {
