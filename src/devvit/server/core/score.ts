@@ -109,7 +109,7 @@ export async function computePreciseScore(
   const entries = claims.map((score, idx) => [idx, score])
   let topTeam: {member: Team; score: number} | undefined
   let secondTeam: {member: Team; score: number} | undefined
-  if (entries.length) {
+  if (entries.length > 0) {
     entries.sort((a, b) => b[1]! - a[1]!)
     topTeam = {member: entries[0]![0]! as Team, score: entries[0]![1]!}
     if (entries.length > 1) {
