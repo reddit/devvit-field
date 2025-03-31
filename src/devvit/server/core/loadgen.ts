@@ -1,8 +1,9 @@
-import type {JobContext} from '@devvit/public-api'
+import type {JobContext, RedisClient} from '@devvit/public-api'
 import {USER_IDS} from '../../../shared/test-utils'
 import {T2} from '../../../shared/types/tid.js'
 import {challengeConfigGet} from './challenge.ts'
 import {fieldClaimCells} from './field.ts'
+import {userSet} from './user.ts'
 
 export type ClaimResult = {
   currentChallenge: number
@@ -10,6 +11,26 @@ export type ClaimResult = {
 }
 
 const strideKey = 'driveLoad:stride'
+
+export async function initFakeUsers(redis: RedisClient): Promise<void> {
+  await Promise.all(
+    Object.values(USER_IDS).map(userId =>
+      userSet({
+        redis: redis,
+        user: {
+          currentLevel: 0,
+          globalPointCount: 0,
+          hasVerifiedEmail: true,
+          lastPlayedChallengeNumberCellsClaimed: 0,
+          lastPlayedChallengeNumberForLevel: 0,
+          superuser: false,
+          t2: T2(userId),
+          username: `user-${userId}`,
+        },
+      }),
+    ),
+  )
+}
 
 export async function generateClaim(
   ctx: JobContext,
@@ -40,7 +61,6 @@ export async function generateClaim(
     const idx = Math.floor(Math.random() * values.length)
     userId = values[idx]!
   }
-
   const claim = await fieldClaimCells({
     coords: [{x, y}],
     challengeNumber,

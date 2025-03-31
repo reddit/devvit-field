@@ -2,6 +2,7 @@ import {Devvit, type TriggerContext} from '@devvit/public-api'
 import {challengeOnInstall} from '../core/challenge'
 import {leaderboardInit} from '../core/leaderboards/global/leaderboard'
 import {teamStatsWinsInit} from '../core/leaderboards/subreddit/team.wins'
+import {initFakeUsers} from '../core/loadgen.ts'
 import {workQueueInit} from '../scheduler/workqueue.ts'
 
 export const initialize = async (ctx: TriggerContext): Promise<void> => {
@@ -9,6 +10,7 @@ export const initialize = async (ctx: TriggerContext): Promise<void> => {
   await leaderboardInit({redis: ctx.redis})
   await teamStatsWinsInit({redis: ctx.redis})
   await workQueueInit(ctx)
+  await initFakeUsers(ctx.redis)
 
   const jobs = await ctx.scheduler.listJobs()
   for (const job of jobs) {
