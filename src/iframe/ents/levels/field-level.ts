@@ -173,6 +173,10 @@ export class FieldLevel implements LevelEnt {
       if (ctrl.isOnStart('R')) dir.x++
       if (ctrl.isOnStart('U')) dir.y--
       if (ctrl.isOnStart('D')) dir.y++
+      if (ctrl.isOn('Shift')) {
+        dir.x *= 100
+        dir.y *= 100
+      }
 
       game.selectBox(xyAdd(game.select, dir))
       game.centerBox(game.select)
