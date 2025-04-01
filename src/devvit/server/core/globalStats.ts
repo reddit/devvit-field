@@ -6,7 +6,7 @@ export type GlobalStats = {
   totalFields: number
 }
 
-const getGlobalStatsKey = () => 'global:stats' as const
+const getGlobalStatsKey = () => 'global1:stats' as const
 
 export const globalStatsInitialState: GlobalStats = {
   /** How many people have been shown the experience, not how many are active */

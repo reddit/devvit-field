@@ -1,7 +1,7 @@
 import type {Devvit} from '@devvit/public-api'
 import {type Team, teams} from '../../../../../shared/team'
 
-const getRedisKey = () => 'leaderboard' as const
+const getRedisKey = () => 'leaderboard1' as const
 
 export const leaderboardGet = async ({
   redis,
