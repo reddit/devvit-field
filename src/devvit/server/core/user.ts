@@ -82,6 +82,23 @@ export const userSetPlayedIfNotExists = async ({
   )
 }
 
+/**
+ * Sets a UTC date string for when the user opted into new game plus.
+ */
+export const userSetNewGamePlusIfNotExists = async ({
+  redis,
+  userId,
+}: {
+  redis: Devvit.Context['redis']
+  userId: T2
+}): Promise<void> => {
+  await redis.global.hSetNX(
+    getUserKey(userId),
+    'newGamePlusAt' satisfies keyof Profile,
+    new Date().toISOString(),
+  )
+}
+
 export const userGetOrSet = async ({
   ctx,
 }: {

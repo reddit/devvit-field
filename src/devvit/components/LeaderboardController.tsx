@@ -1,9 +1,11 @@
-import {type Context, Devvit, useInterval} from '@devvit/public-api'
+import {type Context, Devvit, useInterval, useState} from '@devvit/public-api'
+import {didUserBeatTheGame} from '../../shared/beatTheGame.js'
 import type {Profile} from '../../shared/save.js'
 import {type Team, getTeamFromUserId} from '../../shared/team.js'
 import {fallbackPixelRatio} from '../../shared/theme.js'
 import {config2} from '../../shared/types/level.js'
 import type {DialogMessage} from '../../shared/types/message.js'
+import type {T2} from '../../shared/types/tid.js'
 import {useState2} from '../hooks/use-state2.js'
 import {globalStatsGet} from '../server/core/globalStats.js'
 import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
@@ -11,6 +13,7 @@ import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
   userAttemptToClaimGlobalPointForTeam,
   userGetOrSet,
+  userSetNewGamePlusIfNotExists,
 } from '../server/core/user.js'
 import {DialogBeatGame} from './DialogBeatGame.js'
 import {DialogNotAllowed} from './DialogNotAllowed.js'
@@ -67,6 +70,8 @@ export function LeaderboardController(
   const pixelRatio =
     context.uiEnvironment?.dimensions?.scale ?? fallbackPixelRatio
 
+  const [forcePlayField, setForcePlayField] = useState(false)
+
   const [state, setState] = useState2<LeaderboardControllerState>(async () => {
     const [standings, globalStats, profile] = await Promise.all([
       leaderboardGet({
@@ -116,7 +121,7 @@ export function LeaderboardController(
       }
     }
 
-    if (profile.globalPointCount > 0) {
+    if (didUserBeatTheGame(profile)) {
       return {
         status: 'beatTheGame',
       }
@@ -163,7 +168,10 @@ export function LeaderboardController(
         }
         pixelRatio={pixelRatio}
         onPress={async () => {
-          console.log('to-do: not yet implemented!')
+          context.ui.navigateTo(
+            config2.levels.find(lvl => lvl.subredditId === context.subredditId)
+              ?.url ?? config2.levels[0]!.url,
+          )
         }}
       />
     )
@@ -241,13 +249,19 @@ export function LeaderboardController(
       standings={state.standings.sort((a, b) => a.member - b.member)}
       pixelRatio={props.pixelRatio}
       showPlayButton={
-        state.profile?.globalPointCount == null ||
-        state.profile.globalPointCount === 0
+        forcePlayField || !state.profile || !didUserBeatTheGame(state.profile)
       }
       onPlay={() => context.ui.navigateTo(config2.levels[0]!.url)}
       onSubscribe={async () => {
         await context.reddit.subscribeToCurrentSubreddit()
         context.ui.showToast('Subscribed to r/GamesOnReddit')
+        if (context.userId) {
+          await userSetNewGamePlusIfNotExists({
+            redis: context.redis,
+            userId: context.userId as T2,
+          })
+          setForcePlayField(true)
+        }
       }}
       players={state.globalStats.totalPlayers}
       bans={state.globalStats.totalBans}

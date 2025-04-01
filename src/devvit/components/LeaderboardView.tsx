@@ -65,10 +65,22 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
 
         <spacer height='32px' />
 
-        {props.showPlayButton && (
+        {props.showPlayButton ? (
           <>
             <StyledButton width={256} {...props} onPress={props.onPlay}>
               Play r/Field
+            </StyledButton>
+            <spacer height='32px' />
+          </>
+        ) : (
+          <>
+            <StyledButton
+              pixelRatio={props.pixelRatio}
+              width={256}
+              color={cssHex(paletteWhite)}
+              onPress={props.onSubscribe}
+            >
+              Join r/GamesOnReddit
             </StyledButton>
             <spacer height='32px' />
           </>
@@ -122,20 +134,6 @@ export function LeaderboardView(props: LeaderboardViewProps): JSX.Element {
             value={props.fields ?? 0}
           />
         </hstack>
-
-        {!props.showPlayButton && (
-          <>
-            <spacer height='32px' />
-            <StyledButton
-              pixelRatio={props.pixelRatio}
-              width={256}
-              color={cssHex(paletteWhite)}
-              onPress={props.onSubscribe}
-            >
-              Join r/GamesOnReddit
-            </StyledButton>
-          </>
-        )}
       </vstack>
     </vstack>
   )

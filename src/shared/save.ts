@@ -28,6 +28,8 @@ export type Profile = {
   globalPointCount: number
   /** The date the user first claimed a square. Will be a UTC date string if defined of the time they've been banned */
   startedPlayingAt?: string
+  /** The date the user decided to play again */
+  newGamePlusAt?: string
 }
 
 export type Player = {profile: Profile; sid: SID}
