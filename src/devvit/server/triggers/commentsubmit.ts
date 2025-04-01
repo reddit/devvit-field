@@ -1,5 +1,6 @@
 import {type CommentSubmitDefinition, Devvit} from '@devvit/public-api'
 import {asT2ID} from '@devvit/shared-types/tid.js'
+import {didUserBeatTheGame} from '../../../shared/beatTheGame.js'
 import {config2} from '../../../shared/types/level.js'
 import {userMaybeGet} from '../core/user.js'
 
@@ -58,7 +59,7 @@ export const commentSubmit: CommentSubmitDefinition = {
       message = 'You must first verify your email to play Field.'
     } else if (
       profile.blocked ||
-      profile.globalPointCount > 0 ||
+      didUserBeatTheGame(profile) ||
       profile.currentLevel !== subredditLevel.id
     ) {
       // For most "banned" cases, pick one of the fun messages.

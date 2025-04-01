@@ -56,8 +56,6 @@ const testProfile: Readonly<Profile> = {
   hasVerifiedEmail: true,
 }
 
-const levels = config2.levels
-
 const testCases = [
   {
     title: 'CommentSubmit - Leaves comment when user is on right level',

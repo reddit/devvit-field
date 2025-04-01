@@ -1,7 +1,7 @@
 import type {Profile} from './save'
 
 /** The maximum amount of times you can cycle */
-const MAX_GLOBAL_POINTS = 250
+const MAX_GLOBAL_POINTS = 69
 
 export const didUserBeatTheGame = (profile: Profile): boolean => {
   return (

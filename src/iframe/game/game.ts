@@ -84,7 +84,7 @@ export class Game {
   /** Most recent claim timestamp. */
   claimed: UTCMillis = 0 as UTCMillis
   connected: boolean
-  ctrl!: Input<DefaultButton>
+  ctrl!: Input<DefaultButton | 'Shift'>
   debug: boolean
   devPeerChan: BroadcastChannel | undefined
   eid: EIDFactory
@@ -234,6 +234,7 @@ export class Game {
     this.canvas = await this.ui.canvas()
     this.ctrl = new Input(this.cam, this.canvas)
     this.ctrl.mapDefault()
+    this.ctrl.mapKey('Shift', 'Shift')
 
     this.renderer = new Renderer(this.canvas)
     this.looper = new Looper(this.canvas, this.cam, this.ctrl, this.renderer)
