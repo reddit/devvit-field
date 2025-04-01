@@ -124,7 +124,7 @@ export function App(
           0
         }
         pixelRatio={pixelRatio}
-        onPress={async () => {
+        onPress={() => {
           ctx.ui.navigateTo('https://www.reddit.com/settings/account')
         }}
       />

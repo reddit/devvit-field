@@ -167,7 +167,7 @@ export function LeaderboardController(
             ?.id ?? 0
         }
         pixelRatio={pixelRatio}
-        onPress={async () => {
+        onPress={() => {
           context.ui.navigateTo('https://www.reddit.com/settings/account')
         }}
       />
