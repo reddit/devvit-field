@@ -125,7 +125,10 @@ export function App(
         }
         pixelRatio={pixelRatio}
         onPress={async () => {
-          console.log('to-do: not yet implemented!')
+          ctx.ui.navigateTo(
+            config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)
+              ?.url ?? config2.levels[0]!.url,
+          )
         }}
       />
     )
