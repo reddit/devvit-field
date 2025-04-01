@@ -168,10 +168,7 @@ export function LeaderboardController(
         }
         pixelRatio={pixelRatio}
         onPress={async () => {
-          context.ui.navigateTo(
-            config2.levels.find(lvl => lvl.subredditId === context.subredditId)
-              ?.url ?? config2.levels[0]!.url,
-          )
+          context.ui.navigateTo('https://www.reddit.com/settings/account')
         }}
       />
     )
