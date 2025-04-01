@@ -28,7 +28,7 @@ import {activePlayersIncrement} from '../server/core/activePlayers.js'
 import {type AppState, appInitState} from '../server/core/app.js'
 import {fieldClaimCells} from '../server/core/field.js'
 import {levelsIsUserInRightPlace} from '../server/core/levels.js'
-import {userGet} from '../server/core/user.js'
+import {userGet, userSet} from '../server/core/user.js'
 import {DialogBeatGame} from './DialogBeatGame.tsx'
 import {DialogEnded} from './DialogEnded.tsx'
 import {DialogHowToPlay} from './DialogHowToPlay.tsx'
@@ -124,8 +124,28 @@ export function App(
           0
         }
         pixelRatio={pixelRatio}
-        onPress={() => {
-          ctx.ui.navigateTo('https://www.reddit.com/settings/account')
+        onPress={async () => {
+          const user = await ctx.reddit.getCurrentUser()
+          if (user?.hasVerifiedEmail) {
+            userSet({
+              redis: ctx.redis,
+              user: {
+                ...(await userGet({
+                  redis: ctx.redis,
+                  userId: ctx.userId as T2,
+                })),
+                hasVerifiedEmail: true,
+              },
+            })
+
+            // Refresh the page
+            ctx.ui.navigateTo(
+              config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)
+                ?.url ?? config2.levels[0]!.url,
+            )
+          } else {
+            ctx.ui.navigateTo('https://www.reddit.com/settings/account')
+          }
         }}
       />
     )

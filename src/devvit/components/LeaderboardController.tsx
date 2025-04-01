@@ -12,7 +12,9 @@ import {leaderboardGet} from '../server/core/leaderboards/global/leaderboard.js'
 import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {
   userAttemptToClaimGlobalPointForTeam,
+  userGet,
   userGetOrSet,
+  userSet,
   userSetNewGamePlusIfNotExists,
 } from '../server/core/user.js'
 import {DialogBeatGame} from './DialogBeatGame.js'
@@ -167,8 +169,29 @@ export function LeaderboardController(
             ?.id ?? 0
         }
         pixelRatio={pixelRatio}
-        onPress={() => {
-          context.ui.navigateTo('https://www.reddit.com/settings/account')
+        onPress={async () => {
+          const user = await context.reddit.getCurrentUser()
+          if (user?.hasVerifiedEmail) {
+            userSet({
+              redis: context.redis,
+              user: {
+                ...(await userGet({
+                  redis: context.redis,
+                  userId: context.userId as T2,
+                })),
+                hasVerifiedEmail: true,
+              },
+            })
+
+            // Refresh the page
+            context.ui.navigateTo(
+              config2.levels.find(
+                lvl => lvl.subredditId === context.subredditId,
+              )?.url ?? config2.levels[0]!.url,
+            )
+          } else {
+            context.ui.navigateTo('https://www.reddit.com/settings/account')
+          }
         }}
       />
     )
