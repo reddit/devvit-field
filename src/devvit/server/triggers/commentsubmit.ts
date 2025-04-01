@@ -8,16 +8,14 @@ const COMMENT_REASONS = [
   'was banned into oblivion.',
   'got a swift ban in the bannery.',
   'clicked around and found out (got banned).',
-  'was banned and we hope they feel banned.',
   'found a ban box and boy howdy did they get banned.',
   'bought a one-way ticket to Banburgh.',
   'got banned. We all saw that coming.',
-  'got banned and the world moved on.',
-  'got banned and nobody noticed.',
   "was here to click boxes and avoid bans, and they're all out of avoiding bans.",
   "is banned, violets are blue. This is a poem, it's not a haiku.",
   'got banned. Tell a friend!',
-  "got banned... or never existed? Who's to say?",
+  'got banned but will live on in our hearts',
+  'got banned... or is still lurking somewhere...',
 ]
 
 export const commentSubmit: CommentSubmitDefinition = {
