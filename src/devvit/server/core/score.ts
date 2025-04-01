@@ -56,7 +56,7 @@ export const computeScore = ({
   // if(difference === 0 && remainingSquares === 0) {
   // }
 
-  const durationSeconds = Math.min(30, Date.now() - startTimeMs)
+  const durationSeconds = Math.min(30, (Date.now() - startTimeMs) / 1_000)
   return {
     isOver,
     winner: isOver ? topTeam.member : undefined,
