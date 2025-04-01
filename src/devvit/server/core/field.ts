@@ -201,6 +201,13 @@ export const fieldEndGame = async (
   // TODO: When the game is over, start a new game? Maybe that needs to be a countdown and timer to the user's screens?
   // Make a new game immediately, because yolo
   if (targetGameDurationSeconds && score) {
+    console.log(
+      `[autoscaler] Round ended with ${score.claimsPerSecond} claims/sec`,
+    )
+    console.log(
+      `[autoscaler] Configuring next round with target duration of ${targetGameDurationSeconds} seconds`,
+    )
+
     // Use performance of the game just ended to determine the scale of the next game.
     const targetArea = targetGameDurationSeconds * score.claimsPerSecond
     let targetWidth = Math.min(
@@ -217,6 +224,10 @@ export const fieldEndGame = async (
       targetWidth -= targetWidth % 4
       partitionSize = targetWidth / 4
     }
+
+    console.log(
+      `[autoscaler] Next round configuration will be size=${targetWidth}, partitionSize=${partitionSize}`,
+    )
 
     const config = {
       size: targetWidth,
