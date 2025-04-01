@@ -201,7 +201,6 @@ Devvit.addSettings([
     isSecret: true,
   },
   {
-    scope: SettingScope.App,
     name: 'drive-load-claims-per-sec',
     label:
       'Set to positive number, and scheduled handler will generate this many random claims per second',
@@ -209,7 +208,6 @@ Devvit.addSettings([
     defaultValue: 0,
   },
   {
-    scope: SettingScope.App,
     name: 'drive-load-stride',
     label:
       'Set to true, and driven load will select cells in order instead of randomly',
