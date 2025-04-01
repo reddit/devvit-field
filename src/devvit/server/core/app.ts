@@ -1,4 +1,5 @@
 import type {Devvit} from '@devvit/public-api'
+import {didUserBeatTheGame} from '../../../shared/beatTheGame'
 import {getPartitionCoords} from '../../../shared/partition'
 import {
   type Team,
@@ -78,7 +79,7 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     return {status: 'needsToVerifyEmail'}
   }
 
-  if (profile.globalPointCount > 0) {
+  if (didUserBeatTheGame(profile)) {
     return {status: 'beatTheGame'}
   }
 

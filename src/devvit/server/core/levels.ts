@@ -1,4 +1,5 @@
 import type {Devvit} from '@devvit/public-api'
+import {didUserBeatTheGame} from '../../../shared/beatTheGame'
 import type {Profile} from '../../../shared/save'
 import {getTeamFromUserId} from '../../../shared/team'
 import {config2} from '../../../shared/types/level'
@@ -55,7 +56,7 @@ export const levelsIsUserInRightPlace = async ({
   if (
     profile.blocked ||
     profile.hasVerifiedEmail === false ||
-    profile.globalPointCount > 0
+    didUserBeatTheGame(profile)
   ) {
     throw new Error(
       `User (${profile.t2} - ${profile.username}) is blocked, has not verified their email, or has a global point count greater than 0.`,
