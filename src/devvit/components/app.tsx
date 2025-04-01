@@ -31,6 +31,7 @@ import {levelsIsUserInRightPlace} from '../server/core/levels.js'
 import {userGet, userSet} from '../server/core/user.js'
 import {DialogBeatGame} from './DialogBeatGame.tsx'
 import {DialogEnded} from './DialogEnded.tsx'
+import {DialogError} from './DialogError.tsx'
 import {DialogHowToPlay} from './DialogHowToPlay.tsx'
 import {DialogNotAllowed} from './DialogNotAllowed.tsx'
 import {DialogUnauthorized} from './DialogUnauthorized.tsx'
@@ -176,12 +177,25 @@ export function App(
   }
 
   if (appState.status === 'dialog') {
+    const level =
+      config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ?? 0
+
+    // Special case errors
+    if (appState.code === 'Error') {
+      return (
+        <DialogError
+          level={level}
+          pixelRatio={pixelRatio}
+          onPress={() => {
+            ctx.ui.navigateTo(appState.redirectURL)
+          }}
+        />
+      )
+    }
+
     return (
       <DialogUnauthorized
-        level={
-          config2.levels.find(lvl => lvl.subredditId === ctx.subredditId)?.id ??
-          0
-        }
+        level={level}
         currentLevel={appState.profile.currentLevel}
         redirectURL={appState.redirectURL}
         pixelRatio={pixelRatio}

@@ -9,11 +9,12 @@ import {PixelText} from './PixelText'
 type DialogErrorProps = {
   pixelRatio: number
   level: Level
+  onPress: () => void
 }
 
 export function DialogError(props: DialogErrorProps): JSX.Element {
   return (
-    <Dialog {...props} button={false} marketing={false}>
+    <Dialog {...props} marketing={false} onPress={props.onPress}>
       <BorderedContainer
         height={200}
         width={256}

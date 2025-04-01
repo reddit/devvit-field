@@ -20,6 +20,7 @@ import './bf-dialog.ts'
 import './bf-terminal.ts'
 import './dialogs/dialog-ascended.ts'
 import './dialogs/dialog-banned.ts'
+import './dialogs/dialog-error.ts'
 import './dialogs/dialog-staying.ts'
 import './dialogs/dialog-unauthorized.ts'
 import './dialogs/dialog-webgl.ts'
@@ -186,6 +187,20 @@ export class BFGame extends LitElement {
               >
             </dialog-unauthorized>`
             break
+          case 'Error':
+            dialog = html`
+              <dialog-error
+              subLvl=${ifDefined(this.#game.subLvl)}
+              .buttonLevel=${this.#msg.lvl}
+              .buttonHandler=${() => {
+                this.#msg
+                  ? this.#game.postMessage(this.#msg)
+                  : console.log('no msg')
+              }}
+              >
+            </dialog-error>`
+            break
+
           default:
             this.#msg satisfies never
         }

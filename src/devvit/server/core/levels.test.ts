@@ -37,7 +37,9 @@ DevvitTest.it('should throw for profile auth issues', async ctx => {
         hasVerifiedEmail: false,
       },
     }),
-  ).rejects.toThrowError()
+  ).resolves.toStrictEqual(
+    expect.objectContaining({pass: false, code: 'Error'}),
+  )
 
   await expect(
     levelsIsUserInRightPlace({
@@ -47,7 +49,9 @@ DevvitTest.it('should throw for profile auth issues', async ctx => {
         globalPointCount: 1,
       },
     }),
-  ).rejects.toThrowError()
+  ).resolves.toStrictEqual(
+    expect.objectContaining({pass: false, code: 'Error'}),
+  )
 
   await expect(
     levelsIsUserInRightPlace({
@@ -57,7 +61,9 @@ DevvitTest.it('should throw for profile auth issues', async ctx => {
         blocked: new Date().toISOString(),
       },
     }),
-  ).rejects.toThrowError()
+  ).resolves.toStrictEqual(
+    expect.objectContaining({pass: false, code: 'Error'}),
+  )
 })
 
 DevvitTest.it(

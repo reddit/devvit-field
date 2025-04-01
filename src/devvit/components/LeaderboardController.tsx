@@ -18,6 +18,7 @@ import {
   userSetNewGamePlusIfNotExists,
 } from '../server/core/user.js'
 import {DialogBeatGame} from './DialogBeatGame.js'
+import {DialogError} from './DialogError.js'
 import {DialogNotAllowed} from './DialogNotAllowed.js'
 import {DialogUnauthorized} from './DialogUnauthorized.js'
 import {DialogVerifyEmail} from './DialogVerifyEmail.js'
@@ -210,6 +211,23 @@ export function LeaderboardController(
   }
 
   if (state.status === 'dialog') {
+    const level =
+      config2.levels.find(lvl => lvl.subredditId === context.subredditId)?.id ??
+      0
+
+    // Special case errors
+    if (state.code === 'Error') {
+      return (
+        <DialogError
+          level={level}
+          pixelRatio={pixelRatio}
+          onPress={() => {
+            context.ui.navigateTo(state.redirectURL)
+          }}
+        />
+      )
+    }
+
     return (
       <DialogUnauthorized
         level={

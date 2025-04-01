@@ -53,14 +53,22 @@ export const levelsIsUserInRightPlace = async ({
   profile: Profile
   ctx: Devvit.Context
 }): Promise<LevelsIsUserInRightPlaceResponse> => {
+  const userLevel =
+    config2.levels.find(x => x.id === profile.currentLevel) ||
+    config2.levels[0]!
   if (
     profile.blocked ||
     profile.hasVerifiedEmail === false ||
     didUserBeatTheGame(profile)
   ) {
-    throw new Error(
-      `User (${profile.t2} - ${profile.username}) is blocked, has not verified their email, or has a global point count greater than 0.`,
-    )
+    return {
+      pass: false,
+      type: 'Dialog',
+      code: 'Error',
+      message: 'An error occurred while playing the game. Please try again.',
+      lvl: userLevel.id,
+      redirectURL: userLevel.url,
+    }
   }
 
   // Make sure the level config exists for the subreddit before anything
@@ -72,7 +80,6 @@ export const levelsIsUserInRightPlace = async ({
       `No level config found for subreddit ${ctx.subredditId}. Please make sure you are using the right config.{env}.json (or update it for the new sub you installed this app to)!`,
     )
   }
-  const userLevel = config2.levels.find(x => x.id === profile.currentLevel)!
   const userTeam = getTeamFromUserId(profile.t2)
 
   if (profile.currentLevel !== subredditLevel.id) {

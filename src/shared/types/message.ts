@@ -181,6 +181,9 @@ export type DialogMessage =
       code: 'ChallengeEndedStay'
       standings: {member: Team; score: number}[]
     })
+  | (DialogMessageBase & {
+      code: 'Error'
+    })
 
 // TODO: Remove if there are no peer to peer messages. We won't have peer for things like
 // scheduled jobs
