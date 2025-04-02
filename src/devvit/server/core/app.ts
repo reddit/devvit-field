@@ -64,6 +64,28 @@ export type AppState =
       status: 'beatTheGame'
     }
 
+const randomBetween = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min)) + min
+
+export function getStartingCoordForTeam(size: number, team: Team): XY {
+  const midX = Math.floor(size / 2)
+  const midY = Math.floor(size / 2)
+
+  const regions = [
+    {x: [0, midX], y: [0, midY]}, // Top-left
+    {x: [midX, size], y: [0, midY]}, // Top-right
+    {x: [0, midX], y: [midY, size]}, // Bottom-left
+    {x: [midX, size], y: [midY, size]}, // Bottom-right
+  ] as const
+
+  const teamRegion = regions[team]
+
+  return {
+    x: randomBetween(teamRegion.x[0], teamRegion.x[1]),
+    y: randomBetween(teamRegion.y[0], teamRegion.y[1]),
+  }
+}
+
 export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
   const [appConfig, profile, challengeNumber] = await Promise.all([
     liveSettingsGet(ctx),
@@ -112,10 +134,10 @@ export const appInitState = async (ctx: Devvit.Context): Promise<AppState> => {
     leaderboardGet({redis: ctx.redis, sort: 'DESC'}),
   ])
 
-  const initialGlobalXY: XY = {
-    x: Math.trunc(Math.random() * challengeConfig.size),
-    y: Math.trunc(Math.random() * challengeConfig.size),
-  }
+  const initialGlobalXY: XY = getStartingCoordForTeam(
+    challengeConfig.size,
+    getTeamFromUserId(profile.t2),
+  )
 
   const pathPrefix = await getPathPrefix(ctx.settings)
   const mapKey = await fieldGetPartitionMapLatestSnapshotKey(

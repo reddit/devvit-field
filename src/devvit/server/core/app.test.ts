@@ -1,13 +1,32 @@
 import type {User} from '@devvit/public-api'
-import {expect, vi} from 'vitest'
+import {expect, it, vi} from 'vitest'
 import {getDefaultAppConfig} from '../../../shared/types/app-config.js'
 import {config2} from '../../../shared/types/level.js'
 import type {T2} from '../../../shared/types/tid'
 import {initialize} from '../triggers/install'
 import {DevvitTest} from './_utils/DevvitTest'
 import {setCtxLevel} from './_utils/utils'
-import {appInitState} from './app'
+import {appInitState, getStartingCoordForTeam} from './app'
 import {challengeMakeNew} from './challenge'
+
+it('should bias the starting point to the center of the map', async () => {
+  expect(getStartingCoordForTeam(2, 0)).toStrictEqual({
+    x: 0,
+    y: 0,
+  })
+  expect(getStartingCoordForTeam(2, 1)).toStrictEqual({
+    x: 1,
+    y: 0,
+  })
+  expect(getStartingCoordForTeam(2, 2)).toStrictEqual({
+    x: 0,
+    y: 1,
+  })
+  expect(getStartingCoordForTeam(2, 3)).toStrictEqual({
+    x: 1,
+    y: 1,
+  })
+})
 
 DevvitTest.it(
   'app state should pass if the user is on the right level and NOT return the seed',
