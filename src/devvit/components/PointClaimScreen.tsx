@@ -80,7 +80,7 @@ export function PointClaimScreen(props: PointClaimScreenProps): JSX.Element {
                 height='120px'
                 description='Ban Box Animation'
                 resizeMode='fill'
-                url='logo-grow.gif'
+                url='ban-box-grow.gif'
               />
             )}
             <hstack
