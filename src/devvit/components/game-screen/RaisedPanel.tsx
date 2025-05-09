@@ -101,7 +101,7 @@ export function RaisedPanel(props: RaisedPanelProps): JSX.Element {
                 height='20px'
                 description='Ban Box Animation'
                 resizeMode='fit'
-                url='logo-flicker.gif'
+                url='ban-box-flicker.gif'
               />
             </vstack>
           ) : null}
